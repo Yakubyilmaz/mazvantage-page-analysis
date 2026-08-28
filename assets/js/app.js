@@ -1,50 +1,38 @@
 /* ==========================================================================
    Maz Vantage — application shell
 
-   Loading happens in three passes, because each one depends on the last:
-
-     1. the company's own feeds
-     2. the sector/industry screens, which need the profile to know which
-        sector to screen
-     3. the ratios for every cohort member, which need the screen results
-
-   Only after all three can a relative grade be computed, so the report is
-   rendered once at the end rather than flickering through partial states.
+   Owns routing (?symbol=), the chrome around the report, the settings
+   dialog, and the fetch → analyse → render pipeline.
    ========================================================================== */
 
 import { el, esc, isNum, money, pct, price, trim, dec, fmtDate, ago, signClass } from './util.js';
 import { loadDataset, fetchFor, mapLimited, getApiKey, setApiKey, hasApiKey, clearCache } from './fmp.js';
-import { analyse, loadBenchmarks, saveBenchmarks } from './model.js';
-import { FACTOR_META } from './metrics.js';
-import { buildCohort, screenFloors, mergeCohortStats, MAX_COHORT } from './cohort.js';
+import { analyse, loadBenchmarks, saveBenchmarks, DEFAULT_BENCHMARKS, FACTOR_META } from './model.js';
 import { snowflake, AXES } from './snowflake.js';
-import { renderFactor, renderScorecard, renderCohort } from './factors.js';
 import {
-  renderOverview, renderPriceHistory, renderAbout, renderHistory,
-  renderDividend, renderManagement, renderOwnership, renderCompanyInfo, renderDataStatus,
+  renderOverview, renderPriceHistory, renderAbout, renderValuation, renderFuture,
+  renderPast, renderHealth, renderDividend, renderManagement, renderOwnership,
+  renderCompanyInfo, renderCompetitors, renderDataStatus,
 } from './sections.js';
+
+/* ---------- constants ----------------------------------------------------- */
 
 const DEFAULT_SYMBOL = 'AAPL';
 const THEME_KEY = 'mazvantage.theme';
 
 const NAV = [
-  { label: 'Overview', anchor: 'overview' },
-  { label: 'Score', anchor: 'scorecard' },
-  { label: 'Value', anchor: 'value', n: 1 },
-  { label: 'Growth', anchor: 'growth', n: 2 },
-  { label: 'Profitability', anchor: 'profitability', n: 3 },
-  { label: 'Health', anchor: 'health', n: 4 },
-  { label: 'Momentum', anchor: 'momentum', n: 5 },
-  { label: 'Cohort', anchor: 'cohort' },
-  { label: 'Ten-year record', anchor: 'history' },
-  { label: 'Price history', anchor: 'price-history' },
-  { label: 'Dividend', anchor: 'dividend' },
-  { label: 'Management', anchor: 'management' },
-  { label: 'Ownership', anchor: 'ownership' },
-  { label: 'Model & data', anchor: 'data-status' },
+  { label: 'Company Overview', anchor: 'overview' },
+  { label: 'Valuation', anchor: 'valuation', n: 1 },
+  { label: 'Future Growth', anchor: 'future-growth', n: 2 },
+  { label: 'Past Performance', anchor: 'past-performance', n: 3 },
+  { label: 'Financial Health', anchor: 'financial-health', n: 4 },
+  { label: 'Dividend', anchor: 'dividend', n: 5 },
+  { label: 'Management', anchor: 'management', n: 6 },
+  { label: 'Ownership', anchor: 'ownership', n: 7 },
+  { label: 'Other Information', anchor: 'company-info' },
 ];
 
-/** Sector → SPDR sector ETF, the benchmark momentum is measured against. */
+/** Sector → SPDR sector ETF, used as the industry benchmark for returns. */
 const SECTOR_ETF = {
   'Technology': 'XLK', 'Communication Services': 'XLC', 'Consumer Cyclical': 'XLY',
   'Consumer Defensive': 'XLP', 'Healthcare': 'XLV', 'Financial Services': 'XLF',
@@ -59,7 +47,7 @@ function applyTheme(mode) {
   document.documentElement.setAttribute('data-theme', mode);
   localStorage.setItem(THEME_KEY, mode);
 }
-const currentTheme = () => localStorage.getItem(THEME_KEY) || 'dark';
+function currentTheme() { return localStorage.getItem(THEME_KEY) || 'dark'; }
 
 /* ---------- icons --------------------------------------------------------- */
 
@@ -103,16 +91,18 @@ function buildTopbar(onSearch) {
   return el('header', { class: 'topbar' }, [
     el('div', { class: 'topbar__inner' }, [
       el('a', { class: 'logo', href: '?', 'aria-label': 'Maz Vantage home' }, [
-        logoMark(), el('span', { class: 'logo__word', html: 'Maz <em>Vantage</em>' }),
+        logoMark(),
+        el('span', { class: 'logo__word', html: 'Maz <em>Vantage</em>' }),
       ]),
       el('nav', { class: 'topnav' }, [
-        el('a', { href: '#scorecard', 'aria-current': 'page', text: 'Score' }),
-        el('a', { href: '#cohort', text: 'Cohort' }),
-        el('a', { href: '#data-status', text: 'Model' }),
+        el('a', { href: '#overview', 'aria-current': 'page', text: 'Stock report' }),
+        el('a', { href: '#valuation', text: 'Valuation' }),
+        el('a', { href: '#data-status', text: 'Data' }),
       ]),
       el('div', { class: 'topbar__spacer' }),
       el('div', { class: 'ticker-search' }, [iconSvg('search'), input]),
-      themeBtn, gearBtn,
+      themeBtn,
+      gearBtn,
     ]),
   ]);
 }
@@ -129,12 +119,12 @@ function logoMark() {
   return s;
 }
 
-function flakeScores(a) {
-  return Object.fromEntries(AXES.map((x) => [x.key, a.factors[x.key]?.grade ?? null]));
-}
+/* ---------- left rail ----------------------------------------------------- */
 
 function buildRail(a) {
   const f = a.facts;
+  const scores = Object.fromEntries(AXES.map((x) => [x.key, a.scores[x.key].passed]));
+
   const nav = el('nav', { class: 'rail__nav' }, NAV.map((item) =>
     el('a', { href: `#${item.anchor}`, 'data-anchor': item.anchor }, [
       el('span', { class: 'num', text: item.n ? String(item.n) : '' }),
@@ -142,11 +132,7 @@ function buildRail(a) {
     ])));
 
   return el('aside', { class: 'rail' }, [
-    el('div', { class: 'rail__flake' }, [snowflake(flakeScores(a), { size: 200 })]),
-    el('div', { class: 'rail__score' }, [
-      el('span', { class: 'rail__score-num', text: isNum(a.composite) ? dec(a.composite, 2) : '—' }),
-      el('span', { class: `pill pill--${ratingTone(a.rating)}`, text: a.rating }),
-    ]),
+    el('div', { class: 'rail__flake' }, [snowflake(scores, { size: 200 })]),
     el('div', { class: 'rail__name', text: f.name }),
     el('div', { class: 'rail__meta', text: `${f.exchange}:${f.symbol}` }),
     el('div', { class: 'rail__meta', text: `Market cap ${money(f.marketCap)}` }),
@@ -157,22 +143,21 @@ function buildRail(a) {
   ]);
 }
 
-function ratingTone(rating) {
-  if (/buy/i.test(rating)) return 'good';
-  if (/hold/i.test(rating)) return 'neutral';
-  if (/sell/i.test(rating)) return 'bad';
-  return 'muted';
-}
+/* ---------- report header ------------------------------------------------- */
 
 function buildHeader(a) {
   const f = a.facts;
   const cur = ({ USD: 'US$', EUR: '€', GBP: '£', JPY: '¥' })[f.currency] || `${f.currency} `;
+
   const disc = a.discount;
+  const discPill = isNum(disc)
+    ? el('span', { class: `pill ${disc > 0 ? 'pill--good' : 'pill--bad'}`, text: `${pct(Math.abs(disc))} ${disc > 0 ? 'undervalued' : 'overvalued'}` })
+    : null;
 
   return el('div', { class: 'rpt-head' }, [
     el('div', { class: 'crumbs' }, [
-      el('span', { text: f.sector || 'Stocks' }),
-      el('span', { text: f.industry || '' }),
+      el('span', { text: 'Stocks' }),
+      el('span', { text: f.sector || 'Market' }),
       el('span', { class: 'subtle', text: `Updated ${ago(a.ds.asOf)}` }),
     ]),
     el('div', { class: 'rpt-head__top' }, [
@@ -180,33 +165,23 @@ function buildHeader(a) {
         onerror: (e) => e.target.remove() }) : null,
       el('div', {}, [
         el('h1', { text: f.name }),
-        el('p', { class: 'rpt-head__sub',
-          text: `${f.exchangeFull || f.exchange}:${f.symbol} · ${money(f.marketCap)}` }),
+        el('p', { class: 'rpt-head__sub', text: `${f.exchangeFull || f.exchange}:${f.symbol} · Stock Report · Market cap ${money(f.marketCap)}` }),
       ]),
       el('div', { class: 'rpt-head__actions' }, [
-        el('button', { class: 'btn', title: 'Reload from FMP', onclick: () => { clearCache(); boot(true); } },
-          [iconSvg('refresh'), 'Refresh']),
+        el('button', { class: 'btn', title: 'Reload from FMP', onclick: () => { clearCache(); boot(true); } }, [iconSvg('refresh'), 'Refresh']),
         el('button', { class: 'btn', onclick: () => window.print() }, [iconSvg('print'), 'Print']),
       ]),
     ]),
 
     el('div', { class: 'statstrip' }, [
       statCell('Share price', price(f.price, cur), [
-        el('span', { class: signClass(f.changePct),
-          text: isNum(f.changePct) ? `${pct(f.changePct, { sign: true })} today` : '' }),
+        el('span', { class: signClass(f.changePct), text: isNum(f.changePct) ? `${pct(f.changePct, { sign: true })} today` : '' }),
       ]),
-      statCell('Maz Vantage score', isNum(a.composite) ? dec(a.composite, 2) : '—', [
-        el('span', { class: `pill pill--${ratingTone(a.rating)}`, text: a.rating }),
-      ]),
-      statCell('Fair value', isNum(a.fairValue) ? price(a.fairValue, cur) : 'n/a', [
-        isNum(disc) ? el('span', { class: `pill ${disc > 0 ? 'pill--good' : 'pill--bad'}`,
-          text: `${pct(Math.abs(disc))} ${disc > 0 ? 'undervalued' : 'overvalued'}` }) : null,
-      ]),
-      statCell('P/E ratio', isNum(f.pe) && f.pe > 0 ? `${dec(f.pe, 1)}x` : 'n/a', [
-        a.industryPe ? el('span', { text: `industry ${dec(a.industryPe, 1)}x` }) : null,
-      ]),
-      statCell('Return on capital', pct(f.roic, { dp: 1 })),
-      statCell('12-1m vs sector', pct(a.momentum.rel12m1, { sign: true })),
+      statCell('Fair value', isNum(a.fairValue) ? price(a.fairValue, cur) : 'n/a', [discPill]),
+      statCell('Market cap', money(f.marketCap)),
+      statCell('P/E ratio', isNum(f.pe) ? `${dec(f.pe, 1)}x` : 'n/a'),
+      statCell('Dividend yield', pct(f.dividendYield, { dp: 2 })),
+      statCell('52-week range', isNum(f.yearLow) && isNum(f.yearHigh) ? `${trim(f.yearLow, 0)}–${trim(f.yearHigh, 0)}` : 'n/a'),
     ]),
   ]);
 }
@@ -219,6 +194,8 @@ function statCell(label, value, extra = []) {
   ]);
 }
 
+/* ---------- footer -------------------------------------------------------- */
+
 function buildFooter() {
   const col = (title, items) => el('div', {}, [
     el('h4', { text: title }),
@@ -226,27 +203,32 @@ function buildFooter() {
   ]);
   return el('footer', { class: 'foot' }, [
     el('div', { class: 'foot__cols' }, [
-      col('Factors', FACTOR_META.map((f) => f.label)),
-      col('Method', ['Sector-relative percentiles', 'Size-matched cohort', 'Median-based growth', 'Documented bands where no peer exists']),
-      col('Evidence', ['Every grade decomposes', 'Peer rank on each metric', 'Ten-year trends', 'Dividend & management unscored']),
-      col('Data', ['Financial Modeling Prep', 'Trailing twelve month basis', 'Weights editable in Settings']),
+      col('Coverage', ['US: NYSE & NASDAQ', 'Europe', 'Asia-Pacific', 'Any FMP-listed ticker']),
+      col('The five factors', ['Valuation', 'Future Growth', 'Past Performance', 'Financial Health', 'Dividend']),
+      col('Report', ['Vantage Flake', 'Rewards & risks', '34 analysis checks', 'Data status']),
+      col('Data', ['Financial Modeling Prep', 'Trailing twelve month basis', 'Benchmarks editable in Settings']),
     ]),
     el('p', { class: 'foot__legal' },
-      ['Maz Vantage is a research tool, not financial advice. Grades are generated from vendor data and the '
-        + 'model in this repository, without considering your objectives or circumstances. '
-        + `© ${new Date().getFullYear()} Maz Vantage.`]),
+      ['Maz Vantage is a research tool, not financial advice. Every figure is generated from Financial Modeling Prep data '
+        + 'and the analysis model in this repository, without considering your objectives, financial situation or needs. '
+        + 'Verify anything you intend to act on against primary filings. © ' + new Date().getFullYear() + ' Maz Vantage.']),
   ]);
 }
 
 /* ==========================================================================
    Snapshot capture
+
+   Serialises whatever the live connection returned into the same shape
+   `assets/data/<SYMBOL>.json` expects, so a report can be pinned for offline
+   use, review, or sharing without handing over an API key.
    ========================================================================== */
 
-let lastLoad = null;
+let lastLoad = null;   // { ds, extras } from the most recent successful boot
 
 function saveSnapshot() {
   if (!lastLoad) return;
   const { ds, extras } = lastLoad;
+
   const feeds = {};
   let live = 0;
   for (const [name, r] of Object.entries(ds.feeds)) {
@@ -254,13 +236,17 @@ function saveSnapshot() {
     feeds[name] = r.data;
     if (!r.fromSnapshot) live++;
   }
+
   const payload = {
     symbol: ds.symbol,
     capturedAt: new Date().toISOString().slice(0, 10),
-    note: `Captured by Maz Vantage. ${live} feed${live === 1 ? '' : 's'} live.`,
-    extras: { cohortStats: extras?.cohortStats || {}, benchSeries: extras?.benchSeries || null },
+    note: `Captured from Financial Modeling Prep on ${new Date().toISOString().slice(0, 10)} `
+      + `by Maz Vantage. ${live} feed${live === 1 ? '' : 's'} came back live; feeds absent here `
+      + 'were gated by the plan or returned nothing, and degrade to "not assessed" in the report.',
+    extras: { peerRatios: extras?.peerRatios || {}, benchmarks: extras?.benchmarks || {} },
     feeds,
   };
+
   const blob = new Blob([JSON.stringify(payload, null, 1)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const link = el('a', { href: url, download: `${ds.symbol}.json` });
@@ -271,64 +257,63 @@ function saveSnapshot() {
 }
 
 /* ==========================================================================
-   Settings
+   Settings dialog
    ========================================================================== */
 
 function openSettings() {
   const bm = loadBenchmarks();
   const dlg = el('dialog', {}, []);
+
   const keyInput = el('input', { type: 'password', value: getApiKey(), placeholder: 'FMP API key', autocomplete: 'off' });
-
-  const weightFields = FACTOR_META.map((f) => {
-    const k = 'w' + f.key.charAt(0).toUpperCase() + f.key.slice(1);
-    const inp = el('input', { type: 'number', step: '0.05', min: '0', max: '1', value: String(bm[k]) });
-    return { key: k, label: f.label, input: inp };
+  const fields = [
+    ['riskFreeRate', 'Risk-free / savings rate', 'e.g. 0.042 for 4.2%'],
+    ['marketEarningsGrowth', 'Market forecast earnings growth', ''],
+    ['marketRevenueGrowth', 'Market forecast revenue growth', ''],
+    ['highGrowth', 'High-growth threshold', ''],
+    ['roeBar', 'High ROE threshold', ''],
+    ['dividendNotable', 'Notable dividend yield', ''],
+    ['dividendTopTier', 'Top-tier dividend yield', ''],
+    ['netDebtToEquityCeiling', 'Net debt / equity ceiling', ''],
+  ];
+  const inputs = {};
+  const fieldNodes = fields.map(([k, label, hint]) => {
+    const inp = el('input', { type: 'number', step: '0.001', value: String(bm[k]) });
+    inputs[k] = inp;
+    return el('div', {}, [el('label', { text: label }), inp, hint ? el('p', { class: 'hint', text: hint }) : null]);
   });
-
-  const otherFields = [
-    ['dividendNotable', 'Notable dividend yield'],
-    ['dividendTopTier', 'Top-tier dividend yield'],
-    ['payoutCeiling', 'Payout ceiling'],
-    ['managementTenureBar', 'Management tenure bar (yrs)'],
-    ['boardTenureBar', 'Board tenure bar (yrs)'],
-  ].map(([k, label]) => ({ key: k, label, input: el('input', { type: 'number', step: '0.01', value: String(bm[k]) }) }));
-
-  const fieldGrid = (fields) => el('div', {
-    style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: '4px 16px' },
-  }, fields.map((f) => el('div', {}, [el('label', { text: f.label }), f.input])));
 
   dlg.append(
     el('h2', { text: 'Settings' }),
     el('label', { text: 'Financial Modeling Prep API key' }),
     keyInput,
-    el('p', { class: 'hint', html: 'Stored in this browser only and sent directly to financialmodelingprep.com. '
-      + 'Leave blank to render the bundled snapshot.' }),
-
-    el('h2', { text: 'Composite weights', style: { fontSize: '14px', marginTop: '24px' } }),
-    el('p', { class: 'hint', text: 'How much each factor contributes to the headline score. They are normalised, so they need not sum to 1.' }),
-    fieldGrid(weightFields),
-
-    el('h2', { text: 'Evidence thresholds', style: { fontSize: '14px', marginTop: '24px' } }),
-    el('p', { class: 'hint', text: 'Used only by the unscored Dividend and Management checks — every factor metric is graded against the peer cohort instead.' }),
-    fieldGrid(otherFields),
+    el('p', { class: 'hint', html: 'Stored in this browser only (<code>localStorage</code>) and sent directly to financialmodelingprep.com. '
+      + 'Leave blank to render the bundled snapshot instead of live data.' }),
+    el('h2', { class: 'mt3', text: 'Benchmarks', style: { fontSize: '14px', marginTop: '24px' } }),
+    el('p', { class: 'hint', text: 'Thresholds the 34 checks compare against. Enter decimals, not percentages.' }),
+    el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(190px,1fr))', gap: '4px 16px' } }, fieldNodes),
 
     el('h2', { text: 'Snapshot', style: { fontSize: '14px', marginTop: '24px' } }),
+    el('p', { class: 'hint', html: 'Save everything this report loaded as <code>'
+      + esc(lastLoad?.ds.symbol || 'SYMBOL') + '.json</code>. Drop it in <code>assets/data/</code> '
+      + 'and the ticker renders with no API key — useful for pinning a point in time, or for '
+      + 'sharing a report without sharing your key.' }),
     el('button', {
       class: 'btn mt1', text: `Save ${lastLoad?.ds.symbol || 'snapshot'}.json`,
       disabled: !lastLoad, onclick: () => saveSnapshot(),
     }),
 
     el('div', { class: 'row' }, [
-      el('button', { class: 'btn', text: 'Reset', onclick: () => {
-        localStorage.removeItem('mazvantage.benchmarks'); dlg.close(); boot(true);
+      el('button', { class: 'btn', text: 'Reset benchmarks', onclick: () => {
+        localStorage.removeItem('mazvantage.benchmarks');
+        dlg.close(); boot(true);
       } }),
       el('button', { class: 'btn', text: 'Cancel', onclick: () => dlg.close() }),
       el('button', { class: 'btn btn--primary', text: 'Save & reload', onclick: () => {
         setApiKey(keyInput.value);
         const patch = {};
-        for (const f of [...weightFields, ...otherFields]) {
-          const v = parseFloat(f.input.value);
-          if (Number.isFinite(v)) patch[f.key] = v;
+        for (const [k, inp] of Object.entries(inputs)) {
+          const v = parseFloat(inp.value);
+          if (Number.isFinite(v)) patch[k] = v;
         }
         saveBenchmarks(patch);
         dlg.close();
@@ -342,26 +327,34 @@ function openSettings() {
   dlg.showModal();
 }
 
-/* ---------- scroll spy ---------------------------------------------------- */
+/* ==========================================================================
+   Scroll spy
+   ========================================================================== */
 
 function wireScrollSpy(root) {
   const links = [...root.querySelectorAll('.rail__nav a')];
-  const targets = links.map((l) => ({ link: l, node: document.getElementById(l.dataset.anchor) }))
+  if (!links.length) return;
+  const targets = links
+    .map((l) => ({ link: l, node: document.getElementById(l.dataset.anchor) }))
     .filter((t) => t.node);
-  if (!targets.length) return;
+
   const io = new IntersectionObserver((entries) => {
     for (const e of entries) {
       if (!e.isIntersecting) continue;
       const hit = targets.find((t) => t.node === e.target);
-      if (hit) links.forEach((l) => l.classList.toggle('is-active', l === hit.link));
+      if (!hit) continue;
+      links.forEach((l) => l.classList.toggle('is-active', l === hit.link));
     }
   }, { rootMargin: '-88px 0px -70% 0px', threshold: 0 });
+
   targets.forEach((t) => io.observe(t.node));
 }
 
-/* ---------- loading / error ----------------------------------------------- */
+/* ==========================================================================
+   Loading / error states
+   ========================================================================== */
 
-function skeleton(symbol, stage = 'Loading') {
+function skeleton(symbol) {
   return el('div', { class: 'shell' }, [
     el('aside', { class: 'rail' }, [
       el('div', { class: 'sk', style: { width: '190px', height: '190px', borderRadius: '50%' } }),
@@ -370,12 +363,15 @@ function skeleton(symbol, stage = 'Loading') {
     ]),
     el('main', {}, [
       el('div', { class: 'sk sk--line', style: { width: '260px', height: '28px' } }),
-      el('div', { class: 'card' }, [el('div', { class: 'sk sk--block' })]),
+      el('div', { class: 'sk sk--line', style: { width: '40%' } }),
       el('div', { class: 'card' }, [
-        el('div', { class: 'sk sk--line' }),
+        el('div', { class: 'sk sk--block' }),
+      ]),
+      el('div', { class: 'card' }, [
+        el('div', { class: 'sk sk--line' }), el('div', { class: 'sk sk--line', style: { width: '80%' } }),
         el('div', { class: 'sk sk--block', style: { marginTop: '16px' } }),
       ]),
-      el('p', { class: 't-xs softer center', text: `${stage} ${symbol}…` }),
+      el('p', { class: 't-xs softer center', text: `Loading ${symbol}…` }),
     ]),
   ]);
 }
@@ -397,77 +393,54 @@ function errorScreen(symbol, message, extra) {
 }
 
 /* ==========================================================================
-   Cohort loading — passes two and three
-   ========================================================================== */
-
-async function loadCohort(ds, facts, onStage) {
-  const out = { cohortStats: {}, benchSeries: null, cohort: null };
-
-  // A snapshot can carry its own cohort so the offline report still grades.
-  if (ds.snapshotExtras?.cohortStats) {
-    Object.assign(out.cohortStats, ds.snapshotExtras.cohortStats);
-    out.benchSeries = ds.snapshotExtras.benchSeries ?? null;
-  }
-  if (!hasApiKey()) return out;
-
-  /* ---- pass 2: sector / industry screens ---- */
-  onStage?.('Screening the sector for');
-  const floors = screenFloors(facts.marketCap);
-  const asOfDate = (ds.get('prices') || []).at(0)?.date
-    || new Date(Date.now() - 864e5).toISOString().slice(0, 10);
-  const ctx = {
-    industry: facts.industry, sector: facts.sector,
-    capFloor: floors.capFloor, capFloorWide: floors.capFloorWide,
-    asOfDate,
-  };
-
-  const cohortNames = ['screenIndustry', 'screenSector', 'industryPe', 'industryPeHist', 'sectorPerf'];
-  const results = await mapLimited(cohortNames, (n) => fetchFor(n, facts.symbol, ctx), 5);
-  cohortNames.forEach((n, i) => { ds.feeds[n] = results[i]; });
-
-  /* ---- pass 3: ratios for every cohort member ---- */
-  const cohort = buildCohort(ds, facts);
-  out.cohort = cohort;
-  const symbols = cohort.members.map((m) => m.symbol);
-
-  if (symbols.length) {
-    onStage?.(`Comparing ${symbols.length} peers of`);
-    const [ratios, metrics, growth] = await Promise.all([
-      mapLimited(symbols, (s) => fetchFor('ratiosTtm', s), 6),
-      mapLimited(symbols, (s) => fetchFor('metricsTtm', s), 6),
-      mapLimited(symbols, (s) => fetchFor('growth', s), 6),
-    ]);
-    const pick = (list) => Object.fromEntries(symbols.map((s, i) =>
-      [s, list[i]?.status === 'ok' ? (Array.isArray(list[i].data) ? list[i].data[0] : list[i].data) : null]));
-
-    const ratioMap = pick(ratios), metricMap = pick(metrics), growthMap = pick(growth);
-    // key-metrics and financial-growth both fold into one flat record per peer
-    const extraMap = Object.fromEntries(symbols.map((s) =>
-      [s, { ...(metricMap[s] || {}), ...(growthMap[s] || {}) }]));
-
-    out.cohortStats = mergeCohortStats(cohort.members, ratioMap, extraMap);
-  }
-
-  /* ---- benchmark series for momentum ---- */
-  const etf = SECTOR_ETF[facts.sector] || MARKET_ETF;
-  const bench = await fetchFor('prices', etf);
-  if (bench?.status === 'ok') out.benchSeries = bench.data;
-
-  return out;
-}
-
-/* ==========================================================================
    Boot
    ========================================================================== */
 
-const symbolFromUrl = () =>
-  (new URLSearchParams(location.search).get('symbol') || DEFAULT_SYMBOL).toUpperCase();
+function symbolFromUrl() {
+  return (new URLSearchParams(location.search).get('symbol') || DEFAULT_SYMBOL).toUpperCase();
+}
 
 function go(symbol) {
   const url = new URL(location.href);
   url.searchParams.set('symbol', symbol);
   history.pushState({ symbol }, '', url);
   boot();
+}
+
+/** Peer P/E ratios and benchmark price series — fetched after the main pass. */
+async function loadExtras(ds, facts) {
+  const out = { peerRatios: {}, benchmarks: {} };
+
+  // A snapshot can ship its own peer ratios and benchmark series so the
+  // offline report is complete rather than half-empty.
+  if (ds.snapshotExtras) {
+    Object.assign(out.peerRatios, ds.snapshotExtras.peerRatios || {});
+    Object.assign(out.benchmarks, ds.snapshotExtras.benchmarks || {});
+  }
+
+  if (!hasApiKey()) {
+    out.benchmarks.note = out.benchmarks.note
+      || 'Sector and market comparisons need a live FMP connection.';
+    return out;
+  }
+
+  const peers = (ds.get('peers') || []).slice(0, 8).map((p) => p.symbol).filter(Boolean);
+  if (peers.length) {
+    const rs = await mapLimited(peers, (sym) => fetchFor('ratiosTtm', sym), 4);
+    peers.forEach((sym, i) => { if (rs[i]?.status === 'ok' && rs[i].data) out.peerRatios[sym] = rs[i].data; });
+  }
+
+  const etf = SECTOR_ETF[facts.sector];
+  const wanted = [MARKET_ETF, etf].filter(Boolean);
+  const series = await mapLimited(wanted, (sym) => fetchFor('prices', sym), 2);
+  if (series[0]?.status === 'ok') out.benchmarks.market = series[0].data;
+  if (etf && series[1]?.status === 'ok') {
+    out.benchmarks.industry = series[1].data;
+    out.benchmarks.note = `Sector benchmark: ${etf}. Market benchmark: ${MARKET_ETF}.`;
+  } else {
+    out.benchmarks.note = `Market benchmark: ${MARKET_ETF}.`;
+  }
+  return out;
 }
 
 let booting = false;
@@ -477,10 +450,10 @@ export async function boot(force = false) {
   booting = true;
 
   const symbol = symbolFromUrl();
-  document.title = `${symbol} — Maz Vantage`;
+  document.title = `${symbol} — Maz Vantage Stock Analysis`;
+
   const app = document.getElementById('app');
-  const setStage = (stage) => app.replaceChildren(skeleton(symbol, stage));
-  setStage('Loading');
+  app.replaceChildren(skeleton(symbol));
 
   try {
     if (force) clearCache();
@@ -489,11 +462,12 @@ export async function boot(force = false) {
     if (ds.source === 'none') {
       app.replaceChildren(errorScreen(symbol,
         'No FMP API key is configured and no bundled snapshot exists for this ticker.',
-        el('p', { class: 't-xs softer', html: 'Add a key in Settings, or open <code>?symbol=AAPL</code>.' })));
+        el('p', { class: 't-xs softer', html: 'Add a key in Settings, or open <code>?symbol=AAPL</code> to see the bundled example.' })));
       return;
     }
     if (ds.source === 'error') {
-      const msgs = Object.entries(ds.feeds).filter(([, r]) => r.status === 'error')
+      const msgs = Object.entries(ds.feeds)
+        .filter(([, r]) => r.status === 'error')
         .slice(0, 3).map(([n, r]) => `${n}: ${r.message}`);
       app.replaceChildren(errorScreen(symbol,
         'Every FMP request failed. The ticker may not exist, or the key may be invalid.',
@@ -501,21 +475,22 @@ export async function boot(force = false) {
       return;
     }
 
-    // Pass 1 gives us the sector; passes 2 and 3 build the cohort around it.
-    const first = analyse(ds);
-    const extras = await loadCohort(ds, first.facts, (stage) => setStage(stage));
-    const a = analyse(ds, { cohortStats: extras.cohortStats, benchSeries: extras.benchSeries });
+    // First pass so we know the sector, then fetch the extras it implies.
+    let a = analyse(ds);
+    const extras = await loadExtras(ds, a.facts);
+    a = analyse(ds, { peerRatios: extras.peerRatios });
     lastLoad = { ds, extras };
 
     const main = el('main', {}, [
       buildHeader(a),
-      renderScorecard(a, snowflake(flakeScores(a), { size: 260 })),
       renderOverview(a),
-      ...FACTOR_META.map((m) => renderFactor(a, m.key)),
-      renderCohort(a),
-      renderHistory(a),
+      renderCompetitors(a),
       renderPriceHistory(a, extras),
       renderAbout(a),
+      renderValuation(a),
+      renderFuture(a),
+      renderPast(a),
+      renderHealth(a),
       renderDividend(a),
       renderManagement(a),
       renderOwnership(a),
@@ -529,18 +504,19 @@ export async function boot(force = false) {
     wireScrollSpy(shell);
 
     if (ds.source === 'snapshot') {
-      shell.querySelector('main').prepend(el('div', {
+      const banner = el('div', {
         class: `notice ${ds.liveError ? 'notice--error' : ''}`.trim(),
         style: { marginBottom: '16px' },
       }, [
         el('div', { html: ds.liveError
-          ? `Live FMP requests failed — <b>${esc(ds.liveError)}</b> — so the <b>bundled snapshot</b> is shown.`
-          : 'No API key configured — showing the <b>bundled snapshot</b>. Grades still compute if the snapshot '
-            + 'carries a cohort; otherwise metrics show values without a peer rank.' }),
-      ]));
+          ? `Live FMP requests all failed — <b>${esc(ds.liveError)}</b> — so the <b>bundled snapshot</b> is shown instead. `
+            + 'Check the key in Settings.'
+          : 'No API key configured — showing the <b>bundled snapshot</b>. Open Settings to connect your FMP key for live data on any ticker.' }),
+      ]);
+      shell.querySelector('main').prepend(banner);
     }
 
-    window.scrollTo({ top: 0 });
+    window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
   } catch (err) {
     console.error(err);
     app.replaceChildren(errorScreen(symbol, `Unexpected error: ${err.message}`,
@@ -549,6 +525,8 @@ export async function boot(force = false) {
     booting = false;
   }
 }
+
+/* ---------- start --------------------------------------------------------- */
 
 applyTheme(currentTheme());
 document.body.prepend(buildTopbar(go));

@@ -82,29 +82,9 @@ export const FEEDS = {
                       params: (s, c) => ({ symbol: s, year: c.lastQuarter.year, quarter: c.lastQuarter.quarter, limit: 20 }) },
   news:             { path: 'news/stock',                     params: (s) => ({ symbols: s, limit: 12 }) },
   earnings:         { path: 'earnings',                       params: (s) => ({ symbol: s, limit: 8 }) },
-  gradesHist:       { path: 'grades-historical',              params: (s) => ({ symbol: s, limit: 12 }) },
-
-  /* ---- cohort & benchmark feeds -------------------------------------------
-     These are keyed on the company's sector / industry rather than its ticker,
-     so they are fetched once the profile is known (second pass).
-     ------------------------------------------------------------------------ */
-  industryPe:       { path: 'industry-pe-snapshot',           params: (s, c) => ({ date: c.asOfDate }) },
-  industryPeHist:   { path: 'historical-industry-pe',         params: (s, c) => ({ industry: c.industry, from: c.from, to: c.to }) },
-  sectorPerf:       { path: 'historical-sector-performance',  params: (s, c) => ({ sector: c.sector, from: c.from, to: c.to }) },
-  screenIndustry:   { path: 'company-screener',
-                      params: (s, c) => ({ industry: c.industry, marketCapMoreThan: c.capFloor,
-                                           isActivelyTrading: true, isEtf: false, isFund: false, limit: 60 }) },
-  screenSector:     { path: 'company-screener',
-                      params: (s, c) => ({ sector: c.sector, marketCapMoreThan: c.capFloorWide,
-                                           isActivelyTrading: true, isEtf: false, isFund: false, limit: 60 }) },
 };
 
 function first(x) { return Array.isArray(x) ? (x[0] ?? null) : x; }
-
-/** Fetched in a second pass, once the profile tells us the sector/industry. */
-export const COHORT_FEEDS = new Set([
-  'industryPe', 'industryPeHist', 'sectorPerf', 'screenIndustry', 'screenSector',
-]);
 
 /* ---------- low-level fetch ----------------------------------------------- */
 
@@ -209,9 +189,7 @@ export async function loadDataset(symbol, { onProgress } = {}) {
     lastQuarter: lastCompleteQuarter(to),
   };
 
-  // Cohort / benchmark feeds depend on the company's sector, which is only
-  // known once `profile` lands, so they are fetched separately afterwards.
-  const names = Object.keys(FEEDS).filter((n) => !COHORT_FEEDS.has(n));
+  const names = Object.keys(FEEDS);
   const feeds = {};
 
   if (hasApiKey()) {

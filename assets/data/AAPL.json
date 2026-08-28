@@ -2,119 +2,43 @@
  "symbol": "AAPL",
  "capturedAt": "2026-08-24",
  "extras": {
-  "cohortStats": {
+  "peerRatios": {
    "MSFT": {
-    "symbol": "MSFT",
-    "name": "Microsoft Corporation",
-    "marketCap": 3588322782000,
-    "priceToEarningsRatioTTM": 26.846667,
-    "priceToSalesRatioTTM": 10.813445,
-    "priceToFreeCashFlowRatioTTM": 53.56745,
-    "priceToEarningsGrowthRatioTTM": 0.85274,
-    "grossProfitMarginTTM": 0.679441,
-    "operatingProfitMarginTTM": 0.467808,
-    "netProfitMarginTTM": 0.403054,
-    "currentRatioTTM": 1.230327,
-    "debtToEquityRatioTTM": 0.291167,
-    "interestCoverageRatioTTM": 50.880695,
-    "freeCashFlowPerShareTTM": 9.016961,
-    "revenuePerShareTTM": 44.668058,
-    "operatingCashFlowCoverageRatioTTM": 1.420211
+    "priceToEarningsRatioTTM": 26.846666666666664,
+    "priceToBookRatioTTM": 8.115043977332064,
+    "priceToSalesRatioTTM": 10.813445020024771
    },
    "GOOGL": {
-    "symbol": "GOOGL",
-    "name": "Alphabet Inc.",
-    "marketCap": 4173050013639,
-    "priceToEarningsRatioTTM": 17.121152,
-    "priceToSalesRatioTTM": 9.359405,
-    "priceToFreeCashFlowRatioTTM": 78.333302,
-    "priceToEarningsGrowthRatioTTM": 0.152259,
-    "grossProfitMarginTTM": 0.608964,
-    "operatingProfitMarginTTM": 0.331103,
-    "netProfitMarginTTM": 0.547708,
-    "currentRatioTTM": 2.723981,
-    "debtToEquityRatioTTM": 0.176049,
-    "interestCoverageRatioTTM": 65.554174,
-    "freeCashFlowPerShareTTM": 4.384248,
-    "revenuePerShareTTM": 36.693852,
-    "operatingCashFlowCoverageRatioTTM": 1.646697
+    "priceToEarningsRatioTTM": 17.121151936444885,
+    "priceToBookRatioTTM": 6.541824600299775,
+    "priceToSalesRatioTTM": 9.3594054138095
    },
    "META": {
-    "symbol": "META",
-    "name": "Meta Platforms, Inc.",
-    "marketCap": 1400862864843,
-    "priceToEarningsRatioTTM": 20.434783,
-    "priceToSalesRatioTTM": 6.13746,
-    "priceToFreeCashFlowRatioTTM": 34.187399,
-    "priceToEarningsGrowthRatioTTM": -4.18913,
-    "grossProfitMarginTTM": 0.817479,
-    "operatingProfitMarginTTM": 0.380845,
-    "netProfitMarginTTM": 0.298351,
-    "currentRatioTTM": 2.225563,
-    "debtToEquityRatioTTM": 0.429973,
-    "interestCoverageRatioTTM": 38.125877,
-    "freeCashFlowPerShareTTM": 16.113252,
-    "revenuePerShareTTM": 89.755407,
-    "operatingCashFlowCoverageRatioTTM": 1.160108
+    "priceToEarningsRatioTTM": 20.434782608695652,
+    "priceToBookRatioTTM": 5.353305055872231,
+    "priceToSalesRatioTTM": 6.13745953893572
    },
    "NVDA": {
-    "symbol": "NVDA",
-    "name": "NVIDIA Corporation",
-    "marketCap": 5200733120000,
-    "priceToEarningsRatioTTM": 32.731707,
-    "priceToSalesRatioTTM": 20.516441,
-    "priceToFreeCashFlowRatioTTM": 43.675746,
-    "priceToEarningsGrowthRatioTTM": 0.300519,
-    "grossProfitMarginTTM": 0.741454,
-    "operatingProfitMarginTTM": 0.6402,
-    "netProfitMarginTTM": 0.629659,
-    "currentRatioTTM": 3.440776,
-    "debtToEquityRatioTTM": 0.065553,
-    "interestCoverageRatioTTM": 544.580537,
-    "freeCashFlowPerShareTTM": 4.903072,
-    "revenuePerShareTTM": 10.437742,
-    "operatingCashFlowCoverageRatioTTM": 9.805525
+    "priceToEarningsRatioTTM": 32.73170731707317,
+    "priceToBookRatioTTM": 26.677153585643104,
+    "priceToSalesRatioTTM": 20.516440899282422
    },
    "TSM": {
-    "symbol": "TSM",
-    "name": "Taiwan Semiconductor Manufacturing Company Limited",
-    "marketCap": 2172875796000,
-    "priceToEarningsRatioTTM": 27.529848,
-    "priceToSalesRatioTTM": 13.869961,
-    "priceToFreeCashFlowRatioTTM": 55.065882,
-    "priceToEarningsGrowthRatioTTM": 0.517161,
-    "grossProfitMarginTTM": 0.642302,
-    "operatingProfitMarginTTM": 0.560382,
-    "netProfitMarginTTM": 0.503793,
-    "currentRatioTTM": 2.457635,
-    "debtToEquityRatioTTM": 0.152731,
-    "interestCoverageRatioTTM": 285.400222,
-    "freeCashFlowPerShareTTM": 215.67,
-    "revenuePerShareTTM": 856.25,
-    "operatingCashFlowCoverageRatioTTM": 2.729399
+    "priceToEarningsRatioTTM": 27.529848151153356,
+    "priceToBookRatioTTM": 9.573730944087526,
+    "priceToSalesRatioTTM": 13.869960806144904
    },
    "SONY": {
-    "symbol": "SONY",
-    "name": "Sony Group Corporation",
-    "marketCap": 140469380596,
-    "priceToEarningsRatioTTM": -104.761905,
-    "priceToSalesRatioTTM": 1.780827,
-    "priceToFreeCashFlowRatioTTM": 14.418008,
-    "priceToEarningsGrowthRatioTTM": 0.93428,
-    "grossProfitMarginTTM": 0.318163,
-    "operatingProfitMarginTTM": 0.133972,
-    "netProfitMarginTTM": -0.017456,
-    "currentRatioTTM": 1.245205,
-    "debtToEquityRatioTTM": 0.223508,
-    "interestCoverageRatioTTM": 18.974977,
-    "freeCashFlowPerShareTTM": 266.149035,
-    "revenuePerShareTTM": 2154.807379,
-    "operatingCashFlowCoverageRatioTTM": 1.092466
+    "priceToEarningsRatioTTM": -104.76190476190474,
+    "priceToBookRatioTTM": 2.7103446434146683,
+    "priceToSalesRatioTTM": 1.7808268647383194
    }
   },
-  "note": "Six named peers with trailing ratios, so the offline report still grades relatively. A live run screens the whole industry or sector instead and adds return-on-capital, EV multiples and growth to the comparison."
+  "benchmarks": {
+   "note": "Sector and market return comparisons need a live FMP connection."
+  }
  },
- "note": "Captured from Financial Modeling Prep on 2026-08-24 through the FMP-moi connector (Ultimate tier). Statement, dividend and ownership rows are trimmed to the fields the model reads; use the app's \"Save snapshot\" action to capture full payloads.",
+ "note": "Captured from Financial Modeling Prep on 2026-08-24 through the FMP-moi connector (Ultimate tier), so every feed the report uses is present. Statement, dividend and ownership rows are trimmed to the fields the analysis model reads; use the app's \"Save snapshot\" action to capture full payloads for another ticker.",
  "feeds": {
   "quote": {
    "symbol": "AAPL",
