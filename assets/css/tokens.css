@@ -1,0 +1,161 @@
+/* ==========================================================================
+   Maz Vantage — design tokens
+   Dark-first palette. Every token is defined on :root; the light theme
+   only overrides the semantic layer, never the primitives.
+   ========================================================================== */
+
+:root {
+  /* ---- primitives ------------------------------------------------------ */
+  --p-black:      hsl(0 0% 0%);
+  --p-white:      hsl(0 0% 100%);
+
+  --p-brown-120:  hsl(0 0% 19%);
+  --p-brown-130:  hsl(0 0% 16%);
+  --p-brown-140:  hsl(0 0% 13%);
+  --p-brown-150:  hsl(0 0% 10%);
+
+  --p-cream-90:   hsl(48 24% 96%);
+  --p-cream-100:  hsl(50 25% 91%);
+  --p-cream-110:  hsl(50 26% 85%);
+
+  --p-gold-20:    hsl(40 91% 91%);
+  --p-gold-60:    hsl(40 100% 79%);
+  --p-gold-100:   hsl(40 97% 70%);
+  --p-gold-110:   hsl(40 99% 58%);
+  --p-gold-130:   hsl(40 66% 35%);
+
+  --p-toffee-100: hsl(36 51% 41%);
+  --p-toffee-150: hsl(33 16% 13%);
+
+  --p-green-100:  hsl(151 63% 48%);
+  --p-green-110:  hsl(151 81% 35%);
+  --p-red-100:    hsl(0 77% 58%);
+  --p-orange-100: hsl(25 100% 54%);
+  --p-yellow-100: hsl(43 86% 52%);
+  --p-blue-100:   hsl(204 75% 51%);
+  --p-purple-100: hsl(273 81% 61%);
+
+  /* raw triplets, for alpha compositing */
+  --t-white:      0 0% 100%;
+  --t-brown-140:  0 0% 13%;
+  --t-gold-100:   40 97% 70%;
+  --t-green-100:  151 63% 48%;
+  --t-red-100:    0 77% 58%;
+  --t-yellow-100: 43 86% 52%;
+  --t-orange-100: 25 100% 54%;
+  --t-blue-100:   204 75% 51%;
+  --t-purple-100: 273 81% 61%;
+  --t-toffee-150: 33 16% 13%;
+
+  /* ---- semantic: surfaces --------------------------------------------- */
+  --surface:      var(--p-brown-150);
+  --surface-1:    var(--p-brown-140);
+  --surface-2:    var(--p-brown-130);
+  --surface-3:    var(--p-brown-120);
+
+  /* ---- semantic: text -------------------------------------------------- */
+  --text-solid:   var(--p-white);
+  --text-strong:  hsla(var(--t-white) / 90%);
+  --text-soft:    hsla(var(--t-white) / 70%);
+  --text-softer:  hsla(var(--t-white) / 50%);
+  --text-subtle:  hsla(var(--t-white) / 30%);
+
+  /* ---- semantic: borders ----------------------------------------------- */
+  --border-subtle: hsla(var(--t-white) / 3%);
+  --border-soft:   hsla(var(--t-white) / 8%);
+  --border-strong: hsla(var(--t-white) / 14%);
+
+  /* ---- semantic: brand ------------------------------------------------- */
+  --brand-01:        var(--p-gold-100);
+  --brand-01-soft:   hsl(var(--t-gold-100) / 20%);
+  --brand-01-softer: hsl(var(--t-gold-100) / 10%);
+  --brand-01-subtle: hsl(var(--t-gold-100) / 5%);
+  --brand-02:        var(--p-toffee-100);
+  --brand-03:        var(--p-toffee-150);
+
+  /* ---- semantic: status ------------------------------------------------ */
+  --good:          var(--p-green-100);
+  --good-strong:   hsl(var(--t-green-100) / 30%);
+  --good-subtle:   hsl(var(--t-green-100) / 12%);
+  --bad:           var(--p-red-100);
+  --bad-strong:    hsl(var(--t-red-100) / 30%);
+  --bad-subtle:    hsl(var(--t-red-100) / 12%);
+  --neutral:       var(--p-yellow-100);
+  --neutral-subtle:hsl(var(--t-yellow-100) / 12%);
+  --warning:       var(--p-orange-100);
+  --warning-subtle:hsl(var(--t-orange-100) / 12%);
+
+  /* ---- semantic: charts ------------------------------------------------ */
+  --chart-01: var(--p-blue-100);
+  --chart-02: hsl(171 71% 67%);
+  --chart-03: hsl(327 46% 51%);
+  --chart-04: hsl(36 72% 64%);
+  --chart-05: var(--p-purple-100);
+  --chart-06: hsl(350 74% 64%);
+  --chart-grid: hsla(var(--t-white) / 8%);
+  --chart-axis: hsla(var(--t-white) / 35%);
+
+  --radar-ring:  hsl(0 0% 22%);
+  --radar-fill:  rgba(206, 149, 40, 0.8);
+  --radar-line:  rgba(206, 149, 40, 1);
+  --radar-label: hsl(0 0% 100%);
+
+  /* ---- type ------------------------------------------------------------ */
+  --font-sans: Inter, -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI",
+               "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+  --text-micro: 11px;
+  --text-tiny:  12px;
+  --text-xs:    13px;
+  --text-sm:    14px;
+  --text-base:  16px;
+  --text-lg:    18px;
+  --text-xl:    21px;
+  --text-mega:  24px;
+  --text-hero:  28px;
+  --text-mass:  36px;
+
+  /* ---- space / shape --------------------------------------------------- */
+  --x0_5: 4px;  --x1: 8px;   --x1_5: 12px; --x2: 16px;
+  --x3:   24px; --x4: 32px;  --x5: 40px;   --x6: 48px;
+  --x7:   56px; --x8: 64px;
+
+  --r-sm: 6px;  --r-1: 10px; --r-2: 14px;  --r-pill: 999px;
+
+  --shell-max: 1200px;
+  --rail-w: 216px;
+  --topbar-h: 64px;
+
+  --z-nav: 400;
+  --z-sticky: 300;
+  --z-popover: 800;
+  --z-modal: 900;
+}
+
+/* -------- light theme: semantic overrides only ---------------------------- */
+:root[data-theme="light"] {
+  --surface:      var(--p-cream-100);
+  --surface-1:    var(--p-cream-90);
+  --surface-2:    var(--p-white);
+  --surface-3:    var(--p-white);
+
+  --text-solid:   var(--p-brown-140);
+  --text-strong:  hsla(var(--t-brown-140) / 91%);
+  --text-soft:    hsla(var(--t-brown-140) / 83%);
+  --text-softer:  hsla(var(--t-brown-140) / 74%);
+  --text-subtle:  hsla(var(--t-brown-140) / 55%);
+
+  --border-subtle: hsla(var(--t-brown-140) / 5%);
+  --border-soft:   hsla(var(--t-brown-140) / 10%);
+  --border-strong: hsla(var(--t-brown-140) / 20%);
+
+  --brand-01:     var(--p-toffee-100);
+  --good:         var(--p-green-110);
+  --chart-02:     hsl(171 100% 35%);
+
+  --chart-grid:   hsla(var(--t-brown-140) / 10%);
+  --chart-axis:   hsla(var(--t-brown-140) / 45%);
+  --radar-ring:   hsl(50 20% 82%);
+  --radar-label:  var(--p-brown-140);
+}

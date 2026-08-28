@@ -1,0 +1,3077 @@
+{
+ "symbol": "AAPL",
+ "capturedAt": "2026-08-24",
+ "extras": {
+  "cohortStats": {
+   "MSFT": {
+    "symbol": "MSFT",
+    "name": "Microsoft Corporation",
+    "marketCap": 3588322782000,
+    "priceToEarningsRatioTTM": 26.846667,
+    "priceToSalesRatioTTM": 10.813445,
+    "priceToFreeCashFlowRatioTTM": 53.56745,
+    "priceToEarningsGrowthRatioTTM": 0.85274,
+    "grossProfitMarginTTM": 0.679441,
+    "operatingProfitMarginTTM": 0.467808,
+    "netProfitMarginTTM": 0.403054,
+    "currentRatioTTM": 1.230327,
+    "debtToEquityRatioTTM": 0.291167,
+    "interestCoverageRatioTTM": 50.880695,
+    "freeCashFlowPerShareTTM": 9.016961,
+    "revenuePerShareTTM": 44.668058,
+    "operatingCashFlowCoverageRatioTTM": 1.420211
+   },
+   "GOOGL": {
+    "symbol": "GOOGL",
+    "name": "Alphabet Inc.",
+    "marketCap": 4173050013639,
+    "priceToEarningsRatioTTM": 17.121152,
+    "priceToSalesRatioTTM": 9.359405,
+    "priceToFreeCashFlowRatioTTM": 78.333302,
+    "priceToEarningsGrowthRatioTTM": 0.152259,
+    "grossProfitMarginTTM": 0.608964,
+    "operatingProfitMarginTTM": 0.331103,
+    "netProfitMarginTTM": 0.547708,
+    "currentRatioTTM": 2.723981,
+    "debtToEquityRatioTTM": 0.176049,
+    "interestCoverageRatioTTM": 65.554174,
+    "freeCashFlowPerShareTTM": 4.384248,
+    "revenuePerShareTTM": 36.693852,
+    "operatingCashFlowCoverageRatioTTM": 1.646697
+   },
+   "META": {
+    "symbol": "META",
+    "name": "Meta Platforms, Inc.",
+    "marketCap": 1400862864843,
+    "priceToEarningsRatioTTM": 20.434783,
+    "priceToSalesRatioTTM": 6.13746,
+    "priceToFreeCashFlowRatioTTM": 34.187399,
+    "priceToEarningsGrowthRatioTTM": -4.18913,
+    "grossProfitMarginTTM": 0.817479,
+    "operatingProfitMarginTTM": 0.380845,
+    "netProfitMarginTTM": 0.298351,
+    "currentRatioTTM": 2.225563,
+    "debtToEquityRatioTTM": 0.429973,
+    "interestCoverageRatioTTM": 38.125877,
+    "freeCashFlowPerShareTTM": 16.113252,
+    "revenuePerShareTTM": 89.755407,
+    "operatingCashFlowCoverageRatioTTM": 1.160108
+   },
+   "NVDA": {
+    "symbol": "NVDA",
+    "name": "NVIDIA Corporation",
+    "marketCap": 5200733120000,
+    "priceToEarningsRatioTTM": 32.731707,
+    "priceToSalesRatioTTM": 20.516441,
+    "priceToFreeCashFlowRatioTTM": 43.675746,
+    "priceToEarningsGrowthRatioTTM": 0.300519,
+    "grossProfitMarginTTM": 0.741454,
+    "operatingProfitMarginTTM": 0.6402,
+    "netProfitMarginTTM": 0.629659,
+    "currentRatioTTM": 3.440776,
+    "debtToEquityRatioTTM": 0.065553,
+    "interestCoverageRatioTTM": 544.580537,
+    "freeCashFlowPerShareTTM": 4.903072,
+    "revenuePerShareTTM": 10.437742,
+    "operatingCashFlowCoverageRatioTTM": 9.805525
+   },
+   "TSM": {
+    "symbol": "TSM",
+    "name": "Taiwan Semiconductor Manufacturing Company Limited",
+    "marketCap": 2172875796000,
+    "priceToEarningsRatioTTM": 27.529848,
+    "priceToSalesRatioTTM": 13.869961,
+    "priceToFreeCashFlowRatioTTM": 55.065882,
+    "priceToEarningsGrowthRatioTTM": 0.517161,
+    "grossProfitMarginTTM": 0.642302,
+    "operatingProfitMarginTTM": 0.560382,
+    "netProfitMarginTTM": 0.503793,
+    "currentRatioTTM": 2.457635,
+    "debtToEquityRatioTTM": 0.152731,
+    "interestCoverageRatioTTM": 285.400222,
+    "freeCashFlowPerShareTTM": 215.67,
+    "revenuePerShareTTM": 856.25,
+    "operatingCashFlowCoverageRatioTTM": 2.729399
+   },
+   "SONY": {
+    "symbol": "SONY",
+    "name": "Sony Group Corporation",
+    "marketCap": 140469380596,
+    "priceToEarningsRatioTTM": -104.761905,
+    "priceToSalesRatioTTM": 1.780827,
+    "priceToFreeCashFlowRatioTTM": 14.418008,
+    "priceToEarningsGrowthRatioTTM": 0.93428,
+    "grossProfitMarginTTM": 0.318163,
+    "operatingProfitMarginTTM": 0.133972,
+    "netProfitMarginTTM": -0.017456,
+    "currentRatioTTM": 1.245205,
+    "debtToEquityRatioTTM": 0.223508,
+    "interestCoverageRatioTTM": 18.974977,
+    "freeCashFlowPerShareTTM": 266.149035,
+    "revenuePerShareTTM": 2154.807379,
+    "operatingCashFlowCoverageRatioTTM": 1.092466
+   }
+  },
+  "note": "Six named peers with trailing ratios, so the offline report still grades relatively. A live run screens the whole industry or sector instead and adds return-on-capital, EV multiples and growth to the comparison."
+ },
+ "note": "Captured from Financial Modeling Prep on 2026-08-24 through the FMP-moi connector (Ultimate tier). Statement, dividend and ownership rows are trimmed to the fields the model reads; use the app's \"Save snapshot\" action to capture full payloads.",
+ "feeds": {
+  "quote": {
+   "symbol": "AAPL",
+   "name": "Apple Inc.",
+   "price": 309.35,
+   "changePercentage": -0.62641,
+   "change": -1.95,
+   "volume": 46876815,
+   "dayLow": 307.01,
+   "dayHigh": 312.38,
+   "yearHigh": 344.57,
+   "yearLow": 224.69,
+   "marketCap": 4543533578600,
+   "priceAvg50": 310.208,
+   "priceAvg200": 281.50156,
+   "exchange": "NASDAQ",
+   "open": 312.05,
+   "previousClose": 311.3,
+   "timestamp": 1787342401
+  },
+  "profile": {
+   "symbol": "AAPL",
+   "price": 309.35,
+   "marketCap": 4543533578600,
+   "beta": 1.086,
+   "lastDividend": 1.05,
+   "range": "224.69-344.57",
+   "change": -1.95,
+   "changePercentage": -0.62641,
+   "volume": 46876815,
+   "averageVolume": 53742664,
+   "companyName": "Apple Inc.",
+   "currency": "USD",
+   "cik": "0000320193",
+   "isin": "US0378331005",
+   "cusip": "037833100",
+   "exchangeFullName": "NASDAQ Global Select",
+   "exchange": "NASDAQ",
+   "industry": "Consumer Electronics",
+   "website": "https://www.apple.com",
+   "description": "Apple Inc. is a global technology corporation that specializes in the conceptualization, production, and sale of a diverse suite of electronic devices. Its comprehensive hardware lineup features the well-known iPhone smartphones, Mac personal computers, and versatile iPad tablets. The company also supplies a range of wearables, smart home products, and accessories, including AirPods, Apple TV, Apple Watch, items from the Beats brand, and HomePod speakers. Beyond its device offerings, Apple delivers essential support services like AppleCare and robust cloud solutions. It oversees key digital platforms, prominently the App Store, which acts as a central hub for customers to discover and download countless applications and digital content, from e-books and music to videos, games, and podcasts. The company also generates revenue via advertising, leveraging both its proprietary ad platforms and third-party licensing deals. Apple's ecosystem is further bolstered by a wide array of subscription-based services: Apple Arcade for gaming, Apple Fitness+ for personalized wellness, Apple Music for curated audio experiences and on-demand radio, Apple News+ for access to news and magazines, and Apple TV+ for exclusive original video programming. Its financial services portfolio includes the co-branded Apple Card and the mobile payment system, Apple Pay. Additionally, Apple strategically licenses its intellectual property. The company serves a broad clientele that spans individual consumers, small and medium-sized enterprises, as well as institutional clients in the education, corporate, and governmental sectors. Products are distributed through a multi-channel strategy, utilizing Apple's own physical retail locations and online storefronts, a dedicated direct sales team, and collaborations with external partners such as mobile network providers, wholesalers, general retailers, and authorized resellers. The App Store additionally functions as the primary conduit for third-party applications designed for its devices. Founded in 1976, Apple Inc. is headquartered in Cupertino, California.",
+   "ceo": "Timothy D. Cook",
+   "sector": "Technology",
+   "country": "US",
+   "fullTimeEmployees": "166000",
+   "phone": "(408) 996-1010",
+   "address": "One Apple Park Way",
+   "city": "Cupertino",
+   "state": "CA",
+   "zip": "95014",
+   "image": "https://images.financialmodelingprep.com/symbol/AAPL.png",
+   "ipoDate": "1980-12-12",
+   "defaultImage": false,
+   "isEtf": false,
+   "isActivelyTrading": true,
+   "isAdr": false,
+   "isFund": false
+  },
+  "ratiosTtm": {
+   "symbol": "AAPL",
+   "grossProfitMarginTTM": 0.4865291555900202,
+   "ebitMarginTTM": 0.3327471011496863,
+   "ebitdaMarginTTM": 0.36092052019716253,
+   "operatingProfitMarginTTM": 0.3317295848747812,
+   "pretaxProfitMarginTTM": 0.33397240495862457,
+   "netProfitMarginTTM": 0.27618604910212224,
+   "receivablesTurnoverTTM": 7.924745785730049,
+   "payablesTurnoverTTM": 3.714839209608679,
+   "inventoryTurnoverTTM": 21.610169491525422,
+   "fixedAssetTurnoverTTM": 9.076685267640139,
+   "assetTurnoverTTM": 1.2180130770796262,
+   "currentRatioTTM": 1.0032948046555858,
+   "quickRatioTTM": 0.9290143712414449,
+   "solvencyRatioTTM": 0.5150754680031623,
+   "cashRatioTTM": 0.2648165758139909,
+   "priceToEarningsRatioTTM": 35.31392694063928,
+   "priceToEarningsGrowthRatioTTM": 1.0790366565195324,
+   "priceToBookRatioTTM": 42.27240992606028,
+   "priceToSalesRatioTTM": 9.732882866953855,
+   "priceToFreeCashFlowRatioTTM": 33.24139489621972,
+   "priceToOperatingCashFlowRatioTTM": 30.97741007094954,
+   "debtToAssetsRatioTTM": 0.2199699425464299,
+   "debtToEquityRatioTTM": 0.7841052827380952,
+   "debtToCapitalRatioTTM": 0.4394949616060304,
+   "longTermDebtToCapitalRatioTTM": 0.39885944313988597,
+   "financialLeverageRatioTTM": 3.5646019345238096,
+   "operatingCashFlowRatioTTM": 0.9825750371670038,
+   "operatingCashFlowSalesRatioTTM": 0.3143032798298284,
+   "freeCashFlowOperatingCashFlowRatioTTM": 0.9315653880755704,
+   "debtServiceCoverageRatioTTM": 10.91308706717051,
+   "interestCoverageRatioTTM": 0,
+   "capitalExpenditureCoverageRatioTTM": 14.61248879593666,
+   "dividendPayoutRatioTTM": 0.12130613511207632,
+   "dividendYieldTTM": 0.00342654,
+   "enterpriseValueTTM": 4588296578600,
+   "revenuePerShareTTM": 31.772844880539513,
+   "netIncomePerShareTTM": 8.775216496290799,
+   "interestDebtPerShareTTM": 5.738091810694085,
+   "cashPerShareTTM": 4.246992431180094,
+   "bookValuePerShareTTM": 7.318011926480932,
+   "tangibleBookValuePerShareTTM": 5.933497430494371,
+   "shareholdersEquityPerShareTTM": 7.318011926480932,
+   "operatingCashFlowPerShareTTM": 9.986309355477943,
+   "capexPerShareTTM": 0.683409205299433,
+   "freeCashFlowPerShareTTM": 9.302900150178509,
+   "effectiveTaxRateTTM": 0.17302733698510642,
+   "enterpriseValueMultipleTTM": 27.23250939900051,
+   "dividendPerShareTTM": 1.06
+  },
+  "metricsTtm": {
+   "symbol": "AAPL",
+   "marketCap": 4543533578600,
+   "enterpriseValueTTM": 4588296578600,
+   "evToSalesTTM": 9.82877145856138,
+   "evToOperatingCashFlowTTM": 31.271615949674217,
+   "evToFreeCashFlowTTM": 33.568889902914044,
+   "evToEBITDATTM": 27.23250939900051,
+   "netDebtToEBITDATTM": 0.2656778604750543,
+   "currentRatioTTM": 1.0032948046555858,
+   "incomeQualityTTM": 1.138012875203599,
+   "grahamNumberTTM": 38.011651200512674,
+   "taxBurdenTTM": 0.8269726630148936,
+   "interestBurdenTTM": 1.0036823876292376,
+   "workingCapitalTTM": 492000000,
+   "investedCapitalTTM": 72265000000,
+   "returnOnAssetsTTM": 0.3363982195133406,
+   "operatingReturnOnAssetsTTM": 0.4105770811349669,
+   "returnOnTangibleAssetsTTM": 0.3552534414918826,
+   "returnOnEquityTTM": 1.3718365457766524,
+   "returnOnInvestedCapitalTTM": 0.5186736691216669,
+   "returnOnCapitalEmployedTTM": 0.6619603317089852,
+   "earningsYieldTTM": 0.02836662840242702,
+   "freeCashFlowYieldTTM": 0.030082973446873076,
+   "capexToOperatingCashFlowTTM": 0.06843461192442954,
+   "capexToDepreciationTTM": 0.7664885496183206,
+   "capexToRevenueTTM": 0.021509222981729692,
+   "salesGeneralAndAdministrativeToRevenueTTM": 0.062899642905341,
+   "researchAndDevelopementToRevenueTTM": 0.09189992780989797,
+   "stockBasedCompensationToRevenueTTM": 0.029360164344944442,
+   "intangiblesToTotalAssetsTTM": 0.05307540976762875,
+   "daysOfSalesOutstandingTTM": 46.05825976869177,
+   "daysOfPayablesOutstandingTTM": 98.25458906967042,
+   "daysOfInventoryOutstandingTTM": 16.890196078431373,
+   "cashConversionCycleTTM": -35.306133222547274,
+   "freeCashFlowToEquityTTM": 119409000000,
+   "freeCashFlowToFirmTTM": 136683000000,
+   "tangibleAssetValueTTM": 87178000000,
+   "netCurrentAssetValueTTM": -125928000000
+  },
+  "scores": {
+   "symbol": "AAPL",
+   "reportedCurrency": "USD",
+   "altmanZScore": 12.485176312231282,
+   "piotroskiScore": 9,
+   "workingCapital": 492000000,
+   "totalAssets": 383266000000,
+   "retainedEarnings": 11326000000,
+   "ebit": 155386000000,
+   "marketCap": 4543533578600,
+   "totalLiabilities": 275746000000,
+   "revenue": 466823000000
+  },
+  "estimates": [
+   {
+    "symbol": "AAPL",
+    "date": "2030-09-27",
+    "revenueLow": 661499643820,
+    "revenueHigh": 743323914333,
+    "revenueAvg": 693145000000,
+    "ebitdaAvg": 250180259784,
+    "ebitAvg": 232152828908,
+    "netIncomeLow": 180661203348,
+    "netIncomeHigh": 210135079714,
+    "netIncomeAvg": 192060121612,
+    "sgaExpenseAvg": 44612516313,
+    "epsAvg": 12.8,
+    "epsHigh": 14.00462,
+    "epsLow": 12.04031,
+    "numAnalystsRevenue": 11,
+    "numAnalystsEps": 9
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2029-09-27",
+    "revenueLow": 461036559352,
+    "revenueHigh": 518064526792,
+    "revenueAvg": 483092000000,
+    "ebitdaAvg": 174364789560,
+    "ebitAvg": 161800452175,
+    "netIncomeLow": 174209333684,
+    "netIncomeHigh": 202630630556,
+    "netIncomeAvg": 185201174519,
+    "sgaExpenseAvg": 31092988813,
+    "epsAvg": 12.34288,
+    "epsHigh": 13.50448,
+    "epsLow": 11.61032,
+    "numAnalystsRevenue": 18,
+    "numAnalystsEps": 9
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2028-09-27",
+    "revenueLow": 518820294908,
+    "revenueHigh": 629292346614,
+    "revenueAvg": 558901943758,
+    "ebitdaAvg": 201727248243,
+    "ebitAvg": 187191233184,
+    "netIncomeLow": 142445890603,
+    "netIncomeHigh": 171886606588,
+    "netIncomeAvg": 152227923510,
+    "sgaExpenseAvg": 35972303174,
+    "epsAvg": 10.61799,
+    "epsHigh": 11.45552,
+    "epsLow": 9.49342,
+    "numAnalystsRevenue": 22,
+    "numAnalystsEps": 20
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2027-09-27",
+    "revenueLow": 496818754452,
+    "revenueHigh": 548939693264,
+    "revenueAvg": 519424218390,
+    "ebitdaAvg": 187478357191,
+    "ebitAvg": 173969085404,
+    "netIncomeLow": 135257290317,
+    "netIncomeHigh": 152370897481,
+    "netIncomeAvg": 137176280290,
+    "sgaExpenseAvg": 33431419712,
+    "epsAvg": 9.52458,
+    "epsHigh": 10.15488,
+    "epsLow": 9.01433,
+    "numAnalystsRevenue": 29,
+    "numAnalystsEps": 30
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-09-27",
+    "revenueLow": 472488087684,
+    "revenueHigh": 483007599827,
+    "revenueAvg": 477397859987,
+    "ebitdaAvg": 172309575387,
+    "ebitAvg": 159893332146,
+    "netIncomeLow": 132406247839,
+    "netIncomeHigh": 133005385391,
+    "netIncomeAvg": 132705816615,
+    "sgaExpenseAvg": 30726499962,
+    "epsAvg": 8.8343,
+    "epsHigh": 8.86425,
+    "epsLow": 8.82432,
+    "numAnalystsRevenue": 27,
+    "numAnalystsEps": 27
+   }
+  ],
+  "priceTarget": {
+   "symbol": "AAPL",
+   "targetHigh": 400,
+   "targetLow": 245,
+   "targetConsensus": 340.72,
+   "targetMedian": 360
+  },
+  "grades": {
+   "symbol": "AAPL",
+   "strongBuy": 1,
+   "buy": 69,
+   "hold": 32,
+   "sell": 9,
+   "strongSell": 0,
+   "consensus": "Buy"
+  },
+  "dcfLevered": {
+   "symbol": "AAPL",
+   "date": "2026-08-23",
+   "dcf": 140.71273724145917,
+   "Stock Price": 309.35
+  },
+  "prices": [
+   {
+    "symbol": "AAPL",
+    "date": "2026-08-21",
+    "price": 309.35
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-08-20",
+    "price": 311.3
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-08-19",
+    "price": 316.83
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-08-18",
+    "price": 310.03
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-08-17",
+    "price": 305.59
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-08-14",
+    "price": 305.93
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-08-13",
+    "price": 305.26
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-08-12",
+    "price": 302.25
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-08-11",
+    "price": 304.91
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-08-10",
+    "price": 308.26
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-08-07",
+    "price": 313.33
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-08-06",
+    "price": 312.41
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-08-05",
+    "price": 311.0
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-08-04",
+    "price": 309.38
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-08-03",
+    "price": 303.42
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-07-31",
+    "price": 308.91
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-07-30",
+    "price": 333.43
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-07-29",
+    "price": 338.19
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-07-28",
+    "price": 340.08
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-07-27",
+    "price": 336.91
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-07-24",
+    "price": 333.02
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-07-23",
+    "price": 321.66
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-07-22",
+    "price": 325.89
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-07-21",
+    "price": 327.74
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-07-20",
+    "price": 326.59
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-07-17",
+    "price": 333.74
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-07-16",
+    "price": 333.26
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-07-15",
+    "price": 327.5
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-07-14",
+    "price": 314.86
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-07-13",
+    "price": 317.31
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-07-10",
+    "price": 315.32
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-07-09",
+    "price": 316.22
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-07-08",
+    "price": 313.39
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-07-07",
+    "price": 310.66
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-07-06",
+    "price": 312.66
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-07-02",
+    "price": 308.63
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-07-01",
+    "price": 294.38
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-06-30",
+    "price": 289.36
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-06-29",
+    "price": 281.74
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-06-26",
+    "price": 283.78
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-06-25",
+    "price": 275.15
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-06-24",
+    "price": 293.08
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-06-23",
+    "price": 294.3
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-06-22",
+    "price": 297.01
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-06-18",
+    "price": 298.01
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-06-17",
+    "price": 295.95
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-06-16",
+    "price": 299.24
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-06-15",
+    "price": 296.42
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-06-12",
+    "price": 291.13
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-06-11",
+    "price": 295.63
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-06-10",
+    "price": 291.58
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-06-09",
+    "price": 290.55
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-06-08",
+    "price": 301.54
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-06-05",
+    "price": 307.34
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-06-04",
+    "price": 311.23
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-06-03",
+    "price": 310.26
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-06-02",
+    "price": 315.2
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-06-01",
+    "price": 306.31
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-05-29",
+    "price": 312.06
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-05-28",
+    "price": 312.51
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-05-27",
+    "price": 310.85
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-05-26",
+    "price": 308.33
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-05-22",
+    "price": 308.82
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-05-21",
+    "price": 304.99
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-05-20",
+    "price": 302.25
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-05-19",
+    "price": 298.97
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-05-18",
+    "price": 297.84
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-05-15",
+    "price": 300.23
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-05-14",
+    "price": 298.21
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-05-13",
+    "price": 298.87
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-05-12",
+    "price": 294.8
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-05-11",
+    "price": 292.68
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-05-08",
+    "price": 293.32
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-05-07",
+    "price": 287.44
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-05-06",
+    "price": 287.51
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-05-05",
+    "price": 284.18
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-05-04",
+    "price": 276.83
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-05-01",
+    "price": 280.14
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-04-30",
+    "price": 271.35
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-04-29",
+    "price": 270.22
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-04-28",
+    "price": 270.71
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-04-27",
+    "price": 267.61
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-04-24",
+    "price": 271.06
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-04-23",
+    "price": 273.43
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-04-22",
+    "price": 273.17
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-04-21",
+    "price": 266.17
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-04-20",
+    "price": 273.05
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-04-17",
+    "price": 270.23
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-04-16",
+    "price": 263.4
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-04-15",
+    "price": 266.43
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-04-14",
+    "price": 258.83
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-04-13",
+    "price": 259.2
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-04-10",
+    "price": 260.48
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-04-09",
+    "price": 260.49
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-04-08",
+    "price": 258.9
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-04-07",
+    "price": 253.5
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-04-06",
+    "price": 258.86
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-04-02",
+    "price": 255.92
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-04-01",
+    "price": 255.63
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-03-31",
+    "price": 253.79
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-03-30",
+    "price": 246.63
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-03-27",
+    "price": 248.8
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-03-26",
+    "price": 252.89
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-03-25",
+    "price": 252.62
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-03-24",
+    "price": 251.64
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-03-23",
+    "price": 251.49
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-03-20",
+    "price": 247.99
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-03-19",
+    "price": 248.96
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-03-18",
+    "price": 249.94
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-03-17",
+    "price": 254.23
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-03-16",
+    "price": 252.82
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-03-13",
+    "price": 250.12
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-03-12",
+    "price": 255.76
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-03-11",
+    "price": 260.81
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-03-10",
+    "price": 260.83
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-03-09",
+    "price": 259.88
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-03-06",
+    "price": 257.46
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-03-05",
+    "price": 260.29
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-03-04",
+    "price": 262.52
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-03-03",
+    "price": 263.75
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-03-02",
+    "price": 264.72
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-02-27",
+    "price": 264.18
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-02-26",
+    "price": 272.95
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-02-25",
+    "price": 274.23
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-02-24",
+    "price": 272.14
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-02-23",
+    "price": 266.18
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-02-20",
+    "price": 264.58
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-02-19",
+    "price": 260.58
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-02-18",
+    "price": 264.35
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-02-17",
+    "price": 263.88
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-02-13",
+    "price": 255.78
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-02-12",
+    "price": 261.73
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-02-11",
+    "price": 275.5
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-02-10",
+    "price": 273.68
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-02-09",
+    "price": 274.62
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-02-06",
+    "price": 278.12
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-02-05",
+    "price": 275.91
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-02-04",
+    "price": 276.49
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-02-03",
+    "price": 269.48
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-02-02",
+    "price": 270.01
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-01-30",
+    "price": 259.48
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-01-29",
+    "price": 258.28
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-01-28",
+    "price": 256.44
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-01-27",
+    "price": 258.27
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-01-26",
+    "price": 255.41
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-01-23",
+    "price": 248.04
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-01-22",
+    "price": 248.35
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-01-21",
+    "price": 247.65
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-01-20",
+    "price": 246.7
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-01-16",
+    "price": 255.53
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-01-15",
+    "price": 258.21
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-01-14",
+    "price": 259.96
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-01-13",
+    "price": 261.05
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-01-12",
+    "price": 260.25
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-01-09",
+    "price": 259.37
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-01-08",
+    "price": 259.04
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-01-07",
+    "price": 260.33
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-01-06",
+    "price": 262.36
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-01-05",
+    "price": 267.26
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-01-02",
+    "price": 271.01
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-12-31",
+    "price": 271.86
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-12-30",
+    "price": 273.08
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-12-29",
+    "price": 273.76
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-12-26",
+    "price": 273.4
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-12-24",
+    "price": 273.81
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-12-23",
+    "price": 272.36
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-12-22",
+    "price": 270.97
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-12-19",
+    "price": 273.67
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-12-18",
+    "price": 272.19
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-12-17",
+    "price": 271.84
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-12-16",
+    "price": 274.61
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-12-15",
+    "price": 274.11
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-12-12",
+    "price": 278.28
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-12-11",
+    "price": 278.03
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-12-10",
+    "price": 278.78
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-12-09",
+    "price": 277.18
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-12-08",
+    "price": 277.89
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-12-05",
+    "price": 278.78
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-12-04",
+    "price": 280.7
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-12-03",
+    "price": 284.15
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-12-02",
+    "price": 286.19
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-12-01",
+    "price": 283.1
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-11-28",
+    "price": 278.85
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-11-26",
+    "price": 277.55
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-11-25",
+    "price": 276.97
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-11-24",
+    "price": 275.92
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-11-21",
+    "price": 271.49
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-11-20",
+    "price": 266.25
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-11-19",
+    "price": 268.56
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-11-18",
+    "price": 267.44
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-11-17",
+    "price": 267.46
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-11-14",
+    "price": 272.41
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-11-13",
+    "price": 272.95
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-11-12",
+    "price": 273.47
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-11-11",
+    "price": 275.25
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-11-10",
+    "price": 269.43
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-11-07",
+    "price": 268.47
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-11-06",
+    "price": 269.77
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-11-05",
+    "price": 270.14
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-11-04",
+    "price": 270.04
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-11-03",
+    "price": 269.05
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-10-31",
+    "price": 270.37
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-10-30",
+    "price": 271.4
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-10-29",
+    "price": 269.7
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-10-28",
+    "price": 269.0
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-10-27",
+    "price": 268.81
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-10-24",
+    "price": 262.82
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-10-23",
+    "price": 259.58
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-10-22",
+    "price": 258.45
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-10-21",
+    "price": 262.77
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-10-20",
+    "price": 262.24
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-10-17",
+    "price": 252.29
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-10-16",
+    "price": 247.45
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-10-15",
+    "price": 249.34
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-10-14",
+    "price": 247.77
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-10-13",
+    "price": 247.66
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-10-10",
+    "price": 245.27
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-10-09",
+    "price": 254.04
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-10-08",
+    "price": 258.06
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-10-07",
+    "price": 256.48
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-10-06",
+    "price": 256.69
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-10-03",
+    "price": 258.02
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-10-02",
+    "price": 257.13
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-10-01",
+    "price": 255.45
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-09-30",
+    "price": 254.63
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-09-29",
+    "price": 254.43
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-09-26",
+    "price": 255.46
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-09-25",
+    "price": 256.87
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-09-24",
+    "price": 252.31
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-09-23",
+    "price": 254.43
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-09-22",
+    "price": 256.08
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-09-19",
+    "price": 245.5
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-09-18",
+    "price": 237.88
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-09-17",
+    "price": 238.99
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-09-16",
+    "price": 238.15
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-09-15",
+    "price": 236.7
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-09-12",
+    "price": 234.07
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-09-11",
+    "price": 230.03
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-09-10",
+    "price": 226.79
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-09-09",
+    "price": 234.35
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-09-08",
+    "price": 237.88
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-09-05",
+    "price": 239.69
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-09-04",
+    "price": 239.78
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-09-03",
+    "price": 238.47
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-09-02",
+    "price": 229.72
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-08-29",
+    "price": 232.14
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-08-28",
+    "price": 232.56
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-08-27",
+    "price": 230.49
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-08-26",
+    "price": 229.31
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-08-25",
+    "price": 227.16
+   }
+  ],
+  "peers": [
+   {
+    "symbol": "GOOGL",
+    "companyName": "Alphabet Inc.",
+    "price": 344.82,
+    "mktCap": 4173050013639
+   },
+   {
+    "symbol": "META",
+    "companyName": "Meta Platforms, Inc.",
+    "price": 549.9,
+    "mktCap": 1400862864843
+   },
+   {
+    "symbol": "MSFT",
+    "companyName": "Microsoft Corporation",
+    "price": 483.24,
+    "mktCap": 3588322782000
+   },
+   {
+    "symbol": "NVDA",
+    "companyName": "NVIDIA Corporation",
+    "price": 214.72,
+    "mktCap": 5200733120000
+   },
+   {
+    "symbol": "SONY",
+    "companyName": "Sony Group Corporation",
+    "price": 23.92,
+    "mktCap": 140469380596
+   },
+   {
+    "symbol": "TSM",
+    "companyName": "Taiwan Semiconductor Manufacturing Company Limited",
+    "price": 418.95,
+    "mktCap": 2172875796000
+   }
+  ],
+  "executives": [
+   {
+    "title": "Chief Executive Officer & Director",
+    "name": "Timothy D. Cook",
+    "pay": 16759518,
+    "currencyPay": "USD",
+    "gender": "male",
+    "yearBorn": 1961,
+    "titleSince": null,
+    "active": true
+   },
+   {
+    "title": "Senior Vice President & Chief Financial Officer",
+    "name": "Kevan Parekh",
+    "pay": 4034174,
+    "currencyPay": "USD",
+    "gender": "male",
+    "yearBorn": 1972,
+    "titleSince": null,
+    "active": true
+   },
+   {
+    "title": "Senior VP & Chief Operating Officer",
+    "name": "Sabih Khan",
+    "pay": 5021905,
+    "currencyPay": "USD",
+    "gender": "male",
+    "yearBorn": 1967,
+    "titleSince": null,
+    "active": true
+   },
+   {
+    "title": "Senior Vice President & General Counsel",
+    "name": "Jennifer G. Newstead",
+    "pay": 5022182,
+    "currencyPay": "USD",
+    "gender": "female",
+    "yearBorn": 1970,
+    "titleSince": null,
+    "active": true
+   },
+   {
+    "title": "Senior Vice President of Retail & People",
+    "name": "Deirdre O'Brien",
+    "pay": 5037867,
+    "currencyPay": "USD",
+    "gender": "female",
+    "yearBorn": 1967,
+    "titleSince": null,
+    "active": true
+   },
+   {
+    "title": "Senior VP of Government Affairs & Secretary",
+    "name": "Katherine L. Adams",
+    "pay": 5022482,
+    "currencyPay": "USD",
+    "gender": "female",
+    "yearBorn": 1964,
+    "titleSince": null,
+    "active": true
+   },
+   {
+    "title": "Senior Vice President of Worldwide Marketing",
+    "name": "Greg Joswiak",
+    "pay": null,
+    "currencyPay": "USD",
+    "gender": "male",
+    "yearBorn": null,
+    "titleSince": null,
+    "active": true
+   },
+   {
+    "title": "Principal Accounting Officer",
+    "name": "Ben Borders",
+    "pay": null,
+    "currencyPay": "USD",
+    "gender": "male",
+    "yearBorn": 1981,
+    "titleSince": null,
+    "active": true
+   },
+   {
+    "title": "Vice President of Worldwide Communications",
+    "name": "Kristin Huguet Quayle",
+    "pay": null,
+    "currencyPay": "USD",
+    "gender": "female",
+    "yearBorn": null,
+    "titleSince": null,
+    "active": true
+   },
+   {
+    "title": "Director of Investor Relations",
+    "name": "Suhasini Chandramouli",
+    "pay": null,
+    "currencyPay": "USD",
+    "gender": null,
+    "yearBorn": null,
+    "titleSince": null,
+    "active": true
+   }
+  ],
+  "sharesFloat": {
+   "symbol": "AAPL",
+   "date": "2026-08-23 19:21:05",
+   "freeFloat": 99.87879921341867,
+   "floatShares": 14669554809,
+   "outstandingShares": 14687356000
+  },
+  "income": [
+   {
+    "date": "2025-09-27",
+    "symbol": "AAPL",
+    "fiscalYear": "2025",
+    "period": "FY",
+    "revenue": 416161000000.0,
+    "costOfRevenue": 220960000000.0,
+    "grossProfit": 195201000000.0,
+    "researchAndDevelopmentExpenses": 34550000000.0,
+    "sellingGeneralAndAdministrativeExpenses": 27601000000.0,
+    "operatingIncome": 133050000000.00002,
+    "ebitda": 144427000000.0,
+    "interestExpense": 0.0,
+    "netIncome": 112010000000.0,
+    "epsDiluted": 7.46,
+    "eps": 7.46,
+    "weightedAverageShsOutDil": 15004697000.0
+   },
+   {
+    "date": "2024-09-28",
+    "symbol": "AAPL",
+    "fiscalYear": "2024",
+    "period": "FY",
+    "revenue": 391035000000.0,
+    "costOfRevenue": 210352000000.0,
+    "grossProfit": 180683000000.00003,
+    "researchAndDevelopmentExpenses": 31370000000.0,
+    "sellingGeneralAndAdministrativeExpenses": 26097000000.0,
+    "operatingIncome": 123216000000.0,
+    "ebitda": 134930000000.0,
+    "interestExpense": 0.0,
+    "netIncome": 93736000000.0,
+    "epsDiluted": 6.08,
+    "eps": 6.08,
+    "weightedAverageShsOutDil": 15408095000.0
+   },
+   {
+    "date": "2023-09-30",
+    "symbol": "AAPL",
+    "fiscalYear": "2023",
+    "period": "FY",
+    "revenue": 383285000000.0,
+    "costOfRevenue": 214137000000.0,
+    "grossProfit": 169148000000.00003,
+    "researchAndDevelopmentExpenses": 29915000000.0,
+    "sellingGeneralAndAdministrativeExpenses": 24932000000.0,
+    "operatingIncome": 114301000000.0,
+    "ebitda": 129187999999.99998,
+    "interestExpense": 3933000000.0,
+    "netIncome": 96995000000.0,
+    "epsDiluted": 6.13,
+    "eps": 6.13,
+    "weightedAverageShsOutDil": 15812547000.0
+   },
+   {
+    "date": "2022-09-24",
+    "symbol": "AAPL",
+    "fiscalYear": "2022",
+    "period": "FY",
+    "revenue": 394328000000.0,
+    "costOfRevenue": 223546000000.0,
+    "grossProfit": 170781999999.99997,
+    "researchAndDevelopmentExpenses": 26251000000.0,
+    "sellingGeneralAndAdministrativeExpenses": 25094000000.0,
+    "operatingIncome": 119437000000.0,
+    "ebitda": 133138000000.0,
+    "interestExpense": 2931000000.0,
+    "netIncome": 99803000000.0,
+    "epsDiluted": 6.11,
+    "eps": 6.11,
+    "weightedAverageShsOutDil": 16325819000.0
+   },
+   {
+    "date": "2021-09-25",
+    "symbol": "AAPL",
+    "fiscalYear": "2021",
+    "period": "FY",
+    "revenue": 365817000000.0,
+    "costOfRevenue": 212981000000.0,
+    "grossProfit": 152836000000.0,
+    "researchAndDevelopmentExpenses": 21914000000.0,
+    "sellingGeneralAndAdministrativeExpenses": 21973000000.0,
+    "operatingIncome": 108949000000.0,
+    "ebitda": 123136000000.0,
+    "interestExpense": 2645000000.0,
+    "netIncome": 94680000000.0,
+    "epsDiluted": 5.61,
+    "eps": 5.61,
+    "weightedAverageShsOutDil": 16864919000.0
+   },
+   {
+    "date": "2020-09-26",
+    "symbol": "AAPL",
+    "fiscalYear": "2020",
+    "period": "FY",
+    "revenue": 274515000000.0,
+    "costOfRevenue": 169559000000.0,
+    "grossProfit": 104955999999.99998,
+    "researchAndDevelopmentExpenses": 18752000000.0,
+    "sellingGeneralAndAdministrativeExpenses": 19916000000.0,
+    "operatingIncome": 66288000000.0,
+    "ebitda": 81020000000.0,
+    "interestExpense": 2873000000.0,
+    "netIncome": 57411000000.0,
+    "epsDiluted": 3.28,
+    "eps": 3.28,
+    "weightedAverageShsOutDil": 17528214000.0
+   },
+   {
+    "date": "2019-09-28",
+    "symbol": "AAPL",
+    "fiscalYear": "2019",
+    "period": "FY",
+    "revenue": 260173999999.99997,
+    "costOfRevenue": 161782000000.0,
+    "grossProfit": 98391999999.99997,
+    "researchAndDevelopmentExpenses": 16216999999.999998,
+    "sellingGeneralAndAdministrativeExpenses": 18245000000.0,
+    "operatingIncome": 63930000000.0,
+    "ebitda": 81860000000.0,
+    "interestExpense": 3576000000.0,
+    "netIncome": 55256000000.0,
+    "epsDiluted": 2.97,
+    "eps": 2.97,
+    "weightedAverageShsOutDil": 18595652000.0
+   },
+   {
+    "date": "2018-09-29",
+    "symbol": "AAPL",
+    "fiscalYear": "2018",
+    "period": "FY",
+    "revenue": 265595000000.00003,
+    "costOfRevenue": 163756000000.0,
+    "grossProfit": 101839000000.00003,
+    "researchAndDevelopmentExpenses": 14236000000.0,
+    "sellingGeneralAndAdministrativeExpenses": 16704999999.999998,
+    "operatingIncome": 70898000000.0,
+    "ebitda": 87046000000.0,
+    "interestExpense": 3240000000.0,
+    "netIncome": 59531000000.0,
+    "epsDiluted": 2.98,
+    "eps": 2.98,
+    "weightedAverageShsOutDil": 20000436000.0
+   },
+   {
+    "date": "2017-09-30",
+    "symbol": "AAPL",
+    "fiscalYear": "2017",
+    "period": "FY",
+    "revenue": 229234000000.0,
+    "costOfRevenue": 141048000000.0,
+    "grossProfit": 88186000000.0,
+    "researchAndDevelopmentExpenses": 11581000000.0,
+    "sellingGeneralAndAdministrativeExpenses": 15261000000.0,
+    "operatingIncome": 61344000000.0,
+    "ebitda": 76569000000.0,
+    "interestExpense": 2323000000.0,
+    "netIncome": 48351000000.0,
+    "epsDiluted": 2.3,
+    "eps": 2.3,
+    "weightedAverageShsOutDil": 21006768000.0
+   },
+   {
+    "date": "2016-09-24",
+    "symbol": "AAPL",
+    "fiscalYear": "2016",
+    "period": "FY",
+    "revenue": 215639000000.0,
+    "costOfRevenue": 131376000000.0,
+    "grossProfit": 84263000000.0,
+    "researchAndDevelopmentExpenses": 10045000000.0,
+    "sellingGeneralAndAdministrativeExpenses": 14194000000.0,
+    "operatingIncome": 60024000000.0,
+    "ebitda": 73333000000.0,
+    "interestExpense": 1456000000.0,
+    "netIncome": 45687000000.0,
+    "epsDiluted": 2.08,
+    "eps": 2.08,
+    "weightedAverageShsOutDil": 22001124000.0
+   }
+  ],
+  "balance": [
+   {
+    "date": "2025-09-27",
+    "symbol": "AAPL",
+    "fiscalYear": "2025",
+    "period": "FY",
+    "totalStockholdersEquity": 73733000000.0,
+    "totalDebt": 112377000000.0,
+    "cashAndShortTermInvestments": 54697000000.0,
+    "totalCurrentAssets": 147957000000.0,
+    "totalCurrentLiabilities": 165631000000.0,
+    "totalAssets": 359241000000.0,
+    "totalLiabilities": 285508000000.0,
+    "netDebt": 57679999999.99999
+   },
+   {
+    "date": "2024-09-28",
+    "symbol": "AAPL",
+    "fiscalYear": "2024",
+    "period": "FY",
+    "totalStockholdersEquity": 56950000000.0,
+    "totalDebt": 119059000000.0,
+    "cashAndShortTermInvestments": 65171000000.00001,
+    "totalCurrentAssets": 152987000000.0,
+    "totalCurrentLiabilities": 176392000000.0,
+    "totalAssets": 364980000000.0,
+    "totalLiabilities": 308030000000.0,
+    "netDebt": 53887999999.99999
+   },
+   {
+    "date": "2023-09-30",
+    "symbol": "AAPL",
+    "fiscalYear": "2023",
+    "period": "FY",
+    "totalStockholdersEquity": 62146000000.0,
+    "totalDebt": 123930000000.0,
+    "cashAndShortTermInvestments": 61555000000.0,
+    "totalCurrentAssets": 143566000000.0,
+    "totalCurrentLiabilities": 145308000000.0,
+    "totalAssets": 352583000000.0,
+    "totalLiabilities": 290437000000.0,
+    "netDebt": 62375000000.00001
+   },
+   {
+    "date": "2022-09-24",
+    "symbol": "AAPL",
+    "fiscalYear": "2022",
+    "period": "FY",
+    "totalStockholdersEquity": 50672000000.0,
+    "totalDebt": 132479999999.99998,
+    "cashAndShortTermInvestments": 48304000000.0,
+    "totalCurrentAssets": 135405000000.0,
+    "totalCurrentLiabilities": 153982000000.0,
+    "totalAssets": 352755000000.0,
+    "totalLiabilities": 302083000000.0,
+    "netDebt": 84175999999.99998
+   },
+   {
+    "date": "2021-09-25",
+    "symbol": "AAPL",
+    "fiscalYear": "2021",
+    "period": "FY",
+    "totalStockholdersEquity": 63090000000.0,
+    "totalDebt": 136521999999.99998,
+    "cashAndShortTermInvestments": 62639000000.0,
+    "totalCurrentAssets": 134836000000.00002,
+    "totalCurrentLiabilities": 125481000000.0,
+    "totalAssets": 351002000000.0,
+    "totalLiabilities": 287912000000.0,
+    "netDebt": 73882999999.99998
+   },
+   {
+    "date": "2020-09-26",
+    "symbol": "AAPL",
+    "fiscalYear": "2020",
+    "period": "FY",
+    "totalStockholdersEquity": 65339000000.0,
+    "totalDebt": 122278000000.0,
+    "cashAndShortTermInvestments": 90943000000.0,
+    "totalCurrentAssets": 143713000000.0,
+    "totalCurrentLiabilities": 105392000000.0,
+    "totalAssets": 323888000000.0,
+    "totalLiabilities": 258548999999.99997,
+    "netDebt": 31335000000.000008
+   },
+   {
+    "date": "2019-09-28",
+    "symbol": "AAPL",
+    "fiscalYear": "2019",
+    "period": "FY",
+    "totalStockholdersEquity": 90488000000.0,
+    "totalDebt": 108047000000.0,
+    "cashAndShortTermInvestments": 100557000000.0,
+    "totalCurrentAssets": 162819000000.0,
+    "totalCurrentLiabilities": 105718000000.0,
+    "totalAssets": 338516000000.0,
+    "totalLiabilities": 248028000000.0,
+    "netDebt": 7489999999.999995
+   },
+   {
+    "date": "2018-09-29",
+    "symbol": "AAPL",
+    "fiscalYear": "2018",
+    "period": "FY",
+    "totalStockholdersEquity": 107147000000.0,
+    "totalDebt": 114483000000.0,
+    "cashAndShortTermInvestments": 66301000000.0,
+    "totalCurrentAssets": 131339000000.0,
+    "totalCurrentLiabilities": 115929000000.0,
+    "totalAssets": 365725000000.0,
+    "totalLiabilities": 258577999999.99997,
+    "netDebt": 48182000000.0
+   },
+   {
+    "date": "2017-09-30",
+    "symbol": "AAPL",
+    "fiscalYear": "2017",
+    "period": "FY",
+    "totalStockholdersEquity": 134047000000.0,
+    "totalDebt": 115680000000.0,
+    "cashAndShortTermInvestments": 74181000000.0,
+    "totalCurrentAssets": 128645000000.00002,
+    "totalCurrentLiabilities": 100814000000.0,
+    "totalAssets": 375319000000.0,
+    "totalLiabilities": 241272000000.0,
+    "netDebt": 41499000000.00001
+   },
+   {
+    "date": "2016-09-24",
+    "symbol": "AAPL",
+    "fiscalYear": "2016",
+    "period": "FY",
+    "totalStockholdersEquity": 128249000000.0,
+    "totalDebt": 87032000000.0,
+    "cashAndShortTermInvestments": 67155000000.0,
+    "totalCurrentAssets": 106869000000.0,
+    "totalCurrentLiabilities": 79006000000.0,
+    "totalAssets": 321686000000.0,
+    "totalLiabilities": 193437000000.0,
+    "netDebt": 19876999999.999996
+   }
+  ],
+  "cashflow": [
+   {
+    "date": "2025-09-27",
+    "symbol": "AAPL",
+    "fiscalYear": "2025",
+    "period": "FY",
+    "operatingCashFlow": 111482000000.0,
+    "freeCashFlow": 98767000000.0,
+    "capitalExpenditure": -12715000000.000004,
+    "netDividendsPaid": -15421000000.0,
+    "commonDividendsPaid": -15421000000.0,
+    "commonStockRepurchased": -90711000000.0,
+    "netCommonStockIssuance": -90711000000.0,
+    "netIncome": 112010000000.0
+   },
+   {
+    "date": "2024-09-28",
+    "symbol": "AAPL",
+    "fiscalYear": "2024",
+    "period": "FY",
+    "operatingCashFlow": 118254000000.0,
+    "freeCashFlow": 108807000000.0,
+    "capitalExpenditure": -9447000000.000002,
+    "netDividendsPaid": -15234000000.0,
+    "commonDividendsPaid": -15234000000.0,
+    "commonStockRepurchased": -94949000000.0,
+    "netCommonStockIssuance": -94949000000.0,
+    "netIncome": 93736000000.0
+   },
+   {
+    "date": "2023-09-30",
+    "symbol": "AAPL",
+    "fiscalYear": "2023",
+    "period": "FY",
+    "operatingCashFlow": 110543000000.0,
+    "freeCashFlow": 99584000000.0,
+    "capitalExpenditure": -10959000000.000004,
+    "netDividendsPaid": -15025000000.0,
+    "commonDividendsPaid": -15025000000.0,
+    "commonStockRepurchased": -77550000000.0,
+    "netCommonStockIssuance": -77550000000.0,
+    "netIncome": 96995000000.0
+   },
+   {
+    "date": "2022-09-24",
+    "symbol": "AAPL",
+    "fiscalYear": "2022",
+    "period": "FY",
+    "operatingCashFlow": 122151000000.0,
+    "freeCashFlow": 111443000000.0,
+    "capitalExpenditure": -10707999999.999998,
+    "netDividendsPaid": -14841000000.0,
+    "commonDividendsPaid": -14841000000.0,
+    "commonStockRepurchased": -89402000000.0,
+    "netCommonStockIssuance": -89402000000.0,
+    "netIncome": 99803000000.0
+   },
+   {
+    "date": "2021-09-25",
+    "symbol": "AAPL",
+    "fiscalYear": "2021",
+    "period": "FY",
+    "operatingCashFlow": 104038000000.0,
+    "freeCashFlow": 92953000000.0,
+    "capitalExpenditure": -11084999999.999994,
+    "netDividendsPaid": -14467000000.0,
+    "commonDividendsPaid": -14467000000.0,
+    "commonStockRepurchased": -85971000000.0,
+    "netCommonStockIssuance": -85971000000.0,
+    "netIncome": 94680000000.0
+   },
+   {
+    "date": "2020-09-26",
+    "symbol": "AAPL",
+    "fiscalYear": "2020",
+    "period": "FY",
+    "operatingCashFlow": 80674000000.0,
+    "freeCashFlow": 73365000000.0,
+    "capitalExpenditure": -7309000000.000011,
+    "netDividendsPaid": -14081000000.0,
+    "commonDividendsPaid": -14081000000.0,
+    "commonStockRepurchased": -72358000000.0,
+    "netCommonStockIssuance": -72358000000.0,
+    "netIncome": 57411000000.0
+   },
+   {
+    "date": "2019-09-28",
+    "symbol": "AAPL",
+    "fiscalYear": "2019",
+    "period": "FY",
+    "operatingCashFlow": 69391000000.0,
+    "freeCashFlow": 58896000000.0,
+    "capitalExpenditure": -10495000000.000004,
+    "netDividendsPaid": -14119000000.0,
+    "commonDividendsPaid": -14119000000.0,
+    "commonStockRepurchased": -66897000000.00001,
+    "netCommonStockIssuance": -66897000000.00001,
+    "netIncome": 55256000000.0
+   },
+   {
+    "date": "2018-09-29",
+    "symbol": "AAPL",
+    "fiscalYear": "2018",
+    "period": "FY",
+    "operatingCashFlow": 77434000000.0,
+    "freeCashFlow": 64120999999.99999,
+    "capitalExpenditure": -13313000000.000002,
+    "netDividendsPaid": -13712000000.0,
+    "commonDividendsPaid": -13712000000.0,
+    "commonStockRepurchased": -72738000000.0,
+    "netCommonStockIssuance": -72738000000.0,
+    "netIncome": 59531000000.0
+   },
+   {
+    "date": "2017-09-30",
+    "symbol": "AAPL",
+    "fiscalYear": "2017",
+    "period": "FY",
+    "operatingCashFlow": 64224999999.99999,
+    "freeCashFlow": 51430000000.0,
+    "capitalExpenditure": -12794999999.999994,
+    "netDividendsPaid": -12769000000.0,
+    "commonDividendsPaid": -12769000000.0,
+    "commonStockRepurchased": -32900000000.0,
+    "netCommonStockIssuance": -32900000000.0,
+    "netIncome": 48351000000.0
+   },
+   {
+    "date": "2016-09-24",
+    "symbol": "AAPL",
+    "fiscalYear": "2016",
+    "period": "FY",
+    "operatingCashFlow": 66230999999.99999,
+    "freeCashFlow": 52683000000.0,
+    "capitalExpenditure": -13547999999.999994,
+    "netDividendsPaid": -12150000000.0,
+    "commonDividendsPaid": -12150000000.0,
+    "commonStockRepurchased": -29722000000.0,
+    "netCommonStockIssuance": -29722000000.0,
+    "netIncome": 45687000000.0
+   }
+  ],
+  "dividends": [
+   {
+    "symbol": "AAPL",
+    "date": "2026-08-10",
+    "recordDate": "2026-08-10",
+    "adjDividend": 0.27,
+    "dividend": 0.27,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-05-11",
+    "recordDate": "2026-05-11",
+    "adjDividend": 0.27,
+    "dividend": 0.27,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-02-09",
+    "recordDate": "2026-02-09",
+    "adjDividend": 0.26,
+    "dividend": 0.26,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-11-10",
+    "recordDate": "2025-11-10",
+    "adjDividend": 0.26,
+    "dividend": 0.26,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-08-11",
+    "recordDate": "2025-08-11",
+    "adjDividend": 0.26,
+    "dividend": 0.26,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-05-12",
+    "recordDate": "2025-05-12",
+    "adjDividend": 0.26,
+    "dividend": 0.26,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-02-10",
+    "recordDate": "2025-02-10",
+    "adjDividend": 0.25,
+    "dividend": 0.25,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2024-11-08",
+    "recordDate": "2024-11-08",
+    "adjDividend": 0.25,
+    "dividend": 0.25,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2024-08-12",
+    "recordDate": "2024-08-12",
+    "adjDividend": 0.25,
+    "dividend": 0.25,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2024-05-10",
+    "recordDate": "2024-05-10",
+    "adjDividend": 0.25,
+    "dividend": 0.25,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2024-02-09",
+    "recordDate": "2024-02-09",
+    "adjDividend": 0.24,
+    "dividend": 0.24,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2023-11-10",
+    "recordDate": "2023-11-10",
+    "adjDividend": 0.24,
+    "dividend": 0.24,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2023-08-11",
+    "recordDate": "2023-08-11",
+    "adjDividend": 0.24,
+    "dividend": 0.24,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2023-05-12",
+    "recordDate": "2023-05-12",
+    "adjDividend": 0.24,
+    "dividend": 0.24,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2023-02-10",
+    "recordDate": "2023-02-10",
+    "adjDividend": 0.23,
+    "dividend": 0.23,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2022-11-04",
+    "recordDate": "2022-11-04",
+    "adjDividend": 0.23,
+    "dividend": 0.23,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2022-08-05",
+    "recordDate": "2022-08-05",
+    "adjDividend": 0.23,
+    "dividend": 0.23,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2022-05-06",
+    "recordDate": "2022-05-06",
+    "adjDividend": 0.23,
+    "dividend": 0.23,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2022-02-04",
+    "recordDate": "2022-02-04",
+    "adjDividend": 0.22,
+    "dividend": 0.22,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2021-11-05",
+    "recordDate": "2021-11-05",
+    "adjDividend": 0.22,
+    "dividend": 0.22,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2021-08-06",
+    "recordDate": "2021-08-06",
+    "adjDividend": 0.22,
+    "dividend": 0.22,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2021-05-07",
+    "recordDate": "2021-05-07",
+    "adjDividend": 0.22,
+    "dividend": 0.22,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2021-02-05",
+    "recordDate": "2021-02-05",
+    "adjDividend": 0.205,
+    "dividend": 0.205,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2020-11-06",
+    "recordDate": "2020-11-06",
+    "adjDividend": 0.205,
+    "dividend": 0.205,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2020-08-07",
+    "recordDate": "2020-08-07",
+    "adjDividend": 0.205,
+    "dividend": 0.205,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2020-05-08",
+    "recordDate": "2020-05-08",
+    "adjDividend": 0.205,
+    "dividend": 0.205,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2020-02-07",
+    "recordDate": "2020-02-07",
+    "adjDividend": 0.1925,
+    "dividend": 0.1925,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2019-11-07",
+    "recordDate": "2019-11-07",
+    "adjDividend": 0.1925,
+    "dividend": 0.1925,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2019-08-09",
+    "recordDate": "2019-08-09",
+    "adjDividend": 0.1925,
+    "dividend": 0.1925,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2019-05-10",
+    "recordDate": "2019-05-10",
+    "adjDividend": 0.1925,
+    "dividend": 0.1925,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2019-02-08",
+    "recordDate": "2019-02-08",
+    "adjDividend": 0.1825,
+    "dividend": 0.1825,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2018-11-08",
+    "recordDate": "2018-11-08",
+    "adjDividend": 0.1825,
+    "dividend": 0.1825,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2018-08-10",
+    "recordDate": "2018-08-10",
+    "adjDividend": 0.1825,
+    "dividend": 0.1825,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2018-05-11",
+    "recordDate": "2018-05-11",
+    "adjDividend": 0.1825,
+    "dividend": 0.1825,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2018-02-09",
+    "recordDate": "2018-02-09",
+    "adjDividend": 0.1575,
+    "dividend": 0.1575,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2017-11-10",
+    "recordDate": "2017-11-10",
+    "adjDividend": 0.1575,
+    "dividend": 0.1575,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2017-08-10",
+    "recordDate": "2017-08-10",
+    "adjDividend": 0.1575,
+    "dividend": 0.1575,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2017-05-11",
+    "recordDate": "2017-05-11",
+    "adjDividend": 0.1575,
+    "dividend": 0.1575,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2017-02-09",
+    "recordDate": "2017-02-09",
+    "adjDividend": 0.1425,
+    "dividend": 0.1425,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2016-11-03",
+    "recordDate": "2016-11-03",
+    "adjDividend": 0.1425,
+    "dividend": 0.1425,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2016-08-04",
+    "recordDate": "2016-08-04",
+    "adjDividend": 0.1425,
+    "dividend": 0.1425,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2016-05-05",
+    "recordDate": "2016-05-05",
+    "adjDividend": 0.1425,
+    "dividend": 0.1425,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2016-02-04",
+    "recordDate": "2016-02-04",
+    "adjDividend": 0.13,
+    "dividend": 0.13,
+    "frequency": "Quarterly"
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2015-11-05",
+    "recordDate": "2015-11-05",
+    "adjDividend": 0.13,
+    "dividend": 0.13,
+    "frequency": "Quarterly"
+   }
+  ],
+  "execComp": [
+   {
+    "symbol": "AAPL",
+    "nameAndPosition": "Tim Cook Chief Executive Officer",
+    "year": 2020,
+    "filingDate": "2023-01-12",
+    "salary": 3000000,
+    "bonus": 0,
+    "stockAward": 0,
+    "optionAward": 0,
+    "incentivePlanCompensation": 10731000,
+    "allOtherCompensation": 1038259,
+    "total": 14769259
+   },
+   {
+    "symbol": "AAPL",
+    "nameAndPosition": "Tim Cook Chief Executive Officer",
+    "year": 2021,
+    "filingDate": "2024-01-11",
+    "salary": 3000000,
+    "bonus": 0,
+    "stockAward": 82347835,
+    "optionAward": 0,
+    "incentivePlanCompensation": 12000000,
+    "allOtherCompensation": 1386559,
+    "total": 98734394
+   },
+   {
+    "symbol": "AAPL",
+    "nameAndPosition": "Tim Cook Chief Executive Officer",
+    "year": 2022,
+    "filingDate": "2025-01-10",
+    "salary": 3000000,
+    "bonus": 0,
+    "stockAward": 82994164,
+    "optionAward": 0,
+    "incentivePlanCompensation": 12000000,
+    "allOtherCompensation": 1425933,
+    "total": 99420097
+   },
+   {
+    "symbol": "AAPL",
+    "nameAndPosition": "Tim Cook Chief Executive Officer",
+    "year": 2023,
+    "filingDate": "2026-01-08",
+    "salary": 3000000,
+    "bonus": 0,
+    "stockAward": 46970283,
+    "optionAward": 0,
+    "incentivePlanCompensation": 10713450,
+    "allOtherCompensation": 2526112,
+    "total": 63209845
+   },
+   {
+    "symbol": "AAPL",
+    "nameAndPosition": "Tim Cook Chief Executive Officer",
+    "year": 2024,
+    "filingDate": "2026-01-08",
+    "salary": 3000000,
+    "bonus": 0,
+    "stockAward": 58088946,
+    "optionAward": 0,
+    "incentivePlanCompensation": 12000000,
+    "allOtherCompensation": 1520856,
+    "total": 74609802
+   },
+   {
+    "symbol": "AAPL",
+    "nameAndPosition": "Tim Cook Chief Executive Officer",
+    "year": 2025,
+    "filingDate": "2026-01-08",
+    "salary": 3000000,
+    "bonus": 0,
+    "stockAward": 57535293,
+    "optionAward": 0,
+    "incentivePlanCompensation": 12000000,
+    "allOtherCompensation": 1759518,
+    "total": 74294811
+   }
+  ],
+  "employees": [
+   {
+    "symbol": "AAPL",
+    "periodOfReport": "2025-09-27",
+    "filingDate": "2025-09-27",
+    "employeeCount": 166000,
+    "formType": "10-K"
+   },
+   {
+    "symbol": "AAPL",
+    "periodOfReport": "2024-09-28",
+    "filingDate": "2024-09-28",
+    "employeeCount": 164000,
+    "formType": "10-K"
+   },
+   {
+    "symbol": "AAPL",
+    "periodOfReport": "2023-09-30",
+    "filingDate": "2023-09-30",
+    "employeeCount": 161000,
+    "formType": "10-K"
+   }
+  ],
+  "insiderStats": [
+   {
+    "symbol": "AAPL",
+    "year": 2026,
+    "quarter": 3,
+    "totalAcquired": 0,
+    "totalDisposed": 2878,
+    "acquiredDisposedRatio": 0.0
+   },
+   {
+    "symbol": "AAPL",
+    "year": 2026,
+    "quarter": 2,
+    "totalAcquired": 303199,
+    "totalDisposed": 927380,
+    "acquiredDisposedRatio": 0.3269
+   },
+   {
+    "symbol": "AAPL",
+    "year": 2026,
+    "quarter": 1,
+    "totalAcquired": 76696,
+    "totalDisposed": 102492,
+    "acquiredDisposedRatio": 0.7483
+   },
+   {
+    "symbol": "AAPL",
+    "year": 2025,
+    "quarter": 4,
+    "totalAcquired": 578243,
+    "totalDisposed": 1113027,
+    "acquiredDisposedRatio": 0.5195
+   },
+   {
+    "symbol": "AAPL",
+    "year": 2025,
+    "quarter": 3,
+    "totalAcquired": 391455,
+    "totalDisposed": 125256,
+    "acquiredDisposedRatio": 3.1252
+   },
+   {
+    "symbol": "AAPL",
+    "year": 2025,
+    "quarter": 2,
+    "totalAcquired": 466004,
+    "totalDisposed": 892618,
+    "acquiredDisposedRatio": 0.5221
+   },
+   {
+    "symbol": "AAPL",
+    "year": 2025,
+    "quarter": 1,
+    "totalAcquired": 19255,
+    "totalDisposed": 12128,
+    "acquiredDisposedRatio": 1.5876
+   },
+   {
+    "symbol": "AAPL",
+    "year": 2024,
+    "quarter": 4,
+    "totalAcquired": 994544,
+    "totalDisposed": 2297088,
+    "acquiredDisposedRatio": 0.433
+   }
+  ],
+  "insiderTrades": [
+   {
+    "symbol": "AAPL",
+    "filingDate": "2026-08-20",
+    "transactionDate": "2026-08-18",
+    "transactionType": "S-Sale",
+    "securitiesOwned": 38668,
+    "reportingName": "Newstead Jennifer",
+    "typeOfOwner": "officer: SVP, GC and Secretary",
+    "acquisitionOrDisposition": "D",
+    "formType": "4",
+    "securitiesTransacted": 1439,
+    "price": 307.49,
+    "securityName": "Common Stock"
+   },
+   {
+    "symbol": "AAPL",
+    "filingDate": "2026-08-13",
+    "transactionDate": "2026-08-11",
+    "transactionType": "S-Sale",
+    "securitiesOwned": 40107,
+    "reportingName": "Newstead Jennifer",
+    "typeOfOwner": "officer: SVP, GC and Secretary",
+    "acquisitionOrDisposition": "D",
+    "formType": "4",
+    "securitiesTransacted": 1439,
+    "price": 307.75,
+    "securityName": "Common Stock"
+   },
+   {
+    "symbol": "AAPL",
+    "filingDate": "2026-06-17",
+    "transactionDate": "2026-06-15",
+    "transactionType": "M-Exempt",
+    "securitiesOwned": 210728,
+    "reportingName": "Newstead Jennifer",
+    "typeOfOwner": "officer: SVP, GC and Secretary",
+    "acquisitionOrDisposition": "D",
+    "formType": "4",
+    "securitiesTransacted": 30104,
+    "price": 0,
+    "securityName": "Restricted Stock Unit"
+   }
+  ],
+  "institutional": [
+   {
+    "date": "2026-03-31",
+    "investorName": "BLACKROCK, INC.",
+    "symbol": "AAPL",
+    "marketValue": 290512251859,
+    "sharesNumber": 1144695425,
+    "changeInSharesNumberPercentage": -0.8635,
+    "ownership": 7.7814,
+    "weight": 5.0758
+   },
+   {
+    "date": "2026-03-31",
+    "investorName": "VANGUARD CAPITAL MANAGEMENT LLC",
+    "symbol": "AAPL",
+    "marketValue": 242076924860,
+    "sharesNumber": 953847648,
+    "changeInSharesNumberPercentage": 100,
+    "ownership": 6.484,
+    "weight": 5.9877
+   },
+   {
+    "date": "2026-03-31",
+    "investorName": "STATE STREET CORP",
+    "symbol": "AAPL",
+    "marketValue": 152868226190,
+    "sharesNumber": 602341409,
+    "changeInSharesNumberPercentage": -0.2839,
+    "ownership": 4.0946,
+    "weight": 5.2779
+   }
+  ],
+  "earnings": [
+   {
+    "symbol": "AAPL",
+    "date": "2026-10-29",
+    "epsActual": null,
+    "epsEstimated": 1.98,
+    "revenueActual": null,
+    "revenueEstimated": 113205200000
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-07-30",
+    "epsActual": 2.02,
+    "epsEstimated": 1.89,
+    "revenueActual": 109417000000,
+    "revenueEstimated": 109038900000
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-04-30",
+    "epsActual": 2.01,
+    "epsEstimated": 1.95,
+    "revenueActual": 111184000000,
+    "revenueEstimated": 109457600000
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-01-29",
+    "epsActual": 2.85,
+    "epsEstimated": 2.67,
+    "revenueActual": 143756000000,
+    "revenueEstimated": 138391000000
+   }
+  ],
+  "news": [
+   {
+    "symbol": "AAPL",
+    "publishedDate": "2026-08-22 23:23:01",
+    "publisher": "The Motley Fool",
+    "site": "fool.com",
+    "title": "Apple Cut Its Standard EU App Store Commission From 30% to 26%",
+    "text": "Apple's standard EU App Store commission falls from 30% to 26% on Oct. 1. The European Commission, which fined Apple 500 million euros in 2025, says it welcomes the new terms.",
+    "url": "https://www.fool.com/investing/2026/08/22/apple-cut-its-standard-eu-app-store-commission-from-30-to-26/"
+   },
+   {
+    "symbol": "AAPL",
+    "publishedDate": "2026-08-23 04:32:24",
+    "publisher": "Defense World",
+    "site": "defenseworld.net",
+    "title": "Apple Inc. $AAPL is Beacon Bank & Trust's 5th Largest Position",
+    "text": "Beacon Bank and Trust lessened its holdings in Apple Inc. (NASDAQ: AAPL) by 3.1% during the quarter, according to its most recent filing with the Securities and Exchange Commission.",
+    "url": "https://www.defenseworld.net/2026/08/23/apple-inc-aapl-is-beacon-bank-trusts-5th-largest-position.html"
+   }
+  ],
+  "ratiosHist": [
+   {
+    "symbol": "AAPL",
+    "date": "2025-09-27",
+    "fiscalYear": "2025",
+    "period": "FY",
+    "priceToEarningsRatio": 34.092883,
+    "debtToEquityRatio": 1.524107
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2024-09-28",
+    "fiscalYear": "2024",
+    "period": "FY",
+    "priceToEarningsRatio": 37.287278,
+    "debtToEquityRatio": 2.090588
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2023-09-30",
+    "fiscalYear": "2023",
+    "period": "FY",
+    "priceToEarningsRatio": 27.790812,
+    "debtToEquityRatio": 1.994175
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2022-09-24",
+    "fiscalYear": "2022",
+    "period": "FY",
+    "priceToEarningsRatio": 24.441824,
+    "debtToEquityRatio": 2.614462
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2021-09-25",
+    "fiscalYear": "2021",
+    "period": "FY",
+    "priceToEarningsRatio": 25.916254,
+    "debtToEquityRatio": 2.163925
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2020-09-26",
+    "fiscalYear": "2020",
+    "period": "FY",
+    "priceToEarningsRatio": 33.935934,
+    "debtToEquityRatio": 1.87144
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2019-09-28",
+    "fiscalYear": "2019",
+    "period": "FY",
+    "priceToEarningsRatio": 18.288816,
+    "debtToEquityRatio": 1.194048
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2018-09-29",
+    "fiscalYear": "2018",
+    "period": "FY",
+    "priceToEarningsRatio": 18.792325,
+    "debtToEquityRatio": 1.068467
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2017-09-30",
+    "fiscalYear": "2017",
+    "period": "FY",
+    "priceToEarningsRatio": 16.630087,
+    "debtToEquityRatio": 0.862981
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2016-09-24",
+    "fiscalYear": "2016",
+    "period": "FY",
+    "priceToEarningsRatio": 13.497731,
+    "debtToEquityRatio": 0.678617
+   }
+  ],
+  "metricsHist": [
+   {
+    "symbol": "AAPL",
+    "date": "2025-09-27",
+    "fiscalYear": "2025",
+    "period": "FY",
+    "returnOnEquity": 1.5191298333175105,
+    "earningsYield": 0.029331635106467118
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2024-09-28",
+    "fiscalYear": "2024",
+    "period": "FY",
+    "returnOnEquity": 1.6459350307287095,
+    "earningsYield": 0.026818798327209237
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2023-09-30",
+    "fiscalYear": "2023",
+    "period": "FY",
+    "returnOnEquity": 1.5607601454639075,
+    "earningsYield": 0.03598311584343425
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2022-09-24",
+    "fiscalYear": "2022",
+    "period": "FY",
+    "returnOnEquity": 1.9695887275023682,
+    "earningsYield": 0.040913477615088595
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2021-09-25",
+    "fiscalYear": "2021",
+    "period": "FY",
+    "returnOnEquity": 1.5007132667617689,
+    "earningsYield": 0.038585824129614886
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2020-09-26",
+    "fiscalYear": "2020",
+    "period": "FY",
+    "returnOnEquity": 0.8786635853012749,
+    "earningsYield": 0.02946728952812424
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2019-09-28",
+    "fiscalYear": "2019",
+    "period": "FY",
+    "returnOnEquity": 0.6106445053487756,
+    "earningsYield": 0.05467822652278504
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2018-09-29",
+    "fiscalYear": "2018",
+    "period": "FY",
+    "returnOnEquity": 0.5556011834209077,
+    "earningsYield": 0.053213212804837894
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2017-09-30",
+    "fiscalYear": "2017",
+    "period": "FY",
+    "returnOnEquity": 0.3607018433832909,
+    "earningsYield": 0.060131976421677245
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2016-09-24",
+    "fiscalYear": "2016",
+    "period": "FY",
+    "returnOnEquity": 0.3562366958026963,
+    "earningsYield": 0.07408652679479812
+   }
+  ]
+ }
+}
