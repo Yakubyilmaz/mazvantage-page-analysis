@@ -1,3 +1,7 @@
 __pycache__/
 *.pyc
 .DS_Store
+
+# assistant/editor local state
+.claude/
+.vscode/*.local.json

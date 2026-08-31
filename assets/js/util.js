@@ -85,6 +85,9 @@ export function dec(v, dp = 2) {
 /** Price with the right number of decimals for its magnitude. */
 export function price(v, currency = 'US$') {
   if (!isNum(v)) return 'n/a';
+  // Sub-dollar prices need four decimals, but zero is not a penny stock — it
+  // is an axis tick, and "US$0.0000" reads as a rounding artefact.
+  if (v === 0) return `${currency}0`;
   const dp = Math.abs(v) >= 100 ? 2 : Math.abs(v) >= 1 ? 2 : 4;
   return currency + v.toLocaleString('en-US', { minimumFractionDigits: dp, maximumFractionDigits: dp });
 }
@@ -97,6 +100,21 @@ export function cagr(first, last, years) {
 }
 
 export function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
+
+/**
+ * Sample standard deviation (n−1), for the consistency metrics.
+ *
+ * n−1 rather than n because five annual observations are a sample of the
+ * company's behaviour, not the whole of it, and the population form would
+ * report a company as steadier than the evidence supports.
+ */
+export function stdev(arr) {
+  const xs = arr.filter(isNum);
+  if (xs.length < 2) return null;
+  const m = xs.reduce((a, b) => a + b, 0) / xs.length;
+  const v = xs.reduce((a, b) => a + (b - m) ** 2, 0) / (xs.length - 1);
+  return Math.sqrt(v);
+}
 
 export function sum(arr) { return arr.reduce((a, b) => a + (isNum(b) ? b : 0), 0); }
 

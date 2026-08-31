@@ -35,7 +35,1259 @@
    }
   },
   "benchmarks": {
-   "note": "Sector and market return comparisons need a live FMP connection."
+   "note": "Sector benchmark: XLK (Technology Select Sector SPDR), bundled with this snapshot. The market benchmark needs a live FMP connection.",
+   "industry": [
+    {
+     "symbol": "XLK",
+     "date": "2026-08-21",
+     "price": 183.31
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-08-20",
+     "price": 183.1
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-08-19",
+     "price": 183.64
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-08-18",
+     "price": 185.62
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-08-17",
+     "price": 190.32
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-08-14",
+     "price": 190.01
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-08-13",
+     "price": 190.77
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-08-12",
+     "price": 188.86
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-08-11",
+     "price": 186.09
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-08-10",
+     "price": 186.32
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-08-07",
+     "price": 187.97
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-08-06",
+     "price": 185.33
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-08-05",
+     "price": 185.91
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-08-04",
+     "price": 186.9
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-08-03",
+     "price": 178.04
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-07-31",
+     "price": 175.35
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-07-30",
+     "price": 175.73
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-07-29",
+     "price": 166.57
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-07-28",
+     "price": 171.09
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-07-27",
+     "price": 174.3
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-07-24",
+     "price": 175.88
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-07-23",
+     "price": 178.45
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-07-22",
+     "price": 180.27
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-07-21",
+     "price": 180.78
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-07-20",
+     "price": 175.71
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-07-17",
+     "price": 175.59
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-07-16",
+     "price": 177.52
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-07-15",
+     "price": 181.58
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-07-14",
+     "price": 183.62
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-07-13",
+     "price": 181.28
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-07-10",
+     "price": 185.78
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-07-09",
+     "price": 185.35
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-07-08",
+     "price": 181.4
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-07-07",
+     "price": 179.18
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-07-06",
+     "price": 183.57
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-07-02",
+     "price": 180.59
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-07-01",
+     "price": 185.62
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-06-30",
+     "price": 190.52
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-06-29",
+     "price": 185.41
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-06-26",
+     "price": 181.11
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-06-25",
+     "price": 184.57
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-06-24",
+     "price": 183.05
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-06-23",
+     "price": 184.19
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-06-22",
+     "price": 192.15
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-06-18",
+     "price": 191.44
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-06-17",
+     "price": 185.8
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-06-16",
+     "price": 186.44
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-06-15",
+     "price": 191.79
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-06-12",
+     "price": 184.8
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-06-11",
+     "price": 183.21
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-06-10",
+     "price": 176.63
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-06-09",
+     "price": 180.77
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-06-08",
+     "price": 184.18
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-06-05",
+     "price": 180.3
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-06-04",
+     "price": 193.17
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-06-03",
+     "price": 196.23
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-06-02",
+     "price": 198.21
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-06-01",
+     "price": 195.76
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-05-29",
+     "price": 191.02
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-05-28",
+     "price": 186.85
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-05-27",
+     "price": 184.43
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-05-26",
+     "price": 185.14
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-05-22",
+     "price": 180.39
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-05-21",
+     "price": 178.6
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-05-20",
+     "price": 177.14
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-05-19",
+     "price": 173.24
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-05-18",
+     "price": 174.36
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-05-15",
+     "price": 176.26
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-05-14",
+     "price": 179.5
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-05-13",
+     "price": 176.85
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-05-12",
+     "price": 175.2
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-05-11",
+     "price": 177.88
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-05-08",
+     "price": 175.52
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-05-07",
+     "price": 169.69
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-05-06",
+     "price": 170.03
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-05-05",
+     "price": 165.63
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-05-04",
+     "price": 162.05
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-05-01",
+     "price": 161.87
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-04-30",
+     "price": 159.5
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-04-29",
+     "price": 159.11
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-04-28",
+     "price": 157.85
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-04-27",
+     "price": 160.57
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-04-24",
+     "price": 160.22
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-04-23",
+     "price": 155.84
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-04-22",
+     "price": 158.09
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-04-21",
+     "price": 154.69
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-04-20",
+     "price": 154.56
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-04-17",
+     "price": 154.35
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-04-16",
+     "price": 152.02
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-04-15",
+     "price": 150.3
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-04-14",
+     "price": 147.94
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-04-13",
+     "price": 145.61
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-04-10",
+     "price": 142.62
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-04-09",
+     "price": 142.07
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-04-08",
+     "price": 141.69
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-04-07",
+     "price": 137.43
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-04-06",
+     "price": 136.78
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-04-02",
+     "price": 135.99
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-04-01",
+     "price": 134.91
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-03-31",
+     "price": 132.9
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-03-30",
+     "price": 127.5
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-03-27",
+     "price": 129.92
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-03-26",
+     "price": 132.5
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-03-25",
+     "price": 136.76
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-03-24",
+     "price": 136.15
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-03-23",
+     "price": 136.95
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-03-20",
+     "price": 135.29
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-03-19",
+     "price": 138.43
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-03-18",
+     "price": 137.96
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-03-17",
+     "price": 139.54
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-03-16",
+     "price": 138.78
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-03-13",
+     "price": 136.8
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-03-12",
+     "price": 137.84
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-03-11",
+     "price": 140.43
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-03-10",
+     "price": 139.76
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-03-09",
+     "price": 139.76
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-03-06",
+     "price": 137.29
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-03-05",
+     "price": 140.18
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-03-04",
+     "price": 139.84
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-03-03",
+     "price": 137.5
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-03-02",
+     "price": 139.54
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-02-27",
+     "price": 138.76
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-02-26",
+     "price": 141.01
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-02-25",
+     "price": 143.01
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-02-24",
+     "price": 140.32
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-02-23",
+     "price": 138.52
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-02-20",
+     "price": 140.88
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-02-19",
+     "price": 140.21
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-02-18",
+     "price": 140.91
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-02-17",
+     "price": 139.48
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-02-13",
+     "price": 139.56
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-02-12",
+     "price": 139.21
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-02-11",
+     "price": 142.97
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-02-10",
+     "price": 142.55
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-02-09",
+     "price": 143.35
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-02-06",
+     "price": 141.13
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-02-05",
+     "price": 135.63
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-02-04",
+     "price": 138.12
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-02-03",
+     "price": 142.08
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-02-02",
+     "price": 145.26
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-01-30",
+     "price": 143.88
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-01-29",
+     "price": 146.87
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-01-28",
+     "price": 149.23
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-01-27",
+     "price": 148.05
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-01-26",
+     "price": 146.08
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-01-23",
+     "price": 145.09
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-01-22",
+     "price": 144.88
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-01-21",
+     "price": 143.81
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-01-20",
+     "price": 141.84
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-01-16",
+     "price": 145.62
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-01-15",
+     "price": 145.46
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-01-14",
+     "price": 144.7
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-01-13",
+     "price": 146.48
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-01-12",
+     "price": 146.79
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-01-09",
+     "price": 146.15
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-01-08",
+     "price": 144.24
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-01-07",
+     "price": 146.53
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-01-06",
+     "price": 146.65
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-01-05",
+     "price": 144.62
+    },
+    {
+     "symbol": "XLK",
+     "date": "2026-01-02",
+     "price": 144.3
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-12-31",
+     "price": 143.97
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-12-30",
+     "price": 145.41
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-12-29",
+     "price": 145.87
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-12-26",
+     "price": 146.53
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-12-24",
+     "price": 146.3
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-12-23",
+     "price": 145.95
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-12-22",
+     "price": 145.16
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-12-19",
+     "price": 144.6
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-12-18",
+     "price": 141.54
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-12-17",
+     "price": 139.39
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-12-16",
+     "price": 142.56
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-12-15",
+     "price": 142.3
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-12-12",
+     "price": 143.69
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-12-11",
+     "price": 147.97
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-12-10",
+     "price": 148.73
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-12-09",
+     "price": 148.02
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-12-08",
+     "price": 147.63
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-12-05",
+     "price": 146.6
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-12-04",
+     "price": 145.54
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-12-03",
+     "price": 145.0
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-12-02",
+     "price": 144.65
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-12-01",
+     "price": 143.18
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-11-28",
+     "price": 143.11
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-11-26",
+     "price": 141.89
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-11-25",
+     "price": 140.23
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-11-24",
+     "price": 139.85
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-11-21",
+     "price": 136.6
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-11-20",
+     "price": 136.07
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-11-19",
+     "price": 140.49
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-11-18",
+     "price": 139.51
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-11-17",
+     "price": 141.82
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-11-14",
+     "price": 144.07
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-11-13",
+     "price": 143.29
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-11-12",
+     "price": 146.96
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-11-11",
+     "price": 146.51
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-11-10",
+     "price": 147.76
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-11-07",
+     "price": 144.08
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-11-06",
+     "price": 144.58
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-11-05",
+     "price": 147.54
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-11-04",
+     "price": 146.97
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-11-03",
+     "price": 150.96
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-10-31",
+     "price": 150.34
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-10-30",
+     "price": 150.2
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-10-29",
+     "price": 152.07
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-10-28",
+     "price": 150.98
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-10-27",
+     "price": 149.5
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-10-24",
+     "price": 146.79
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-10-23",
+     "price": 144.54
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-10-22",
+     "price": 142.75
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-10-21",
+     "price": 144.17
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-10-20",
+     "price": 144.1
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-10-17",
+     "price": 142.51
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-10-16",
+     "price": 142.26
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-10-15",
+     "price": 142.15
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-10-14",
+     "price": 140.76
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-10-13",
+     "price": 142.59
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-10-10",
+     "price": 139.2
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-10-09",
+     "price": 145.1
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-10-08",
+     "price": 145.35
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-10-07",
+     "price": 142.84
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-10-06",
+     "price": 143.8
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-10-03",
+     "price": 142.36
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-10-02",
+     "price": 143.08
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-10-01",
+     "price": 142.31
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-09-30",
+     "price": 140.93
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-09-29",
+     "price": 140.17
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-09-26",
+     "price": 139.42
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-09-25",
+     "price": 139.0
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-09-24",
+     "price": 139.25
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-09-23",
+     "price": 140.11
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-09-22",
+     "price": 141.33
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-09-19",
+     "price": 139.46
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-09-18",
+     "price": 138.06
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-09-17",
+     "price": 135.72
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-09-16",
+     "price": 136.19
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-09-15",
+     "price": 136.66
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-09-12",
+     "price": 135.44
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-09-11",
+     "price": 135.53
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-09-10",
+     "price": 135.07
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-09-09",
+     "price": 132.67
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-09-08",
+     "price": 132.42
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-09-05",
+     "price": 131.43
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-09-04",
+     "price": 131.32
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-09-03",
+     "price": 130.68
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-09-02",
+     "price": 129.9
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-08-29",
+     "price": 131.23
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-08-28",
+     "price": 133.27
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-08-27",
+     "price": 132.23
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-08-26",
+     "price": 131.51
+    },
+    {
+     "symbol": "XLK",
+     "date": "2025-08-25",
+     "price": 130.92
+    }
+   ]
   }
  },
  "note": "Captured from Financial Modeling Prep on 2026-08-24 through the FMP-moi connector (Ultimate tier), so every feed the report uses is present. Statement, dividend and ownership rows are trimmed to the fields the analysis model reads; use the app's \"Save snapshot\" action to capture full payloads for another ticker.",

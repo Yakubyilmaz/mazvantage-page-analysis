@@ -74,7 +74,6 @@ export const FEEDS = {
   peers:            { path: 'stock-peers',                    params: (s) => ({ symbol: s }) },
   executives:       { path: 'key-executives',                 params: (s) => ({ symbol: s }) },
   execComp:         { path: 'governance-executive-compensation', params: (s) => ({ symbol: s }) },
-  employees:        { path: 'historical-employee-count',      params: (s) => ({ symbol: s, limit: 12 }) },
   sharesFloat:      { path: 'shares-float',                   params: (s) => ({ symbol: s }),                                   pick: first },
   insiderTrades:    { path: 'insider-trading/search',         params: (s) => ({ symbol: s, limit: 20 }) },
   insiderStats:     { path: 'insider-trading/statistics',     params: (s) => ({ symbol: s }) },

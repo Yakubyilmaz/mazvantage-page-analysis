@@ -50,35 +50,133 @@ svg { display: block; }
 .mt3      { margin-top: var(--x3); }
 
 /* ==========================================================================
-   Top bar
+   Application frame
+
+   A black product rail down the left, everything else in the column beside
+   it. The rail keeps its own colours rather than reading from the theme —
+   it is black in both light and dark, which is what makes the light report
+   sit against it the way the design intends.
    ========================================================================== */
-.topbar {
-  position: fixed; inset: 0 0 auto 0; height: var(--topbar-h);
-  z-index: var(--z-nav);
+.layout {
+  display: grid;
+  grid-template-columns: var(--sidenav-w) minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.sidenav {
+  background: #000; color: #fff;
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  display: flex; flex-direction: column; gap: var(--x4);
+  padding: var(--x3) var(--x2);
+}
+.sidenav__brand {
+  display: flex; align-items: center; gap: var(--x1_5);
+  padding: var(--x1) var(--x2);
+}
+/* Supplied artwork, both filled white, so they only ever sit on the rail. */
+.sidenav__mark { height: 26px; width: auto; flex: none; }
+.sidenav__word { height: 19px; width: auto; flex: none; }
+.sidenav__nav { display: grid; gap: 2px; }
+.sidenav__item {
+  display: flex; align-items: center; gap: var(--x1_5);
+  padding: var(--x1_5) var(--x2); border-radius: var(--r-1);
+  font-size: var(--text-sm); color: #a1a1aa;
+  cursor: default; user-select: none;
+  transition: background .12s ease, color .12s ease;
+}
+.sidenav__item:hover { background: rgba(255, 255, 255, 0.07); color: #fff; }
+/* Stroked, not filled — a 20px filled glyph turns to mud on black. */
+.sidenav__icon {
+  width: 20px; height: 20px; flex: none;
+  fill: none; stroke: currentColor; stroke-width: 2;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+
+.content { min-width: 0; display: flex; flex-direction: column; }
+
+.logo__mark { width: 28px; height: 28px; flex: none; }
+
+/* Search and the two utility buttons, pinned above the scrolling report. */
+.utilbar {
+  position: sticky; top: 0; z-index: var(--z-nav);
+  min-height: var(--utilbar-h);
+  display: flex; align-items: center; gap: var(--x1_5);
+  padding: var(--x1_5) var(--x3);
   background: var(--surface);
   border-bottom: 1px solid var(--border-soft);
 }
-.topbar__inner {
-  max-width: var(--shell-max); height: 100%; margin: 0 auto;
-  display: flex; align-items: center; gap: var(--x3); padding: 0 var(--x3);
+.utilbar__spacer { flex: 1; }
+
+/* ---------- stock head --------------------------------------------------- */
+
+/* Name, price and the two verdicts, above the tabs — the price is true of the
+   company rather than of whichever tab happens to be open. */
+.pricehead {
+  display: flex; align-items: center; flex-wrap: wrap;
+  gap: var(--x2) var(--x3);
+  padding: var(--x2_5, 20px) var(--x3) var(--x2);
+  background: var(--surface);
 }
-.logo { display: flex; align-items: center; gap: var(--x1); flex: none; }
-.logo__mark { width: 30px; height: 30px; }
-.logo__word { font-size: var(--text-base); font-weight: 700; letter-spacing: -0.015em; }
-.logo__word em { font-style: normal; color: var(--brand-01); }
+.pricehead__id { display: flex; align-items: center; gap: var(--x1_5); min-width: 0; }
+.pricehead__logo {
+  width: 40px; height: 40px; border-radius: var(--r-1); flex: none;
+  background: #fff; object-fit: contain; padding: 4px;
+  border: 1px solid var(--border-soft);
+}
+.pricehead__name {
+  font-size: var(--text-xl); font-weight: 700; letter-spacing: -0.02em; line-height: 1.15;
+}
+.pricehead__meta { font-size: var(--text-tiny); color: var(--text-softer); margin-top: 2px; }
 
-.topnav { display: flex; gap: var(--x2); font-size: var(--text-xs); color: var(--text-soft); }
-.topnav a { padding: var(--x0_5) 0; border-bottom: 2px solid transparent; }
-.topnav a:hover { color: var(--text-solid); }
-.topnav a[aria-current="page"] { color: var(--text-solid); border-bottom-color: var(--brand-01); }
+.pricehead__quote { display: flex; align-items: baseline; gap: var(--x1_5); }
+.pricehead__price {
+  font-size: var(--text-xl); font-weight: 700; letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.pricehead__change { font-size: var(--text-sm); font-weight: 600; color: var(--text-softer); }
+.pricehead__change.is-up { color: var(--good); }
+.pricehead__change.is-down { color: var(--bad); }
 
-.topbar__spacer { flex: 1; }
+.pricehead__pills { display: flex; align-items: center; gap: var(--x1); flex-wrap: wrap; }
+.vpill {
+  display: inline-flex; align-items: center;
+  padding: 6px var(--x1_5); border-radius: var(--r-pill);
+  font-size: var(--text-tiny); font-weight: 600; color: #fff; white-space: nowrap;
+}
+.vpill--good  { background: var(--good); }
+.vpill--bad   { background: var(--bad); }
+.vpill--warn  { background: var(--warning); }
+.vpill--muted { background: var(--text-softer); }
+.vpill--score { background: var(--text-solid); color: var(--surface); }
+
+/* ---------- tab strip ---------------------------------------------------- */
+.tabs {
+  padding: 0 var(--x3);
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--surface);
+  overflow-x: auto;
+}
+.tabs__strip { display: inline-flex; gap: var(--x3); }
+.tab {
+  padding: var(--x1) var(--x1) var(--x1_5);
+  font-size: var(--text-sm); font-weight: 500;
+  color: var(--text-softer);
+  border-bottom: 2px solid transparent;
+  white-space: nowrap; background: none; cursor: default;
+}
+.tab:hover { color: var(--text-solid); }
+/* Inert for now, so the current tab is stated rather than chosen. */
+.tab.is-active {
+  color: var(--text-solid); font-weight: 700;
+  border-bottom-color: var(--text-solid);
+}
 
 .ticker-search { position: relative; flex: none; }
+.ticker-search { flex: 1; max-width: 576px; }
 .ticker-search input {
-  width: 190px; padding: 7px var(--x1_5) 7px 32px;
+  width: 100%; padding: 8px var(--x1_5) 8px 34px;
   background: var(--surface-2); border: 1px solid var(--border-soft);
-  border-radius: var(--r-pill); color: var(--text-solid); font-size: var(--text-xs);
+  border-radius: var(--r-sm); color: var(--text-solid); font-size: var(--text-xs);
 }
 .ticker-search input::placeholder { color: var(--text-subtle); }
 .ticker-search > svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
@@ -96,33 +194,43 @@ svg { display: block; }
    Shell / two-column layout
    ========================================================================== */
 .shell {
-  max-width: var(--shell-max); margin: 0 auto;
-  padding: calc(var(--topbar-h) + var(--x3)) var(--x3) var(--x8);
-  display: grid; grid-template-columns: var(--rail-w) minmax(0, 1fr); gap: var(--x4);
-  align-items: start;
-}
-@media (max-width: 1023px) {
-  .shell { grid-template-columns: minmax(0, 1fr); }
-  .rail { display: none; }
+  /* Left-aligned, not centred. Centring left a growing gap between the rail
+     and the flake as the window widened, while the utility bar, price head
+     and tabs above all start hard against the rail — so the report drifted
+     out of line with its own chrome. */
+  max-width: var(--shell-max); margin: 0 auto 0 0; width: 100%;
+  padding: var(--x3) var(--x3) var(--x8);
+  display: grid; grid-template-columns: var(--flake-w) minmax(0, 1fr);
+  gap: var(--x4); align-items: start;
 }
 
-/* ---------- left rail ---------------------------------------------------- */
-.rail { position: sticky; top: calc(var(--topbar-h) + var(--x2)); }
-.rail__flake { display: grid; place-items: center; }
-.rail__name { margin-top: var(--x1_5); font-size: var(--text-base); font-weight: 600; line-height: 1.25; }
-.rail__meta { color: var(--text-softer); font-size: var(--text-tiny); }
-.rail__actions { display: flex; gap: var(--x1); margin: var(--x2) 0; }
-.rail__actions .btn { flex: 1; }
-.rail__nav { margin-top: var(--x2); border-top: 1px solid var(--border-soft); padding-top: var(--x1); }
-.rail__nav a {
-  display: flex; gap: var(--x1); align-items: baseline;
-  padding: 7px var(--x1); border-radius: var(--r-sm);
-  font-size: var(--text-xs); color: var(--text-soft);
+/* Sticky beside the report, clearing the utility bar that is sticky above it. */
+.pageflake {
+  position: sticky; top: calc(var(--utilbar-h) + var(--x2));
 }
-.rail__nav a:hover { background: var(--surface-1); color: var(--text-solid); }
-.rail__nav a.is-active { background: var(--surface-2); color: var(--text-solid); font-weight: 600; }
-.rail__nav .num { color: var(--text-subtle); width: 11px; font-variant-numeric: tabular-nums; }
-.rail__nav a.is-active .num { color: var(--brand-01); }
+.pageflake__title {
+  font-size: var(--text-micro); font-weight: 600; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--text-softer);
+  text-align: center; margin-bottom: var(--x1);
+}
+.pageflake__host { display: grid; place-items: center; }
+.pageflake__hint {
+  font-size: var(--text-micro); color: var(--text-subtle);
+  text-align: center; margin-top: var(--x1); max-width: 24ch; margin-inline: auto;
+}
+
+@media (max-width: 1023px) {
+  /* Narrow enough that the report needs the whole column. */
+  .shell { grid-template-columns: minmax(0, 1fr); }
+  .pageflake { display: none; }
+}
+
+@media (max-width: 900px) {
+  /* The rail is the first thing to go: the report is the product, and 256px
+     of inert navigation is not what a phone should spend its width on. */
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .sidenav { display: none; }
+}
 
 /* ---------- buttons ------------------------------------------------------ */
 .btn {
@@ -186,7 +294,17 @@ svg { display: block; }
   padding: var(--x3); border-radius: var(--r-2) var(--r-2) 0 0;
 }
 .sec__intro h2 { font-size: var(--text-xl); font-weight: 700; }
-.sec__intro > p { color: var(--text-softer); font-size: var(--text-xs); margin-top: 4px; }
+.sec__intro > p,
+.sec__introtext > p { color: var(--text-softer); font-size: var(--text-xs); margin-top: 4px; }
+
+/* Factor intro: heading and score on the left, the flake on the right. The
+   text column is min-width:0 so the score bar inside it can shrink rather
+   than forcing the flake off the card. */
+.sec__intro--flake {
+  display: flex; align-items: center; gap: var(--x3);
+}
+.sec__introtext { flex: 1 1 auto; min-width: 0; }
+.sec__introflake { flex: 0 0 auto; display: flex; justify-content: center; }
 .sec__summary { font-size: var(--text-xs); color: var(--text-soft); margin-top: var(--x1_5); line-height: 1.65; }
 
 .block { padding-top: var(--x3); border-top: 1px solid var(--border-soft); margin-top: var(--x3); }
@@ -240,7 +358,7 @@ svg { display: block; }
 .tbl tbody tr:last-child td { border-bottom: 0; }
 .tbl tbody tr:hover { background: var(--surface-2); }
 .tbl .num { text-align: right; font-variant-numeric: tabular-nums; }
-.tbl-wrap { overflow-x: auto; }
+.tbl-wrap { overflow-x: auto; container-type: inline-size; }
 
 /* ---------- pills / chips ------------------------------------------------ */
 .pill {
@@ -389,25 +507,366 @@ dialog .hint { font-size: var(--text-tiny); color: var(--text-softer); margin-to
    ========================================================================== */
 
 @media (max-width: 900px) {
-  .topnav { display: none; }
-  .topbar__inner { gap: var(--x1_5); padding: 0 var(--x2); }
-  .ticker-search input { width: 140px; }
+  .utilbar, .tabs { padding-left: var(--x2); padding-right: var(--x2); }
   .shell { padding-left: var(--x2); padding-right: var(--x2); }
   .card { padding: var(--x2); }
   .sec__intro { margin: calc(var(--x2) * -1) calc(var(--x2) * -1) var(--x2); padding: var(--x2); }
+  .sec__intro--flake { flex-direction: column; align-items: stretch; gap: var(--x2); }
   .rpt-head h1 { font-size: var(--text-mega); }
 }
 
 @media (max-width: 460px) {
-  .logo__word { display: none; }
-  .ticker-search input { width: 108px; }
   .rpt-head__actions { width: 100%; margin-left: 0; }
   .statstrip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .gauge { gap: var(--x2); }
 }
 
 @media print {
-  .topbar, .rail, .rangesel, .rpt-head__actions { display: none !important; }
+  .sidenav, .utilbar, .tabs, .pageflake, .rangesel, .rpt-head__actions { display: none !important; }
+  .layout { display: block; }
   .shell { display: block; padding-top: 0; }
   body { background: #fff; }
 }
+
+/* ==========================================================================
+   Grades
+
+   The pill, the ranking bar and the ratio table that carry every graded
+   ratio. Colour runs green -> red across five buckets; see the grade tokens.
+   ========================================================================== */
+
+.grade {
+  display: inline-flex; align-items: baseline; gap: 5px;
+  padding: 3px var(--x1); border-radius: var(--radius-sm);
+  background: var(--grade-na-bg); color: var(--grade-na);
+  font-size: var(--text-tiny); line-height: 1.2; white-space: nowrap;
+}
+.grade b { font-weight: 700; font-size: var(--text-xs); letter-spacing: 0.01em; }
+.grade i { font-style: normal; opacity: 0.75; font-variant-numeric: tabular-nums; }
+
+.grade--strong { background: var(--grade-strong-bg); color: var(--grade-strong); }
+.grade--good   { background: var(--grade-good-bg);   color: var(--grade-good); }
+.grade--mid    { background: var(--grade-mid-bg);    color: var(--grade-mid); }
+.grade--weak   { background: var(--grade-weak-bg);   color: var(--grade-weak); }
+.grade--poor   { background: var(--grade-poor-bg);   color: var(--grade-poor); }
+
+.grade--lg { padding: 5px var(--x1_5); }
+.grade--lg b { font-size: var(--text-md); }
+.grade--lg i { font-size: var(--text-xs); }
+
+/* ---- factor score header ------------------------------------------------ */
+
+.scorepanel--graded .scorepanel__head { justify-content: space-between; }
+.gradebar {
+  height: 6px; border-radius: 3px; margin-top: var(--x1_5);
+  background: var(--border-strong); overflow: hidden;
+}
+.gradebar__fill { height: 100%; border-radius: 3px; background: var(--grade-na); }
+.gradebar__fill.is-strong { background: var(--grade-strong); }
+.gradebar__fill.is-good   { background: var(--grade-good); }
+.gradebar__fill.is-mid    { background: var(--grade-mid); }
+.gradebar__fill.is-weak   { background: var(--grade-weak); }
+.gradebar__fill.is-poor   { background: var(--grade-poor); }
+
+/* ---- ratio tables ------------------------------------------------------- */
+
+.tbl--ratios { width: 100%; min-width: 620px; }
+.tbl--ratios td { border-bottom: 0; padding-bottom: var(--x0_5); }
+.tbl--ratios tbody tr:hover { background: transparent; }
+.tbl--ratios tr.ratio:hover,
+.tbl--ratios tr.ratio:hover + tr.ratio__whyrow { background: var(--surface-2); }
+.tbl--ratios tr.ratio.is-na { opacity: 0.55; }
+
+.ratio__name { display: flex; align-items: center; gap: var(--x1); }
+.ratio__value { font-weight: 600; }
+.ratio__whyrow td {
+  padding-top: 0; padding-bottom: var(--x1_5);
+  border-bottom: 1px solid var(--border-subtle);
+}
+/* A ratio rendered as its own full-width panel: name, chart, explanation.
+   The cell spans every column so the chart uses the table's whole width. */
+.tbl--ratios tr.ratio--full td {
+  /* Same side padding as every other cell, so the panel lines up with the
+     ratio names above and below it rather than running to the table edge. */
+  padding: var(--x1_5) var(--x1_5) var(--x2);
+  border-bottom: 1px solid var(--border-subtle);
+}
+/* Stacked pass/fail lines in the analyst forecast panel. */
+.forecast__check + .forecast__check { margin-top: var(--x2); }
+.forecast__check .ratio__why { max-width: 78ch; margin-top: 4px; }
+
+/* ---------- trailing / forward pairs ------------------------------------- */
+
+/* The two legs of one multiple. The name cell spans both rows, so the pair
+   reads as one ratio seen twice rather than as two unrelated findings. */
+.tbl--ratios tr.ratio--pair td { border-bottom: none; }
+.tbl--ratios tr.ratio--pairbottom td { border-bottom: 1px solid var(--border-subtle); }
+.tbl--ratios tr.ratio--pair:hover { background: transparent; }
+/* Hovering either leg lights the whole pair, including the shared name cell. */
+.tbl--ratios tr.ratio--pairtop:hover,
+.tbl--ratios tr.ratio--pairtop:hover + tr.ratio--pairbottom,
+.tbl--ratios tr.ratio--pairbottom:hover,
+.tbl--ratios tr.ratio--pairtop:has(+ tr.ratio--pairbottom:hover) { background: var(--surface-2); }
+
+.pair__name { display: flex; flex-direction: column; gap: 2px; }
+.pair__title { font-weight: 600; }
+.pair__subtitle { font-size: var(--text-micro); color: var(--text-subtle); }
+
+/* Leg label, tick and grade on one line, right-aligned with the column. */
+.pair__gradecell {
+  display: inline-flex; align-items: center; gap: var(--x1); justify-content: flex-end;
+}
+.pair__leg {
+  font-size: var(--text-micro); color: var(--text-softer);
+  text-transform: uppercase; letter-spacing: .04em; white-space: nowrap;
+}
+/* The forward leg's move against its own trailing twin — the one thing the
+   second row says that the first does not. */
+.pair__delta { display: block; font-size: var(--text-micro); font-weight: 500; margin-top: 2px; }
+/* Green when the move is in the metric's own good direction, which is not
+   always downward — a falling growth rate is not a bargain. */
+.pair__delta.is-better { color: var(--good); }
+.pair__delta.is-worse { color: var(--bad); }
+.pair__delta.is-neutral { color: var(--text-softer); }
+
+.ratio__whyrow--pair td { padding-top: var(--x1); }
+.pair__why--second { color: var(--text-softer); margin-top: 6px; }
+
+/* An explanation that carries its own tick. The icon is nudged down to sit on
+   the first line's baseline rather than its box top, and never shrinks when
+   the sentence wraps. */
+.ratio__why--ticked { display: flex; align-items: flex-start; gap: var(--x1); }
+.ratio__why--ticked > .tick { margin-top: 3px; }
+
+/* ---------- subtopic summary --------------------------------------------- */
+
+/* One line and one axis above a table of near-identical rank bars, so the
+   shape of the subtopic reads before any single ratio does. */
+.blocksum {
+  margin-bottom: var(--x2); padding-bottom: var(--x1_5);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.blocksum__line {
+  font-size: var(--text-xs); color: var(--text-soft);
+  margin: 0 0 var(--x0_5); max-width: 84ch;
+}
+.blocksum .chart { width: 100%; }
+
+@media (max-width: 560px) {
+  .pair__gradecell { flex-wrap: wrap; gap: 4px; }
+}
+
+/* A chart closing off a pair of ratio rows, inside the table. */
+.tbl--ratios tr.ratio__chartrow:hover { background: transparent; }
+.ratio__chartrow td {
+  padding: var(--x2) var(--x1_5) var(--x2);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.ratio__chart { margin: var(--x1_5) 0 var(--x1); }
+.ratio__chart .chart { width: 100%; }
+/* The explanation sits between the ratio name and its chart, so it needs a
+   little air above it rather than butting against the title. */
+.ratio--full .ratio__why { max-width: none; margin-top: 6px; }
+
+/* Panel head: ratio name on the left, model picker pinned right. */
+.ratio__panelhead {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--x2); flex-wrap: wrap;
+}
+.ratio__tickhost { display: inline-flex; }
+.ratio__model {
+  padding: 5px var(--x1_5); border-radius: var(--r-sm);
+  background: var(--surface-3); border: 1px solid var(--border-soft);
+  color: var(--text-solid); font-size: var(--text-tiny);
+  font-family: var(--font-sans); max-width: 100%;
+}
+.ratio__model:hover { border-color: var(--border-strong); }
+
+@media (max-width: 560px) {
+  .ratio__panelhead { gap: var(--x1); }
+  .ratio__model { width: 100%; }
+}
+/* Two pickers on the fair-value panel: which model, and — for a relative
+   multiple — what to set the target against. They wrap together so the pair
+   never splits across the panel head at an awkward width. */
+.fv__pickers { display: flex; align-items: center; gap: var(--x1); flex-wrap: wrap; }
+.fv__basis { display: inline-flex; align-items: center; gap: var(--x1); }
+.fv__basis[hidden] { display: none; }
+.fv__basislabel { font-size: var(--text-tiny); color: var(--text-softer); }
+/* An unavailable basis stays in the list, greyed, with the reason on hover —
+   the reader should see that the choice exists and why it is not on offer. */
+.ratio__model option:disabled { color: var(--text-subtle); }
+
+/* The working behind the selected model. Open by default: a fair value with
+   its arithmetic hidden is the thing this panel is meant to stop being. */
+.fv__assume { margin-top: var(--x2); }
+.fv__assume > summary {
+  cursor: pointer; font-size: var(--text-tiny); font-weight: 600;
+  color: var(--text-soft); letter-spacing: 0.04em; text-transform: uppercase;
+  padding: var(--x0_5) 0;
+}
+.fv__assume > summary::marker { color: var(--text-subtle); }
+.fv__steps { width: 100%; max-width: 520px; border-collapse: collapse; margin-top: var(--x1); }
+.fv__steps td {
+  padding: 6px var(--x1) 6px 0; font-size: var(--text-tiny);
+  color: var(--text-soft); border-bottom: 1px solid var(--border-subtle);
+}
+.fv__steps td.num { text-align: right; font-variant-numeric: tabular-nums; color: var(--text-solid); }
+.fv__steps tr.is-total td {
+  font-weight: 700; color: var(--text-solid);
+  border-bottom: none; border-top: 1px solid var(--border-soft);
+}
+/* Where a target multiple came from, under the step it belongs to. */
+.fv__stepnote { display: block; color: var(--text-subtle); font-size: var(--text-micro); margin-top: 1px; }
+.fv__assumenote {
+  font-size: var(--text-micro); color: var(--text-subtle); margin-top: var(--x1); max-width: 60ch;
+}
+
+/* The football field. Sits below the selected model because it answers a
+   different question — not "what is it worth on this basis" but "how far
+   apart are the answers at all". */
+.fv__range { margin-top: var(--x3); border-top: 1px solid var(--border-subtle); padding-top: var(--x2); }
+.fv__rangetitle {
+  font-size: var(--text-xs); font-weight: 600;
+  color: var(--text-solid); margin: 0 0 4px;
+}
+.fv__range .chart { width: 100%; }
+/* The ratio table is wider than a phone — its header cells do not wrap — so on
+   a narrow screen it scrolls sideways. That is right for a row of numbers and
+   wrong for the fair-value panel, which is mostly prose and charts and would
+   otherwise have to be dragged into view a sentence at a time. Sizing it
+   against the scroll container rather than the table keeps it readable, and
+   sticky-left keeps it in place while the ratio rows beside it scroll.
+
+   `cqi` is the container's inline size, so this needs no breakpoint: on a wide
+   screen the container and the table are the same width and nothing moves. */
+.tbl--ratios tr.ratio--full td > .ratio__panel {
+  position: sticky;
+  left: 0;
+  max-width: calc(100cqi - var(--x3));
+}
+
+
+@media (max-width: 560px) {
+  .fv__pickers { width: 100%; }
+  .fv__basis { width: 100%; }
+  .ratio__model--basis { flex: 1; }
+}
+
+.ratio__why {
+  font-size: var(--text-tiny); color: var(--text-soft);
+  line-height: 1.65; max-width: 74ch;
+}
+
+/* The stand-in for a grade on a metric shown but never scored. Muted and
+   outline-only, so it reads as an absence rather than as a poor result — the
+   `–` NA pill means missing data, this means deliberately excluded. */
+.grade--unscored {
+  background: transparent; border: 1px dashed var(--border-soft);
+  color: var(--text-subtle);
+}
+
+/* The median tick. A reading aid only — it never enters a score. */
+.tick { width: 14px; height: 14px; flex: none; }
+.tick--pass { fill: var(--good); }
+.tick--fail { fill: var(--bad); }
+.tick--na   { fill: var(--text-subtle); }
+
+/* ---- ranking bars ------------------------------------------------------- */
+
+.rankbar { display: flex; align-items: center; gap: var(--x1_5); min-width: 150px; }
+.rankbar__track {
+  flex: 1; height: 5px; border-radius: 3px;
+  background: var(--border-strong); overflow: hidden;
+}
+.rankbar__fill { height: 100%; border-radius: 3px; background: var(--grade-mid); }
+.rankbar__fill.is-top    { background: var(--good); }
+.rankbar__fill.is-bottom { background: var(--warning); }
+.rankbar__label {
+  font-size: var(--text-tiny); white-space: nowrap;
+  font-variant-numeric: tabular-nums; color: var(--text-soft);
+}
+.rankbar__label.is-top    { color: var(--good); }
+.rankbar__label.is-bottom { color: var(--text-soft); }
+
+/* ---- factor grade list -------------------------------------------------- */
+
+.fgrades { display: flex; flex-direction: column; gap: var(--x1_5); }
+.fgrades__row {
+  display: grid; grid-template-columns: 150px 1fr auto;
+  align-items: center; gap: var(--x2);
+  padding: var(--x1) 0; text-decoration: none; color: inherit;
+}
+.fgrades__row:hover .fgrades__name { color: var(--brand-01); }
+.fgrades__name { font-size: var(--text-xs); font-weight: 600; }
+.fgrades__track {
+  height: 8px; border-radius: 4px;
+  background: var(--border-strong); overflow: hidden;
+}
+.fgrades__fill { display: block; height: 100%; border-radius: 4px; background: var(--grade-na); }
+.fgrades__fill.is-strong { background: var(--grade-strong); }
+.fgrades__fill.is-good   { background: var(--grade-good); }
+.fgrades__fill.is-mid    { background: var(--grade-mid); }
+.fgrades__fill.is-weak   { background: var(--grade-weak); }
+.fgrades__fill.is-poor   { background: var(--grade-poor); }
+
+/* ---- score distribution strip ------------------------------------------- */
+
+.distrib { position: relative; padding-top: 46px; }
+.distrib__scale { display: flex; gap: 3px; }
+.distrib__band {
+  flex: 1; display: flex; flex-direction: column; gap: 4px;
+  padding: var(--x1) var(--x1_5); border-radius: var(--radius-sm);
+  background: var(--surface-2); text-align: center;
+}
+.distrib__band i {
+  font-style: normal; font-weight: 700;
+  font-size: var(--text-xs); color: var(--text-soft);
+}
+.distrib__band span { font-size: var(--text-tiny); color: var(--text-softer); }
+.distrib__band:nth-child(1) i { color: var(--grade-poor); }
+.distrib__band:nth-child(2) i { color: var(--grade-weak); }
+.distrib__band:nth-child(3) i { color: var(--grade-mid); }
+.distrib__band:nth-child(4) i { color: var(--grade-good); }
+.distrib__band:nth-child(5) i { color: var(--grade-strong); }
+.distrib__marker { position: absolute; top: 0; transform: translateX(-50%); }
+.distrib__marker::after {
+  content: ''; display: block; width: 2px; height: 12px; margin: 4px auto 0;
+  background: var(--border-strong);
+}
+
+.tbl tr.is-self { background: var(--brand-01-subtle); }
+.tbl tr.is-self b { color: var(--brand-01); }
+
+@media (max-width: 720px) {
+  .fgrades__row { grid-template-columns: 110px 1fr auto; gap: var(--x1_5); }
+  .distrib__band span { display: none; }
+}
+
+@media print {
+  /* Tables must not clip a column off the page edge. */
+  .tbl--ratios { min-width: 0; font-size: 8pt; }
+  .ratio__why { font-size: 7.5pt; }
+  .rankbar { min-width: 90px; }
+  .grade { border: 0.5pt solid currentColor; }
+}
+
+/* ---- sector score distribution ------------------------------------------ */
+
+.distrib__chartwrap { margin-top: var(--x1_5); }
+.distrib__chart {
+  display: block; width: 100%; height: 92px;
+  /* preserveAspectRatio is none, so the bars stretch to the band strip above
+     and each bar lands under the band it belongs to. */
+}
+.distrib__bar { fill: var(--border-strong); }
+.distrib__bar.is-self { fill: var(--brand-01); }
+
+.distrib__axis {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-top: var(--x1);
+  font-size: var(--text-tiny); color: var(--text-subtle);
+  font-variant-numeric: tabular-nums;
+}
+.distrib__axismid { color: var(--text-softer); }

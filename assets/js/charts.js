@@ -203,6 +203,7 @@ export function columnChart(categories, series, {
   stacked = false,
   valueFmt = (v) => money(v),
   forecastFrom = null,               // index at which bars become forecasts
+  refLine = null,                    // { value, label } drawn across the plot
   pad = { t: 16, r: 16, b: 34, l: 62 },
   legend = true,
 } = {}) {
@@ -223,6 +224,11 @@ export function columnChart(categories, series, {
       if (!isNum(v)) continue;
       hi = Math.max(hi, v); lo = Math.min(lo, v);
     }
+  }
+  // The reference line has to fit inside the plot or it is drawn off it.
+  if (refLine && isNum(refLine.value)) {
+    hi = Math.max(hi, refLine.value);
+    lo = Math.min(lo, refLine.value);
   }
   const dom = niceDomain(lo, hi, 4);
   const sy = linear(dom.lo, dom.hi, y0, y1);
@@ -263,7 +269,9 @@ export function columnChart(categories, series, {
       const isForecast = isNum(forecastFrom) && i >= forecastFrom;
       const rect = svgEl('rect', {
         x: bx, y, width: Math.max(barW - 1.5, 1), height: Math.max(h, 1),
-        rx: 2, fill: s.color,
+        // `colors` singles out one bar inside a series — the company among its
+        // peers — without splitting it into two series and halving every bar.
+        rx: 2, fill: (s.colors && s.colors[i]) || s.color,
         opacity: isForecast ? 0.55 : 1,
         stroke: isForecast ? s.color : null,
         'stroke-dasharray': isForecast ? '3 2' : null,
@@ -274,6 +282,25 @@ export function columnChart(categories, series, {
   });
 
   g.append(svgEl('line', { x1: x0, x2: x1, y1: zero, y2: zero, stroke: 'var(--chart-axis)', 'stroke-width': 1 }));
+
+  if (refLine && isNum(refLine.value)) {
+    const ry = sy(refLine.value);
+    g.append(svgEl('line', {
+      x1: x0, x2: x1, y1: ry, y2: ry,
+      stroke: refLine.color || 'var(--text-softer)', 'stroke-width': 1, 'stroke-dasharray': '4 3',
+    }));
+    if (refLine.label) {
+      // `align` picks the end of the line with room above it. On a chart sorted
+      // ascending that is the left, where the shortest bars are; the default
+      // right-hand placement would sit on top of the tallest one.
+      const atStart = refLine.align === 'start';
+      g.append(svgEl('text', {
+        x: atStart ? x0 + 4 : x1, y: ry - 6,
+        'text-anchor': atStart ? 'start' : 'end', 'font-size': 11,
+        fill: refLine.color || 'var(--text-softer)',
+      }, refLine.label));
+    }
+  }
 
   const ax = svgEl('g', { class: 'axis' });
   const every = Math.ceil(categories.length / 12);
@@ -301,6 +328,116 @@ function legendFor(series) {
     l.append(sp);
   }
   return l;
+}
+
+/* ==========================================================================
+   Waterfall — how revenue becomes earnings
+
+   Each step is either a `total` (a bar standing on zero: revenue, gross
+   profit, earnings) or a `delta` (a bar floating between the running total
+   and the next one: the costs subtracted along the way). Dashed connectors
+   carry the running total from one bar to the next, which is what makes the
+   subtraction legible rather than a row of unrelated bars.
+
+   steps: [{ label, value, kind: 'total'|'delta', color? }]
+   A delta's value is signed — pass costs as negatives.
+   ========================================================================== */
+
+export function waterfallChart(steps, {
+  height = 300,
+  valueFmt = (v) => money(v),
+  pad = { t: 30, r: 16, b: 42, l: 70 },
+  /* Step names here are the longest axis labels in the report ("Cost of
+     revenue", "Other expenses"). Below this the shared 760-unit viewBox
+     scales them past legibility, so the chart scrolls instead of shrinking. */
+  minWidth = 520,
+} = {}) {
+  const svg = frame(height);
+
+  // Resolve every bar's span before scaling: a delta hangs off wherever the
+  // running total had reached, a total is measured from zero.
+  const scroller = (node) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'chart-scroll';
+    node.style.minWidth = `${minWidth}px`;
+    wrap.append(node);
+    return wrap;
+  };
+
+  let running = 0;
+  const bars = [];
+  for (const s of steps) {
+    if (!isNum(s.value)) continue;
+    const isTotal = s.kind === 'total';
+    const from = isTotal ? 0 : running;
+    const to = isTotal ? s.value : running + s.value;
+    running = to;
+    bars.push({ ...s, from, to, isTotal });
+  }
+  if (bars.length < 2) return empty(svg, height, 'Not enough of the income statement to chart');
+
+  const x0 = pad.l, x1 = W - pad.r, y0 = height - pad.b, y1 = pad.t;
+
+  let lo = 0, hi = 0;
+  for (const b of bars) {
+    lo = Math.min(lo, b.from, b.to);
+    hi = Math.max(hi, b.from, b.to);
+  }
+  const dom = niceDomain(lo, hi, 4);
+  const sy = linear(dom.lo, dom.hi, y0, y1);
+
+  const g = svgEl('g');
+  yAxis(g, sy, dom, { fmt: (v) => valueFmt(v), x0, x1, labelX: x0 - 8 });
+
+  const slot = (x1 - x0) / bars.length;
+  const barW = Math.min(slot * 0.58, 96);
+  const leftOf = (i) => x0 + slot * i + (slot - barW) / 2;
+
+  bars.forEach((b, i) => {
+    const bx = leftOf(i);
+    const yTop = sy(Math.max(b.from, b.to));
+    const yBot = sy(Math.min(b.from, b.to));
+    const h = Math.max(yBot - yTop, 1);
+
+    const color = b.color
+      || (b.isTotal ? 'var(--chart-01)' : b.value < 0 ? 'var(--bad)' : 'var(--good)');
+
+    const rect = svgEl('rect', { x: bx, y: yTop, width: barW, height: h, rx: 2, fill: color });
+    bindTip(rect, () => `<b>${b.label}</b>`
+      + `<span class="k">${b.isTotal ? 'running total: ' : 'change: '}</span>`
+      + `${valueFmt(b.isTotal ? b.to : b.value)}`);
+    g.append(rect);
+
+    // The figure sits above the bar, which is where the eye lands first.
+    g.append(svgEl('text', {
+      x: bx + barW / 2, y: yTop - 9, 'text-anchor': 'middle',
+      'font-size': 11, 'font-weight': 600, fill: 'var(--text-soft)',
+    }, valueFmt(b.isTotal ? b.to : b.value)));
+
+    // Connector to the next bar, drawn at the running total they share.
+    if (i < bars.length - 1) {
+      const y = sy(b.to);
+      g.append(svgEl('line', {
+        x1: bx + barW, x2: leftOf(i + 1), y1: y, y2: y,
+        stroke: 'var(--chart-axis)', 'stroke-width': 1, 'stroke-dasharray': '3 3', opacity: 0.55,
+      }));
+    }
+  });
+
+  g.append(svgEl('line', {
+    x1: x0, x2: x1, y1: sy(0), y2: sy(0), stroke: 'var(--chart-axis)', 'stroke-width': 1,
+  }));
+
+  const ax = svgEl('g', { class: 'axis' });
+  bars.forEach((b, i) => {
+    ax.append(svgEl('text', {
+      x: leftOf(i) + barW / 2, y: height - 14, 'text-anchor': 'middle', 'font-size': 11,
+    }, b.label));
+  });
+  g.append(ax);
+
+  svg.append(g);
+  return scroller(svg);
 }
 
 /* ==========================================================================
@@ -451,6 +588,392 @@ export function fairValueChart({ current, fair, currency = 'US$' }, { height = 1
     x: pad.l, y: pad.t + rowH * 2 + 22, 'font-size': 13,
     fill: over ? 'var(--bad)' : 'var(--good)', 'font-weight': 600,
   }, `${pct(gap)} ${over ? 'overvalued' : 'undervalued'}`));
+
+  svg.append(g);
+  return svg;
+}
+
+/* ==========================================================================
+   Multi-line chart — two or more quantities sharing one axis over time
+
+   `lineChart` above draws a single price series with a filled area. This one
+   is for comparing levels: several named series on one scale, no fill, a dot
+   at every observation. It is the right shape wherever the question is "which
+   of these moved, and did they move together" rather than "what did this do".
+   ========================================================================== */
+
+export function multiLineChart(series, {
+  height = 260,
+  valueFmt = (v) => money(v),
+  labelFmt = (d) => String(yearOf(d)),
+  pad = { t: 16, r: 20, b: 34, l: 64 },
+} = {}) {
+  const svg = frame(height);
+  const live = series.filter((s) => (s.points || []).some((p) => isNum(p.value)));
+  if (!live.length) return empty(svg, height, 'No history to chart');
+
+  const dates = live[0].points.map((p) => p.date);
+  const n = dates.length;
+  if (n < 2) return empty(svg, height, 'Not enough history to chart');
+
+  const all = live.flatMap((s) => s.points.map((p) => p.value)).filter(isNum);
+  // Zero is included on purpose: these are levels, so the distance from
+  // nothing is part of the reading, and a clipped axis would exaggerate every
+  // wobble in a line that never goes near it.
+  const dom = niceDomain(Math.min(0, ...all), Math.max(...all), 4);
+
+  const x0 = pad.l, x1 = W - pad.r, y0 = height - pad.b, y1 = pad.t;
+  const sx = (i) => x0 + ((x1 - x0) * i) / (n - 1);
+  const sy = linear(dom.lo, dom.hi, y0, y1);
+
+  const g = svgEl('g');
+  yAxis(g, sy, dom, { fmt: valueFmt, x0, x1, labelX: x0 - 8 });
+
+  for (const s of live) {
+    const pts = s.points.map((p, i) => (isNum(p.value) ? [sx(i), sy(p.value)] : null)).filter(Boolean);
+    if (pts.length < 2) continue;
+    g.append(svgEl('path', {
+      d: pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x},${y}`).join(' '),
+      fill: 'none', stroke: s.color, 'stroke-width': 2,
+      'stroke-linejoin': 'round', 'stroke-linecap': 'round',
+    }));
+    s.points.forEach((p, i) => {
+      if (!isNum(p.value)) return;
+      const dot = svgEl('circle', {
+        cx: sx(i), cy: sy(p.value), r: 3.5, fill: s.color,
+        stroke: 'var(--surface-1)', 'stroke-width': 1.5,
+      });
+      bindTip(dot, () => `<b>${labelFmt(p.date)}</b><br><span class="k">${s.name}: </span>${valueFmt(p.value)}`);
+      g.append(dot);
+    });
+  }
+
+  const ax = svgEl('g', { class: 'axis' });
+  const every = Math.ceil(n / 10);
+  dates.forEach((d, i) => {
+    if (i % every) return;
+    ax.append(svgEl('text', {
+      x: sx(i), y: height - 12, 'font-size': 11, 'text-anchor': 'middle',
+    }, labelFmt(d)));
+  });
+  g.append(ax);
+
+  svg.append(g);
+  const wrap = document.createElement('div');
+  wrap.append(svg, legendFor(live));
+  return wrap;
+}
+
+/* ==========================================================================
+   Sankey — where a total splits, and what it splits into
+
+   No library. Nodes are placed in explicit columns by the caller; the layout
+   only has to size them and route the ribbons, because a financial statement
+   already knows its own left-to-right order and letting an algorithm reorder
+   it would scramble the reading.
+
+   A node's height is the larger of what flows in and what flows out. For a
+   statement those are equal by construction — that is what makes it a
+   statement — so any visible mismatch is a data problem worth seeing rather
+   than one worth hiding.
+
+     nodes: [{ id, label, layer, color }]
+     links: [{ from, to, value }]
+   ========================================================================== */
+
+export function sankeyChart({ nodes, links }, { height = 300, fmt = (v) => money(v) } = {}) {
+  const svg = frame(height, 'chart--sankey');
+  const live = links.filter((l) => isNum(l.value) && l.value > 0);
+  if (!live.length) return empty(svg, height, 'Not enough of the statement is published to draw this');
+
+  const byId = new Map(nodes.map((n) => [n.id, { ...n, in: 0, out: 0 }]));
+  for (const l of live) {
+    const a = byId.get(l.from);
+    const b = byId.get(l.to);
+    if (!a || !b) continue;
+    a.out += l.value;
+    b.in += l.value;
+  }
+  for (const n of byId.values()) n.total = Math.max(n.in, n.out);
+
+  const layers = [...new Set(nodes.map((n) => n.layer))].sort((a, b) => a - b);
+  const cols = layers.map((L) => [...byId.values()].filter((n) => n.layer === L && n.total > 0));
+  if (!cols.some((c) => c.length)) return empty(svg, height, 'Nothing to chart');
+
+  const pad = { t: 22, b: 22, l: 4, r: 4 };
+  const NODE_W = 13;
+  // Enough vertical air for a two-line label beside each node without the
+  // value of one colliding with the name of the next one down.
+  const GAP = 28;
+  const usable = height - pad.t - pad.b;
+
+  // One scale for every column, set by the fullest one, so a bar's height is
+  // comparable across the whole diagram rather than per column.
+  let scale = Infinity;
+  for (const col of cols) {
+    if (!col.length) continue;
+    const sum = col.reduce((t, n) => t + n.total, 0);
+    const room = usable - GAP * (col.length - 1);
+    if (room > 0 && sum > 0) scale = Math.min(scale, room / sum);
+  }
+  if (!isFinite(scale) || scale <= 0) return empty(svg, height, 'Nothing to chart');
+
+  const colX = (i) => {
+    if (layers.length === 1) return pad.l;
+    const span = W - pad.l - pad.r - NODE_W;
+    return pad.l + (span * i) / (layers.length - 1);
+  };
+
+  cols.forEach((col, i) => {
+    const sum = col.reduce((t, n) => t + n.total, 0);
+    let y = pad.t + (usable - (sum * scale + GAP * (col.length - 1))) / 2;
+    for (const n of col) {
+      n.x = colX(i);
+      n.y = y;
+      n.h = Math.max(n.total * scale, 1.5);
+      n.inCursor = n.y;
+      n.outCursor = n.y;
+      y += n.h + GAP;
+    }
+  });
+
+  const g = svgEl('g');
+  const ribbons = svgEl('g');
+
+  // Ribbons first, so the node bars and their labels sit over the joins.
+  for (const l of live) {
+    const a = byId.get(l.from);
+    const b = byId.get(l.to);
+    if (!a || !b || !isNum(a.x) || !isNum(b.x)) continue;
+
+    const h = l.value * scale;
+    const y0 = a.outCursor;
+    const y1 = b.inCursor;
+    a.outCursor += h;
+    b.inCursor += h;
+
+    const x0 = a.x + NODE_W;
+    const x1 = b.x;
+    const mx = (x0 + x1) / 2;
+    const d = `M${x0},${y0} C${mx},${y0} ${mx},${y1} ${x1},${y1}`
+      + ` L${x1},${y1 + h} C${mx},${y1 + h} ${mx},${y0 + h} ${x0},${y0 + h} Z`;
+
+    const path = svgEl('path', { d, fill: b.color || a.color || 'var(--chart-01)', opacity: 0.3 });
+    bindTip(path, () => `<b>${a.label} → ${b.label}</b><br>${fmt(l.value)}`);
+    path.addEventListener('pointerenter', () => path.setAttribute('opacity', '0.55'));
+    path.addEventListener('pointerleave', () => path.setAttribute('opacity', '0.3'));
+    ribbons.append(path);
+  }
+  g.append(ribbons);
+
+  for (const n of byId.values()) {
+    if (!isNum(n.x)) continue;
+    const rect = svgEl('rect', {
+      x: n.x, y: n.y, width: NODE_W, height: n.h, rx: 2,
+      fill: n.color || 'var(--chart-01)',
+    });
+    bindTip(rect, () => `<b>${n.label}</b><br>${fmt(n.total)}`);
+    g.append(rect);
+
+    // Beside the bar and vertically centred, never above and below it: a
+    // stacked column would otherwise run one node's value into the next one's
+    // name. The last column reads inward for the same reason the others read
+    // outward — there is no canvas to its right.
+    const last = n.layer === layers[layers.length - 1];
+    const anchor = last ? 'end' : 'start';
+    const lx = last ? n.x - 7 : n.x + NODE_W + 7;
+    const cy = n.y + n.h / 2;
+
+    g.append(svgEl('text', {
+      x: lx, y: cy - 2, 'text-anchor': anchor, 'font-size': 11, fill: 'var(--text-soft)',
+    }, n.label));
+    g.append(svgEl('text', {
+      x: lx, y: cy + 11, 'text-anchor': anchor, 'font-size': 11,
+      'font-weight': 600, fill: 'var(--text-solid)',
+    }, fmt(n.total)));
+  }
+
+  svg.append(g);
+  return svg;
+}
+
+/* ==========================================================================
+   Percentile strip — one subtopic's ratios at a glance
+
+   A block of eight ratios is eight rank bars that all look alike, and the
+   pattern across them is the thing a reader actually wants: are they all
+   expensive, or is one dragging the rest? Every ratio goes on one axis of
+   sector percentile, so the spread and the outliers read in a glance.
+
+   The axis runs cheap to dear because that is the direction the grade runs:
+   `pctile` here is already the graded percentile, inverted for the ratios
+   where low is good, so 100 is always the good end.
+   ========================================================================== */
+
+export function percentileStrip(rows, { height = 96 } = {}) {
+  const svg = frame(height, 'chart--strip');
+  const live = rows.filter((r) => isNum(r.pctile));
+  if (!live.length) return empty(svg, height, 'Nothing here could be ranked against the sector');
+
+  const pad = { l: 56, r: 56, t: 30, b: 30 };
+  const sx = linear(0, 1, pad.l, W - pad.r);
+  const midY = pad.t + (height - pad.t - pad.b) / 2;
+  const g = svgEl('g');
+
+  // Track, median mark and the two ends.
+  g.append(svgEl('line', {
+    x1: pad.l, x2: W - pad.r, y1: midY, y2: midY,
+    stroke: 'var(--border-soft)', 'stroke-width': 2, 'stroke-linecap': 'round',
+  }));
+  g.append(svgEl('line', {
+    x1: sx(0.5), x2: sx(0.5), y1: midY - 16, y2: midY + 16,
+    stroke: 'var(--text-subtle)', 'stroke-width': 1, 'stroke-dasharray': '3 3',
+  }));
+  g.append(svgEl('text', {
+    x: sx(0.5), y: pad.t - 12, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--text-subtle)',
+  }, 'sector median'));
+
+  for (const [x, anchor, label] of [[pad.l, 'start', 'Weaker'], [W - pad.r, 'end', 'Stronger']]) {
+    g.append(svgEl('text', {
+      x, y: height - 8, 'text-anchor': anchor, 'font-size': 11, fill: 'var(--text-softer)',
+    }, label));
+  }
+
+  // Lanes, so ratios that rank within a few points of each other stay legible
+  // instead of stacking into one dot.
+  const sorted = [...live].sort((a, b) => a.pctile - b.pctile);
+  const lastX = [];
+  const MIN_GAP = 26;
+  for (const r of sorted) {
+    const x = sx(r.pctile);
+    let lane = 0;
+    while (lane < 3 && isNum(lastX[lane]) && x - lastX[lane] < MIN_GAP) lane++;
+    if (lane === 3) lane = 0;
+    lastX[lane] = x;
+    r._x = x;
+    r._y = midY + (lane === 0 ? 0 : lane === 1 ? -13 : 13);
+  }
+
+  for (const r of sorted) {
+    if (r._y !== midY) {
+      g.append(svgEl('line', {
+        x1: r._x, x2: r._x, y1: midY, y2: r._y,
+        stroke: 'var(--border-soft)', 'stroke-width': 1,
+      }));
+    }
+    const dot = svgEl('circle', {
+      cx: r._x, cy: r._y, r: 5,
+      fill: r.pctile >= 0.5 ? 'var(--good)' : 'var(--bad)',
+      stroke: 'var(--surface-1)', 'stroke-width': 1.5,
+    });
+    bindTip(dot, () => `<b>${r.label}</b><br>${r.valueText ?? ''}${r.valueText ? ' · ' : ''}${r.rankText ?? ''}`);
+    g.append(dot);
+  }
+
+  svg.append(g);
+  return svg;
+}
+
+/* ==========================================================================
+   Valuation range — the football field
+
+   Every model that produced a number, on one price axis, against the market
+   price. A single model is an opinion; the spread across all of them is the
+   actual finding, and it is the one thing a picker showing one model at a
+   time can never say. Where the models disagree is information too — a P/B
+   answer far below a P/E answer says the value is not in the book.
+   ========================================================================== */
+
+export function valuationRangeChart(rows, { current, currency = 'US$' } = {}) {
+  const rowH = 24;
+  const pad = { l: 138, r: 30, t: 34, b: 32 };
+  const height = pad.t + Math.max(rows.length, 1) * rowH + pad.b;
+  const svg = frame(height, 'chart--range');
+  if (!rows.length) return empty(svg, height, 'No model produced a fair value');
+
+  const vals = rows.map((r) => r.value);
+  const lo = Math.min(...vals);
+  const hi = Math.max(...vals);
+  // The axis starts at zero. These are prices, so the distance from nothing is
+  // meaningful, and a clipped axis would exaggerate every gap on the chart.
+  const dom = niceDomain(0, Math.max(hi, isNum(current) ? current : hi) * 1.06, 6);
+  const sx = linear(dom.lo, dom.hi, pad.l, W - pad.r);
+  const gridY = pad.t + rows.length * rowH;
+  const g = svgEl('g');
+
+  // Band across the models' own range, so the spread reads before any one dot.
+  g.append(svgEl('rect', {
+    x: sx(lo), y: pad.t, width: Math.max(sx(hi) - sx(lo), 1), height: rows.length * rowH,
+    fill: 'var(--brand-01-subtle)', rx: 3,
+  }));
+
+  const sorted = [...vals].sort((a, b) => a - b);
+  const mid = sorted.length % 2
+    ? sorted[(sorted.length - 1) / 2]
+    : (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2;
+  g.append(svgEl('line', {
+    x1: sx(mid), x2: sx(mid), y1: pad.t, y2: gridY,
+    stroke: 'var(--brand-01)', 'stroke-width': 1, 'stroke-dasharray': '3 3', opacity: 0.75,
+  }));
+
+  const axis = svgEl('g', { class: 'axis' });
+  for (const v of ticksOf(dom)) {
+    axis.append(svgEl('line', {
+      x1: sx(v), x2: sx(v), y1: pad.t, y2: gridY,
+      stroke: 'var(--border-subtle)', 'stroke-width': 1,
+    }));
+    axis.append(svgEl('text', {
+      x: sx(v), y: gridY + 16, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--text-softer)',
+    }, money(v, { currency, dp: 0, plain: true })));
+  }
+  g.append(axis);
+
+  rows.forEach((r, i) => {
+    const y = pad.t + i * rowH + rowH / 2;
+    const over = isNum(current) && current > r.value;
+    const color = over ? 'var(--bad)' : 'var(--good)';
+
+    g.append(svgEl('text', {
+      x: pad.l - 12, y: y + 4, 'text-anchor': 'end', 'font-size': 11.5, fill: 'var(--text-soft)',
+    }, r.label));
+
+    // A leader line from the axis to the dot. Without it the eye cannot carry
+    // a label across 400px of empty chart to the right dot.
+    g.append(svgEl('line', {
+      x1: pad.l, x2: sx(r.value), y1: y, y2: y,
+      stroke: 'var(--border-soft)', 'stroke-width': 1,
+    }));
+
+    const dot = svgEl('circle', { cx: sx(r.value), cy: y, r: 5, fill: color });
+    bindTip(dot, () => `<b>${r.full}</b><br>${price(r.value, currency)}`
+      + (r.basisLabel ? `<br>target from ${r.basisLabel}` : '')
+      + (isNum(r.target) ? ` — ${trim(r.target, 1)}x` : ''));
+    g.append(dot);
+
+    // The figure rides beside its dot, flipping to the inside near the right
+    // edge so a model close to the axis maximum still reads.
+    const near = sx(r.value) > W - pad.r - 78;
+    g.append(svgEl('text', {
+      x: sx(r.value) + (near ? -11 : 11), y: y + 4,
+      'text-anchor': near ? 'end' : 'start',
+      'font-size': 11.5, 'font-weight': 600, fill: color,
+    }, price(r.value, currency)));
+  });
+
+  // The market price, last so it sits over the dots.
+  if (isNum(current)) {
+    const cx = sx(current);
+    g.append(svgEl('line', {
+      x1: cx, x2: cx, y1: pad.t - 8, y2: gridY + 4,
+      stroke: 'var(--brand-01)', 'stroke-width': 2,
+    }));
+    const nearRight = cx > W - pad.r - 70;
+    g.append(svgEl('text', {
+      x: cx + (nearRight ? -8 : 8), y: pad.t - 14,
+      'text-anchor': nearRight ? 'end' : 'start',
+      'font-size': 11.5, 'font-weight': 600, fill: 'var(--brand-01)',
+    }, `Price ${price(current, currency)}`));
+  }
 
   svg.append(g);
   return svg;

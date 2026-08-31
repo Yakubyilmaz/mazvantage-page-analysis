@@ -18,6 +18,8 @@
    ========================================================================== */
 
 import { isNum, cagr, mean, median, pct, mult, money, price, trim, dec, yearOf, clamp } from './util.js';
+import { sectorLookup } from './grading.js';
+import { gradeAll, FACTOR_KEYS, METRICS } from './factors.js';
 
 /* ==========================================================================
    Benchmarks
@@ -27,6 +29,13 @@ import { isNum, cagr, mean, median, pct, mult, money, price, trim, dec, yearOf, 
 
 export const DEFAULT_BENCHMARKS = {
   riskFreeRate: 0.042,          // 10y treasury — "savings rate" hurdle
+  terminalGrowth: 0.025,        // perpetual growth past the forecast horizon.
+                                // Held below the risk-free rate on purpose: a
+                                // company growing faster than the economy for
+                                // ever eventually becomes the economy.
+  equityRiskPremium: 0.045,     // excess return demanded for holding equities;
+                                // with beta this gives a cost of equity, the
+                                // risk-adjusted bar a forecast return must clear
   marketEarningsGrowth: 0.147,  // forecast annual earnings growth, US market
   marketRevenueGrowth: 0.095,   // forecast annual revenue growth, US market
   highGrowth: 0.20,             // "high growth" bar for earnings and revenue
@@ -197,12 +206,37 @@ function deriveFacts(ds, bm) {
     grossMargin: r.grossProfitMarginTTM ?? null,
     operatingMargin: r.operatingProfitMarginTTM ?? null,
     netMargin: r.netProfitMarginTTM ?? null,
+    ebitdaMargin: r.ebitdaMarginTTM ?? null,
     roe: km.returnOnEquityTTM ?? null,
     roa: km.returnOnAssetsTTM ?? null,
     roic: km.returnOnInvestedCapitalTTM ?? null,
+    roce: km.returnOnCapitalEmployedTTM ?? null,
+    returnOnTangibleAssets: km.returnOnTangibleAssetsTTM ?? null,
+
+    // Efficiency and earnings quality.
+    assetTurnover: r.assetTurnoverTTM ?? null,
+    fixedAssetTurnover: r.fixedAssetTurnoverTTM ?? null,
+    cashPerShare: r.cashPerShareTTM ?? null,
+    capexToRevenue: km.capexToRevenueTTM ?? null,
+    sbcToRevenue: km.stockBasedCompensationToRevenueTTM ?? null,
+    effectiveTaxRate: r.effectiveTaxRateTTM ?? null,
+    fcfToOcf: r.freeCashFlowOperatingCashFlowRatioTTM
+      ?? (isNum(fcf) && isNum(ocf) && ocf > 0 ? fcf / ocf : null),
+
+    // Liquidity, leverage and coverage.
     currentRatio: cr,
     quickRatio: r.quickRatioTTM ?? null,
+    cashRatio: r.cashRatioTTM ?? null,
     debtToEquity: r.debtToEquityRatioTTM ?? null,
+    debtToAssets: r.debtToAssetsRatioTTM ?? null,
+    financialLeverage: r.financialLeverageRatioTTM ?? null,
+    longTermDebtToCapital: r.longTermDebtToCapitalRatioTTM ?? null,
+    debtToCapital: r.debtToCapitalRatioTTM ?? null,
+    netDebtToEbitda: km.netDebtToEBITDATTM ?? null,
+    solvencyRatio: r.solvencyRatioTTM ?? null,
+    debtServiceCoverage: r.debtServiceCoverageRatioTTM ?? null,
+    bookValuePerShare: r.bookValuePerShareTTM ?? null,
+    tangibleBookValuePerShare: r.tangibleBookValuePerShareTTM ?? null,
     incomeQuality: km.incomeQualityTTM ?? (isNum(ocf) && isNum(netIncome) && netIncome > 0 ? ocf / netIncome : null),
     dividendYield: r.dividendYieldTTM ?? null,
     dividendPerShare: r.dividendPerShareTTM ?? null,
@@ -240,6 +274,7 @@ function deriveForecast(ds, facts) {
     netIncomeLow: e.netIncomeLow ?? null,
     netIncomeHigh: e.netIncomeHigh ?? null,
     ebitda: e.ebitdaAvg ?? null,
+    ebit: e.ebitAvg ?? null,
     eps: e.epsAvg ?? null,
     epsLow: e.epsLow ?? null,
     epsHigh: e.epsHigh ?? null,
@@ -433,297 +468,6 @@ function fairPe(growth, bm) {
 }
 
 /* ==========================================================================
-   Checks
-   ========================================================================== */
-
-const PASS = 'pass', FAIL = 'fail', NA = 'na';
-
-/** Build one check. `state` may be null, meaning "not evaluable". */
-function check(id, label, state, note, why) {
-  return { id, label, state: state ?? NA, note: note ?? '', why: why ?? '' };
-}
-
-/** Convenience: turn a boolean-or-null into a state. */
-const st = (b) => (b === null || b === undefined ? NA : b ? PASS : FAIL);
-
-const NEED = {
-  statements: 'Needs the income / balance / cash-flow feeds (FMP Starter and above).',
-  dividends: 'Needs the dividend history feed (FMP Starter and above).',
-  estimates: 'Needs the analyst-estimates feed.',
-  dcf: 'Needs the discounted-cash-flow feed.',
-  comp: 'Needs the executive-compensation feed (FMP Premium and above).',
-};
-
-function buildChecks({ facts, forecast, history, peers, dividends, execs, bm, ds }) {
-  const V = [], F = [], P = [], H = [], D = [], M = [];
-  const p = facts.price;
-
-  /* ---------------- Valuation ------------------------------------------- */
-  const dcfRow = ds.get('dcfLevered') || ds.get('dcf');
-  const fairValue = dcfRow ? (dcfRow.dcf ?? dcfRow.equityValuePerShare ?? null) : null;
-  const discount = (isNum(fairValue) && isNum(p) && fairValue > 0) ? 1 - p / fairValue : null;
-
-  V.push(check('IsUndervaluedBasedOnDCF', 'Below Future Cash Flow Value',
-    st(isNum(discount) ? discount > 0 : null),
-    isNum(discount)
-      ? `${facts.symbol} (${price(p)}) is trading ${pct(Math.abs(discount))} ${discount > 0 ? 'below' : 'above'} our estimate of its fair value (${price(fairValue)}).`
-      : 'No discounted cash flow estimate is available for this company.',
-    isNum(discount) ? '' : NEED.dcf));
-
-  V.push(check('IsHighlyUndervaluedBasedOnDCF', 'Significantly Below Future Cash Flow Value',
-    st(isNum(discount) ? discount >= 0.20 : null),
-    isNum(discount)
-      ? `${facts.symbol} is trading ${pct(Math.abs(discount))} ${discount > 0 ? 'below' : 'above'} fair value; a 20% or better discount is needed to pass.`
-      : 'No discounted cash flow estimate is available for this company.',
-    isNum(discount) ? '' : NEED.dcf));
-
-  const peerPe = peers.peerPe;
-  V.push(check('IsGoodValueComparingPreferredMultipleToPeersAverageValue', 'Price-To-Earnings vs Peers',
-    st(isNum(facts.pe) && isNum(peerPe) ? facts.pe < peerPe : null),
-    (isNum(facts.pe) && isNum(peerPe))
-      ? `${facts.symbol} is ${facts.pe < peerPe ? 'good' : 'expensive'} value based on its Price-To-Earnings Ratio (${mult(facts.pe)}) compared to the peer average (${mult(peerPe)}) across ${peers.peers.filter((x) => isNum(x.pe)).length} peers.`
-      : 'Not enough peer earnings multiples to compare against.',
-    (isNum(facts.pe) && isNum(peerPe)) ? ''
-      : 'Peer multiples are fetched one request per peer, so this needs a live FMP connection.'));
-
-  const indPe = bm.industryPe[facts.sector] ?? bm.industryPe._default;
-  V.push(check('IsGoodValueComparingPreferredMultipleToIndustry', 'Price-To-Earnings vs Industry',
-    st(isNum(facts.pe) ? facts.pe < indPe : null),
-    isNum(facts.pe)
-      ? `${facts.symbol} is ${facts.pe < indPe ? 'good' : 'expensive'} value based on its Price-To-Earnings Ratio (${mult(facts.pe)}) compared to the ${facts.sector || 'market'} industry average (${mult(indPe)}).`
-      : 'No positive trailing earnings, so a P/E comparison is not meaningful.'));
-
-  const fpe = fairPe(forecast.epsGrowth ?? forecast.earningsGrowth, bm);
-  V.push(check('IsGoodValueComparingRatioToFairRatio', 'Price-To-Earnings vs Fair Ratio',
-    st(isNum(facts.pe) && isNum(fpe) ? facts.pe < fpe : null),
-    (isNum(facts.pe) && isNum(fpe))
-      ? `${facts.symbol}'s Price-To-Earnings Ratio (${mult(facts.pe)}) is ${facts.pe < fpe ? 'below' : 'above'} the fair ratio implied by its forecast growth (${mult(fpe)}).`
-      : 'A fair ratio needs both a trailing P/E and a forecast growth rate.',
-    (isNum(facts.pe) && isNum(fpe)) ? '' : NEED.estimates));
-
-  const pt = ds.get('priceTarget');
-  let ptState = null, ptNote = 'No analyst price target consensus is available.';
-  if (pt && isNum(pt.targetConsensus) && isNum(p)) {
-    const upside = pt.targetConsensus / p - 1;
-    const spread = (isNum(pt.targetHigh) && isNum(pt.targetLow) && pt.targetConsensus > 0)
-      ? (pt.targetHigh - pt.targetLow) / pt.targetConsensus : null;
-    const agree = spread === null ? true : spread < 0.60;
-    const roomy = upside > 0.20;
-    ptState = roomy && agree;
-    const why = ptState ? 'both conditions are met'
-      : !roomy && !agree ? 'the upside is under 20% and analysts disagree too widely'
-      : !roomy ? 'the upside is under the 20% required'
-      : 'analysts disagree too widely (spread above 60% of the consensus)';
-    ptNote = `The consensus target of ${price(pt.targetConsensus)} sits ${pct(Math.abs(upside))} ${upside > 0 ? 'above' : 'below'} the current price`
-      + (spread === null ? '' : `, with a high-to-low spread of ${pct(spread)}`)
-      + ` — ${why}.`;
-  }
-  V.push(check('IsAnalystForecastTrustworthy', 'Analyst Forecast', st(ptState), ptNote,
-    ptState === null ? 'Needs the price-target consensus feed.' : ''));
-
-  /* ---------------- Future growth ---------------------------------------- */
-  const eg = forecast.earningsGrowth, rg = forecast.revenueGrowth;
-  const needEst = forecast.available ? '' : NEED.estimates;
-
-  F.push(check('IsExpectedProfitGrowthAboveRiskFreeRate', 'Earnings vs Savings Rate',
-    st(isNum(eg) ? eg > bm.riskFreeRate : null),
-    isNum(eg)
-      ? `${facts.symbol}'s forecast earnings growth (${pct(eg)} per year) is ${eg > bm.riskFreeRate ? 'above' : 'below'} the savings rate (${pct(bm.riskFreeRate)}).`
-      : 'No consensus earnings forecast is available.', needEst));
-
-  F.push(check('IsExpectedAnnualProfitGrowthAboveMarket', 'Earnings vs Market',
-    st(isNum(eg) ? eg > bm.marketEarningsGrowth : null),
-    isNum(eg)
-      ? `${facts.symbol}'s earnings (${pct(eg)} per year) are forecast to grow ${eg > bm.marketEarningsGrowth ? 'faster' : 'slower'} than the market (${pct(bm.marketEarningsGrowth)} per year).`
-      : 'No consensus earnings forecast is available.', needEst));
-
-  F.push(check('IsExpectedAnnualProfitGrowthHigh', 'High Growth Earnings',
-    st(isNum(eg) ? eg > bm.highGrowth : null),
-    isNum(eg)
-      ? `Earnings are forecast to grow ${pct(eg)} per year, ${eg > bm.highGrowth ? 'above' : 'below'} the ${pct(bm.highGrowth)} high-growth threshold.`
-      : 'No consensus earnings forecast is available.', needEst));
-
-  F.push(check('IsExpectedRevenueGrowthAboveMarket', 'Revenue vs Market',
-    st(isNum(rg) ? rg > bm.marketRevenueGrowth : null),
-    isNum(rg)
-      ? `${facts.symbol}'s revenue (${pct(rg)} per year) is forecast to grow ${rg > bm.marketRevenueGrowth ? 'faster' : 'slower'} than the market (${pct(bm.marketRevenueGrowth)} per year).`
-      : 'No consensus revenue forecast is available.', needEst));
-
-  F.push(check('IsExpectedRevenueGrowthHigh', 'High Growth Revenue',
-    st(isNum(rg) ? rg > bm.highGrowth : null),
-    isNum(rg)
-      ? `Revenue is forecast to grow ${pct(rg)} per year, ${rg > bm.highGrowth ? 'above' : 'below'} the ${pct(bm.highGrowth)} high-growth threshold.`
-      : 'No consensus revenue forecast is available.', needEst));
-
-  F.push(check('IsReturnOnEquityForecastAboveBenchmark', 'Future ROE',
-    st(isNum(forecast.futureRoe) ? forecast.futureRoe > bm.futureRoeBar : null),
-    isNum(forecast.futureRoe)
-      ? `Return on equity is forecast to be ${pct(forecast.futureRoe)} in ${forecast.span} years, ${forecast.futureRoe > bm.futureRoeBar ? 'above' : 'below'} the ${pct(bm.futureRoeBar)} benchmark.`
-      : 'A forecast return on equity needs both consensus earnings and current shareholder equity.',
-    isNum(forecast.futureRoe) ? '' : NEED.estimates));
-
-  /* ---------------- Past performance ------------------------------------- */
-  // Each field is tested on its own: some resolve from the pre-computed
-  // growth feed even when the annual statements are gated.
-  const hist = history;
-  const needStmt = NEED.statements;
-
-  P.push(check('HasHighQualityPastEarnings', 'Quality Earnings',
-    st(isNum(facts.incomeQuality) ? facts.incomeQuality >= 1 : null),
-    isNum(facts.incomeQuality)
-      ? `${facts.symbol} converts ${dec(facts.incomeQuality, 2)}x of reported profit into operating cash flow — earnings are ${facts.incomeQuality >= 1 ? 'high quality' : 'not fully backed by cash'}.`
-      : 'Earnings quality needs operating cash flow alongside net income.'));
-
-  P.push(check('HasPastNetProfitMarginImprovedOverLastYear', 'Growing Profit Margin',
-    st(isNum(hist.marginNow) && isNum(hist.marginPrev) ? hist.marginNow > hist.marginPrev : null),
-    isNum(hist.marginNow) && isNum(hist.marginPrev)
-      ? `${facts.symbol}'s current net profit margin (${pct(hist.marginNow)}) is ${hist.marginNow > hist.marginPrev ? 'higher' : 'lower'} than last year (${pct(hist.marginPrev)}).`
-      : 'Comparing margins needs at least two years of income statements.', needStmt));
-
-  P.push(check('HasGrownProfitsOverPast5Years', 'Earnings Trend',
-    st(isNum(hist.growth5y) ? hist.growth5y > 0 : null),
-    isNum(hist.growth5y)
-      ? `${facts.symbol}'s earnings have ${hist.growth5y > 0 ? 'grown' : 'declined'} by ${pct(Math.abs(hist.growth5y))} per year over the past 5 years.`
-      : 'An earnings trend needs five years of income statements.', needStmt));
-
-  P.push(check('HasProfitGrowthAccelerated', 'Accelerating Growth',
-    st(isNum(hist.growth1y) && isNum(hist.growth5y) ? hist.growth1y > hist.growth5y : null),
-    isNum(hist.growth1y) && isNum(hist.growth5y)
-      ? `Earnings growth over the past year (${pct(hist.growth1y)}) is ${hist.growth1y > hist.growth5y ? 'above' : 'below'} its 5-year average (${pct(hist.growth5y)} per year).`
-      : 'Comparing growth rates needs five years of income statements.', needStmt));
-
-  const indGrowth = bm.industryEarningsGrowth[facts.sector] ?? bm.industryEarningsGrowth._default;
-  P.push(check('IsGrowingFasterThanIndustry', 'Earnings vs Industry',
-    st(isNum(hist.growth1y) ? hist.growth1y > indGrowth : null),
-    isNum(hist.growth1y)
-      ? `${facts.symbol} earnings growth over the past year (${pct(hist.growth1y)}) ${hist.growth1y > indGrowth ? 'exceeded' : 'trailed'} the ${facts.sector || 'market'} industry (${pct(indGrowth)}).`
-      : 'Comparing against the industry needs two years of income statements.', needStmt));
-
-  P.push(check('IsReturnOnEquityAboveThreshold', 'High ROE',
-    st(isNum(facts.roe) ? facts.roe > bm.roeBar : null),
-    isNum(facts.roe)
-      ? `${facts.symbol}'s return on equity (${pct(facts.roe)}) is ${facts.roe > bm.roeBar ? 'considered high' : 'below the ' + pct(bm.roeBar) + ' benchmark'}.`
-      : 'Return on equity is unavailable.'));
-
-  /* ---------------- Financial health ------------------------------------- */
-  const ca = facts.currentAssets, cl = facts.currentLiabilities, ltl = facts.longTermLiabilities;
-
-  H.push(check('AreShortTermLiabilitiesCovered', 'Short Term Liabilities',
-    st(isNum(ca) && isNum(cl) ? ca > cl : null),
-    (isNum(ca) && isNum(cl))
-      ? `${facts.symbol}'s short term assets (${money(ca)}) ${ca > cl ? 'exceed' : 'do not cover'} its short term liabilities (${money(cl)}).`
-      : 'Needs current assets and current liabilities.'));
-
-  H.push(check('AreLongTermLiabilitiesCovered', 'Long Term Liabilities',
-    st(isNum(ca) && isNum(ltl) ? ca > ltl : null),
-    (isNum(ca) && isNum(ltl))
-      ? `${facts.symbol}'s short term assets (${money(ca)}) ${ca > ltl ? 'exceed' : 'do not cover'} its long term liabilities (${money(ltl)}).`
-      : 'Needs current assets and long term liabilities.'));
-
-  const netDe = (isNum(facts.netDebt) && isNum(facts.equity) && facts.equity > 0)
-    ? facts.netDebt / facts.equity : null;
-  H.push(check('IsDebtLevelAppropriate', 'Debt Level',
-    st(isNum(netDe) ? netDe < bm.netDebtToEquityCeiling : null),
-    isNum(netDe)
-      ? (netDe < 0
-          ? `${facts.symbol} holds more cash (${money(facts.cash)}) than total debt (${money(facts.totalDebt)}).`
-          : `${facts.symbol}'s net debt to equity ratio (${pct(netDe)}) is ${netDe < bm.netDebtToEquityCeiling ? 'satisfactory' : 'high'}.`)
-      : 'Needs total debt, cash and shareholder equity.'));
-
-  H.push(check('HasDebtReducedOverTime', 'Reducing Debt',
-    st(isNum(hist.deNow) && isNum(hist.de5) ? hist.deNow < hist.de5 : null),
-    isNum(hist.deNow) && isNum(hist.de5)
-      ? `${facts.symbol}'s debt to equity ratio has ${hist.deNow < hist.de5 ? 'reduced' : 'increased'} from ${pct(hist.de5)} to ${pct(hist.deNow)} over the past 5 years.`
-      : 'Tracking leverage over time needs five years of balance sheets.', needStmt));
-
-  const debtCover = (isNum(facts.ocf) && isNum(facts.totalDebt) && facts.totalDebt > 0)
-    ? facts.ocf / facts.totalDebt : null;
-  H.push(check('IsDebtCoveredByCashflow', 'Debt Coverage',
-    st(isNum(debtCover) ? debtCover > bm.debtCoverageFloor : null),
-    isNum(debtCover)
-      ? `${facts.symbol}'s debt is ${debtCover > bm.debtCoverageFloor ? 'well covered' : 'not well covered'} by operating cash flow (${pct(debtCover)}).`
-      : (isNum(facts.totalDebt) && facts.totalDebt === 0 ? `${facts.symbol} carries no debt.` : 'Needs operating cash flow and total debt.')));
-
-  H.push(check('IsInterestCoveredByProfit', 'Interest Coverage',
-    st(isNum(facts.interestCover) ? facts.interestCover > bm.interestCoverFloor : null),
-    isNum(facts.interestCover)
-      ? `${facts.symbol}'s interest payments on its debt are ${facts.interestCover > bm.interestCoverFloor ? 'well covered' : 'not well covered'} by EBIT (${dec(facts.interestCover, 1)}x coverage).`
-      : `Interest expense is not separately reported for ${facts.symbol}, so coverage cannot be measured.`));
-
-  /* ---------------- Dividend --------------------------------------------- */
-  const dy = facts.dividendYield;
-  const paysDividend = isNum(dy) && dy > 0;
-
-  D.push(check('IsDividendSignificant', 'Notable Dividend',
-    st(isNum(dy) ? dy > bm.dividendNotable : null),
-    isNum(dy)
-      ? (paysDividend
-          ? `${facts.symbol}'s dividend (${pct(dy)}) is ${dy > bm.dividendNotable ? 'above' : 'below'} the bottom 25% of dividend payers (${pct(bm.dividendNotable)}).`
-          : `${facts.symbol} does not currently pay a dividend.`)
-      : 'No dividend yield is available.'));
-
-  D.push(check('IsDividendYieldTopTier', 'High Dividend',
-    st(isNum(dy) ? dy > bm.dividendTopTier : null),
-    isNum(dy)
-      ? `${facts.symbol}'s dividend (${pct(dy)}) is ${dy > bm.dividendTopTier ? 'in' : 'below'} the top 25% of dividend payers (${pct(bm.dividendTopTier)}).`
-      : 'No dividend yield is available.'));
-
-  D.push(check('IsDividendStable', 'Stable Dividend',
-    st(dividends.stable),
-    dividends.available
-      ? (paysDividend
-          ? `${facts.symbol}'s dividend payments have ${dividends.stable ? 'been stable' : 'been volatile'} over the past ${dividends.years} years`
-            + (dividends.worstDrop != null ? ` (largest annual cut ${pct(dividends.worstDrop)}).` : '.')
-          : `${facts.symbol} does not pay a dividend.`)
-      : 'Dividend stability needs the dividend history feed.', dividends.available ? '' : NEED.dividends));
-
-  D.push(check('IsDividendGrowing', 'Growing Dividend',
-    st(dividends.growing),
-    dividends.available
-      ? (isNum(dividends.growth)
-          ? `${facts.symbol}'s dividend payments have ${dividends.growth > 0 ? 'increased' : 'fallen'} by ${pct(Math.abs(dividends.growth))} per year over the past ${dividends.years} years.`
-          : `${facts.symbol} has no meaningful dividend growth record.`)
-      : 'Dividend growth needs the dividend history feed.', dividends.available ? '' : NEED.dividends));
-
-  D.push(check('IsDividendCovered', 'Earnings Coverage',
-    st(paysDividend && isNum(facts.payoutRatio) ? facts.payoutRatio < bm.payoutCeiling : (paysDividend ? null : false)),
-    isNum(facts.payoutRatio)
-      ? `With a payout ratio of ${pct(facts.payoutRatio)}, dividend payments are ${facts.payoutRatio < bm.payoutCeiling ? 'well covered' : 'not covered'} by earnings.`
-      : `${facts.symbol} pays no dividend, so there is nothing to cover.`));
-
-  D.push(check('IsDividendCoveredByFreeCashFlow', 'Cash Flow Coverage',
-    st(paysDividend && isNum(facts.cashPayoutRatio) ? facts.cashPayoutRatio < bm.payoutCeiling : (paysDividend ? null : false)),
-    isNum(facts.cashPayoutRatio)
-      ? `With a cash payout ratio of ${pct(facts.cashPayoutRatio)}, dividend payments are ${facts.cashPayoutRatio < bm.payoutCeiling ? 'well covered' : 'not covered'} by free cash flow.`
-      : `${facts.symbol} pays no dividend, so there is nothing to cover.`));
-
-  /* ---------------- Management ------------------------------------------- */
-  M.push(check('IsCEOCompensationAppropriate', 'Compensation vs Market',
-    st(execs.ceoCompState),
-    execs.ceoCompNote, execs.ceoCompWhy));
-
-  M.push(check('IsCEOCompensationChangeJustified', 'Compensation vs Earnings',
-    st(execs.ceoCompChangeState),
-    execs.ceoCompChangeNote, execs.ceoCompChangeWhy));
-
-  M.push(check('IsManagementTeamSeasoned', 'Experienced Management',
-    st(isNum(execs.managementTenure) ? execs.managementTenure >= bm.managementTenureBar : null),
-    isNum(execs.managementTenure)
-      ? `${facts.symbol}'s management team is ${execs.managementTenure >= bm.managementTenureBar ? 'seasoned' : 'relatively new'}, with an average tenure of ${dec(execs.managementTenure, 1)} years.`
-      : 'Average management tenure is not reported for this company.',
-    isNum(execs.managementTenure) ? '' : 'Needs the key-executives feed with appointment dates.'));
-
-  M.push(check('IsBoardSeasoned', 'Experienced Board',
-    st(isNum(execs.boardTenure) ? execs.boardTenure >= bm.boardTenureBar : null),
-    isNum(execs.boardTenure)
-      ? `The board of directors is ${execs.boardTenure >= bm.boardTenureBar ? 'seasoned and experienced' : 'relatively new'}, with an average tenure of ${dec(execs.boardTenure, 1)} years.`
-      : 'Average board tenure is not reported for this company.',
-    isNum(execs.boardTenure) ? '' : 'Needs the key-executives feed with appointment dates.'));
-
-  return { value: V, future: F, past: P, health: H, dividend: D, management: M };
-}
-
-/* ==========================================================================
    Dividend history
    ========================================================================== */
 
@@ -865,66 +609,460 @@ function deriveExecs(ds, facts, bm, history) {
 }
 
 /* ==========================================================================
-   Scoring
+   Price series
+
+   Shared with the price-history section, which used to keep private copies.
    ========================================================================== */
 
-function scoreOf(checks) {
-  const passed = checks.filter((c) => c.state === PASS).length;
-  const evaluated = checks.filter((c) => c.state !== NA).length;
-  return { passed, total: checks.length, evaluated, confident: evaluated === checks.length };
+export function normalisePrices(raw) {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((r) => ({ date: r.date, price: r.price ?? r.close ?? r.adjClose ?? null }))
+    .filter((r) => r.date && isNum(r.price))
+    .sort((x, y) => new Date(x.date) - new Date(y.date));
+}
+
+export const RETURN_SPANS = { '7D': 7, '1M': 30, '3M': 92, '6M': 183, '1Y': 365, '3Y': 1095, '5Y': 1825 };
+
+/**
+ * Total return over each named span, keyed the same way as `spans`.
+ * A span the series is too short to cover is simply absent.
+ */
+export function computeReturns(pts, spans = RETURN_SPANS) {
+  const out = {};
+  if (!pts.length) return out;
+  const last = pts.at(-1);
+  const lastT = new Date(last.date).getTime();
+  const firstT = new Date(pts[0].date).getTime();
+
+  for (const [k, days] of Object.entries(spans)) {
+    const target = lastT - days * 864e5;
+    // nearest observation at or before the target date
+    let ref = null;
+    for (const p of pts) { if (new Date(p.date).getTime() <= target) ref = p; else break; }
+    // A series that starts a few days inside the window would otherwise drop
+    // the period entirely. Fall back to the earliest point when it covers at
+    // least 90% of the span, which is close enough to quote.
+    if (!ref && lastT - firstT >= days * 0.9 * 864e5) ref = pts[0];
+    if (ref && ref.price > 0) out[k] = last.price / ref.price - 1;
+  }
+  return out;
+}
+
+/** Return since 1 January of the latest year in the series. */
+export function ytdReturn(pts) {
+  if (pts.length < 2) return null;
+  const last = pts.at(-1);
+  const jan1 = new Date(new Date(last.date).getUTCFullYear(), 0, 1).getTime();
+  let ref = null;
+  for (const p of pts) { if (new Date(p.date).getTime() <= jan1) ref = p; else break; }
+  ref ??= pts.find((p) => new Date(p.date).getTime() >= jan1) || null;
+  return ref && ref.price > 0 ? last.price / ref.price - 1 : null;
+}
+
+/** Standard deviation of non-overlapping five-day returns over the last year. */
+export function weeklyVolatility(pts) {
+  if (pts.length < 60) return null;
+  const year = pts.slice(-260);
+  const weekly = [];
+  for (let i = 5; i < year.length; i += 5) {
+    const a = year[i - 5].price, b = year[i].price;
+    if (a > 0) weekly.push(b / a - 1);
+  }
+  if (weekly.length < 8) return null;
+  const m = mean(weekly);
+  return Math.sqrt(mean(weekly.map((r) => (r - m) ** 2)));
+}
+
+/** Worst peak-to-trough fall in the window, as a positive fraction. */
+export function maxDrawdown(pts, days = 365) {
+  if (pts.length < 10) return null;
+  const cutoff = Date.now() - days * 864e5;
+  const win = pts.filter((p) => new Date(p.date).getTime() >= cutoff);
+  if (win.length < 10) return null;
+  let peak = -Infinity, worst = 0;
+  for (const p of win) {
+    if (p.price > peak) peak = p.price;
+    if (peak > 0) worst = Math.max(worst, 1 - p.price / peak);
+  }
+  return worst || null;
+}
+
+/* ==========================================================================
+   Derived inputs for the graded factors
+
+   Everything the metric registry in factors.js reads, assembled once so the
+   registry entries stay one-liners.
+   ========================================================================== */
+
+function deriveValuation(ds, facts, forecast) {
+  const km = ds.get('metricsTtm') || {};
+  const r = ds.get('ratiosTtm') || {};
+  const latestC = facts.statements.cash.at(-1) || null;
+
+  const ev = km.enterpriseValueTTM ?? r.enterpriseValueTTM
+    ?? (isNum(facts.marketCap) && isNum(facts.netDebt) ? facts.marketCap + facts.netDebt : null);
+
+  // "Forward" means the current fiscal year's consensus — the same convention
+  // the sell side quotes, and what `forecast.base` already resolves to.
+  const fwd = forecast.base || null;
+  const over = (num, den) => (isNum(num) && isNum(den) && den > 0 ? num / den : null);
+
+  const peFwd = over(facts.price, fwd?.eps);
+
+  // Buybacks: only computed when the cash flow statement actually carries the
+  // line. Treating a missing field as zero would report "no buybacks" for
+  // every company whose statements are gated.
+  let buybackYield = null;
+  if (latestC && latestC.commonStockRepurchased != null && isNum(facts.marketCap) && facts.marketCap > 0) {
+    buybackYield = Math.abs(latestC.commonStockRepurchased) / facts.marketCap;
+  }
+  const shareholderYield = (isNum(buybackYield) || isNum(facts.dividendYield))
+    ? (buybackYield ?? 0) + (facts.dividendYield ?? 0)
+    : null;
+
+  return {
+    ev,
+    evToSales:      km.evToSalesTTM ?? over(ev, facts.revenue),
+    evToSalesFwd:   over(ev, fwd?.revenue),
+    evToEbitda:     km.evToEBITDATTM ?? null,
+    evToEbitdaFwd:  over(ev, fwd?.ebitda),
+    evToEbit:       over(ev, facts.ebit),
+    evToEbitFwd:    over(ev, fwd?.ebit),
+    peFwd,
+    psFwd:          over(facts.marketCap, fwd?.revenue),
+    // PEG wants growth in whole percent, so a 20% grower divides by 20, not 0.2.
+    pegNonGaap:     (isNum(peFwd) && isNum(forecast.epsGrowth) && forecast.epsGrowth > 0)
+                      ? peFwd / (forecast.epsGrowth * 100) : null,
+    priceToCashFlow: r.priceToOperatingCashFlowRatioTTM ?? null,
+    earningsYield:  km.earningsYieldTTM ?? (isNum(facts.pe) && facts.pe > 0 ? 1 / facts.pe : null),
+    fcfYield:       km.freeCashFlowYieldTTM ?? null,
+    grahamNumber:   km.grahamNumberTTM ?? null,
+    buybackYield,
+    shareholderYield,
+  };
+}
+
+function deriveGrowth(ds, facts, history) {
+  const g = chron(ds.get('growth')).at(-1) || {};
+  const inc = facts.statements.income;
+  const cash = facts.statements.cash;
+
+  /** Year-on-year change in one statement line, from the annual filings. */
+  const yoy = (rows, field) => {
+    if (rows.length < 2) return null;
+    const cur = rows.at(-1)?.[field], prev = rows.at(-2)?.[field];
+    return isNum(cur) && isNum(prev) && prev > 0 ? cur / prev - 1 : null;
+  };
+  /** Cumulative change over `n` years, matching the vendor's multi-year fields. */
+  const over = (rows, field, n) => {
+    if (rows.length < n + 1) return null;
+    const cur = rows.at(-1)?.[field], back = rows.at(-1 - n)?.[field];
+    return isNum(cur) && isNum(back) && back > 0 ? cur / back - 1 : null;
+  };
+  /** Compound annual rate across `n` fiscal years of the statements. */
+  const cagrOver = (rows, field, n) => {
+    if (rows.length < n + 1) return null;
+    const cur = rows.at(-1)?.[field];
+    const back = rows.at(-1 - n)?.[field];
+    return isNum(cur) && isNum(back) && back > 0 ? cagr(back, cur, n) : null;
+  };
+  const fcfOf = (row) => (row && isNum(row.freeCashFlow) ? row.freeCashFlow : null);
+
+  return {
+    // The growth feed is preferred where present; the annual statements are
+    // the fallback, which is what keeps this working from a snapshot that
+    // predates the feed being fetched at all.
+    revenueYoy:   g.revenueGrowth        ?? yoy(inc, 'revenue'),
+    // Annualised, not cumulative, and on total revenue rather than the
+    // vendor's per-share fields. Three rows in one subtopic have to be the
+    // same measure over different lengths of run, or the reader is comparing
+    // a one-year rate against a three-year total against a per-share figure
+    // and none of the three answers the same question.
+    revenue3y:    cagrOver(inc, 'revenue', 3),
+    revenue5y:    cagrOver(inc, 'revenue', 5),
+    ebitda:       g.ebitdaGrowth         ?? yoy(inc, 'ebitda'),
+    ebit:         g.ebitgrowth ?? g.operatingIncomeGrowth ?? yoy(inc, 'operatingIncome'),
+    eps:          g.epsgrowth            ?? yoy(inc, 'eps'),
+    epsDiluted:   g.epsdilutedGrowth     ?? yoy(inc, 'epsDiluted'),
+    netIncome:    g.netIncomeGrowth      ?? history.growth1y,
+    netIncome5y:  g.fiveYNetIncomeGrowthPerShare ?? over(inc, 'netIncome', 5),
+    ocf:          g.operatingCashFlowGrowth ?? yoy(cash, 'operatingCashFlow'),
+    fcf:          g.freeCashFlowGrowth   ?? (cash.length >= 2
+                    ? (() => {
+                        const a = fcfOf(cash.at(-2)), b = fcfOf(cash.at(-1));
+                        return isNum(a) && isNum(b) && a > 0 ? b / a - 1 : null;
+                      })() : null),
+    // Capex is reported as a negative outflow, so compare magnitudes: the
+    // question is whether spending rose, not whether the sign flipped.
+    capex:        g.growthCapitalExpenditure
+                    ?? yoy(cash.map((c) => ({ v: Math.abs(c.capitalExpenditure ?? NaN) })), 'v'),
+    rdExpense:    g.rdexpenseGrowth      ?? yoy(inc, 'researchAndDevelopmentExpenses'),
+    bookValue:    g.bookValueperShareGrowth ?? bookValueGrowth(ds, facts),
+    dps:          g.dividendsPerShareGrowth ?? dpsGrowthFromFeed(ds, 1),
+    dividend3y:   g.threeYDividendperShareGrowthPerShare ?? dpsGrowthFromFeed(ds, 3),
+  };
+}
+
+/** Book value per share year on year, from whichever history feed is present. */
+function bookValueGrowth(ds, facts) {
+  const rows = chron(ds.get('ratiosHist'));
+  const series = rows
+    .map((r) => r.bookValuePerShare ?? null)
+    .filter(isNum);
+  if (series.length >= 2) {
+    const [prev, cur] = [series.at(-2), series.at(-1)];
+    if (prev > 0) return cur / prev - 1;
+  }
+  const bal = facts.statements.balance;
+  if (bal.length >= 2 && isNum(facts.shares) && facts.shares > 0) {
+    const prev = bal.at(-2)?.totalStockholdersEquity, cur = bal.at(-1)?.totalStockholdersEquity;
+    if (isNum(prev) && isNum(cur) && prev > 0) return cur / prev - 1;
+  }
+  return null;
+}
+
+/**
+ * Dividend-per-share growth over `years`, summed by calendar year from the
+ * dividend feed. The most recent year is skipped unless it is complete, so a
+ * company three quarters into its year does not look like it halved the payout.
+ */
+function dpsGrowthFromFeed(ds, years) {
+  const rows = arr(ds.get('dividends'))
+    .map((d) => ({ year: yearOf(d.date), amount: d.adjDividend ?? d.dividend ?? null }))
+    .filter((d) => isNum(d.year) && isNum(d.amount) && d.amount > 0);
+  if (!rows.length) return null;
+
+  const byYear = new Map();
+  const counts = new Map();
+  for (const d of rows) {
+    byYear.set(d.year, (byYear.get(d.year) || 0) + d.amount);
+    counts.set(d.year, (counts.get(d.year) || 0) + 1);
+  }
+  const ordered = [...byYear.keys()].sort((a, b) => a - b);
+  if (ordered.length < years + 1) return null;
+
+  let last = ordered.at(-1);
+  const typical = median(ordered.slice(0, -1).map((y) => counts.get(y)));
+  if (isNum(typical) && counts.get(last) < typical) last = ordered.at(-2);
+
+  const base = last - years;
+  if (!byYear.has(base) || !byYear.has(last)) return null;
+  const from = byYear.get(base);
+  return from > 0 ? byYear.get(last) / from - 1 : null;
+}
+
+function deriveMomentum(ds, facts, benchmarks, bm) {
+  const pts = normalisePrices(ds.get('prices'));
+  const rets = computeReturns(pts, { r1m: 30, r3m: 92, r6m: 183, r9m: 274, r1y: 365 });
+
+  const benchOneYear = (raw) => {
+    const p = normalisePrices(raw);
+    return p.length ? (computeReturns(p, { r1y: 365 }).r1y ?? null) : null;
+  };
+  const sectorReturn = benchOneYear(benchmarks?.industry);
+  const marketReturn = benchOneYear(benchmarks?.market);
+
+  const pt = ds.get('priceTarget') || null;
+  const targetPrice = pt?.targetConsensus ?? null;
+  const targetUpside = isNum(targetPrice) && isNum(facts.price) && facts.price > 0
+    ? targetPrice / facts.price - 1 : null;
+
+  // Analyst mix on a 1-5 scale, so a wall of strong buys reads as 5.
+  const gr = ds.get('grades') || null;
+  let analystScore = null, analystTotal = 0;
+  if (gr) {
+    const buckets = [[gr.strongBuy, 5], [gr.buy, 4], [gr.hold, 3], [gr.sell, 2], [gr.strongSell, 1]];
+    let weighted = 0;
+    for (const [n, w] of buckets) {
+      if (isNum(n)) { weighted += n * w; analystTotal += n; }
+    }
+    if (analystTotal > 0) analystScore = weighted / analystTotal;
+  }
+
+  return {
+    points: pts,
+    r1m: rets.r1m ?? null,
+    r3m: rets.r3m ?? null,
+    r6m: rets.r6m ?? null,
+    r9m: rets.r9m ?? null,
+    r1y: rets.r1y ?? null,
+    rYtd: ytdReturn(pts),
+    sectorReturn,
+    marketReturn,
+    excessSector: isNum(rets.r1y) && isNum(sectorReturn) ? rets.r1y - sectorReturn : null,
+    excessMarket: isNum(rets.r1y) && isNum(marketReturn) ? rets.r1y - marketReturn : null,
+    toAvg50:  isNum(facts.price) && isNum(facts.avg50) && facts.avg50 > 0 ? facts.price / facts.avg50 : null,
+    toAvg200: isNum(facts.price) && isNum(facts.avg200) && facts.avg200 > 0 ? facts.price / facts.avg200 : null,
+    offHigh:  isNum(facts.price) && isNum(facts.yearHigh) && facts.yearHigh > 0 ? 1 - facts.price / facts.yearHigh : null,
+    aboveLow: isNum(facts.price) && isNum(facts.yearLow) && facts.yearLow > 0 ? facts.price / facts.yearLow - 1 : null,
+    volatility: weeklyVolatility(pts),
+    drawdown: maxDrawdown(pts),
+    targetPrice,
+    targetUpside,
+    // A price target is a price, so it says nothing about the dividend. Adding
+    // the yield back gives the total return the forecast actually implies,
+    // which is the only thing comparable to a cost of equity.
+    expectedTotalReturn: isNum(targetUpside) ? targetUpside + (facts.dividendYield ?? 0) : null,
+    // CAPM: what holding this particular share ought to earn, given its beta.
+    costOfEquity: isNum(facts.beta) && isNum(bm?.riskFreeRate) && isNum(bm?.equityRiskPremium)
+      ? bm.riskFreeRate + facts.beta * bm.equityRiskPremium
+      : null,
+    analystScore,
+    analystTotal,
+  };
+}
+
+/* ==========================================================================
+   Peer samples
+
+   The grader falls back to the live peer set wherever the sector table has
+   nothing for a metric. Only ratios readable straight off `ratios-ttm` can
+   be sampled this way — one request per peer is already what the report
+   spends, and re-deriving a peer's cash flow statement is not worth it.
+   ========================================================================== */
+
+const PEER_SAMPLE_FIELDS = {
+  peGaapTtm: 'priceToEarningsRatioTTM',
+  priceToSalesTtm: 'priceToSalesRatioTTM',
+  priceToBookTtm: 'priceToBookRatioTTM',
+  priceToCashFlowTtm: 'priceToOperatingCashFlowRatioTTM',
+  pegGaap: 'priceToEarningsGrowthRatioTTM',
+  grossMargin: 'grossProfitMarginTTM',
+  ebitdaMargin: 'ebitdaMarginTTM',
+  ebitMargin: 'ebitMarginTTM',
+  netMargin: 'netProfitMarginTTM',
+  assetTurnover: 'assetTurnoverTTM',
+  fixedAssetTurnover: 'fixedAssetTurnoverTTM',
+  cashPerShare: 'cashPerShareTTM',
+  effectiveTaxRate: 'effectiveTaxRateTTM',
+  fcfToOcf: 'freeCashFlowOperatingCashFlowRatioTTM',
+  currentRatio: 'currentRatioTTM',
+  quickRatio: 'quickRatioTTM',
+  cashRatio: 'cashRatioTTM',
+  debtToEquity: 'debtToEquityRatioTTM',
+  debtToAssets: 'debtToAssetsRatioTTM',
+  financialLeverage: 'financialLeverageRatioTTM',
+  longTermDebtToCapital: 'longTermDebtToCapitalRatioTTM',
+  interestCoverage: 'interestCoverageRatioTTM',
+  solvencyRatio: 'solvencyRatioTTM',
+  debtServiceCoverage: 'debtServiceCoverageRatioTTM',
+  bookValuePerShare: 'bookValuePerShareTTM',
+  tangibleBookValuePerShare: 'tangibleBookValuePerShareTTM',
+  dividendYieldTtm: 'dividendYieldTTM',
+};
+
+function buildPeerSamples(peerRatios) {
+  const out = {};
+  for (const row of Object.values(peerRatios || {})) {
+    if (!row) continue;
+    for (const [id, field] of Object.entries(PEER_SAMPLE_FIELDS)) {
+      const v = row[field];
+      if (isNum(v)) (out[id] ??= []).push(v);
+    }
+  }
+  return out;
+}
+
+
+/** Which of the reduced-set metrics one `ratios-ttm` payload can actually fill. */
+function usableFields(row) {
+  const ids = new Set();
+  if (!row) return ids;
+  for (const [id, field] of Object.entries(PEER_SAMPLE_FIELDS)) {
+    if (isNum(row[field]) && METRICS[id]) ids.add(id);
+  }
+  return ids;
+}
+
+/** Grade one `ratios-ttm` payload over a fixed set of metric ids. */
+function scoreOver(row, ids, lookup) {
+  if (!row || !ids.size) return { score: null, scoredOn: 0 };
+  const grades = [];
+  for (const id of ids) {
+    const def = METRICS[id];
+    const v = row[PEER_SAMPLE_FIELDS[id]];
+    if (!isNum(v) || !def) continue;
+    const g = lookup.grade(def.dist || id, v, def.better);
+    if (isNum(g.grade)) grades.push(g.grade);
+  }
+  return grades.length
+    ? { score: mean(grades), scoredOn: grades.length }
+    : { score: null, scoredOn: 0 };
+}
+
+/**
+ * Grade the peer group and the company on one common set of ratios.
+ *
+ * The company has a full feed; a peer may have far less, especially from a
+ * snapshot. Scoring each on whatever it happens to carry would let a peer
+ * known only by its cheap multiples outrank a company measured on everything.
+ * So the comparison runs over the intersection — the ratios *every* row can
+ * fill — and the table reports how many that was.
+ *
+ * Peers too sparse to reach `MIN_COMMON` are left out of the intersection so
+ * one thin row cannot collapse the basis for everyone; they still appear,
+ * ungraded.
+ */
+const MIN_COMMON = 3;
+
+function scorePeers(list, peerRatios, ownRatios, lookup) {
+  const own = usableFields(ownRatios);
+  const peerSets = new Map();
+  for (const p of list) {
+    const ids = usableFields(peerRatios?.[p.symbol]);
+    if (ids.size >= MIN_COMMON) peerSets.set(p.symbol, ids);
+  }
+
+  let common = new Set(own);
+  for (const ids of peerSets.values()) {
+    common = new Set([...common].filter((id) => ids.has(id)));
+  }
+  // Nothing shared: fall back to grading each row on its own coverage, which
+  // the "ratios used" column then makes legible.
+  const basis = common.size >= MIN_COMMON ? common : null;
+
+  for (const p of list) {
+    const row = peerRatios?.[p.symbol];
+    const ids = basis && peerSets.has(p.symbol) ? basis : usableFields(row);
+    Object.assign(p, ids.size >= MIN_COMMON ? scoreOver(row, ids, lookup) : { score: null, scoredOn: 0 });
+  }
+
+  return {
+    ...scoreOver(ownRatios, basis || own, lookup),
+    common: basis ? basis.size : null,
+  };
 }
 
 /* ==========================================================================
    Rewards & risks
+
+   Pulled straight off the graded metrics: what this company does best, and
+   what it does worst, ranked by how far from the sector median each sits.
    ========================================================================== */
 
-function deriveRewards(checks, facts, forecast, history) {
-  const rewards = [], risks = [];
-  const all = Object.values(checks).flat();
-  const by = (id) => all.find((c) => c.id === id);
+function deriveRewards(scores) {
+  const all = [];
+  for (const key of FACTOR_KEYS) {
+    for (const g of scores[key].groups) {
+      for (const m of g.metrics) {
+        if (m.state === 'ok' && isNum(m.grade) && m.explanation) all.push(m);
+      }
+    }
+  }
 
-  const add = (list, cond, text) => { if (cond) list.push(text); };
+  const byStrength = [...all].sort((a, b) => b.grade - a.grade);
+  const rewards = byStrength.filter((m) => m.grade >= 3.75).slice(0, 5).map((m) => m.explanation);
+  const risks = [...byStrength].reverse().filter((m) => m.grade <= 1.5).slice(0, 5).map((m) => m.explanation);
 
-  add(rewards, by('IsUndervaluedBasedOnDCF')?.state === PASS, by('IsUndervaluedBasedOnDCF').note);
-  add(rewards, by('IsGoodValueComparingPreferredMultipleToPeersAverageValue')?.state === PASS,
-    `Trades below the peer group on earnings (${mult(facts.pe)}).`);
-  add(rewards, isNum(forecast.earningsGrowth) && forecast.earningsGrowth > 0,
-    `Earnings are forecast to grow ${pct(forecast.earningsGrowth)} per year.`);
-  add(rewards, isNum(forecast.revenueGrowth) && forecast.revenueGrowth > 0,
-    `Revenue is forecast to grow ${pct(forecast.revenueGrowth)} per year.`);
-  add(rewards, isNum(history.growth1y) && history.growth1y > 0,
-    `Earnings grew by ${pct(history.growth1y)} over the past year.`);
-  add(rewards, by('IsReturnOnEquityAboveThreshold')?.state === PASS,
-    `Return on equity of ${pct(facts.roe)} is well above the market.`);
-  add(rewards, by('IsDebtLevelAppropriate')?.state === PASS && isNum(facts.netDebt) && facts.netDebt < 0,
-    `Holds more cash than debt — a net cash position of ${money(Math.abs(facts.netDebt))}.`);
-  add(rewards, by('IsDividendYieldTopTier')?.state === PASS,
-    `Dividend yield of ${pct(facts.dividendYield)} ranks in the top quartile of payers.`);
-
-  add(risks, by('IsUndervaluedBasedOnDCF')?.state === FAIL, by('IsUndervaluedBasedOnDCF').note);
-  add(risks, by('IsGoodValueComparingPreferredMultipleToIndustry')?.state === FAIL,
-    `Earnings multiple (${mult(facts.pe)}) is above the ${facts.sector || 'industry'} average.`);
-  add(risks, by('IsExpectedAnnualProfitGrowthAboveMarket')?.state === FAIL && isNum(forecast.earningsGrowth),
-    `Forecast earnings growth (${pct(forecast.earningsGrowth)}) trails the wider market.`);
-  add(risks, by('AreShortTermLiabilitiesCovered')?.state === FAIL,
-    by('AreShortTermLiabilitiesCovered').note);
-  add(risks, by('IsDebtLevelAppropriate')?.state === FAIL,
-    by('IsDebtLevelAppropriate').note);
-  add(risks, by('IsInterestCoveredByProfit')?.state === FAIL,
-    by('IsInterestCoveredByProfit').note);
-  add(risks, by('IsDividendStable')?.state === FAIL,
-    by('IsDividendStable').note);
-  add(risks, isNum(history.growth1y) && history.growth1y < 0,
-    `Earnings fell ${pct(Math.abs(history.growth1y))} over the past year.`);
-
-  return { rewards: rewards.slice(0, 5), risks: risks.slice(0, 5) };
+  return { rewards, risks };
 }
 
 /* ==========================================================================
    Entry point
    ========================================================================== */
 
-export function analyse(ds, { peerRatios = null } = {}) {
+export function analyse(ds, { peerRatios = null, peerGrowth = null, sectorStats = null, benchmarks = null } = {}) {
   const bm = loadBenchmarks();
 
   const facts = deriveFacts(ds, bm);
@@ -935,7 +1073,7 @@ export function analyse(ds, { peerRatios = null } = {}) {
   const peers = derivePeers(ds, facts, bm);
 
   // Peer P/E ratios are fetched separately (one request per peer) and folded
-  // in here so "Price-To-Earnings vs Peers" can use live numbers.
+  // in here so the peer comparison can use live numbers.
   if (peerRatios) {
     for (const p of peers.peers) {
       const pr = peerRatios[p.symbol];
@@ -944,55 +1082,64 @@ export function analyse(ds, { peerRatios = null } = {}) {
   }
   peers.peerPe = mean(peers.peers.map((p) => p.pe).filter((v) => isNum(v) && v > 0 && v < 300));
 
-  const checks = buildChecks({ facts, forecast, history, peers, dividends, execs, bm, ds });
-
-  const scores = {
-    value: scoreOf(checks.value),
-    future: scoreOf(checks.future),
-    past: scoreOf(checks.past),
-    health: scoreOf(checks.health),
-    dividend: scoreOf(checks.dividend),
-    management: scoreOf(checks.management),
-  };
-
-  const { rewards, risks } = deriveRewards(checks, facts, forecast, history);
+  const val = deriveValuation(ds, facts, forecast);
+  const growth = deriveGrowth(ds, facts, history);
+  const momentum = deriveMomentum(ds, facts, benchmarks, bm);
 
   const dcfRow = ds.get('dcfLevered') || ds.get('dcf');
   const fairValue = dcfRow ? (dcfRow.dcf ?? dcfRow.equityValuePerShare ?? null) : null;
 
-  return {
-    ds, bm, facts, forecast, history, dividends, execs, peers, checks, scores, rewards, risks,
+  const lookup = sectorLookup(sectorStats, facts.sector, buildPeerSamples(peerRatios));
+  peers.self = scorePeers(peers.peers, peerRatios, ds.get('ratiosTtm'), lookup);
+
+  const context = {
+    ds, bm, facts, forecast, history, dividends, execs, peers, val, growth, momentum, lookup,
+    // Raw peer ratios, kept whole rather than only folded into `peers`. The
+    // valuation models build a peer-median target multiple from them, which
+    // needs every field on the row, not just the P/E the peer table shows.
+    peerRatios,
+    /** Latest annual growth row per peer, for the "vs peers" comparisons. */
+    peerGrowth,
     fairValue,
     discount: (isNum(fairValue) && isNum(facts.price) && fairValue > 0) ? 1 - facts.price / fairValue : null,
     fairPe: fairPe(forecast.epsGrowth ?? forecast.earningsGrowth, bm),
-    industryPe: bm.industryPe[facts.sector] ?? bm.industryPe._default,
+  };
+
+  const scores = gradeAll(context, lookup);
+  const { rewards, risks } = deriveRewards(scores);
+
+  return {
+    ...context,
+    scores,
+    rewards, risks,
+    sectorTable: {
+      available: lookup.available,
+      quality: lookup.quality,
+      generatedAt: lookup.generatedAt,
+      count: lookup.count,
+      /** histogram of overall scores across the sector, for the distribution chart */
+      overall: lookup.overall,
+    },
     /** headline sentence under the company name */
-    verdict: verdictLine(scores),
+    verdict: verdictLine(scores, facts),
   };
 }
 
-function verdictLine(scores) {
-  const flake = [scores.value, scores.future, scores.past, scores.health, scores.dividend];
-  const total = flake.reduce((a, s) => a + s.passed, 0);
-  const strong = [];
-  if (scores.past.passed >= 5) strong.push('outstanding track record');
-  else if (scores.past.passed >= 4) strong.push('solid track record');
-  if (scores.health.passed >= 5) strong.push('excellent balance sheet');
-  else if (scores.health.passed >= 4) strong.push('sound balance sheet');
-  if (scores.future.passed >= 5) strong.push('strong growth outlook');
-  if (scores.value.passed >= 4) strong.push('attractive valuation');
-  if (scores.dividend.passed >= 4) strong.push('reliable dividend');
+function verdictLine(scores, facts) {
+  const named = FACTOR_KEYS
+    .map((k) => ({ title: scores[k].title, score: scores[k].score }))
+    .filter((f) => isNum(f.score));
+  if (!named.length) return 'Not enough data to grade this company.';
 
-  if (!strong.length) return total >= 12 ? 'Balanced across the five factors.' : 'Few of the five factors currently screen well.';
-  const s = strong.join(' with ');
-  return s.charAt(0).toUpperCase() + s.slice(1) + '.';
+  const strong = named.filter((f) => f.score >= 3.75).sort((a, b) => b.score - a.score);
+  const weak = named.filter((f) => f.score <= 1.65).sort((a, b) => a.score - b.score);
+  const lower = (s) => s.toLowerCase();
+
+  if (strong.length && weak.length) {
+    return `Strong on ${lower(strong[0].title)}, weak on ${lower(weak[0].title)}.`;
+  }
+  if (strong.length >= 2) return `Strong on ${lower(strong[0].title)} and ${lower(strong[1].title)}.`;
+  if (strong.length) return `Strongest on ${lower(strong[0].title)}.`;
+  if (weak.length) return `Held back by ${lower(weak[0].title)}.`;
+  return `Middling across all ${named.length} factors relative to its sector.`;
 }
-
-export const FACTOR_META = [
-  { key: 'value',      title: 'Valuation',        max: 6, anchor: 'valuation' },
-  { key: 'future',     title: 'Future Growth',    max: 6, anchor: 'future-growth' },
-  { key: 'past',       title: 'Past Performance', max: 6, anchor: 'past-performance' },
-  { key: 'health',     title: 'Financial Health', max: 6, anchor: 'financial-health' },
-  { key: 'dividend',   title: 'Dividend',         max: 6, anchor: 'dividend' },
-  { key: 'management', title: 'Management',       max: 4, anchor: 'management' },
-];

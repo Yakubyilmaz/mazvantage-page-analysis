@@ -1,0 +1,10 @@
+{
+  "files.eol": "\n",
+  "editor.tabSize": 2,
+  "editor.rulers": [100],
+  "[python]": { "editor.tabSize": 4 },
+  "search.exclude": {
+    "assets/data/*.json": true
+  },
+  "files.associations": { "*.json": "jsonc" }
+}

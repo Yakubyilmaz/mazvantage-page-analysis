@@ -85,6 +85,24 @@
   --warning:       var(--p-orange-100);
   --warning-subtle:hsl(var(--t-orange-100) / 12%);
 
+  /* ---- semantic: grades -------------------------------------------------
+     Five buckets from A to F. Deliberately not the pass/fail green-red pair:
+     a grade is a position in a distribution, not a verdict, so the ladder
+     runs green -> lime -> amber -> orange -> red rather than green/red only. */
+  --grade-strong:  var(--p-green-100);
+  --grade-good:    hsl(96 45% 55%);
+  --grade-mid:     var(--p-yellow-100);
+  --grade-weak:    var(--p-orange-100);
+  --grade-poor:    var(--p-red-100);
+  --grade-na:      var(--text-subtle);
+
+  --grade-strong-bg: hsl(var(--t-green-100) / 14%);
+  --grade-good-bg:   hsl(96 45% 55% / 14%);
+  --grade-mid-bg:    hsl(var(--t-yellow-100) / 14%);
+  --grade-weak-bg:   hsl(var(--t-orange-100) / 14%);
+  --grade-poor-bg:   hsl(var(--t-red-100) / 14%);
+  --grade-na-bg:     var(--surface-3);
+
   /* ---- semantic: charts ------------------------------------------------ */
   --chart-01: var(--p-blue-100);
   --chart-02: hsl(171 71% 67%);
@@ -124,7 +142,9 @@
   --r-sm: 6px;  --r-1: 10px; --r-2: 14px;  --r-pill: 999px;
 
   --shell-max: 1200px;
-  --rail-w: 216px;
+  --sidenav-w: 256px;
+  --flake-w: 260px;
+  --utilbar-h: 58px;
   --topbar-h: 64px;
 
   --z-nav: 400;
@@ -153,6 +173,22 @@
   --brand-01:     var(--p-toffee-100);
   --good:         var(--p-green-110);
   --chart-02:     hsl(171 100% 35%);
+
+  /* Grade text sits on a pale tint over a cream page, so these run much
+     darker than the dark-theme set: measured at 4.5:1 or better against the
+     blended background, which small bold type needs. */
+  --grade-strong: hsl(155 78% 22%);
+  --grade-good:   hsl(96 62% 22%);
+  --grade-mid:    hsl(42 96% 23%);
+  --grade-weak:   hsl(24 88% 31%);
+  --grade-poor:   hsl(2 74% 38%);
+
+  --grade-strong-bg: hsl(var(--t-green-100) / 16%);
+  --grade-good-bg:   hsl(96 50% 34% / 14%);
+  --grade-mid-bg:    hsl(42 90% 40% / 18%);
+  --grade-weak-bg:   hsl(26 85% 45% / 15%);
+  --grade-poor-bg:   hsl(2 70% 50% / 13%);
+  --grade-na-bg:     hsla(var(--t-brown-140) / 7%);
 
   --chart-grid:   hsla(var(--t-brown-140) / 10%);
   --chart-axis:   hsla(var(--t-brown-140) / 45%);

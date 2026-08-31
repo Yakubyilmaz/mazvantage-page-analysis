@@ -11,11 +11,16 @@ rather than opened from the filesystem (module imports are blocked on file://).
 Responses are sent with `Cache-Control: no-store`, because browsers cache ES
 modules hard enough that an edited file will keep serving the old version
 until a manual hard-reload.
+
+The server is threaded. A single-threaded one deadlocks here: the report's
+module graph is a dozen files deep, the browser opens several connections at
+once to fetch it, and the queued ones are aborted before they are ever served.
 """
 from __future__ import annotations
 
 import http.server
 import os
+import socket
 import socketserver
 import sys
 import webbrowser
@@ -44,12 +49,31 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         # One tidy line per request; drop the noisy default timestamp block.
         sys.stderr.write("  %s\n" % (fmt % args))
 
+    def handle_one_request(self):
+        # A browser that navigates away mid-download aborts the socket. That is
+        # normal, not an error, and the default handler prints a full traceback
+        # for every one of them.
+        try:
+            super().handle_one_request()
+        except (ConnectionAbortedError, ConnectionResetError, BrokenPipeError, socket.timeout):
+            self.close_connection = True
+
+
+class Server(socketserver.ThreadingTCPServer):
+    daemon_threads = True          # do not keep the process alive on Ctrl+C
+
+    # Deliberately NOT allow_reuse_address. On Windows that flag lets a second
+    # process bind a port something else is already serving, and requests then
+    # land on whichever happened to accept — which looks exactly like a stale
+    # cache, because half the responses come from the older process. Better to
+    # fail the bind loudly; main() turns it into a readable message.
+    allow_reuse_address = False
+
 
 def main() -> int:
     port = int(sys.argv[1]) if len(sys.argv) > 1 else DEFAULT_PORT
-    socketserver.TCPServer.allow_reuse_address = True
     try:
-        with socketserver.TCPServer(("127.0.0.1", port), Handler) as httpd:
+        with Server(("127.0.0.1", port), Handler) as httpd:
             url = f"http://localhost:{port}/"
             print(f"Maz Vantage running at {url}")
             print("  ?symbol=MSFT to load another ticker · Ctrl+C to stop")
