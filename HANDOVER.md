@@ -286,5 +286,8 @@ Worth knowing before you or an assistant edits this.
   (exchange, ISIN, CIK, listing date, head office). The data is still in
   `a.facts`; nothing renders it.
 - **The tabs are inert.** Twelve of them, styled and laid out, switching nothing.
-  The report below is the Overview. Wiring them is the obvious next step, and
-  the page header above them is already built to survive a tab change.
+  The report below them is the **Analysis** tab's content — that is the one
+  marked current, via `CURRENT_TAB` in `app.js`. Overview is meant to be a
+  shorter summary page and does not exist yet. Wiring the tabs is the obvious
+  next step, and the page header above them is already built to survive a tab
+  change.

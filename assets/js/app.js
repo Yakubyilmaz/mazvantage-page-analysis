@@ -42,8 +42,9 @@ const SIDE_NAV = [
 /**
  * The tab strip under the report head.
  *
- * Also inert for now — no panel switching, no content. `Overview` reads as
- * the current tab because the report below it is the overview.
+ * Also inert for now — no panel switching, no content. `Analysis` reads as the
+ * current tab because the report below it is the analysis; Overview is a
+ * shorter summary page that does not exist yet.
  */
 const TABS = [
   'Overview', 'Analysis', 'Ratings', 'Financials', 'Statistics & Metrics',
@@ -297,16 +298,20 @@ function buildPriceHead(a) {
   ]);
 }
 
-/** The tab strip. Nothing switches yet; the report below is the Overview. */
+/** The tab strip. Nothing switches yet; the report below is the Analysis. */
+const CURRENT_TAB = 'Analysis';
+
 function buildTabs() {
   return el('div', { class: 'tabs' }, [
-    el('div', { class: 'tabs__strip' }, TABS.map((label, i) =>
-      el('button', {
+    el('div', { class: 'tabs__strip' }, TABS.map((label) => {
+      const on = label === CURRENT_TAB;
+      return el('button', {
         type: 'button',
-        class: `tab ${i === 0 ? 'is-active' : ''}`.trim(),
-        'aria-current': i === 0 ? 'page' : null,
+        class: `tab ${on ? 'is-active' : ''}`.trim(),
+        'aria-current': on ? 'page' : null,
         text: label,
-      }))),
+      });
+    })),
   ]);
 }
 
