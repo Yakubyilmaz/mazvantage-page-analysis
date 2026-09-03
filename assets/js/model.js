@@ -18,6 +18,7 @@
    ========================================================================== */
 
 import { isNum, cagr, mean, median, pct, mult, money, price, trim, dec, yearOf, clamp } from './util.js';
+import { logoUrl } from './fmp.js';
 import { sectorLookup } from './grading.js';
 import { gradeAll, FACTOR_KEYS, METRICS } from './factors.js';
 
@@ -187,6 +188,10 @@ function deriveFacts(ds, bm) {
     price: priceNow,
     change: quote.change ?? null,
     changePct: isNum(quote.changePercentage) ? quote.changePercentage / 100 : null,
+    open: quote.open ?? null, previousClose: quote.previousClose ?? null,
+    // Seconds since the epoch, as the vendor sends it. Kept as an ISO string
+    // so every date helper in util.js can read it without a special case.
+    quoteTime: isNum(quote.timestamp) ? new Date(quote.timestamp * 1000).toISOString() : null,
     dayLow: quote.dayLow ?? null, dayHigh: quote.dayHigh ?? null,
     yearLow: quote.yearLow ?? null, yearHigh: quote.yearHigh ?? null,
     avg50: quote.priceAvg50 ?? null, avg200: quote.priceAvg200 ?? null,
@@ -449,6 +454,9 @@ function derivePeers(ds, facts, bm) {
     price: p.price ?? null,
     marketCap: p.mktCap ?? p.marketCap ?? null,
     pe: p.pe ?? null,   // filled in later by app.js if peer ratios are fetched
+    // The peers feed carries no logo, so this is built from the symbol. It
+    // may not resolve; the view falls back to an initial.
+    image: logoUrl(p.symbol),
   }));
   return { peers, peerPe: null };
 }
@@ -511,6 +519,104 @@ function deriveDividends(ds) {
     stable: worstDrop > -0.20,          // no annual cut deeper than 20%
     growing: isNum(growth) ? growth > 0 : null,
     growth,
+  };
+}
+
+/* ==========================================================================
+   The last quarter
+   ========================================================================== */
+
+/**
+ * The most recently reported quarter, from the earnings calendar.
+ *
+ * Every statement this app fetches is annual, so the calendar is the only
+ * quarterly thing in the dataset — and what it carries is exactly what "how
+ * did the last quarter go" means to a reader: the actual against what the
+ * street was expecting. Rows with no actual are quarters that have not
+ * happened yet, and are the *next* report rather than the last one.
+ */
+function deriveQuarter(ds) {
+  const rows = arr(ds.get('earnings')).filter((r) => r && r.date);
+  const now = Date.now();
+
+  const reported = rows
+    .filter((r) => isNum(r.epsActual) || isNum(r.revenueActual))
+    .sort((x, y) => new Date(y.date) - new Date(x.date));
+  const upcoming = rows
+    .filter((r) => !isNum(r.epsActual) && new Date(r.date).getTime() > now)
+    .sort((x, y) => new Date(x.date) - new Date(y.date));
+
+  const last = reported[0] || null;
+
+  // Divided by the magnitude of the estimate, not the estimate itself: a
+  // company expected to lose 20c and losing 10c beat, and a plain ratio
+  // would report that as a miss.
+  const surprise = (actual, est) =>
+    (isNum(actual) && isNum(est) && est !== 0) ? (actual - est) / Math.abs(est) : null;
+
+  return {
+    available: !!last,
+    date: last?.date ?? null,
+    eps: last?.epsActual ?? null,
+    epsEstimate: last?.epsEstimated ?? null,
+    epsSurprise: surprise(last?.epsActual, last?.epsEstimated),
+    revenue: last?.revenueActual ?? null,
+    revenueEstimate: last?.revenueEstimated ?? null,
+    revenueSurprise: surprise(last?.revenueActual, last?.revenueEstimated),
+    next: upcoming[0]?.date ?? null,
+  };
+}
+
+/* ==========================================================================
+   Insider dealing
+   ========================================================================== */
+
+/**
+ * Insider buying and selling, rolled up to a trailing four quarters.
+ *
+ * FMP reports one row per calendar quarter. The most recent quarter on its
+ * own is often empty, or is one vesting event, so summing four of them makes
+ * the headline a trailing-twelve-month picture rather than whatever happened
+ * since the last quarter turned.
+ */
+function deriveInsiders(ds) {
+  const raw = ds.get('insiderStats');
+  const rows = Array.isArray(raw) ? raw : (raw ? [raw] : []);
+  const trades = arr(ds.get('insiderTrades'));
+
+  if (!rows.length) return { available: false, trades, quarters: 0 };
+
+  const recent = rows.slice()
+    .sort((x, y) => (y.year - x.year) || (y.quarter - x.quarter))
+    .slice(0, 4);
+
+  const acquired = recent.reduce((t, r) => t + (r.totalAcquired || 0), 0);
+  const disposed = recent.reduce((t, r) => t + (r.totalDisposed || 0), 0);
+  const net = acquired - disposed;
+
+  // Only claim a four-quarter span when four quarters were actually there.
+  const span = recent.length === 4
+    ? `${recent.at(-1).year} Q${recent.at(-1).quarter} – ${recent[0].year} Q${recent[0].quarter}`
+    : 'the reported period';
+  const over = recent.length === 4 ? 'the last four quarters' : span;
+
+  return {
+    available: true,
+    quarters: recent.length,
+    span,
+    acquired,
+    disposed,
+    net,
+    ratio: disposed > 0 ? acquired / disposed : null,
+    trades,
+    /* The caveat travels with the number. A net disposal at a large employer
+       is mostly vesting and tax withholding, and a figure reported without
+       that reads as insiders heading for the exit. */
+    note: net >= 0
+      ? `Insiders have been net acquirers of ${ds.symbol} stock over ${over}.`
+      : `Insiders disposed of ${Math.abs(net).toLocaleString('en-US')} more shares than they acquired `
+        + `over ${over}. Much of that is usually vesting and tax-related selling rather than a view `
+        + 'on the business.',
   };
 }
 
@@ -1070,6 +1176,8 @@ export function analyse(ds, { peerRatios = null, peerGrowth = null, sectorStats 
   const history = deriveHistory(ds, facts);
   const dividends = deriveDividends(ds);
   const execs = deriveExecs(ds, facts, bm, history);
+  const insiders = deriveInsiders(ds);
+  const quarter = deriveQuarter(ds);
   const peers = derivePeers(ds, facts, bm);
 
   // Peer P/E ratios are fetched separately (one request per peer) and folded
@@ -1093,7 +1201,8 @@ export function analyse(ds, { peerRatios = null, peerGrowth = null, sectorStats 
   peers.self = scorePeers(peers.peers, peerRatios, ds.get('ratiosTtm'), lookup);
 
   const context = {
-    ds, bm, facts, forecast, history, dividends, execs, peers, val, growth, momentum, lookup,
+    ds, bm, facts, forecast, history, dividends, execs, insiders, quarter, peers, val, growth,
+    momentum, lookup,
     // Raw peer ratios, kept whole rather than only folded into `peers`. The
     // valuation models build a peer-median target multiple from them, which
     // needs every field on the row, not just the P/E the peer table shows.

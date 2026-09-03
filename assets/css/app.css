@@ -374,6 +374,9 @@ svg { display: block; }
 
 /* ---------- reward / risk lists ------------------------------------------ */
 .rrgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--x2); }
+/* Only on the Overview, where the card is stretched to its row: the two
+   columns take the slack instead of leaving it under the headlines. */
+.ocard > .rrgrid { flex: 1; }
 .rr { background: var(--surface-2); border-radius: var(--r-1); padding: var(--x2); }
 .rr h3 { font-size: var(--text-sm); font-weight: 600; margin-bottom: var(--x1); }
 .rr li { display: flex; gap: var(--x1); font-size: var(--text-xs); color: var(--text-soft); padding: 4px 0; }
@@ -870,3 +873,388 @@ dialog .hint { font-size: var(--text-tiny); color: var(--text-softer); margin-to
   font-variant-numeric: tabular-nums;
 }
 .distrib__axismid { color: var(--text-softer); }
+
+/* ==========================================================================
+   Overview tab
+
+   A dashboard rather than a scroll: a company head above the tab strip, then
+   a twelve-column grid of small cards, each one a summary of a section the
+   Analysis tab carries in full. Everything here is sized for a card 240-360px
+   wide, which is why it has its own stat row, chart and legend rather than
+   reusing the full-width ones above.
+   ========================================================================== */
+
+/* The Overview has no flake column beside it — it is a grid of cards, not a
+   walk through five sections, so there is nothing for the flake to track. */
+.shell--wide { grid-template-columns: minmax(0, 1fr); }
+
+/* ---------- company head ------------------------------------------------- */
+
+/* Capped to the shell width so the head lines up with the cards below it
+   rather than running out past them on a wide screen. */
+.ohead {
+  background: var(--surface);
+  padding: var(--x3) var(--x3) var(--x2);
+  max-width: var(--shell-max); width: 100%;
+}
+.ohead__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(210px, 1fr) 292px;
+  gap: var(--x3) var(--x4); align-items: start; margin-top: var(--x1);
+}
+.ohead__main  { grid-column: 1; grid-row: 1; min-width: 0; }
+.ohead__quote { grid-column: 2; grid-row: 1; min-width: 0; }
+.mazscore     { grid-column: 3; grid-row: 1; }
+
+.ohead__id { display: flex; gap: var(--x2); align-items: flex-start; }
+.ohead__logo {
+  width: 56px; height: 56px; flex: none; border-radius: var(--r-1);
+  background: #fff; object-fit: contain; padding: 6px;
+  border: 1px solid var(--border-soft);
+}
+.ohead__name { font-size: var(--text-hero); font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; }
+.ohead__meta {
+  display: flex; align-items: center; gap: var(--x1); flex-wrap: wrap;
+  margin-top: 6px; font-size: var(--text-tiny); color: var(--text-softer);
+}
+.ohead__meta b { color: var(--text-solid); font-weight: 600; }
+.obadge {
+  padding: 2px var(--x1); border-radius: var(--r-sm);
+  background: var(--surface-2); border: 1px solid var(--border-soft); color: var(--text-soft);
+}
+/* Two lines of the vendor's description. The full text is on the Analysis
+   tab behind a "show more"; here it identifies the company, it is not a read. */
+.ohead__desc {
+  margin-top: var(--x2); font-size: var(--text-xs); color: var(--text-soft); line-height: 1.6;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.ohead__actions { display: flex; gap: var(--x1); margin-top: var(--x2); flex-wrap: wrap; }
+
+.ohead__pricerow { display: flex; align-items: baseline; gap: var(--x1_5); flex-wrap: wrap; }
+.ohead__price {
+  font-size: var(--text-hero); font-weight: 700;
+  letter-spacing: -0.02em; font-variant-numeric: tabular-nums;
+}
+.ohead__change { font-size: var(--text-sm); font-weight: 600; color: var(--text-softer); }
+.ohead__change.is-up { color: var(--good); }
+.ohead__change.is-down { color: var(--bad); }
+.ohead__asof { font-size: var(--text-tiny); color: var(--text-subtle); margin-top: 3px; }
+.ohead__stats {
+  margin-top: var(--x2);
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 var(--x3);
+}
+
+/* ---------- score card ---------------------------------------------------- */
+
+.mazscore {
+  background: var(--surface-1); border: 1px solid var(--border-soft);
+  border-radius: var(--r-2); padding: var(--x2);
+}
+.mazscore__label {
+  display: flex; align-items: center; gap: 5px;
+  font-size: var(--text-micro); font-weight: 600;
+  text-transform: uppercase; letter-spacing: .07em; color: var(--text-softer);
+}
+.mazscore__info { width: 13px; height: 13px; fill: var(--text-subtle); }
+.mazscore__value { display: flex; align-items: baseline; gap: 4px; margin-top: 2px; }
+.mazscore__value b {
+  font-size: var(--text-mass); font-weight: 700; line-height: 1.1;
+  letter-spacing: -0.02em; font-variant-numeric: tabular-nums;
+}
+.mazscore__value i { font-style: normal; font-size: var(--text-sm); color: var(--text-softer); }
+.mazscore__verdict { font-size: var(--text-sm); font-weight: 700; }
+.mazscore__verdict.is-good  { color: var(--good); }
+.mazscore__verdict.is-warn  { color: var(--neutral); }
+.mazscore__verdict.is-bad   { color: var(--bad); }
+.mazscore__verdict.is-muted { color: var(--text-softer); }
+
+.mazscore__rows { display: grid; gap: 2px; margin-top: var(--x2); }
+.mazscore__row {
+  display: grid; grid-template-columns: 92px minmax(0, 1fr) 28px;
+  align-items: center; gap: var(--x1); padding: 4px 0;
+  text-align: left; font-size: var(--text-tiny);
+}
+.mazscore__row:hover .mazscore__name { color: var(--brand-01); }
+.mazscore__name { color: var(--text-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mazscore__num { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.mazscore__foot {
+  margin-top: var(--x2); padding-top: var(--x1_5);
+  border-top: 1px solid var(--border-soft); display: grid; gap: 7px;
+}
+.mazscore__footrow {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--x1);
+  font-size: var(--text-tiny); color: var(--text-softer);
+}
+.mazscore__footrow b { color: var(--text-solid); }
+
+/* ---------- the card grid -------------------------------------------------- */
+
+/* No `align-items: start`: grid items stretch, so every card in a row ends on
+   the same line. A card whose content runs short then carries the slack
+   inside itself rather than leaving a ragged hole in the grid. */
+.ovw {
+  display: grid; grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--x3);
+}
+/* A column, so the slack has somewhere to go: `.omore` claims it and sits on
+   the bottom edge, and the card's own body keeps its natural height. */
+.ovw > .card { margin-bottom: 0; display: flex; flex-direction: column; }
+.ovw__c3  { grid-column: span 3; }
+.ovw__c4  { grid-column: span 4; }
+.ovw__c8  { grid-column: span 8; }
+.ovw__c12 { grid-column: span 12; }
+
+/* Tighter than a report card: at a quarter of the width, 24px of padding on
+   each side is a fifth of the card given over to nothing. */
+.ocard { padding: var(--x2); }
+.ocard__head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: var(--x1_5); margin-bottom: var(--x1_5);
+}
+.ocard__head h2 {
+  display: inline-flex; align-items: center; gap: 5px; min-width: 0;
+  font-size: var(--text-base); font-weight: 600; letter-spacing: -0.01em;
+}
+/* The card's small print, on hover rather than under the card. Subtle enough
+   to leave the numbers alone, solid enough to be findable. */
+.ocard__info { width: 13px; height: 13px; flex: none; fill: var(--text-subtle); cursor: help; }
+.ocard__info:hover { fill: var(--text-soft); }
+
+/* One row per Shariah standard: tick, name, verdict.
+   `space-between` because this is the shortest card in its row and takes the
+   row's height from its neighbours — spreading five rows down that height
+   reads as a list, where bunching them at the top reads as an unfinished
+   card. */
+.ostds { display: grid; flex: 1; align-content: space-between; }
+.ostd {
+  display: flex; align-items: center; gap: var(--x1_5);
+  padding: 9px 0; border-bottom: 1px solid var(--border-subtle); font-size: var(--text-xs);
+}
+.ostd:last-child { border-bottom: 0; }
+.ostd__n { flex: 1; min-width: 0; font-weight: 600; }
+.ostd__v { font-weight: 600; font-size: var(--text-tiny); }
+.ostd__v.is-pass { color: var(--good); }
+.ostd__v.is-fail { color: var(--bad); }
+.ostd__v.is-na   { color: var(--text-subtle); }
+
+/* ---------- stat rows ------------------------------------------------------ */
+
+.ostats { display: grid; }
+.ostats--split { margin-top: var(--x1_5); border-top: 1px solid var(--border-soft); padding-top: 2px; }
+.ostat {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--x1_5);
+  padding: 7px 0; border-bottom: 1px solid var(--border-subtle); font-size: var(--text-xs);
+}
+.ostat:last-child { border-bottom: 0; }
+.ostat__k { color: var(--text-softer); min-width: 0; }
+.ostat__v {
+  display: inline-flex; align-items: center; justify-content: flex-end;
+  flex-wrap: wrap; gap: 4px var(--x1);
+  font-weight: 600; text-align: right; font-variant-numeric: tabular-nums;
+}
+.ostat__fig { font-weight: 600; }
+.ostat__delta { font-size: var(--text-tiny); font-weight: 600; }
+/* The qualifier under a figure — "better than 627 of 930". Own line, or it
+   pushes the number it qualifies off the edge of a 240px card. */
+.ostat__note {
+  flex-basis: 100%; font-style: normal; font-weight: 400;
+  font-size: var(--text-micro); color: var(--text-subtle);
+}
+
+/* ---------- score bar ------------------------------------------------------- */
+
+.otrack {
+  display: block; height: 6px; border-radius: 3px;
+  background: var(--border-strong); overflow: hidden;
+}
+.otrack__fill { display: block; height: 100%; border-radius: 3px; background: var(--grade-na); }
+.otrack__fill.is-strong { background: var(--grade-strong); }
+.otrack__fill.is-good   { background: var(--grade-good); }
+.otrack__fill.is-mid    { background: var(--grade-mid); }
+.otrack__fill.is-weak   { background: var(--grade-weak); }
+.otrack__fill.is-poor   { background: var(--grade-poor); }
+
+/* ---------- headline figure ------------------------------------------------- */
+
+.obig {
+  display: grid; gap: 1px; padding: var(--x1_5);
+  background: var(--surface-2); border-radius: var(--r-1); margin-bottom: var(--x1_5);
+}
+.obig__k {
+  font-size: var(--text-micro); text-transform: uppercase;
+  letter-spacing: .06em; color: var(--text-softer);
+}
+.obig__v {
+  font-size: var(--text-mega); font-weight: 700;
+  letter-spacing: -0.02em; font-variant-numeric: tabular-nums;
+}
+.obig__note { font-size: var(--text-tiny); font-weight: 600; }
+
+.ograde {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center; gap: var(--x1_5); margin-top: var(--x2);
+}
+.ograde__word { font-size: var(--text-xs); font-weight: 600; }
+
+/* ---------- factor tiles ---------------------------------------------------- */
+
+.ofactors { display: grid; grid-template-columns: repeat(auto-fit, minmax(176px, 1fr)); gap: var(--x1_5); }
+.ofactor {
+  display: grid; gap: 6px; text-align: left; padding: var(--x1_5);
+  background: var(--surface-2); border: 1px solid var(--border-soft);
+  border-radius: var(--r-1); transition: border-color .12s ease;
+}
+.ofactor:hover { border-color: var(--border-strong); }
+.ofactor__t { font-size: var(--text-xs); font-weight: 600; }
+.ofactor__v { display: flex; align-items: baseline; justify-content: space-between; gap: var(--x1); }
+.ofactor__v b {
+  font-size: var(--text-mega); font-weight: 700;
+  line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums;
+}
+.ofactor__r, .ofactor__n { font-size: var(--text-micro); color: var(--text-subtle); }
+
+/* ---------- price card returns ---------------------------------------------- */
+
+.oreturns {
+  display: flex; flex-wrap: wrap; gap: var(--x1) var(--x3);
+  /* Bottom edge of a stretched card: the chart above has a fixed aspect and
+     cannot take up the slack, so the rule under it would otherwise hang in
+     mid-air. `margin-top` collapses to nothing when there is no slack. */
+  margin-top: auto; padding-top: var(--x1_5);
+  border-top: 1px solid var(--border-subtle); font-size: var(--text-tiny);
+}
+.oreturns__item { display: inline-flex; align-items: center; gap: 6px; }
+.oreturns__item i { font-style: normal; color: var(--text-softer); }
+.oreturns__item.is-self i { color: var(--text-solid); font-weight: 600; }
+.oreturns__item b { font-variant-numeric: tabular-nums; }
+
+/* ---------- news, peers, links ----------------------------------------------- */
+
+/* Full width, so headlines sit side by side rather than in one long column.
+   `auto-fit` collapses the empty tracks, which matters: the bundled snapshot
+   carries two headlines and a live key carries five. */
+.onews {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: var(--x1_5) var(--x3);
+}
+.onews li { display: grid; gap: 2px; align-content: start; }
+.onews__t {
+  font-size: var(--text-xs); font-weight: 600; line-height: 1.45;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+.onews__t:hover { color: var(--brand-01); }
+.onews__m { font-size: var(--text-micro); color: var(--text-subtle); }
+
+/* A peer's row: round mark, then the ticker. Fixed tile width keeps the
+   tickers on one left edge whether a logo resolved or not. */
+.opeer { display: inline-flex; align-items: center; gap: var(--x1); min-width: 0; }
+.opeer__logo {
+  width: 22px; height: 22px; flex: none; border-radius: 50%;
+  background: #fff; border: 1px solid var(--border-soft);
+  object-fit: contain; padding: 2px;
+}
+.opeer__logo--fb {
+  display: grid; place-content: center; padding: 0;
+  background: var(--brand-01-softer); border-color: transparent;
+  color: var(--brand-01); font-size: var(--text-micro); font-weight: 700;
+}
+
+.otbl { font-size: var(--text-tiny); }
+.otbl th { padding: 6px var(--x0_5); }
+.otbl td { padding: 7px var(--x0_5); }
+.otbl a:hover { color: var(--brand-01); }
+
+.omore {
+  display: inline-flex; align-items: center; gap: 5px;
+  /* Pinned to the bottom of a stretched card. `margin-top` collapses to zero
+     when there is no slack, so the gap above it is padding instead. */
+  align-self: flex-start; margin-top: auto; padding-top: var(--x2);
+  font-size: var(--text-tiny); font-weight: 600; color: var(--brand-01);
+}
+.omore::after { content: "\2192"; }
+.omore:hover { text-decoration: underline; }
+
+/* ---------- miniature charts --------------------------------------------------- */
+
+.ochart { width: 100%; height: auto; display: block; margin-top: var(--x1); }
+.ochart text { font-family: var(--font-sans); fill: var(--text-softer); }
+.ochart__grid { stroke: var(--chart-grid); stroke-width: 1; }
+.olegend {
+  display: flex; flex-wrap: wrap; gap: 4px var(--x2);
+  margin-top: var(--x1); font-size: var(--text-micro); color: var(--text-soft);
+}
+.olegend span { display: inline-flex; align-items: center; gap: 5px; }
+.olegend i { width: 8px; height: 8px; border-radius: 2px; flex: none; }
+
+/* ---------- insider filings ------------------------------------------------------ */
+
+/* A sub-heading inside a card, for a list that needs naming but not a rule. */
+.osub {
+  margin-top: var(--x2); font-size: var(--text-micro); font-weight: 600;
+  text-transform: uppercase; letter-spacing: .06em; color: var(--text-softer);
+}
+
+.otrades { display: grid; margin-top: var(--x0_5); }
+.otrade {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: var(--x1_5);
+  padding: 7px 0; border-bottom: 1px solid var(--border-subtle);
+}
+.otrade:last-child { border-bottom: 0; }
+.otrade__d { display: grid; gap: 1px; min-width: 0; }
+/* Filer names run long — "Kondo Chief People Officer" and worse — and this
+   column is about 220px, so the name truncates rather than pushing the share
+   count off the card. */
+.otrade__d b {
+  font-size: var(--text-xs); font-weight: 600;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.otrade__d i { font-style: normal; font-size: var(--text-micro); color: var(--text-subtle); }
+.otrade__v {
+  display: flex; align-items: center; gap: var(--x1); flex: none;
+  font-size: var(--text-tiny); font-variant-numeric: tabular-nums;
+}
+
+/* ---------- a tab with nothing behind it ---------------------------------------- */
+
+/* Ten of the twelve tabs are destinations the wider product will have. They
+   stay on the strip — the shape of the product is worth showing — but they
+   read as unavailable rather than as a click that silently does nothing. */
+.tab.is-inert, .tab.is-inert:hover { color: var(--text-subtle); cursor: default; }
+
+/* ---------- narrow viewports ------------------------------------------------------ */
+
+@media (max-width: 1180px) {
+  /* The quote drops under the identity block; the score card keeps its own
+     column and grows to meet them. */
+  .ohead__grid { grid-template-columns: minmax(0, 1fr) 280px; }
+  .ohead__quote { grid-column: 1; grid-row: 2; }
+  .mazscore { grid-column: 2; grid-row: 1 / span 2; }
+
+  .ovw__c8 { grid-column: span 12; }
+  .ovw__c4, .ovw__c3 { grid-column: span 6; }
+}
+
+@media (max-width: 900px) {
+  .ohead { padding-left: var(--x2); padding-right: var(--x2); }
+  .ohead__grid { grid-template-columns: minmax(0, 1fr); }
+  .ohead__quote { grid-column: 1; grid-row: 2; }
+  .mazscore { grid-column: 1; grid-row: 3; }
+  .ohead__name { font-size: var(--text-mega); }
+}
+
+@media (max-width: 820px) {
+  .ovw__c4, .ovw__c3 { grid-column: span 12; }
+}
+
+@media (max-width: 560px) {
+  /* A card title and its control stop sharing a line: the title wraps to two
+     lines beside the range selector otherwise. */
+  .ocard__head { flex-wrap: wrap; }
+}
+
+@media print {
+  .ovw { display: block; }
+  .ovw > .card { margin-bottom: var(--x2); break-inside: avoid; }
+  .ohead__actions, .omore { display: none !important; }
+}

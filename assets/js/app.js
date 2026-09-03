@@ -17,6 +17,7 @@ import {
   renderOverview, renderPriceHistory, renderAbout, renderDividend, renderManagement,
   renderOwnership, renderCompetitors, renderDataStatus,
 } from './sections.js';
+import { renderOverviewHead, renderOverviewTab } from './overview.js';
 
 /* ---------- constants ----------------------------------------------------- */
 
@@ -42,15 +43,19 @@ const SIDE_NAV = [
 /**
  * The tab strip under the report head.
  *
- * Also inert for now — no panel switching, no content. `Analysis` reads as the
- * current tab because the report below it is the analysis; Overview is a
- * shorter summary page that does not exist yet.
+ * Two of these switch something: Overview is the summary page in
+ * `overview.js`, Analysis is the full report. The other ten are destinations
+ * the wider product will have and are marked `aria-disabled`, so a tab that
+ * does nothing says so rather than swallowing the click.
  */
 const TABS = [
   'Overview', 'Analysis', 'Ratings', 'Financials', 'Statistics & Metrics',
   'Valuation', 'Growth', 'Financial Health', 'Profitability',
   'Analysts Forecast', 'Dividends', 'Shariah Compliance',
 ];
+
+/** The tabs with a panel behind them. */
+const LIVE_TABS = ['Overview', 'Analysis'];
 
 
 /** Sector → SPDR sector ETF, used as the industry benchmark for returns. */
@@ -298,21 +303,35 @@ function buildPriceHead(a) {
   ]);
 }
 
-/** The tab strip. Nothing switches yet; the report below is the Analysis. */
-const CURRENT_TAB = 'Analysis';
+/**
+ * The tab strip.
+ *
+ * Returns the strip and a `mark(tab)` that moves the current-tab styling, so
+ * switching a tab does not rebuild the row of buttons underneath the pointer.
+ */
+function buildTabs(active, onSelect) {
+  const buttons = TABS.map((label) => {
+    const live = LIVE_TABS.includes(label);
+    const b = el('button', {
+      type: 'button',
+      class: `tab ${live ? '' : 'is-inert'}`.trim(),
+      'aria-disabled': live ? null : 'true',
+      title: live ? null : 'Not built yet',
+      text: label,
+    });
+    if (live) b.addEventListener('click', () => onSelect(label));
+    return b;
+  });
 
-function buildTabs() {
-  return el('div', { class: 'tabs' }, [
-    el('div', { class: 'tabs__strip' }, TABS.map((label) => {
-      const on = label === CURRENT_TAB;
-      return el('button', {
-        type: 'button',
-        class: `tab ${on ? 'is-active' : ''}`.trim(),
-        'aria-current': on ? 'page' : null,
-        text: label,
-      });
-    })),
-  ]);
+  const mark = (tab) => buttons.forEach((b) => {
+    const on = b.textContent === tab;
+    b.classList.toggle('is-active', on);
+    if (on) b.setAttribute('aria-current', 'page');
+    else b.removeAttribute('aria-current');
+  });
+  mark(active);
+
+  return { node: el('div', { class: 'tabs' }, [el('div', { class: 'tabs__strip' }, buttons)]), mark };
 }
 
 function logoMark() {
@@ -570,6 +589,31 @@ function symbolFromUrl() {
   return (new URLSearchParams(location.search).get('symbol') || DEFAULT_SYMBOL).toUpperCase();
 }
 
+/**
+ * Which tab to open on.
+ *
+ * A hash decides it when no tab is named: every anchor in the app — the five
+ * factors, the dividend section, the data status — lives on the Analysis tab,
+ * so a link to one is a link into that tab rather than a broken jump on the
+ * Overview.
+ */
+function tabFromUrl() {
+  const q = (new URLSearchParams(location.search).get('tab') || '').toLowerCase();
+  const named = LIVE_TABS.find((t) => t.toLowerCase() === q);
+  if (named) return named;
+  return location.hash ? 'Analysis' : 'Overview';
+}
+
+/* `replaceState`, not `push`: flicking between two tabs is not five pages of
+   history to back out through, but a reloaded or shared link should still
+   land where the sender was. */
+function setTabInUrl(tab) {
+  const url = new URL(location.href);
+  if (tab === LIVE_TABS[0]) url.searchParams.delete('tab');
+  else url.searchParams.set('tab', tab.toLowerCase());
+  history.replaceState({ ...history.state, tab }, '', url);
+}
+
 function go(symbol) {
   const url = new URL(location.href);
   url.searchParams.set('symbol', symbol);
@@ -665,41 +709,93 @@ export async function boot(force = false) {
     });
     lastLoad = { ds, extras };
 
-    const main = el('main', {}, [
-      buildHeader(a),
-      renderOverview(a),
-      renderRatings(a),
-      renderPriceHistory(a, extras),
-      renderAbout(a),
-      ...FACTOR_KEYS.map((k) => renderFactor(a, k)),
-      renderDividend(a),
-      renderManagement(a),
-      renderOwnership(a),
-      renderCompetitors(a),
-      renderDataStatus(a),
-      buildFooter(),
-    ]);
-
-    const shell = el('div', { class: 'shell' }, [buildPageFlake(a), main]);
-    app.replaceChildren(el('div', { class: 'layout' }, [
-      buildSideNav(),
-      el('div', { class: 'content' }, [buildTopbar(go), buildPriceHead(a), buildTabs(), shell]),
+    // One banner per panel: a node lives in one place, and both tabs need to
+    // say the report is running off the bundled snapshot.
+    const banner = () => (ds.source !== 'snapshot' ? null : el('div', {
+      class: `notice ${ds.liveError ? 'notice--error' : ''}`.trim(),
+      style: { marginBottom: '16px' },
+    }, [
+      el('div', { html: ds.liveError
+        ? `Live FMP requests all failed — <b>${esc(ds.liveError)}</b> — so the <b>bundled snapshot</b> is shown instead. `
+          + 'Check the key in Settings.'
+        : 'No API key configured — showing the <b>bundled snapshot</b>. Open Settings to connect your FMP key for live data on any ticker.' }),
     ]));
 
-    if (ds.source === 'snapshot') {
-      const banner = el('div', {
-        class: `notice ${ds.liveError ? 'notice--error' : ''}`.trim(),
-        style: { marginBottom: '16px' },
-      }, [
-        el('div', { html: ds.liveError
-          ? `Live FMP requests all failed — <b>${esc(ds.liveError)}</b> — so the <b>bundled snapshot</b> is shown instead. `
-            + 'Check the key in Settings.'
-          : 'No API key configured — showing the <b>bundled snapshot</b>. Open Settings to connect your FMP key for live data on any ticker.' }),
+    /** Everything on the Overview and the Analysis can send the reader to a factor. */
+    const nav = { openAnalysis: (anchor) => selectTab('Analysis', anchor) };
+
+    const buildPanel = (tab) => {
+      if (tab === 'Overview') {
+        // No flake column: the Overview is a grid of cards rather than a long
+        // scroll through five sections, so there is nothing for it to spy on.
+        return el('div', { class: 'shell shell--wide' }, [banner(), renderOverviewTab(a, extras, nav)]);
+      }
+      const main = el('main', {}, [
+        banner(),
+        buildHeader(a),
+        renderOverview(a),
+        renderRatings(a),
+        renderPriceHistory(a, extras),
+        renderAbout(a),
+        ...FACTOR_KEYS.map((k) => renderFactor(a, k)),
+        renderDividend(a),
+        renderManagement(a),
+        renderOwnership(a),
+        renderCompetitors(a),
+        renderDataStatus(a),
+        buildFooter(),
       ]);
-      shell.querySelector('main').prepend(banner);
+      return el('div', { class: 'shell' }, [buildPageFlake(a), main]);
+    };
+
+    // Panels are built on first visit and kept: the Analysis is ~50,000px of
+    // charts, and rebuilding it every time someone glances at the Overview
+    // would throw away every range selector and model picker they had set.
+    const panels = {};
+    const headSlot = el('div', {});
+    const panelSlot = el('div', {});
+    let current = null;
+
+    function selectTab(tab, anchor) {
+      if (tab !== current) {
+        current = tab;
+        tabs.mark(tab);
+        headSlot.replaceChildren(tab === 'Overview' ? renderOverviewHead(a, nav) : buildPriceHead(a));
+        if (!panels[tab]) panels[tab] = buildPanel(tab);
+        panelSlot.replaceChildren(panels[tab]);
+        setTabInUrl(tab);
+      }
+      // Synchronous, and deliberately not behind a `requestAnimationFrame`:
+      // the panel is in the document by the line above, `scrollIntoView`
+      // forces the layout it needs itself, and a hidden tab never gets an
+      // animation frame at all — so deferring it would silently drop the
+      // jump whenever the page was in the background.
+      //
+      // Instant, not smooth: `html` sets `scroll-behavior: smooth` for
+      // in-page anchors, and the Momentum section sits about 32,000px down
+      // the Analysis tab. Animating that is seconds of blur on the way to a
+      // section the reader has already chosen.
+      if (anchor) {
+        document.getElementById(anchor)?.scrollIntoView({ behavior: 'instant', block: 'start' });
+      } else {
+        // `behavior: 'instant'` literally. The guard this replaces asked
+        // `'instant' in window`, which is never true — there is no global of
+        // that name — so it always fell through to 'auto', and 'auto' means
+        // "use the CSS", which `html { scroll-behavior: smooth }` sets to
+        // smooth. Switching tabs then glided the page to the top instead of
+        // starting there.
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      }
     }
 
-    window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+    const tabs = buildTabs(tabFromUrl(), (t) => selectTab(t));
+
+    app.replaceChildren(el('div', { class: 'layout' }, [
+      buildSideNav(),
+      el('div', { class: 'content' }, [buildTopbar(go), headSlot, tabs.node, panelSlot]),
+    ]));
+
+    selectTab(tabFromUrl(), location.hash ? location.hash.slice(1) : null);
   } catch (err) {
     console.error(err);
     app.replaceChildren(errorScreen(symbol, `Unexpected error: ${err.message}`,

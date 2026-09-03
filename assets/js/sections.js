@@ -516,47 +516,25 @@ export function renderManagement(a) {
    10. Ownership
    ========================================================================== */
 
-/**
- * FMP returns insider statistics as one row per calendar quarter. Roll the
- * last four together so the summary reads as a trailing-twelve-month picture
- * rather than whatever happened in the most recent, possibly empty, quarter.
- */
-function insiderSummary(a, stats) {
-  const rows = Array.isArray(stats) ? stats : (stats ? [stats] : []);
-  if (!rows.length) return feedGate(a, 'insiderStats', 'Insider trading summary');
+/** The four-quarter roll-up from `deriveInsiders`, as a block. */
+function insiderSummary(a) {
+  const ins = a.insiders;
+  if (!ins.available) return feedGate(a, 'insiderStats', 'Insider trading summary');
 
-  const recent = rows
-    .slice()
-    .sort((x, y) => (y.year - x.year) || (y.quarter - x.quarter))
-    .slice(0, 4);
-
-  const acquired = recent.reduce((t, r) => t + (r.totalAcquired || 0), 0);
-  const disposed = recent.reduce((t, r) => t + (r.totalDisposed || 0), 0);
-  const net = acquired - disposed;
-  const span = recent.length === 4
-    ? `${recent.at(-1).year} Q${recent.at(-1).quarter} – ${recent[0].year} Q${recent[0].quarter}`
-    : 'the reported period';
-
-  return blockEl('Insider trading summary', `Shares acquired against shares disposed across ${span}.`, [
+  return blockEl('Insider trading summary', `Shares acquired against shares disposed across ${ins.span}.`, [
     keyInfo([
-      ['Shares acquired', acquired.toLocaleString('en-US')],
-      ['Shares disposed', disposed.toLocaleString('en-US')],
-      ['Net', `${net >= 0 ? '+' : ''}${net.toLocaleString('en-US')}`],
-      ['Acquired / disposed', disposed > 0 ? dec(acquired / disposed, 2) : 'n/a'],
+      ['Shares acquired', ins.acquired.toLocaleString('en-US')],
+      ['Shares disposed', ins.disposed.toLocaleString('en-US')],
+      ['Net', `${ins.net >= 0 ? '+' : ''}${ins.net.toLocaleString('en-US')}`],
+      ['Acquired / disposed', isNum(ins.ratio) ? dec(ins.ratio, 2) : 'n/a'],
     ]),
-    el('p', { class: 't-xs soft mt2' }, [
-      net >= 0
-        ? `Insiders have been net acquirers of ${a.facts.symbol} stock over the last four quarters.`
-        : `Insiders have disposed of ${Math.abs(net).toLocaleString('en-US')} more shares than they acquired over the last four quarters. `
-          + 'Much of that is usually vesting and tax-related selling rather than a view on the business.',
-    ]),
+    el('p', { class: 't-xs soft mt2' }, [ins.note]),
   ]);
 }
 
 export function renderOwnership(a) {
   const f = a.facts;
-  const trades = a.ds.get('insiderTrades');
-  const stats = a.ds.get('insiderStats');
+  const trades = a.insiders.trades;
   const inst = a.ds.get('institutional');
   const float = a.ds.get('sharesFloat');
 
@@ -616,7 +594,7 @@ export function renderOwnership(a) {
       el('p', { text: 'Who are the major shareholders, and have insiders been buying or selling?' }),
     ]),
 
-    insiderSummary(a, stats),
+    insiderSummary(a),
 
     blockEl('Recent Insider Transactions', 'Form 4 filings, most recent first.', [insiderTable]),
     blockEl('Ownership Breakdown', 'Free float against closely held stock.', [ownershipDonut]),

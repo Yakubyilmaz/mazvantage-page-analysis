@@ -45,6 +45,19 @@ export function setApiKey(key) {
 
 export const hasApiKey = () => !!getApiKey();
 
+/**
+ * The vendor's logo for a symbol.
+ *
+ * `profile.image` carries this for the company being reported on, but a peer
+ * is only ever a symbol and a name, so the peer table has to build the URL.
+ * It lives here because this is the one file allowed to know one; callers
+ * treat it as a string that may or may not resolve, and fall back when the
+ * image 404s.
+ */
+export function logoUrl(symbol) {
+  return symbol ? `https://images.financialmodelingprep.com/symbol/${encodeURIComponent(symbol)}.png` : null;
+}
+
 /* ---------- feed catalogue ------------------------------------------------
    `path` is appended to BASE; `params` is a function of the request context.
    `pick` reshapes the raw payload into what the model wants.

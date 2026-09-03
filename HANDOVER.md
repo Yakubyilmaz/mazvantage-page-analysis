@@ -19,7 +19,9 @@ python serve.py
 ```
 
 `http://localhost:8792/?symbol=AAPL`. No install, no `npm i`, no bundler — the
-browser loads the ES modules directly. Any static file server works; `serve.py`
+browser loads the ES modules directly. It opens on the **Overview** — a
+dashboard of summary cards; `?tab=analysis`, or the tab strip, gets you the
+full report. Any static file server works; `serve.py`
 just adds `Cache-Control: no-store`, without which an edited module keeps
 serving its old version.
 
@@ -182,11 +184,16 @@ not return:
 | Levered FCF Margin (Profitability #3) | same two fields |
 | ROIC Consistency 5Y (Profitability #19) | annual `key-metrics` returns only `returnOnEquity` and `earningsYield` |
 
-**Everything is annual, not quarterly.** The app fetches annual statements, so
+**Every statement is annual, not quarterly.** The app fetches annual statements, so
 every year-on-year line is FY0 vs FY−1 rather than the spec's trailing-twelve
 against the prior trailing-twelve. Same question, one reporting period of lag.
 Moving to quarterly is a second call per statement and touches
 `deriveFacts`/`deriveGrowth` in `model.js`.
+
+The one exception is the earnings calendar: `deriveQuarter()` reads actual
+against estimate for EPS and revenue out of the `earnings` feed, which is the
+only quarterly figure in the dataset. The Overview's bull/bear case is built on
+it; nothing graded is.
 
 ---
 
@@ -217,7 +224,7 @@ serve.py                        local no-cache server
 assets/css/tokens.css           design tokens; light theme overrides semantics only
 assets/css/app.css              layout and components
 
-assets/js/app.js                routing, chrome (rail/tabs/price head), settings, boot
+assets/js/app.js                routing, chrome (rail/tabs/price head), tab panels, settings, boot
 assets/js/fmp.js                FMP connector: 27 feeds, caching, plan-gate detection
 assets/js/model.js              facts, forecast, history, momentum — the numbers
 assets/js/grading.js            percentile -> grade -> letter; the sector lookup
@@ -227,6 +234,7 @@ assets/js/gradeview.js          renders a graded factor: tables, pairs, panels
 assets/js/charts.js             SVG primitives — no chart library
 assets/js/snowflake.js          the Vantage Flake radar
 assets/js/sections.js           narrative sections — overview, dividend, ownership
+assets/js/overview.js           the Overview tab: company head, score card, card grid
 assets/js/ui.js                 shared building blocks
 assets/js/util.js               formatting and DOM helpers
 
@@ -285,9 +293,7 @@ Worth knowing before you or an assistant edits this.
 - **Company identity details were removed** with the "Other Information" section
   (exchange, ISIN, CIK, listing date, head office). The data is still in
   `a.facts`; nothing renders it.
-- **The tabs are inert.** Twelve of them, styled and laid out, switching nothing.
-  The report below them is the **Analysis** tab's content — that is the one
-  marked current, via `CURRENT_TAB` in `app.js`. Overview is meant to be a
-  shorter summary page and does not exist yet. Wiring the tabs is the obvious
-  next step, and the page header above them is already built to survive a tab
-  change.
+- **Ten of the twelve tabs are inert.** Overview and Analysis switch panels;
+  the other ten are marked `aria-disabled` and greyed, so a tab with nothing
+  behind it says so. `LIVE_TABS` in `app.js` is the list that switches, and
+  `selectTab()` is where a new panel is plugged in.
