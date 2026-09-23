@@ -1,0 +1,226 @@
+/* ==========================================================================
+   Maz Vantage — the report on the market canvas
+
+   The company report's other fifteen tabs, brought onto the same canvas as
+   the stock page, Home and Market Data.
+
+   ---------------------------------------------------------------------------
+   Why this is a bridge and not fifteen rewrites
+   ---------------------------------------------------------------------------
+
+   Those tabs are about ten and a half thousand lines across ten modules, and
+   not one of them names a colour. Every panel is assembled from the shared
+   primitives in `ui.js` — `card`, `ohead`, `statLine`, `table`, `notice` —
+   whose classes resolve their colour through the token set in `tokens.css`:
+   `--surface-*`, `--text-*`, `--border-*`, `--brand-01`, `--ok`, `--bad`.
+
+   So the canvas is a *token* problem, not a markup problem. Remapping that
+   set onto the market canvas's own tokens, for anything inside `.mh-page`,
+   moves all fifteen tabs at once and cannot drift: a panel added tomorrow
+   arrives on the new canvas for free, because it never named a colour either.
+
+   The second half of the file is the part a remap alone cannot do — the
+   market canvas is *flatter* than the report canvas. Cards there are filled
+   boxes stacked on a tinted page; here a section is a border, or nothing at
+   all. Those rules are structural and are kept deliberately few: they target
+   the dozen class families the panels actually emit, not every selector in
+   app.css.
+
+   ---------------------------------------------------------------------------
+   Themes
+   ---------------------------------------------------------------------------
+
+   Nothing here is written twice for light and dark. `.mh-page` already flips
+   its own tokens under `[data-theme="light"]`, and everything below is
+   expressed in terms of those, so both themes follow from one definition.
+   ========================================================================== */
+
+/* ==========================================================================
+   1. The token bridge
+   ========================================================================== */
+
+.mh-page {
+  /* Surfaces. The market canvas has one page colour and two lifts, where the
+     report canvas has four steps; the extra step collapses onto the soft one
+     rather than inventing a shade the canvas does not define. */
+  --surface:      var(--mh-bg);
+  --surface-1:    var(--mh-bg);
+  --surface-2:    var(--mh-soft);
+  --surface-3:    var(--mh-hover);
+
+  --text-solid:   var(--mh-fg);
+  --text-strong:  var(--mh-fg);
+  --text-soft:    var(--mh-muted);
+  --text-softer:  var(--mh-muted);
+  --text-subtle:  var(--mh-muted);
+
+  --border-subtle: var(--mh-border);
+  --border-soft:   var(--mh-border);
+  --border-strong: var(--mh-border);
+
+  /* The accent. The report canvas is gold; the market canvas is blue, and a
+     report that opened gold and scrolled into blue would read as two
+     products. */
+  --brand-01:        var(--mh-blue);
+  --brand-01-soft:   color-mix(in srgb, var(--mh-blue) 22%, transparent);
+  --brand-01-softer: color-mix(in srgb, var(--mh-blue) 12%, transparent);
+  --brand-01-subtle: color-mix(in srgb, var(--mh-blue) 6%, transparent);
+  --brand-02:        var(--mh-blue);
+  --brand-03:        var(--mh-blue);
+
+  /* Up and down. These two carry meaning rather than decoration, so they are
+     the market canvas's own greens and reds and not approximations. */
+  --good:          var(--mh-up);
+  --good-subtle:   color-mix(in srgb, var(--mh-up) 14%, transparent);
+  --good-strong:   color-mix(in srgb, var(--mh-up) 34%, transparent);
+  --ok:            var(--mh-up);
+  --ok-subtle:     color-mix(in srgb, var(--mh-up) 14%, transparent);
+  --bad:           var(--mh-down);
+  --bad-subtle:    color-mix(in srgb, var(--mh-down) 14%, transparent);
+  --bad-strong:    color-mix(in srgb, var(--mh-down) 34%, transparent);
+  --neutral:       var(--mh-muted);
+  --neutral-subtle: var(--mh-hover);
+  --warn:          var(--mh-down);
+  --warn-subtle:   color-mix(in srgb, var(--mh-down) 14%, transparent);
+}
+
+/* ==========================================================================
+   2. Flattening
+
+   The market canvas states a section with a border and a heading, not with a
+   filled card floating on a tinted page. These are the class families the ten
+   panel modules actually emit.
+   ========================================================================== */
+
+/* ---- cards become sections ---------------------------------------------- */
+
+.mh-page .card,
+.mh-page .ocard {
+  background: transparent;
+  border: 1px solid var(--mh-border);
+  border-radius: 14px;
+}
+/* A card nested inside another is a group, not a second box. */
+.mh-page .card .card,
+.mh-page .ocard .ocard,
+.mh-page .card .ocard {
+  border: 0; border-radius: 0; padding-inline: 0;
+}
+
+.mh-page .card__head h2,
+.mh-page .ocard__head h2 {
+  font-size: 18px; font-weight: 650; letter-spacing: -.02em; color: var(--mh-fg);
+}
+.mh-page .card__head h3,
+.mh-page .ocard__head h3 { font-size: 14px; font-weight: 600; color: var(--mh-fg); }
+
+/* The section intro band: a rule under the heading rather than a tinted slab
+   bleeding to the card's edges. */
+.mh-page .sec__intro {
+  background: transparent; margin: 0 0 18px; padding: 0 0 14px;
+  border-bottom: 1px solid var(--mh-border); border-radius: 0;
+}
+.mh-page .sec__intro h2 { font-size: 21px; font-weight: 650; letter-spacing: -.025em; }
+
+/* ---- the stat rows, which are most of what these tabs are ---------------- */
+
+.mh-page .ostat {
+  border-bottom: 1px solid var(--mh-border);
+  font-variant-numeric: tabular-nums;
+}
+.mh-page .ostat:last-child { border-bottom: 0; }
+.mh-page .ostats--split { border-top: 1px solid var(--mh-border); }
+.mh-page .num,
+.mh-page .ostat b,
+.mh-page .ostat strong { font-variant-numeric: tabular-nums; color: var(--mh-fg); }
+
+/* ---- tables -------------------------------------------------------------- */
+
+.mh-page .tbl th {
+  color: var(--mh-muted); border-bottom: 1px solid var(--mh-border);
+  font-size: 10px; font-weight: 600; letter-spacing: .05em;
+}
+.mh-page .tbl td { border-bottom: 1px solid var(--mh-border); font-variant-numeric: tabular-nums; }
+.mh-page .tbl tr:last-child td { border-bottom: 0; }
+.mh-page .tbl tbody tr:hover td { background: var(--mh-hover); }
+
+/* ---- notices and gates --------------------------------------------------- */
+
+.mh-page .notice {
+  background: var(--mh-soft); border: 1px solid var(--mh-border);
+  border-radius: 12px; color: var(--mh-muted);
+}
+
+/* ---- pills and badges ---------------------------------------------------- */
+
+.mh-page .pill { border-radius: 6px; font-weight: 600; }
+
+/* ---- the sub-tab strips inside a panel ----------------------------------- */
+
+.mh-page .subtabs {
+  background: transparent; border: 0; border-bottom: 1px solid var(--mh-border);
+  border-radius: 0; padding: 0; gap: 22px;
+}
+.mh-page .subtab {
+  border-radius: 0; padding: 12px 0; border-bottom: 3px solid transparent;
+  font-size: 13px; font-weight: 600; color: var(--mh-muted); background: transparent;
+}
+.mh-page .subtab:hover { color: var(--mh-fg); background: transparent; }
+.mh-page .subtab.is-active,
+.mh-page .subtab[aria-selected="true"] {
+  color: var(--mh-fg); background: transparent; border-bottom-color: var(--mh-fg);
+}
+
+/* ---- buttons ------------------------------------------------------------- */
+
+.mh-page .btn {
+  border: 1px solid var(--mh-border); border-radius: 8px;
+  background: transparent; color: var(--mh-fg); font-weight: 500;
+}
+.mh-page .btn:hover { background: var(--mh-hover); }
+.mh-page .btn--primary {
+  background: var(--mh-blue); border-color: var(--mh-blue); color: #fff; font-weight: 600;
+}
+.mh-page .btn--primary:hover { filter: brightness(1.08); background: var(--mh-blue); }
+
+/* ---- the price head above the other tabs' panels ------------------------- */
+
+.mh-page .phead,
+.mh-page .ohead { border-color: var(--mh-border); }
+
+/* ==========================================================================
+   3. The report shell inside the canvas
+
+   `.mh-page` owns a page gutter and the report's shell already has one, so
+   the canvas is mounted flush and the shell keeps its own measure.
+   ========================================================================== */
+
+/* When the panel shell *is* the canvas, it keeps its own measure and gutter.
+   Two rules already want to zero that: `.mh-page`'s own full-bleed gutter,
+   and `markethub.css`'s `.shell:has(.mh-page)`, which exists so a whole market
+   page dropped into a shell loses the shell's chrome. Neither is what this is
+   — the report is still the report, it has only changed colour — so both are
+   answered here, at a specificity that beats them. */
+.shell.mh-page,
+.shell.mh-page:has(.mh-page) {
+  max-width: var(--shell-max);
+  padding: var(--x3) var(--x3) var(--x8);
+}
+
+/* ---- the tab strip -------------------------------------------------------
+   Transparent rather than white: the content column behind it is already
+   painted by `markethub.css`'s `.content:has(.mh-page)` rules, in both
+   themes, so borrowing that is one source of truth instead of two. It takes
+   the canvas class for its border and its text colours, and then has to win
+   back the three things `.mh-page` would otherwise impose on it — its own
+   gutter, its horizontal scroll, and not being a full-height page. */
+.tabs.mh-page {
+  padding: 0 var(--x3);
+  background: transparent;
+  border-bottom: 1px solid var(--mh-border);
+  overflow-x: auto; overflow-y: visible;
+  min-height: 0;
+}
+
+/* The report's own scroll anchors clear the utility bar and the tab strip. */
+.mh-page .sec { scroll-margin-top: 126px; }

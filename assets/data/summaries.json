@@ -1,0 +1,47 @@
+{
+  "_about": "Written summaries of earnings calls, keyed SYMBOL|fiscalYear|quarter. These are read from the transcript by hand, not generated at runtime — the report ships no language model. Each carries who wrote it and when, and the Transcripts tab prints both above the summary so a reader always knows they are looking at somebody's reading rather than at a filing.",
+  "AAPL|2026|3": {
+    "writtenBy": "Claude Opus 5",
+    "writtenAt": "2026-09-08",
+    "headline": "A June-quarter record where demand ran ahead of supply, and a margin story that is really a memory story.",
+    "sections": [
+      {
+        "title": "The quarter",
+        "points": [
+          "Revenue $109.4b, up 16% year on year and a June-quarter record, set despite supply constraints and a sequential currency headwind.",
+          "iPhone $54.3b, up 22%, with June-quarter records in every geographic segment and a record number of upgraders. Management cited share gains globally.",
+          "Mac $10.4b, up 29% — its best June quarter ever, on MacBook Neo and MacBook Pro, and an all-time revenue record in Greater China.",
+          "Services $30.7b, up 12%, with records in every category and all-time records in cloud and payment services.",
+          "iPad $6.2b, down 6% against last year's A16 iPad launch. Wearables, home and accessories $7.9b, up 6%.",
+          "Gross margin 50.1%, but roughly two points of that was a tariff refund; adjusted, 48.1% and the midpoint of prior guidance.",
+          "Diluted EPS $2.02, up 29%, of which $0.11 was the same tariff refund. Operating cash flow $34.4b. Operating expenses $19.1b, up 23% on R&D.",
+          "$147b of cash against $84b of debt. $33b returned in the quarter — $4b of dividends and $25.8b of buybacks — and the dividend raised to $0.27."
+        ]
+      },
+      {
+        "title": "What management said",
+        "points": [
+          "The supply constraint is a forecasting problem, not a supplier one. Cook was explicit: iPhone and Mac are selling far beyond plan, the advanced silicon nodes cannot flex, and Apple has already pulled supply forward as far as it goes.",
+          "Memory is the margin story. Cook called it \"a 100-year flood\" on pricing, said Apple raised prices \"reluctantly\", and confirmed costs rise again in September. Parekh said memory explains more than all of the sequential margin decline in both the last quarter and the guided one.",
+          "The offsets to memory are temporary and management said so: carry-in inventory with a \"decreasing benefit\" beyond September, cheaper non-memory components, and mix.",
+          "Siri AI is now a shipping product rather than a promise, with developer and public betas described as overwhelmingly positive. It will not launch in the EU or mainland China at first — regulatory, not technical — though the Mac is outside the EU rules.",
+          "Capital intensity for AI is deliberately unresolved. Cook described a hybrid of third-party cloud and Apple's own data centres, spending across both opex and cost of sales, and an iCloud+ upsell whose take-up is unknown.",
+          "Installed base above 2.5 billion active devices and paid subscriptions above 1.5 billion — the two figures every services argument on the call rests on.",
+          "A $30b-plus Broadcom agreement, Apple's largest US manufacturing commitment, inside the standing $600b four-year US pledge.",
+          "Cook's last earnings call. John Ternus, on the line and taking over, was asked about competitive threats and declined to be drawn."
+        ]
+      },
+      {
+        "title": "The guide",
+        "points": [
+          "September-quarter revenue growth of 9–11%, a deceleration of about five points that currency and supply account for between them.",
+          "Currency a further 2.5-point sequential headwind; supply constraints widening from Mac to iPhone, Mac and iPad together.",
+          "iPhone growth in the mid-teens. Services growth similar to the June quarter once 2.5 points of currency come out.",
+          "Gross margin 47–48%, including about a point of tariff refunds. Operating expenses $19.1–19.4b, other income about $350m, tax rate about 16.5%.",
+          "Nothing offered beyond September. Both executives declined to guide the December quarter when pressed."
+        ]
+      }
+    ],
+    "conclusion": "A quarter that beat on every line and a guide that steps down five points — with the bridge between them fully explained by currency and by a supply chain that cannot keep up with demand it did not forecast. The one thing worth watching is not the top line but memory: management said it accounts for more than the whole of the sequential margin decline, that costs rise again next quarter, and that the offsets holding the line are running out. The AI question has moved from whether Apple ships to whether regulators in Brussels and Beijing let it, and the succession is now underway rather than announced."
+  }
+}

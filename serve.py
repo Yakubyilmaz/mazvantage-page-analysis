@@ -4,6 +4,7 @@ Maz Vantage — local server.
 
     python serve.py            # http://localhost:8792
     python serve.py 9000       # pick a port
+    PORT=9000 python serve.py  # or let the launcher assign one
 
 The report is a static ES-module app, so it needs to be served over http://
 rather than opened from the filesystem (module imports are blocked on file://).
@@ -70,8 +71,22 @@ class Server(socketserver.ThreadingTCPServer):
     allow_reuse_address = False
 
 
+def chosen_port() -> int:
+    """The port to bind: an argument, then `$PORT`, then the default.
+
+    The argument is the first one that is not a flag, so the port can be left
+    out while `--no-open` is still passed. `$PORT` is how a launcher that
+    assigns its own port hands it over — the tooling sets it in the
+    environment rather than on the command line.
+    """
+    for arg in sys.argv[1:]:
+        if not arg.startswith("-"):
+            return int(arg)
+    return int(os.environ.get("PORT") or DEFAULT_PORT)
+
+
 def main() -> int:
-    port = int(sys.argv[1]) if len(sys.argv) > 1 else DEFAULT_PORT
+    port = chosen_port()
     try:
         with Server(("127.0.0.1", port), Handler) as httpd:
             url = f"http://localhost:{port}/"

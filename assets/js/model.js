@@ -17,9 +17,10 @@
    confidence rather than silently scoring zero.
    ========================================================================== */
 
-import { isNum, cagr, mean, median, pct, mult, money, price, trim, dec, yearOf, clamp } from './util.js';
+import { isNum, cagr, mean, median, pct, mult, money, price, trim, dec, yearOf, yoy, fmtDate, clamp } from './util.js';
+import { logoUrl } from './fmp.js';
 import { sectorLookup } from './grading.js';
-import { gradeAll, FACTOR_KEYS, METRICS } from './factors.js';
+import { gradeAll, FACTOR_KEYS, FACTORS, METRICS } from './factors.js';
 
 /* ==========================================================================
    Benchmarks
@@ -187,6 +188,10 @@ function deriveFacts(ds, bm) {
     price: priceNow,
     change: quote.change ?? null,
     changePct: isNum(quote.changePercentage) ? quote.changePercentage / 100 : null,
+    open: quote.open ?? null, previousClose: quote.previousClose ?? null,
+    // Seconds since the epoch, as the vendor sends it. Kept as an ISO string
+    // so every date helper in util.js can read it without a special case.
+    quoteTime: isNum(quote.timestamp) ? new Date(quote.timestamp * 1000).toISOString() : null,
     dayLow: quote.dayLow ?? null, dayHigh: quote.dayHigh ?? null,
     yearLow: quote.yearLow ?? null, yearHigh: quote.yearHigh ?? null,
     avg50: quote.priceAvg50 ?? null, avg200: quote.priceAvg200 ?? null,
@@ -449,6 +454,9 @@ function derivePeers(ds, facts, bm) {
     price: p.price ?? null,
     marketCap: p.mktCap ?? p.marketCap ?? null,
     pe: p.pe ?? null,   // filled in later by app.js if peer ratios are fetched
+    // The peers feed carries no logo, so this is built from the symbol. It
+    // may not resolve; the view falls back to an initial.
+    image: logoUrl(p.symbol),
   }));
   return { peers, peerPe: null };
 }
@@ -511,6 +519,249 @@ function deriveDividends(ds) {
     stable: worstDrop > -0.20,          // no annual cut deeper than 20%
     growing: isNum(growth) ? growth > 0 : null,
     growth,
+  };
+}
+
+/* ==========================================================================
+   The last quarter
+   ========================================================================== */
+
+/**
+ * The most recently reported quarter, from the earnings calendar.
+ *
+ * Every statement this app fetches is annual, so the calendar is the only
+ * quarterly thing in the dataset — and what it carries is exactly what "how
+ * did the last quarter go" means to a reader: the actual against what the
+ * street was expecting. Rows with no actual are quarters that have not
+ * happened yet, and are the *next* report rather than the last one.
+ */
+function deriveQuarter(ds) {
+  const rows = arr(ds.get('earnings')).filter((r) => r && r.date);
+  const now = Date.now();
+
+  const reported = rows
+    .filter((r) => isNum(r.epsActual) || isNum(r.revenueActual))
+    .sort((x, y) => new Date(y.date) - new Date(x.date));
+  const upcoming = rows
+    .filter((r) => !isNum(r.epsActual) && new Date(r.date).getTime() > now)
+    .sort((x, y) => new Date(x.date) - new Date(y.date));
+
+  const last = reported[0] || null;
+
+  // Divided by the magnitude of the estimate, not the estimate itself: a
+  // company expected to lose 20c and losing 10c beat, and a plain ratio
+  // would report that as a miss.
+  const surprise = (actual, est) =>
+    (isNum(actual) && isNum(est) && est !== 0) ? (actual - est) / Math.abs(est) : null;
+
+  return {
+    available: !!last,
+    date: last?.date ?? null,
+    eps: last?.epsActual ?? null,
+    epsEstimate: last?.epsEstimated ?? null,
+    epsSurprise: surprise(last?.epsActual, last?.epsEstimated),
+    revenue: last?.revenueActual ?? null,
+    revenueEstimate: last?.revenueEstimated ?? null,
+    revenueSurprise: surprise(last?.revenueActual, last?.revenueEstimated),
+    next: upcoming[0]?.date ?? null,
+  };
+}
+
+/* ==========================================================================
+   Insider dealing
+   ========================================================================== */
+
+/* ==========================================================================
+   Trade markers — when somebody bought or sold
+
+   Two sources, two very different kinds of evidence, and the difference is
+   the whole reason these are derived separately.
+
+   ---------------------------------------------------------------------------
+   Insiders: an exact date
+   ---------------------------------------------------------------------------
+
+   A Form 4 carries the day the transaction happened. That is a real date and
+   a marker can sit on it.
+
+   **Only open-market purchases and sales are marked.** A Form 4 also reports
+   awards, option exercises, gifts and shares withheld to pay tax on a vesting
+   grant, and none of those is a decision to buy or sell — an award is
+   compensation arriving, and a tax withholding is a sale the recipient did not
+   choose. Counting them as insider buying is how a page ends up showing a
+   "cluster of insider buys" that is one vesting date. `INSIDER_INTENT` below
+   is the whole of that filter and the count it excludes is reported.
+
+   ---------------------------------------------------------------------------
+   Funds: a quarter, not a date
+   ---------------------------------------------------------------------------
+
+   A 13F says what a manager held on the last day of a quarter. It does not
+   say when they traded, and the filing itself lands up to 45 days later. So a
+   fund marker is placed at the quarter end and drawn as a diamond rather than
+   a triangle, because **the date is a reporting date, not a trade date** — the
+   position could have changed on any day in those three months.
+
+   Index managers are excluded. BlackRock's position in a large company moves
+   because the index moved, not because anyone formed a view, and a "super
+   investor sold" ping from a tracker is noise dressed as signal.
+   ========================================================================== */
+
+/**
+ * Form 4 transaction codes worth marking.
+ *
+ * `P` and `S` are open-market decisions. Everything else — `A` award,
+ * `M` exercise, `F` tax withholding, `G` gift, `C` conversion — happens for
+ * reasons that have nothing to do with a view on the price.
+ */
+const INSIDER_INTENT = { P: 'buy', S: 'sell' };
+
+/**
+ * Managers whose 13F changes track an index rather than a decision.
+ *
+ * Substring matching on the filer name, which is crude in one known
+ * direction: "Vanguard Capital Management LLC" is a different firm from the
+ * Vanguard Group and gets excluded with it. That is the safe way round — a
+ * missing marker is a smaller error than a tracker's rebalancing presented as
+ * a super-investor's conviction — but it is a filter on names, not on what
+ * the manager actually does.
+ */
+const INDEX_MANAGERS = [
+  'blackrock', 'vanguard', 'state street', 'geode', 'northern trust',
+  'charles schwab', 'dimensional', 'invesco', 'ssga', 'fmr llc', 'fidelity',
+  'bank of new york mellon', 'norges', 'legal & general', 'ubs asset',
+];
+
+const isIndexManager = (name) => {
+  const n = String(name || '').toLowerCase();
+  return INDEX_MANAGERS.some((m) => n.includes(m));
+};
+
+/**
+ * Insider trades as dated markers.
+ *
+ * Returns `{ markers, excluded, kinds }`. `excluded` is how many Form 4 rows
+ * were dropped for being awards or tax withholdings rather than trades — the
+ * chart prints it, because "12 markers from 47 filings" is a materially
+ * different picture from "12 filings".
+ */
+function deriveInsiderMarkers(ds) {
+  const rows = arr(ds.get('insiderTrades'));
+  const markers = [];
+  let excluded = 0;
+
+  for (const r of rows) {
+    const date = r?.transactionDate;
+    if (!date) continue;
+
+    const code = String(r.transactionType || '').split('-')[0].trim().toUpperCase();
+    const intent = INSIDER_INTENT[code];
+    if (!intent) { excluded += 1; continue; }
+
+    const who = r.reportingName || 'An insider';
+    const role = r.typeOfOwner ? String(r.typeOfOwner).replace(/^officer:\s*/i, '') : '';
+    // `dec`, not `num`: a share count is a count. `num` scales through k/m/b
+    // and would render 1,439 shares as "1k", which is both less useful and
+    // less true than the figure on the filing.
+    const size = isNum(r.securitiesTransacted) ? `${dec(r.securitiesTransacted, 0)} shares` : '';
+
+    markers.push({
+      date,
+      kind: intent === 'buy' ? 'insiderBuy' : 'insiderSell',
+      label: `${who}${role ? ` (${role})` : ''} — ${intent === 'buy' ? 'bought' : 'sold'}`
+        + `${size ? ` ${size}` : ''}`,
+    });
+  }
+
+  return {
+    markers: markers.sort((a, b) => new Date(a.date) - new Date(b.date)),
+    excluded,
+    filings: rows.length,
+  };
+}
+
+/**
+ * One quarter of 13F holders, as markers at that quarter's end.
+ *
+ * `rows` is a single `institutional-ownership/extract-analytics/holder`
+ * payload. Only holders whose share count actually moved are marked, and only
+ * by more than a token amount: a 0.2% drift in a billion-share position is
+ * rounding, not a decision.
+ */
+export function fundMarkersForQuarter(rows, { minChange = 0.05, cap = 12 } = {}) {
+  const out = [];
+
+  for (const r of arr(rows)) {
+    const date = r?.date;
+    const pctRaw = r?.changeInSharesNumberPercentage;
+    if (!date || !isNum(pctRaw)) continue;
+    if (isIndexManager(r.investorName)) continue;
+
+    // The vendor publishes this already in percent, not as a fraction.
+    const change = pctRaw / 100;
+    if (Math.abs(change) < minChange) continue;
+
+    out.push({
+      date,
+      kind: change > 0 ? 'fundBuy' : 'fundSell',
+      weight: Math.abs(change) * (isNum(r.marketValue) ? r.marketValue : 0),
+      label: `${r.investorName || 'A holder'} — ${change > 0 ? 'added' : 'cut'} `
+        + `${pct(Math.abs(change))} of its position`
+        + `${isNum(r.ownership) ? `, now ${pct(r.ownership / 100)} of the company` : ''}`,
+    });
+  }
+
+  // The biggest movers in the quarter, by how much money moved. Twelve
+  // diamonds on one quarter end is already a stack; forty is a smear.
+  return out.sort((a, b) => b.weight - a.weight).slice(0, cap);
+}
+
+/**
+ * Insider buying and selling, rolled up to a trailing four quarters.
+ *
+ * FMP reports one row per calendar quarter. The most recent quarter on its
+ * own is often empty, or is one vesting event, so summing four of them makes
+ * the headline a trailing-twelve-month picture rather than whatever happened
+ * since the last quarter turned.
+ */
+function deriveInsiders(ds) {
+  const raw = ds.get('insiderStats');
+  const rows = Array.isArray(raw) ? raw : (raw ? [raw] : []);
+  const trades = arr(ds.get('insiderTrades'));
+
+  if (!rows.length) return { available: false, trades, quarters: 0 };
+
+  const recent = rows.slice()
+    .sort((x, y) => (y.year - x.year) || (y.quarter - x.quarter))
+    .slice(0, 4);
+
+  const acquired = recent.reduce((t, r) => t + (r.totalAcquired || 0), 0);
+  const disposed = recent.reduce((t, r) => t + (r.totalDisposed || 0), 0);
+  const net = acquired - disposed;
+
+  // Only claim a four-quarter span when four quarters were actually there.
+  const span = recent.length === 4
+    ? `${recent.at(-1).year} Q${recent.at(-1).quarter} – ${recent[0].year} Q${recent[0].quarter}`
+    : 'the reported period';
+  const over = recent.length === 4 ? 'the last four quarters' : span;
+
+  return {
+    available: true,
+    quarters: recent.length,
+    span,
+    acquired,
+    disposed,
+    net,
+    ratio: disposed > 0 ? acquired / disposed : null,
+    trades,
+    /* The caveat travels with the number. A net disposal at a large employer
+       is mostly vesting and tax withholding, and a figure reported without
+       that reads as insiders heading for the exit. */
+    note: net >= 0
+      ? `Insiders have been net acquirers of ${ds.symbol} stock over ${over}.`
+      : `Insiders disposed of ${Math.abs(net).toLocaleString('en-US')} more shares than they acquired `
+        + `over ${over}. Much of that is usually vesting and tax-related selling rather than a view `
+        + 'on the business.',
   };
 }
 
@@ -991,6 +1242,381 @@ function scoreOver(row, ids, lookup) {
     : { score: null, scoredOn: 0 };
 }
 
+/* ==========================================================================
+   The lite grader
+
+   A second, much cheaper way into the same grading machinery, for callers
+   that hold a handful of feeds for a lot of companies rather than 27 feeds
+   for one. The Investment Ideas screens are the only caller.
+
+   The trade is depth for breadth, and it is a real one: the full walk in
+   `factors.js` grades 77 ratios off 27 feeds; this grades up to 56 off four.
+   What it keeps is the part that makes a score comparable — the same metric
+   definitions, the same `better` directions, the same sector distributions,
+   the same 0-MAX_SCORE scale. What it loses is most of the evidence. Every
+   surface printing one of these is expected to print the ratio count beside
+   it.
+
+   `PEER_SAMPLE_FIELDS` above is deliberately left alone. It feeds the peer
+   sampler and the Competitor Ranking, and widening it there would quietly
+   change a number already on the report.
+   ========================================================================== */
+
+/** Metric id -> the factor that owns it, read off the tree rather than typed. */
+const FACTOR_OF_METRIC = (() => {
+  const out = {};
+  for (const f of FACTORS) for (const g of f.groups) for (const id of g.metrics) out[id] = f.key;
+  return out;
+})();
+
+/**
+ * Metric id -> where to read it from, across the four bags a screen can fill.
+ *
+ * `from` names the bag: `ratios` is `ratios-ttm`, `metrics` is
+ * `key-metrics-ttm`, `growth` is the latest `financial-growth` row, and
+ * `returns` is computed in the browser from a price series. Anything absent
+ * from this table is not graded on this path — which is most of the factor
+ * tree, and why the count travels with the score.
+ */
+const LITE_METRICS = {
+  /* ---- valuation ---- */
+  peGaapTtm:           { from: 'ratios',  field: 'priceToEarningsRatioTTM' },
+  pegGaap:             { from: 'ratios',  field: 'priceToEarningsGrowthRatioTTM' },
+  priceToSalesTtm:     { from: 'ratios',  field: 'priceToSalesRatioTTM' },
+  priceToBookTtm:      { from: 'ratios',  field: 'priceToBookRatioTTM' },
+  priceToCashFlowTtm:  { from: 'ratios',  field: 'priceToOperatingCashFlowRatioTTM' },
+  dividendYieldTtm:    { from: 'ratios',  field: 'dividendYieldTTM' },
+  earningsYieldTtm:    { from: 'metrics', field: 'earningsYieldTTM' },
+  fcfYieldTtm:         { from: 'metrics', field: 'freeCashFlowYieldTTM' },
+  evToSalesTtm:        { from: 'metrics', field: 'evToSalesTTM' },
+  evToEbitdaTtm:       { from: 'metrics', field: 'evToEBITDATTM' },
+
+  /* ---- profitability ---- */
+  grossMargin:             { from: 'ratios',  field: 'grossProfitMarginTTM' },
+  ebitdaMargin:            { from: 'ratios',  field: 'ebitdaMarginTTM' },
+  ebitMargin:              { from: 'ratios',  field: 'ebitMarginTTM' },
+  netMargin:               { from: 'ratios',  field: 'netProfitMarginTTM' },
+  assetTurnover:           { from: 'ratios',  field: 'assetTurnoverTTM' },
+  fixedAssetTurnover:      { from: 'ratios',  field: 'fixedAssetTurnoverTTM' },
+  cashPerShare:            { from: 'ratios',  field: 'cashPerShareTTM' },
+  effectiveTaxRate:        { from: 'ratios',  field: 'effectiveTaxRateTTM' },
+  fcfToOcf:                { from: 'ratios',  field: 'freeCashFlowOperatingCashFlowRatioTTM' },
+  returnOnEquity:          { from: 'metrics', field: 'returnOnEquityTTM' },
+  returnOnInvestedCapital: { from: 'metrics', field: 'returnOnInvestedCapitalTTM' },
+  returnOnAssets:          { from: 'metrics', field: 'returnOnAssetsTTM' },
+  returnOnTangibleAssets:  { from: 'metrics', field: 'returnOnTangibleAssetsTTM' },
+  returnOnCapitalEmployed: { from: 'metrics', field: 'returnOnCapitalEmployedTTM' },
+  capexToRevenue:          { from: 'metrics', field: 'capexToRevenueTTM' },
+  incomeQuality:           { from: 'metrics', field: 'incomeQualityTTM' },
+  sbcToRevenue:            { from: 'metrics', field: 'stockBasedCompensationToRevenueTTM' },
+
+  /* ---- health ---- */
+  currentRatio:              { from: 'ratios',  field: 'currentRatioTTM' },
+  quickRatio:                { from: 'ratios',  field: 'quickRatioTTM' },
+  cashRatio:                 { from: 'ratios',  field: 'cashRatioTTM' },
+  debtToEquity:              { from: 'ratios',  field: 'debtToEquityRatioTTM' },
+  debtToAssets:              { from: 'ratios',  field: 'debtToAssetsRatioTTM' },
+  financialLeverage:         { from: 'ratios',  field: 'financialLeverageRatioTTM' },
+  longTermDebtToCapital:     { from: 'ratios',  field: 'longTermDebtToCapitalRatioTTM' },
+  debtToCapital:             { from: 'ratios',  field: 'debtToCapitalRatioTTM' },
+  interestCoverage:          { from: 'ratios',  field: 'interestCoverageRatioTTM' },
+  solvencyRatio:             { from: 'ratios',  field: 'solvencyRatioTTM' },
+  debtServiceCoverage:       { from: 'ratios',  field: 'debtServiceCoverageRatioTTM' },
+  bookValuePerShare:         { from: 'ratios',  field: 'bookValuePerShareTTM' },
+  tangibleBookValuePerShare: { from: 'ratios',  field: 'tangibleBookValuePerShareTTM' },
+  netDebtToEbitda:           { from: 'metrics', field: 'netDebtToEBITDATTM' },
+
+  /* ---- growth, from the latest `financial-growth` row ---- */
+  revenueGrowthYoy: { from: 'growth', field: 'revenueGrowth' },
+  ebitdaGrowth:     { from: 'growth', field: 'ebitdaGrowth' },
+  ebitGrowth:       { from: 'growth', field: 'ebitgrowth', alt: 'operatingIncomeGrowth' },
+  epsGrowth:        { from: 'growth', field: 'epsgrowth' },
+  epsDilutedGrowth: { from: 'growth', field: 'epsdilutedGrowth' },
+  ocfGrowth:        { from: 'growth', field: 'operatingCashFlowGrowth' },
+  fcfGrowth:        { from: 'growth', field: 'freeCashFlowGrowth' },
+  rdExpenseGrowth:  { from: 'growth', field: 'rdexpenseGrowth' },
+  bookValueGrowth:  { from: 'growth', field: 'bookValueperShareGrowth' },
+  dpsGrowth:        { from: 'growth', field: 'dividendsPerShareGrowth' },
+
+  /* ---- momentum, computed here from the price series ---- */
+  return1m:      { from: 'returns', field: 'r1m' },
+  return3m:      { from: 'returns', field: 'r3m' },
+  return6m:      { from: 'returns', field: 'r6m' },
+  return9m:      { from: 'returns', field: 'r9m' },
+  return1y:      { from: 'returns', field: 'r1y' },
+  returnYtd:     { from: 'returns', field: 'ytd' },
+  volatility:    { from: 'returns', field: 'volatility' },
+  maxDrawdown1y: { from: 'returns', field: 'drawdown' },
+};
+
+/**
+ * Which bags a factor needs before it can be scored at all.
+ *
+ * Derived rather than declared, so adding a metric above automatically tells
+ * the caller which feed it now has to pay for.
+ */
+export const LITE_SOURCES = (() => {
+  const out = {};
+  for (const [id, spec] of Object.entries(LITE_METRICS)) {
+    const factor = FACTOR_OF_METRIC[id];
+    if (!factor) continue;
+    (out[factor] ??= new Set()).add(spec.from);
+  }
+  return Object.fromEntries(Object.entries(out).map(([k, v]) => [k, [...v]]));
+})();
+
+/** How many metrics this path can grade per factor, at best. */
+export const LITE_DEPTH = (() => {
+  const out = {};
+  for (const id of Object.keys(LITE_METRICS)) {
+    const factor = FACTOR_OF_METRIC[id];
+    if (factor) out[factor] = (out[factor] || 0) + 1;
+  }
+  return out;
+})();
+
+/** Returns a price series can answer, in the shape `LITE_METRICS` expects. */
+export function returnsFromPrices(raw) {
+  const pts = normalisePrices(raw);
+  if (pts.length < 2) return null;
+  const r = computeReturns(pts, { r1m: 30, r3m: 92, r6m: 183, r9m: 274, r1y: 365 });
+  return {
+    ...r,
+    ytd: ytdReturn(pts),
+    volatility: weeklyVolatility(pts),
+    drawdown: maxDrawdown(pts),
+  };
+}
+
+/* ---------- bag builders -------------------------------------------------
+   The screens pull a few feeds that need shaping before a rule can read them,
+   the same way `returnsFromPrices` shapes a price series. They live here
+   rather than in the view for the same reason everything else here does: this
+   is the only file that reads a vendor field name.
+   ------------------------------------------------------------------------- */
+
+/**
+ * Discount to the vendor's own discounted cash flow.
+ *
+ * Positive is cheap: a fair value of 140 against a price of 100 is a 29%
+ * discount. The report never grades this — §8 of the handover, fair values
+ * are display only — and a screen is not a grade, so using it as a filter is
+ * consistent with that. It is still one vendor's model with one set of
+ * assumptions, which is why the ideas that use it say so.
+ */
+export function dcfFromFeed(row, price) {
+  const fair = row?.dcf ?? row?.equityValuePerShare ?? null;
+  const now = isNum(price) ? price : (row?.['Stock Price'] ?? null);
+  if (!isNum(fair) || fair <= 0 || !isNum(now) || now <= 0) return null;
+  return { fairValue: fair, price: now, discount: 1 - now / fair };
+}
+
+/**
+ * Insider dealing over the last four reported quarters.
+ *
+ * Summed rather than taken from the newest quarter: a single quarter is often
+ * empty, or one vesting event, and the question a screen is asking is about a
+ * pattern. `net` is shares acquired less shares disposed.
+ *
+ * The caveat that travels with every insider number applies here too — most
+ * net selling at a large employer is vesting and tax withholding rather than
+ * a view — which is why the buying side is the only one any idea screens on.
+ */
+export function insiderFromStats(rows) {
+  const list = (Array.isArray(rows) ? rows : [rows]).filter(Boolean);
+  if (!list.length) return null;
+
+  const recent = list
+    .slice()
+    .sort((x, y) => (y.year - x.year) || (y.quarter - x.quarter))
+    .slice(0, 4);
+
+  const acquired = recent.reduce((t, r) => t + (r.totalAcquired || 0), 0);
+  const disposed = recent.reduce((t, r) => t + (r.totalDisposed || 0), 0);
+  return {
+    quarters: recent.length,
+    acquired,
+    disposed,
+    net: acquired - disposed,
+    ratio: disposed > 0 ? acquired / disposed : (acquired > 0 ? Infinity : null),
+  };
+}
+
+/**
+ * What share of the company is not freely traded.
+ *
+ * The vendor gives free float as a percentage, so closely held is its
+ * complement. It is a proxy for insider and strategic ownership rather than a
+ * measure of it — a founder's stake, a family trust and a government holding
+ * all land in the same bucket, and the feed does not say which.
+ */
+export function floatFromFeed(row) {
+  if (!row || !isNum(row.freeFloat)) return null;
+  const free = row.freeFloat / 100;
+  return {
+    freeFloat: free,
+    closelyHeld: Math.max(0, 1 - free),
+    floatShares: row.floatShares ?? null,
+    outstanding: row.outstandingShares ?? null,
+  };
+}
+
+/**
+ * The sell side's rating mix, reduced to one number.
+ *
+ * `grades-consensus` returns a tally — how many analysts say strong buy, buy,
+ * hold, sell, strong sell — and a consensus word. `score` puts that tally on
+ * the same 0-5 scale the report's own composite uses, which is the only way to
+ * rank companies against each other on it.
+ *
+ * **Putting it on our scale does not make it our rating**, and this is the one
+ * thing to be careful about wherever it is printed. A 3.6 here is a hundred
+ * analysts averaging out just above Buy; a 3.6 on the composite is a ranking of
+ * measurable ratios against a sector. They are different claims about different
+ * things and they disagree often. `deriveForecast` computes the same figure for
+ * the company report's consensus card — this is the screening path's copy,
+ * shaped for a candidate rather than for a dataset.
+ *
+ * `total` travels with it because a mean of four opinions and a mean of a
+ * hundred are not the same measurement, and a screen has to be able to require
+ * coverage before it trusts the average.
+ */
+export function gradesFromFeed(row) {
+  if (!row) return null;
+  const buckets = [[row.strongBuy, 5], [row.buy, 4], [row.hold, 3], [row.sell, 2], [row.strongSell, 1]];
+  let weighted = 0, total = 0, bullish = 0;
+  for (const [n, w] of buckets) {
+    if (!isNum(n) || n <= 0) continue;
+    weighted += n * w;
+    total += n;
+    if (w >= 4) bullish += n;
+  }
+  if (total <= 0) return null;
+  return {
+    score: weighted / total,
+    total,
+    buyShare: bullish / total,
+    consensus: row.consensus || null,
+    strongBuy: row.strongBuy ?? 0,
+    buy: row.buy ?? 0,
+    hold: row.hold ?? 0,
+    sell: row.sell ?? 0,
+    strongSell: row.strongSell ?? 0,
+  };
+}
+
+/**
+ * Consensus growth from the analyst estimate rows.
+ *
+ * The median year-on-year step across the window rather than an endpoint
+ * CAGR, matching `deriveForecast` — a consensus path often carries one bad
+ * year because a different subset of analysts covers each horizon, and an
+ * endpoint rate would inherit that error whole.
+ */
+export function estimatesFromFeed(rows) {
+  const list = (Array.isArray(rows) ? rows : [rows])
+    .filter((r) => r && r.date)
+    .map((r) => ({
+      year: yearOf(r.date),
+      revenue: r.revenueAvg ?? null,
+      eps: r.epsAvg ?? null,
+      netIncome: r.netIncomeAvg ?? null,
+      analysts: Math.max(r.numAnalystsEps ?? 0, r.numAnalystsRevenue ?? 0) || null,
+    }))
+    .filter((r) => isNum(r.year))
+    .sort((x, y) => x.year - y.year);
+
+  if (list.length < 2) return null;
+
+  const step = (fieldName) => {
+    const steps = [];
+    for (let i = 1; i < list.length; i++) {
+      const prev = list[i - 1][fieldName];
+      const cur = list[i][fieldName];
+      if (isNum(prev) && isNum(cur) && prev > 0) steps.push(cur / prev - 1);
+    }
+    if (steps.length >= 3) return median(steps);
+    const first = list[0][fieldName];
+    const last = list.at(-1)[fieldName];
+    const span = list.at(-1).year - list[0].year;
+    return cagr(first, last, span);
+  };
+
+  return {
+    years: list.length,
+    from: list[0].year,
+    to: list.at(-1).year,
+    analysts: Math.max(...list.map((r) => r.analysts || 0)) || null,
+    revenueGrowth: step('revenue'),
+    epsGrowth: step('eps'),
+    earningsGrowth: step('netIncome'),
+  };
+}
+
+/**
+ * Grade one company per factor, from whatever bags the caller managed to fill.
+ *
+ * `bags` is `{ ratios, metrics, growth, returns }`, any of which may be null —
+ * a company whose growth feed failed scores no growth rather than scoring
+ * badly at it. A factor with nothing behind it comes back
+ * `{ score: null, scoredOn: 0 }`, and that has to stay distinct from a low
+ * score: a screen asking for 4 out of 5 on momentum must drop the company it
+ * could not measure, not rank it last.
+ *
+ * The overall score is the mean of the metric grades rather than of the five
+ * factor scores — the same rule `gradeAll` uses, so a factor that filled two
+ * metrics does not weigh as much as one that filled fourteen.
+ */
+export function scoreLite(bags, lookup) {
+  const perFactor = {};
+  const all = [];
+
+  for (const [id, spec] of Object.entries(LITE_METRICS)) {
+    const def = METRICS[id];
+    const factor = FACTOR_OF_METRIC[id];
+    if (!def || !factor) continue;
+
+    const bag = bags?.[spec.from];
+    if (!bag) continue;
+    const raw = bag[spec.field] ?? (spec.alt ? bag[spec.alt] : undefined);
+    if (!isNum(raw)) continue;
+
+    const g = lookup.grade(def.dist || id, raw, def.better);
+    if (!isNum(g.grade)) continue;
+
+    (perFactor[factor] ??= []).push(g.grade);
+    all.push(g.grade);
+  }
+
+  const factors = {};
+  for (const key of FACTOR_KEYS) {
+    const grades = perFactor[key] || [];
+    factors[key] = { score: grades.length ? mean(grades) : null, scoredOn: grades.length };
+  }
+
+  return { score: all.length ? mean(all) : null, scoredOn: all.length, factors };
+}
+
+/**
+ * The reduced-set score for a single `ratios-ttm` payload.
+ *
+ * The public form of `scoreOver`, for callers that hold one company's ratios
+ * and its sector lookup and want a comparable number — the Investment Ideas
+ * screens, which cannot afford the 27 feeds a full `analyse()` costs per
+ * company.
+ *
+ * This is **not** the report's grade. It is the mean of whichever of the 27
+ * ratios in `PEER_SAMPLE_FIELDS` that payload can fill, ranked against the
+ * company's own sector, and it is the same number the Competitor Ranking
+ * table prints. `scoredOn` says how many ratios it was, and every surface
+ * showing it is expected to show that too — a score built from four ratios
+ * and one built from twenty-two are not comparable, and only the count says
+ * which you are looking at.
+ */
+export function scoreFromRatios(row, lookup) {
+  return scoreOver(row, usableFields(row), lookup);
+}
+
 /**
  * Grade the peer group and the company on one common set of ratios.
  *
@@ -1035,6 +1661,733 @@ function scorePeers(list, peerRatios, ownRatios, lookup) {
 }
 
 /* ==========================================================================
+   Revenue mix and the operating cost stack
+
+   Where the revenue came from, and what it cost to earn — the two shapes the
+   filed statements imply but never print as a table of their own.
+
+   Both are annual and both are read off the filed fiscal year, so they line
+   up with the Financials tab rather than with the trailing-twelve ratios the
+   rest of the report grades on. Neither is graded, ranked or compared to a
+   sector: a segment mix is a fact about what a company chose to disclose, not
+   a position in a distribution.
+   ========================================================================== */
+
+/** Segments drawn as a band of their own. The chart palette carries six. */
+const MAX_SEGMENTS = 6;
+
+/** Fiscal years a mix or a cost stack is charted over. */
+const MIX_YEARS = 6;
+
+/**
+ * The two segmentation feeds, normalised into the same shape.
+ *
+ * Segment names are the company's own words, taken verbatim: "Greater China
+ * Segment", "Wearables, Home and Accessories". Tidying them would be this
+ * file inventing a taxonomy the filing does not have.
+ */
+function deriveSegments(ds) {
+  return {
+    product: segmentSeries(ds.get('segProduct')),
+    geography: segmentSeries(ds.get('segGeography')),
+  };
+}
+
+/**
+ * One segmentation feed as a chartable series plus a readable latest year.
+ *
+ * Two things make this more than a reshape:
+ *
+ * - **The names change.** A company renames, merges and drops segments, and
+ *   the feed reports whatever the filing said that year. The band order comes
+ *   from the newest year, with anything only older years reported appended —
+ *   so a discontinued segment still charts in the years it existed instead of
+ *   leaving those years short of their own total.
+ * - **There can be more segments than colours.** Past six the tail folds into
+ *   "Other" — except where the tail is a single segment, since folding one
+ *   thing hides a name to save no space.
+ *
+ * The folding is for the chart alone. `latest.parts` stays unfolded, because
+ * the rows under the chart are what someone came to look a segment up in.
+ */
+function segmentSeries(raw) {
+  const filed = chron(raw).map((r) => {
+    const parts = Object.entries(r && r.data && typeof r.data === 'object' ? r.data : {})
+      .filter(([, v]) => isNum(v))
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
+    return {
+      year: yearOf(r.date) ?? (Number.isFinite(+r.fiscalYear) ? +r.fiscalYear : null),
+      date: r.date,
+      parts,
+      total: parts.reduce((t, p) => t + p.value, 0),
+    };
+  }).filter((r) => r.parts.length);
+
+  if (!filed.length) {
+    return { available: false, names: [], rows: [], latest: null, foldedInto: null, span: '' };
+  }
+
+  const rows = filed.slice(-MIX_YEARS);
+  const latest = rows.at(-1);
+  const prev = new Map((rows.at(-2)?.parts || []).map((p) => [p.name, p.value]));
+
+  const ranked = latest.parts.map((p) => p.name);
+  for (const r of rows) for (const p of r.parts) if (!ranked.includes(p.name)) ranked.push(p.name);
+
+  // The chart is capped at six years so the bars stay readable; the table
+  // under it is not, because a table is scanned rather than looked at and the
+  // year a segment first appeared is exactly the sort of thing it is scanned
+  // for. Its own name order is built the same way — newest year first, then
+  // anything only the older years reported.
+  const allNames = latest.parts.map((p) => p.name);
+  for (const r of [...filed].reverse()) {
+    for (const p of r.parts) if (!allNames.includes(p.name)) allNames.push(p.name);
+  }
+
+  const named = ranked.length <= MAX_SEGMENTS + 1 ? ranked : ranked.slice(0, MAX_SEGMENTS);
+  const folded = ranked.filter((n) => !named.includes(n));
+  // Plenty of companies file a segment of their own called "Other", and a
+  // band of that name holding the fold would silently overwrite it.
+  const rest = folded.length
+    ? (named.includes('Other') ? 'Other segments' : 'Other')
+    : null;
+
+  return {
+    available: true,
+    names: rest ? [...named, rest] : named,
+    rows: rows.map((r) => {
+      const by = new Map(r.parts.map((p) => [p.name, p.value]));
+      const values = Object.fromEntries(named.map((n) => [n, by.has(n) ? by.get(n) : null]));
+      if (rest) {
+        const tail = folded.map((n) => by.get(n)).filter(isNum);
+        values[rest] = tail.length ? tail.reduce((x, y) => x + y, 0) : null;
+      }
+      return { year: r.year, date: r.date, total: r.total, values };
+    }),
+    /** the band holding everything past the palette, or null when nothing folded */
+    foldedInto: rest,
+    latest: {
+      year: latest.year,
+      date: latest.date,
+      total: latest.total,
+      parts: latest.parts.map((p) => ({
+        name: p.name,
+        value: p.value,
+        share: latest.total > 0 ? p.value / latest.total : null,
+        change: prev.has(p.name) ? yoy(p.value, prev.get(p.name)) : null,
+      })),
+    },
+    span: rows.length > 1 ? `${rows[0].year}–${latest.year}` : String(latest.year ?? ''),
+
+    /** every filed year and every name it reported, newest first, unfolded */
+    all: {
+      names: allNames,
+      years: [...filed].reverse().map((r) => ({
+        year: r.year,
+        date: r.date,
+        total: r.total,
+        values: Object.fromEntries(r.parts.map((p) => [p.name, p.value])),
+      })),
+      span: filed.length > 1
+        ? `${filed[0].year}–${filed.at(-1).year}` : String(latest.year ?? ''),
+    },
+  };
+}
+
+/**
+ * Owner earnings, summed to a trailing twelve months.
+ *
+ * Buffett's measure: reported earnings plus non-cash charges, less the
+ * capital spending the business needs to hold its position. FMP publishes it
+ * per quarter, so four of them make the figure the rest of the report is on.
+ * Fewer than four is not a partial answer, it is a different period, so the
+ * card goes unavailable rather than printing three quarters as a year.
+ *
+ * The vendor's `maintenanceCapex` and `growthCapex` are deliberately not
+ * carried through. Their sign flips between quarters on the same symbol,
+ * which means a sum of them is not a number anybody should act on — and a
+ * split that cannot be added up is worse than no split.
+ */
+function deriveOwnerEarnings(ds, facts) {
+  const rows = arr(ds.get('ownerEarnings'))
+    .filter((r) => r && isNum(r.ownersEarnings))
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .slice(0, 4);
+
+  if (rows.length < 4) return { available: false, ttm: null, perShare: null, yield: null, span: '' };
+
+  const total = rows.reduce((t, r) => t + r.ownersEarnings, 0);
+  const perShare = rows.every((r) => isNum(r.ownersEarningsPerShare))
+    ? rows.reduce((t, r) => t + r.ownersEarningsPerShare, 0)
+    : (isNum(facts.shares) && facts.shares > 0 ? total / facts.shares : null);
+
+  const oldest = rows.at(-1);
+  return {
+    available: true,
+    ttm: total,
+    perShare,
+    yield: facts.marketCap > 0 ? total / facts.marketCap : null,
+    span: `${oldest.fiscalYear} ${oldest.period} – ${rows[0].fiscalYear} ${rows[0].period}`,
+  };
+}
+
+/**
+ * The operating expense lines, per filed year.
+ *
+ * The feed carries a running total (`operatingExpenses`) for most companies
+ * and not for all, so where it is missing the income statement's own identity
+ * gives it back: operating income is gross profit less operating expenses,
+ * and both of those come back on every row. That is what fills this in on the
+ * bundled snapshot, whose income rows carry neither the total nor the
+ * selling / administrative split.
+ *
+ * "Other operating expenses" is a residual rather than a filed line — the
+ * total less the lines that are named — which is the only way to make the
+ * breakdown add up to the total the statement prints. A residual under half a
+ * percent of that total is the vendor's rounding rather than an expense, and
+ * is dropped instead of charted as a sliver.
+ */
+function deriveOpex(facts) {
+  const rows = facts.statements.income.map((r) => {
+    const n = (v) => (isNum(v) ? v : null);
+    const sm = n(r.sellingAndMarketingExpenses);
+    const ga = n(r.generalAndAdministrativeExpenses);
+    const rnd = n(r.researchAndDevelopmentExpenses);
+    const sga = n(r.sellingGeneralAndAdministrativeExpenses)
+      ?? (isNum(sm) && isNum(ga) ? sm + ga : null);
+
+    const total = n(r.operatingExpenses)
+      ?? (isNum(r.grossProfit) && isNum(r.operatingIncome) ? r.grossProfit - r.operatingIncome : null);
+
+    const named = [rnd, sga].filter(isNum);
+    const rest = isNum(total) && named.length
+      ? total - named.reduce((x, y) => x + y, 0) : null;
+
+    return {
+      year: yearOf(r.date),
+      date: r.date,
+      revenue: n(r.revenue),
+      costOfRevenue: n(r.costOfRevenue),
+      rnd, sm, ga, sga, total,
+      other: isNum(rest) && Math.abs(rest) >= Math.abs(total) * 0.005 ? rest : null,
+      dna: n(r.depreciationAndAmortization),
+      costAndExpenses: n(r.costAndExpenses),
+      operatingIncome: n(r.operatingIncome),
+    };
+  });
+
+  const charted = rows.slice(-MIX_YEARS);
+  const latest = rows.at(-1) || null;
+
+  return {
+    available: rows.some((r) => isNum(r.total)),
+    rows: charted,
+    latest,
+    /** true when the feed splits selling from administrative, as not every plan does */
+    splitReported: isNum(latest?.sm) && isNum(latest?.ga),
+    span: charted.length > 1 ? `${charted[0].year}–${charted.at(-1).year}` : String(latest?.year ?? ''),
+  };
+}
+
+/* ==========================================================================
+   The per-year series
+
+   One row per filed fiscal year with every cross-statement ratio the charts
+   draw: returns on capital, the expense burden, the cost of capital, the
+   share count, the headcount. The three statements each answer part of each
+   of these and none answers any of them alone, which is why this is a join
+   rather than another accessor.
+
+   Every field follows the same rule: take the vendor's own figure where the
+   annual key-metrics feed carries it, and fall back to the identity the
+   statements imply where it does not. That is what keeps these charts drawn
+   on a narrow plan and on the bundled snapshot, both of which return a
+   fraction of the metrics feed.
+   ========================================================================== */
+
+/** Fiscal years the performance charts run over. */
+const SERIES_YEARS = 11;
+
+function deriveSeries(ds, facts, bm) {
+  const income = facts.statements.income;
+  const balance = new Map(facts.statements.balance.map((r) => [yearOf(r.date), r]));
+  const cash = new Map(facts.statements.cash.map((r) => [yearOf(r.date), r]));
+  const metrics = new Map(chron(ds.get('metricsHist')).map((r) => [yearOf(r.date), r]));
+  const ratios = new Map(chron(ds.get('ratiosHist')).map((r) => [yearOf(r.date), r]));
+
+  const n = (v) => (isNum(v) ? v : null);
+  const over = (a, b) => (isNum(a) && isNum(b) && b > 0 ? a / b : null);
+
+  const rows = income.map((inc) => {
+    const year = yearOf(inc.date);
+    const b = balance.get(year) || {};
+    const c = cash.get(year) || {};
+    const km = metrics.get(year) || {};
+    const r = ratios.get(year) || {};
+
+    const revenue = n(inc.revenue);
+    const ebit = n(inc.operatingIncome);
+    const equity = n(b.totalStockholdersEquity);
+    const debt = n(b.totalDebt);
+    const ocf = n(c.operatingCashFlow);
+    const fcf = n(c.freeCashFlow);
+    const capex = isNum(c.capitalExpenditure) ? Math.abs(c.capitalExpenditure) : null;
+
+    // Invested capital: the vendor's where it has one, otherwise the textbook
+    // debt-plus-equity. They differ — the vendor nets off cash and some
+    // operating liabilities — so a chart that mixed the two between years
+    // would show a step nobody took.
+    const invested = n(km.investedCapital)
+      ?? (isNum(debt) && isNum(equity) ? debt + equity : null);
+    const taxRate = over(n(inc.incomeTaxExpense), n(inc.incomeBeforeTax))
+      ?? (isNum(km.taxBurden) ? 1 - km.taxBurden : null);
+    const nopat = isNum(ebit) && isNum(taxRate) ? ebit * (1 - taxRate) : ebit;
+
+    // Cost of debt from what the company actually paid on what it actually
+    // owes. Zero is not an answer: plenty of filers report no interest line
+    // at all, and taking that as free borrowing drags the whole weighted cost
+    // toward nothing — which is how a company with more debt than equity ends
+    // up looking like it funds itself for 3%.
+    const paid = isNum(inc.interestExpense) ? Math.abs(inc.interestExpense) : null;
+    const rd = over(paid, debt);
+    const costOfDebt = isNum(rd) && rd > 0 ? rd : null;
+
+    return {
+      year,
+      date: inc.date,
+      revenue,
+      netIncome: n(inc.netIncome),
+      grossProfit: n(inc.grossProfit),
+      ebit,
+      ebitda: n(inc.ebitda),
+      eps: n(inc.epsDiluted ?? inc.eps),
+      shares: n(inc.weightedAverageShsOutDil),
+      rnd: n(inc.researchAndDevelopmentExpenses),
+      equity, debt, invested, taxRate, costOfDebt,
+      assets: n(b.totalAssets),
+      marketCap: n(km.marketCap),
+      currentLiabilities: n(b.totalCurrentLiabilities),
+      ocf, fcf, capex,
+      dividends: isNum(c.commonDividendsPaid ?? c.netDividendsPaid)
+        ? Math.abs(c.commonDividendsPaid ?? c.netDividendsPaid) : null,
+      buybacks: isNum(c.commonStockRepurchased) ? Math.abs(c.commonStockRepurchased) : null,
+      // Stock compensation is on neither statement this app fetches in a form
+      // it can total, so this is the metrics feed's ratio turned back into an
+      // amount. Absent on a plan that gates that feed, which the chart says.
+      sbc: isNum(km.stockBasedCompensationToRevenue) && isNum(revenue)
+        ? km.stockBasedCompensationToRevenue * revenue : null,
+
+      grossMargin: over(n(inc.grossProfit), revenue),
+      operatingMargin: over(ebit, revenue),
+      netMargin: over(n(inc.netIncome), revenue),
+
+      roe: n(km.returnOnEquity) ?? over(n(inc.netIncome), equity),
+      roa: n(km.returnOnAssets) ?? over(n(inc.netIncome), n(b.totalAssets)),
+      roic: n(km.returnOnInvestedCapital) ?? over(nopat, invested),
+      roce: n(km.returnOnCapitalEmployed)
+        ?? over(ebit, isNum(b.totalAssets) && isNum(b.totalCurrentLiabilities)
+          ? b.totalAssets - b.totalCurrentLiabilities : null),
+
+      capexToOcf: n(km.capexToOperatingCashFlow) ?? over(capex, ocf),
+      rndToOcf: over(n(inc.researchAndDevelopmentExpenses), ocf),
+      sbcToFcf: over(isNum(km.stockBasedCompensationToRevenue) && isNum(revenue)
+        ? km.stockBasedCompensationToRevenue * revenue : null, fcf),
+
+      debtToEquity: n(r.debtToEquityRatio) ?? over(debt, equity),
+    };
+  });
+
+  // The weighted average cost of capital, per year.
+  //
+  // The equity leg is CAPM on today's beta and today's rates, because neither
+  // is published per historical year — so this is "what this company's mix
+  // would have cost at today's prices", not what it cost at the time. The
+  // mix, the tax rate and the cost of debt are that year's own. The chart
+  // says as much: it is a bar to clear, not a measurement.
+  const costOfEquity = isNum(facts.beta)
+    ? bm.riskFreeRate + facts.beta * bm.equityRiskPremium
+    : bm.riskFreeRate + bm.equityRiskPremium;
+
+  const charted = rows.slice(-SERIES_YEARS);
+
+  // Weight the two legs by what the equity is worth, not by what it is
+  // carried at. A company that has bought back more stock than it has
+  // retained profit has almost no book equity and is still overwhelmingly
+  // equity-funded — book weights would hand its cost of capital to the debt
+  // leg and report a hurdle a third of the real one.
+  //
+  // All-or-nothing across the charted years: a chart that switched basis
+  // half way along would show a step the company never took. Where the
+  // metrics feed carries no market capitalisation the whole run falls back
+  // to book equity, and `waccBasis` says so on the card.
+  const marketWeighted = charted.length > 0 && charted.every((r) => r.marketCap > 0);
+
+  for (const row of charted) {
+    const e = marketWeighted ? row.marketCap : Math.max(row.equity ?? 0, 0);
+    const d = isNum(row.debt) ? row.debt : 0;
+    const total = (isNum(e) ? e : 0) + d;
+    if (!(total > 0)) { row.wacc = null; row.spread = null; continue; }
+    // No observable cost of debt falls back to the risk-free rate: the
+    // cheapest anything can be borrowed at, so the hurdle is understated
+    // rather than invented.
+    const rd = isNum(row.costOfDebt) ? row.costOfDebt : bm.riskFreeRate;
+    const tax = isNum(row.taxRate) ? clamp(row.taxRate, 0, 0.5) : 0.21;
+    row.wacc = (e / total) * costOfEquity + (d / total) * rd * (1 - tax);
+    row.spread = isNum(row.roic) ? row.roic - row.wacc : null;
+  }
+
+  return {
+    available: rows.length > 0,
+    rows: charted,
+    latest: charted.at(-1) || null,
+    costOfEquity,
+    /** 'market' when the equity leg is market capitalisation, else 'book' */
+    waccBasis: marketWeighted ? 'market' : 'book',
+    span: charted.length > 1 ? `${charted[0].year}–${charted.at(-1).year}` : String(rows.at(-1)?.year ?? ''),
+  };
+}
+
+/**
+ * Headcount as each annual filing reported it, oldest first.
+ *
+ * A separate feed rather than a field on the profile, because the profile
+ * carries only today's number and the interesting thing about a headcount is
+ * its slope — and because revenue per employee is only meaningful when the
+ * employee count is the one from the same year as the revenue.
+ */
+function deriveEmployees(ds, series) {
+  const byYear = new Map();
+  for (const r of arr(ds.get('employees'))) {
+    const y = yearOf(r?.periodOfReport || r?.filingDate);
+    if (isNum(y) && isNum(r.employeeCount)) byYear.set(y, r.employeeCount);
+  }
+
+  const rows = series.rows
+    .map((r) => {
+      const count = byYear.get(r.year) ?? null;
+      return {
+        year: r.year,
+        count,
+        revenuePerHead: count > 0 && isNum(r.revenue) ? r.revenue / count : null,
+        profitPerHead: count > 0 && isNum(r.netIncome) ? r.netIncome / count : null,
+        fcfPerHead: count > 0 && isNum(r.fcf) ? r.fcf / count : null,
+      };
+    })
+    .filter((r) => isNum(r.count));
+
+  return {
+    available: rows.length > 0,
+    rows,
+    latest: rows.at(-1) || null,
+    span: rows.length > 1 ? `${rows[0].year}–${rows.at(-1).year}` : String(rows.at(-1)?.year ?? ''),
+  };
+}
+
+/* ==========================================================================
+   What went back to shareholders
+
+   Dividends and buybacks are one policy with two instruments, and a report
+   that shows only the first understates by a factor of four at a company like
+   this one. So every figure here is computed twice — once for the dividend
+   alone, once for the whole of what was returned — and the cards say which
+   they are printing.
+
+   Buybacks are cash spent, not shares retired. A company that buys back
+   exactly as much stock as it issues to staff has a large buyback yield and
+   an unchanged share count, and the share-count chart is what tells the
+   reader which of those they are looking at.
+   ========================================================================== */
+
+function deriveShareholder(series, facts) {
+  const rows = series.rows.map((r) => {
+    const div = isNum(r.dividends) && r.dividends > 0 ? r.dividends : null;
+    const buy = isNum(r.buybacks) && r.buybacks > 0 ? r.buybacks : null;
+    const returned = isNum(div) || isNum(buy) ? (div ?? 0) + (buy ?? 0) : null;
+    const of = (part, whole) => (isNum(part) && isNum(whole) && whole > 0 ? part / whole : null);
+
+    return {
+      year: r.year,
+      date: r.date,
+      dividends: div,
+      buybacks: buy,
+      returned,
+      // Against the market capitalisation of the year that paid it, not
+      // today's — a yield on a price the buyer could actually have paid.
+      dividendYield: of(div, r.marketCap),
+      buybackYield: of(buy, r.marketCap),
+      shareholderYield: of(returned, r.marketCap),
+      dividendEarningsPayout: of(div, r.netIncome),
+      dividendFcfPayout: of(div, r.fcf),
+      shareholderEarningsPayout: of(returned, r.netIncome),
+      shareholderFcfPayout: of(returned, r.fcf),
+    };
+  });
+
+  const total = (get) => {
+    const xs = rows.map(get).filter(isNum);
+    return xs.length ? xs.reduce((x, y) => x + y, 0) : null;
+  };
+  const stat = (get) => {
+    const xs = rows.map(get).filter(isNum);
+    if (!xs.length) return { median: null, high: null, low: null };
+    return { median: median(xs), high: Math.max(...xs), low: Math.min(...xs) };
+  };
+
+  const last = rows.at(-1) || null;
+  return {
+    available: rows.some((r) => isNum(r.returned)),
+    rows,
+    latest: last,
+    lifetimeDividends: total((r) => r.dividends),
+    lifetimeBuybacks: total((r) => r.buybacks),
+    lifetimeReturned: total((r) => r.returned),
+    yieldStat: stat((r) => r.shareholderYield),
+    span: rows.length > 1 ? `${rows[0].year}–${rows.at(-1).year}` : String(last?.year ?? ''),
+  };
+}
+
+/**
+ * The dividend yield, day by day, over whatever price history was fetched.
+ *
+ * A yield is a dividend over a price, and only the price moves daily — so
+ * this is the trailing twelve months of declared dividends at each date
+ * divided by the close on that date. The steps in the line are the quarters
+ * dropping in and out of the trailing window; the slopes between them are the
+ * share price.
+ *
+ * Deliberately not the vendor's own yield series, which does not exist: this
+ * is the only way to see whether today's yield is high or low *for this
+ * company*, which is the question a single current yield cannot answer.
+ */
+function deriveYieldHistory(ds, dividends) {
+  const YEAR_MS = 365 * 24 * 3600 * 1000;
+
+  const prices = chron(ds.get('prices')).filter((p) => isNum(p.price) && p.price > 0);
+  const paid = arr(dividends.rows)
+    .map((d) => ({ at: parseDateMs(d.date), amount: d.adjDividend ?? d.dividend }))
+    .filter((d) => isNum(d.at) && isNum(d.amount) && d.amount > 0)
+    .sort((a, b) => a.at - b.at);
+
+  if (prices.length < 20 || !paid.length) {
+    return { available: false, points: [], median: null, high: null, low: null, span: '' };
+  }
+
+  const points = [];
+  for (const p of prices) {
+    const at = parseDateMs(p.date);
+    if (!isNum(at)) continue;
+    let ttm = 0;
+    for (const d of paid) {
+      if (d.at > at) break;
+      if (d.at > at - YEAR_MS) ttm += d.amount;
+    }
+    if (ttm > 0) points.push({ date: p.date, value: ttm / p.price });
+  }
+
+  if (points.length < 20) {
+    return { available: false, points: [], median: null, high: null, low: null, span: '' };
+  }
+
+  const vals = points.map((x) => x.value);
+  return {
+    available: true,
+    points,
+    median: median(vals),
+    high: Math.max(...vals),
+    low: Math.min(...vals),
+    current: vals.at(-1),
+    span: `${fmtDate(points[0].date)} – ${fmtDate(points.at(-1).date)}`,
+  };
+}
+
+/** Milliseconds from a date-ish value, or null. */
+function parseDateMs(v) {
+  const t = new Date(v).getTime();
+  return Number.isFinite(t) ? t : null;
+}
+
+/**
+ * The vendor's own scorecard, one to five per test.
+ *
+ * Not the report's grade and not related to it: these are FMP's, computed
+ * from a fixed rule per ratio rather than from a sector distribution, and
+ * they are here because a reader comparing the two should be able to see
+ * both rather than wonder which one the letter at the top came from.
+ */
+function deriveRatings(ds) {
+  const r = ds.get('ratings');
+  if (!r) return { available: false, rating: null, scores: [] };
+
+  const scores = [
+    ['Overall', r.overallScore, 'FMP’s own composite of the six below.'],
+    ['Discounted cash flow', r.discountedCashFlowScore, 'Price against the vendor’s DCF value.'],
+    ['Return on equity', r.returnOnEquityScore],
+    ['Return on assets', r.returnOnAssetsScore],
+    ['Debt to equity', r.debtToEquityScore, 'Scored low for a company carrying more debt than equity, '
+      + 'which a buyback-heavy balance sheet will be whatever its cash position.'],
+    ['Price to earnings', r.priceToEarningsScore],
+    ['Price to book', r.priceToBookScore, 'Scored low for almost any asset-light business, where book '
+      + 'value is a small number that says little about what the company is worth.'],
+  ]
+    .filter(([, v]) => isNum(v))
+    .map(([label, value, note]) => ({ label, value, note: note || '' }));
+
+  return { available: scores.length > 0, rating: r.rating || null, scores };
+}
+
+/**
+ * Reported quarters against what the street expected.
+ *
+ * Only quarters with an actual: a row with an estimate and no actual is the
+ * next report, and drawing it as a bar of zero would read as a miss.
+ *
+ * The quarter label is the calendar quarter the results were *announced* in,
+ * not the fiscal quarter they cover — the earnings feed carries no fiscal
+ * period, and inferring one from a date is guesswork for any company whose
+ * year does not end in December.
+ */
+function deriveSurprises(ds) {
+  const rows = arr(ds.get('earnings'))
+    .filter((r) => r && r.date && isNum(r.epsActual))
+    .sort((a, b) => new Date(a.date) - new Date(b.date))
+    .map((r) => {
+      const d = new Date(r.date);
+      const surprise = (actual, est) => (isNum(actual) && isNum(est) && est !== 0
+        ? actual / Math.abs(est) - 1 : null);
+      return {
+        date: r.date,
+        label: `Q${Math.floor(d.getUTCMonth() / 3) + 1} ’${String(d.getUTCFullYear()).slice(2)}`,
+        eps: r.epsActual,
+        epsEstimate: isNum(r.epsEstimated) ? r.epsEstimated : null,
+        epsSurprise: surprise(r.epsActual, r.epsEstimated),
+        revenue: isNum(r.revenueActual) ? r.revenueActual : null,
+        revenueEstimate: isNum(r.revenueEstimated) ? r.revenueEstimated : null,
+        revenueSurprise: surprise(r.revenueActual, r.revenueEstimated),
+      };
+    });
+
+  const scored = rows.filter((r) => isNum(r.epsSurprise));
+  const beats = scored.filter((r) => r.epsSurprise >= 0).length;
+
+  return {
+    available: rows.length > 0,
+    rows,
+    scored: scored.length,
+    beats,
+    misses: scored.length - beats,
+    beatRate: scored.length ? beats / scored.length : null,
+  };
+}
+
+/**
+ * The quarters a transcript exists for, newest first.
+ *
+ * The index only. The text of one is a request of its own, made when a reader
+ * opens it, because a company has eighty of them and each is a novella.
+ */
+function deriveTranscripts(ds) {
+  const rows = arr(ds.get('transcriptDates'))
+    .map((r) => ({
+      year: isNum(+r?.fiscalYear) ? +r.fiscalYear : null,
+      quarter: isNum(+r?.quarter) ? +r.quarter : null,
+      date: r?.date || null,
+    }))
+    .filter((r) => isNum(r.year) && isNum(r.quarter) && r.date)
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  return { available: rows.length > 0, rows };
+}
+
+/* ==========================================================================
+   News
+
+   Two feeds, kept apart. `news/stock` is coverage — what other people wrote
+   about the company. `news/press-releases` is the company's own words. They
+   are never merged into one stream, because the difference between "Reuters
+   reports margins are under pressure" and "the company announces a record
+   quarter" is most of what a reader is trying to judge, and a merged list
+   with a small publisher label under each headline loses it.
+
+   Nothing here is scored, ranked or sentiment-tagged. The vendor supplies no
+   sentiment and this app runs no model, so the only honest ordering is the
+   one the publisher gave it: newest first.
+   ========================================================================== */
+
+/** Trim a vendor snippet to a readable length without cutting mid-word. */
+function clip(text, max = 320) {
+  const s = String(text || '').replace(/\s+/g, ' ').trim();
+  if (s.length <= max) return s;
+  const cut = s.slice(0, max);
+  const stop = cut.lastIndexOf(' ');
+  return `${cut.slice(0, stop > max * 0.6 ? stop : max)}…`;
+}
+
+/**
+ * One feed's rows, normalised.
+ *
+ * FMP spells the publisher differently between the two endpoints — the news
+ * feed carries `publisher` and `site`, the press-release feed only `title`
+ * and `text` with the company as the implied source — so both spellings are
+ * read and the company name is the fallback.
+ */
+function newsRows(raw, { kind, fallbackSource }) {
+  return arr(raw)
+    .map((r) => ({
+      kind,
+      date: r?.publishedDate || r?.date || null,
+      title: String(r?.title || '').trim(),
+      text: clip(r?.text || r?.content || ''),
+      url: r?.url || null,
+      // `site` is the domain, `publisher` the masthead. The masthead is the
+      // better label and the domain is the reliable one, so it is the
+      // fallback rather than the other way round.
+      source: r?.publisher || r?.site || fallbackSource || '',
+      site: r?.site || null,
+      image: r?.image || null,
+      symbol: r?.symbol || null,
+    }))
+    .filter((r) => r.title && r.date)
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+}
+
+function deriveNews(ds, facts) {
+  const articles = newsRows(ds.get('news'), { kind: 'article' });
+  const releases = newsRows(ds.get('pressReleases'), { kind: 'release', fallbackSource: facts.name });
+
+  // Who is covering it, and how much. A count per masthead is the only
+  // measure of attention this data supports — there is no readership figure
+  // and no sentiment, so anything richer would be invented.
+  const tally = new Map();
+  for (const r of articles) {
+    if (!r.source) continue;
+    const cur = tally.get(r.source) || { source: r.source, site: r.site, count: 0, latest: r.date };
+    cur.count += 1;
+    if (new Date(r.date) > new Date(cur.latest)) cur.latest = r.date;
+    tally.set(r.source, cur);
+  }
+  const publishers = [...tally.values()].sort((a, b) => b.count - a.count || a.source.localeCompare(b.source));
+
+  const newest = articles[0]?.date || releases[0]?.date || null;
+  const oldest = articles.at(-1)?.date || null;
+  const spanDays = (newest && oldest)
+    ? Math.max(1, Math.round((new Date(newest) - new Date(oldest)) / 864e5))
+    : null;
+
+  return {
+    available: articles.length > 0 || releases.length > 0,
+    articles,
+    releases,
+    publishers,
+    newest,
+    oldest,
+    spanDays,
+    /** Articles a day across the window — the only "how loud is this" figure here. */
+    perDay: (spanDays && articles.length) ? articles.length / spanDays : null,
+  };
+}
+
+/* ==========================================================================
    Rewards & risks
 
    Pulled straight off the graded metrics: what this company does best, and
@@ -1068,8 +2421,24 @@ export function analyse(ds, { peerRatios = null, peerGrowth = null, sectorStats 
   const facts = deriveFacts(ds, bm);
   const forecast = deriveForecast(ds, facts);
   const history = deriveHistory(ds, facts);
+  const segments = deriveSegments(ds);
+  const opex = deriveOpex(facts);
+  const ownerEarnings = deriveOwnerEarnings(ds, facts);
+  const series = deriveSeries(ds, facts, bm);
+  const employees = deriveEmployees(ds, series);
+  const shareholder = deriveShareholder(series, facts);
+  const ratings = deriveRatings(ds);
+  const surprises = deriveSurprises(ds);
+  const transcripts = deriveTranscripts(ds);
+  const news = deriveNews(ds, facts);
   const dividends = deriveDividends(ds);
+  // After `dividends`, which it reads: the yield is recomputed at every close
+  // from the payments that had been declared by that date.
+  const yieldHistory = deriveYieldHistory(ds, dividends);
   const execs = deriveExecs(ds, facts, bm, history);
+  const insiders = deriveInsiders(ds);
+  const insiderMarkers = deriveInsiderMarkers(ds);
+  const quarter = deriveQuarter(ds);
   const peers = derivePeers(ds, facts, bm);
 
   // Peer P/E ratios are fetched separately (one request per peer) and folded
@@ -1093,13 +2462,22 @@ export function analyse(ds, { peerRatios = null, peerGrowth = null, sectorStats 
   peers.self = scorePeers(peers.peers, peerRatios, ds.get('ratiosTtm'), lookup);
 
   const context = {
-    ds, bm, facts, forecast, history, dividends, execs, peers, val, growth, momentum, lookup,
+    ds, bm, facts, forecast, history, dividends, execs, insiders, quarter, peers, val, growth,
+    momentum, lookup, segments, opex, ownerEarnings, series, employees,
+    shareholder, yieldHistory, ratings, surprises, transcripts, news, insiderMarkers,
     // Raw peer ratios, kept whole rather than only folded into `peers`. The
     // valuation models build a peer-median target multiple from them, which
     // needs every field on the row, not just the P/E the peer table shows.
     peerRatios,
     /** Latest annual growth row per peer, for the "vs peers" comparisons. */
     peerGrowth,
+    /* The sector and market benchmark price series, as handed in. Kept on the
+       result rather than only passed to `deriveMomentum`, because the Alpha
+       Signal tab needs the same two series for its relative-strength reading
+       and a tab is only ever handed `(a, nav)`. Exposing what was already
+       fetched is cheaper than a second pair of requests, and nothing that
+       read this object before can see a difference. */
+    benchmarks,
     fairValue,
     discount: (isNum(fairValue) && isNum(facts.price) && fairValue > 0) ? 1 - facts.price / fairValue : null,
     fairPe: fairPe(forecast.epsGrowth ?? forecast.earningsGrowth, bm),

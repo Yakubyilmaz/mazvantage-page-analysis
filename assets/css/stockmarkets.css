@@ -1,0 +1,9 @@
+
+/* The screens, grouped. Twenty-five pills in one run is a wall; six short runs
+   under their own label is a menu. */
+.ms-collection-groups { display: grid; gap: 18px; }
+.ms-collection-group__h { margin: 0 0 8px; font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--mh-muted); }
+
+/* The Beat the Market board sits on the Stocks page frame, which has no
+   section padding of its own below the tab strip. */
+.ms-beat { padding-top: 30px; }

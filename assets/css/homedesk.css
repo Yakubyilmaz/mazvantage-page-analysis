@@ -1,0 +1,153 @@
+/* Home — the market's front page.
+
+   The canvas again: the hero, the ranking grid, the world cards and the story
+   row all come from the pages this one summarises. What is here is the banner
+   across the top, the strip of sections down the page, and the economy row. */
+
+.hm-hero { padding: 40px 0 20px; }
+.hm-title { font-size: clamp(28px, 3.2vw, 44px); font-weight: 700; letter-spacing: -.035em; line-height: 1.1; margin: 0; }
+
+/* The banner runs the full width of the page, edge to edge, because it is the
+   market and not a card about the market. */
+.hm-banner {
+  margin-inline: calc(-1 * clamp(24px, 3.2vw, 64px));
+  padding-inline: clamp(24px, 3.2vw, 64px);
+  border-block: 1px solid var(--mh-border);
+}
+.hm-banner__rail {
+  display: flex; gap: 10px; padding: 12px 0;
+  overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none;
+}
+.hm-banner__rail::-webkit-scrollbar { display: none; }
+.hm-banner .mh-empty { min-height: 0; padding: 18px 0; }
+.hm-tile {
+  flex: 0 0 auto; display: grid; gap: 4px; min-width: 156px; max-width: 230px;
+  padding: 10px 14px; border: 1px solid var(--mh-border); border-radius: 10px;
+  background: var(--mh-bg); color: var(--mh-fg); text-align: left;
+}
+.hm-tile:hover { background: var(--mh-hover); }
+.hm-tile__n { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hm-tile__v { display: flex; align-items: baseline; gap: 8px; font-size: 13px; white-space: nowrap; }
+/* The direction, on the edge of the tile: colour on the number alone is hard
+   to scan across fourteen of them. */
+.hm-tile.is-up { box-shadow: inset 3px 0 0 var(--mh-up); }
+.hm-tile.is-down { box-shadow: inset 3px 0 0 var(--mh-down); }
+
+/* The front page's own news block, full width above the columns. */
+.hm-top { padding: 30px 0 34px; border-bottom: 1px solid var(--mh-border); }
+.hm-top__head { margin-bottom: 22px; }
+.hm-top__head .mh-heading { margin-bottom: 0; }
+
+.hm-lead { padding-top: 26px; }
+.hm-lead__head { margin-bottom: 4px; }
+.hm-lead__head .mh-heading { margin-bottom: 0; }
+
+/* The section strip: the hub's own sticky navigation, sitting under the
+   utility bar. Everything but the offsets comes from .mh-navigation. */
+.hm-navigation { top: var(--utilbar-h, 58px); }
+.hm-navigation:empty { display: none; }
+
+/* One section per part of the market, each one a page in miniature.
+   `scroll-margin-top` is the utility bar plus the strip, so a jump lands on
+   the heading rather than under it. */
+.hm-section { padding: 46px 0 12px; border-top: 1px solid var(--mh-border); scroll-margin-top: 118px; }
+.hm-section:first-child { border-top: 0; padding-top: 30px; }
+.hm-section__head { margin-bottom: 20px; }
+.hm-section__head .mh-heading { font-size: 27px; margin-bottom: 6px; }
+.hm-section__head .mh-section-mark { width: 27px; height: 27px; font-size: 17px; }
+.hm-section__head .mh-section-mark--stocks, .hm-section__head .mh-section-mark--local { font-size: 9px; }
+.hm-section__head .mh-section-description { max-width: 96ch; }
+.hm-section .mh-rankings { margin-top: 0; }
+
+/* The market summary: one index charted, the world's benchmarks beside it.
+   The list is the chart's control, so a row is a button and the charted one
+   stays lit. */
+.hm-summary { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 22px; align-items: start; }
+.hm-summary__chart, .hm-major {
+  border: 1px solid var(--mh-border); border-radius: 14px; padding: 4px 20px 16px; min-width: 0;
+}
+.hm-summary__chart .mhc__head { padding-top: 16px; }
+.hm-summary__chart .mhc__plot { height: 330px; }
+.hm-summary__chart .mhc__source { display: none; }
+
+.hm-major { padding: 18px 8px 10px 18px; }
+.hm-major__h { margin: 0 0 6px; font-size: 15px; font-weight: 650; letter-spacing: -.01em; }
+.hm-major__rows { display: grid; }
+.hm-major__row {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  width: 100%; padding: 11px 10px; border: 0; border-radius: 9px;
+  background: none; color: inherit; text-align: left;
+}
+.hm-major__row:hover { background: var(--mh-hover); }
+.hm-major__row.is-active { background: var(--mh-hover); }
+.hm-major__id { display: flex; align-items: center; gap: 11px; min-width: 0; }
+.hm-major__id .mh-mark { width: 30px; height: 30px; font-size: 9px; }
+.hm-major__name { display: grid; gap: 3px; min-width: 0; }
+.hm-major__name strong { font-size: 14px; font-weight: 550; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* The ticker as the chip the vendor's own boards print it in. */
+.hm-major__name small {
+  justify-self: start; padding: 1px 6px; border-radius: 4px;
+  background: var(--mh-soft); color: var(--mh-muted); font-size: 10px; letter-spacing: .02em;
+}
+.hm-major__v { display: grid; justify-items: end; gap: 3px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.hm-major__v .mh-price { font-size: 14px; }
+.hm-major__v .mh-change { font-size: 12px; }
+/* Inside a card the link reads as a link, not as a table row: the chevron
+   belongs beside its words rather than against the far border. */
+.hm-major .mh-see-all { width: auto; justify-content: flex-start; gap: 5px; margin: 4px 0 0 10px; padding: 12px 0 6px; }
+
+.hm-econ { margin-top: 34px; }
+.hm-econ__rows { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+.hm-econ__row { display: grid; gap: 3px; padding-top: 13px; border-top: 1px solid var(--mh-border); }
+.hm-econ__k { font-size: 12px; color: var(--mh-muted); }
+.hm-econ__v { font-size: 22px; font-weight: 650; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.hm-econ__d { font-size: 11px; color: var(--mh-muted); }
+
+/* Three stories under the section they belong to. */
+.hm-strip { margin-top: 36px; }
+.hm-strip .nw-story { padding: 16px 0; }
+.hm-strip .nw-story:last-child { border-bottom: 0; }
+.hm-strip__list { border-top: 1px solid var(--mh-border); }
+
+/* A block under a section: collections, ideas, the quant screen. The grids
+   themselves are the stock board's, so only the spacing lives here. */
+.hm-block { display: grid; gap: 14px; margin-top: 30px; }
+.hm-block > .mh-heading { margin-bottom: 0; }
+
+/* Top quant stocks: our own rating, one card per company. */
+.hm-quant__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
+.hm-quant__card {
+  display: grid; gap: 10px; justify-items: center; text-align: center;
+  border: 1px solid var(--mh-border); border-radius: 14px; padding: 18px 14px 14px; background: var(--mh-soft);
+}
+.hm-quant__card:hover { background: var(--mh-hover); }
+.hm-quant__id { display: flex; align-items: center; gap: 10px; min-width: 0; width: 100%; }
+.hm-quant__id .mh-mark { width: 30px; height: 30px; font-size: 9px; flex: none; }
+.hm-quant__name { display: grid; gap: 2px; min-width: 0; text-align: left; }
+.hm-quant__name strong { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hm-quant__name small { font-size: 11px; color: var(--mh-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* The flake is decorative at this size: its own labels are off, so the box
+   only has to stop the spokes from spilling into the card's padding. */
+.hm-quant__flake { display: grid; place-items: center; width: 100%; padding: 2px 0; }
+.hm-quant__score { display: flex; align-items: center; gap: 8px; }
+.hm-quant__score small { font-size: 11px; color: var(--mh-muted); }
+.hm-quant > .mh-section-description { margin: 2px 0 0; max-width: 96ch; }
+.hm-quant > .mh-section-description b { color: var(--mh-fg); font-weight: 600; }
+
+.hm-page .mh-connection-note { margin: 18px 0; }
+
+@media (max-width: 1040px) {
+  .hm-summary { grid-template-columns: minmax(0, 1fr); }
+  .hm-econ__rows { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 700px) {
+  .hm-section { padding-top: 36px; scroll-margin-top: 104px; }
+  .hm-section__head .mh-heading { font-size: 23px; }
+  .hm-summary__chart { padding-inline: 12px; }
+  .hm-summary__chart .mhc__plot { height: 260px; }
+  .hm-major { padding: 14px 4px 8px 12px; }
+  .hm-econ__rows { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .hm-econ__v { font-size: 19px; }
+  .hm-tile { min-width: 140px; }
+  .hm-quant__grid { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+}

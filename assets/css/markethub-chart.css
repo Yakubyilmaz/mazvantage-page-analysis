@@ -1,0 +1,78 @@
+.mhc {
+  --mhc-bg: var(--mh-bg, var(--surface));
+  --mhc-fg: var(--mh-fg, var(--text-solid));
+  --mhc-muted: var(--mh-muted, var(--text-softer));
+  --mhc-border: var(--mh-border, var(--border-soft));
+  --mhc-blue: var(--mh-blue, #2962ff);
+  width: 100%; min-width: 0; color: var(--mhc-fg); background: var(--mhc-bg);
+  font-family: inherit; font-variant-numeric: tabular-nums;
+}
+.mhc button { font-family: inherit; cursor: pointer; }
+.mhc button:focus-visible, .mhc__plot:focus-visible { outline: 2px solid var(--mhc-blue); outline-offset: 3px; }
+.mhc button:disabled { cursor: default; }
+.mhc__head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 21px 2px 0; }
+.mhc__title { color: var(--mhc-fg); background: none; border: none; padding: 0; font-size: 14px; font-weight: 600; line-height: 1.5; text-align: left; }
+.mhc__title:not(:disabled):hover { color: var(--mhc-blue); }
+.mhc__quote { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.mhc__price { font-size: 29px; font-weight: 600; letter-spacing: -.8px; line-height: 1.25; }
+.mhc__currency { color: var(--mhc-muted); font-size: 12px; }
+.mhc__change { font-size: 13px; font-weight: 500; margin-left: 4px; }
+.mhc__change.is-up { color: #089981; }
+.mhc__change.is-down { color: #f23645; }
+.mhc__detail { min-height: 28px; display: flex; gap: 13px; align-items: center; flex-wrap: wrap; color: var(--mhc-muted); font-size: 11px; line-height: 1.4; margin: 7px 2px 0; }
+.mhc__detail i { font-style: normal; opacity: .65; }
+.mhc__tools { display: flex; align-items: center; gap: 4px; }
+.mhc__tool { width: 34px; height: 34px; border: 0; border-radius: 6px; background: transparent; color: var(--mhc-muted); padding: 8px; display: inline-flex; align-items: center; justify-content: center; }
+.mhc__tool svg { width: 19px; height: 19px; flex: none; }
+.mhc__tool:hover, .mhc__tool.is-active { background: color-mix(in srgb, var(--mhc-fg) 7%, transparent); color: var(--mhc-fg); }
+.mhc__tool:disabled { opacity: .35; background: none; }
+.mhc__plot { position: relative; height: 385px; min-width: 0; outline: none; touch-action: pan-y; }
+.mhc__svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.mhc__axis { fill: var(--mhc-muted); font-size: 11px; font-family: inherit; }
+.mhc__grid { stroke: var(--mhc-border); stroke-width: .65; }
+.mhc__line { stroke: var(--mhc-blue); }
+.mhc__candle-up { fill: #089981; stroke: #089981; stroke-width: 1; }
+.mhc__candle-down { fill: #f23645; stroke: #f23645; stroke-width: 1; }
+.mhc__last-line { stroke: var(--mhc-blue); stroke-dasharray: 3 3; stroke-width: .8; opacity: .65; }
+.mhc__last-badge { fill: var(--mhc-blue); }
+.mhc__last-text { fill: #fff; font-size: 11px; font-family: inherit; }
+.mhc__cross { pointer-events: none; }
+.mhc__cross > line { stroke: var(--mhc-muted); stroke-width: .8; stroke-dasharray: 4 4; }
+.mhc__cross > circle { stroke: var(--mhc-bg); stroke-width: 2; fill: var(--mhc-blue); }
+.mhc__cross-date { fill: var(--mhc-fg); }
+.mhc__cross-text { fill: var(--mhc-bg); font-size: 10px; font-family: inherit; }
+.mhc__message { position: absolute; inset: 0 85px 30px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 30px; text-align: center; font-size: 12px; color: var(--mhc-muted); }
+.mhc__message[hidden] { display: none; }
+.mhc__message > svg { width: 34px; height: 34px; margin-bottom: 3px; opacity: .55; }
+.mhc__message > strong { color: var(--mhc-fg); font-size: 15px; font-weight: 600; }
+.mhc__message > span:not(.mhc__spinner) { max-width: 370px; line-height: 1.6; background: var(--mhc-bg); }
+.mhc__retry { background: var(--mhc-bg); border: 1px solid var(--mhc-border); color: var(--mhc-fg); border-radius: 6px; padding: 7px 14px; font-size: 12px; margin-top: 3px; }
+.mhc__retry:hover { border-color: var(--mhc-muted); }
+.mhc__spinner { height: 22px; width: 22px; border: 2px solid var(--mhc-border); border-top-color: var(--mhc-blue); border-radius: 50%; animation: mhc-spin .8s linear infinite; }
+.mhc__footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 0 5px; }
+.mhc__ranges { display: flex; gap: 5px; }
+.mhc__range { border: 0; border-radius: 5px; background: none; padding: 6px 10px; color: var(--mhc-muted); font-size: 12px; font-weight: 500; line-height: 1.5; }
+.mhc__range:hover { color: var(--mhc-fg); background: color-mix(in srgb, var(--mhc-fg) 5%, transparent); }
+.mhc__range.is-active { color: var(--mhc-blue); background: color-mix(in srgb, var(--mhc-blue) 10%, transparent); }
+.mhc__source { color: var(--mhc-muted); font-size: 10px; opacity: .8; }
+.mhc-modal { position: fixed; inset: 0; width: min(1450px, calc(100vw - 64px)); max-width: none; max-height: calc(100dvh - 64px); margin: auto; padding: 20px 26px; border: 1px solid var(--mh-border, var(--border-soft)); border-radius: 12px; background: var(--mh-bg, var(--surface)); color: var(--mh-fg, var(--text-solid)); box-shadow: 0 20px 90px #0005; }
+.mhc-modal::backdrop { background: #0009; backdrop-filter: blur(3px); }
+.mhc.is-expanded .mhc__plot { height: min(68dvh, 700px); }
+@keyframes mhc-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .mhc__spinner { animation: none; } }
+@media (max-width: 600px) {
+  .mhc__head { padding-top: 16px; gap: 8px; }
+  .mhc__title { font-size: 12px; }
+  .mhc__price { font-size: 24px; }
+  .mhc__quote { gap: 6px; }
+  .mhc__change { font-size: 11px; margin-left: 0; }
+  .mhc__tool { width: 29px; height: 29px; padding: 6px; }
+  .mhc__detail { font-size: 10px; gap: 7px; min-height: 35px; }
+  .mhc__plot { height: 290px; }
+  .mhc__ranges { gap: 0; width: 100%; justify-content: space-between; }
+  .mhc__range { padding: 6px 8px; font-size: 11px; }
+  .mhc__message { inset: 0 55px 30px 0; padding: 18px; }
+  .mhc__footer { gap: 10px; }
+  .mhc-modal { width: calc(100vw - 20px); max-height: calc(100dvh - 20px); padding: 10px; border-radius: 8px; }
+  .mhc.is-expanded .mhc__plot { height: 60dvh; }
+}

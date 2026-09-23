@@ -1,0 +1,349 @@
+/* ==========================================================================
+   The screener desks: Quant, Shariah and Earnings.
+
+   One layout, three pages. All three are the same shape — a hero, a tab
+   strip, a rail of screens over one table, and a set of reading panels behind
+   the other tabs — so they share one set of classes rather than three copies
+   of it. The `qd-` prefix is the Quant desk's, which is where the layout was
+   designed; the Shariah and Earnings desks adopted it rather than forking it,
+   and each adds only what is genuinely its own (`sd-`, `ed-`).
+
+   Inside the market canvas, so every colour is one of the canvas's own
+   `--mh-*` tokens. The one exception is the five band tints on the rating
+   scale, which come from the app's grade ladder in `tokens.css` — the same
+   five colours a grade badge uses anywhere else in the product, because a
+   scale that explained itself in different colours from the thing it explains
+   would be worse than no colour at all.
+   ========================================================================== */
+
+.qd-page { padding-bottom: 60px; }
+.qd-title { margin: 6px 0 0; font-size: clamp(30px, 3.4vw, 46px); font-weight: 700; letter-spacing: -.035em; }
+.qd-strap { margin: 12px 0 0; max-width: 78ch; font-size: 15px; line-height: 1.65; color: var(--mh-muted); }
+.qd-meta { font-size: 12px; color: var(--mh-muted); }
+.qd-body { padding-top: 28px; }
+
+/* ---- the screen rail -----------------------------------------------------
+   Eight chips, wrapping rather than scrolling: every screen is a peer of every
+   other and there are few enough to show at once, so hiding half of them
+   behind a scroll would make the choice look longer than it is. */
+
+.qd-lede { margin: 0 0 20px; max-width: 86ch; font-size: 14px; line-height: 1.65; color: var(--mh-muted); }
+.qd-rail { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 26px; }
+.qd-chip {
+  display: inline-flex; align-items: center; gap: 9px;
+  padding: 9px 14px; border: 1px solid var(--mh-border); border-radius: 9px;
+  background: var(--mh-bg); color: var(--mh-fg); font: inherit; cursor: pointer;
+}
+.qd-chip:hover { background: var(--mh-hover); }
+.qd-chip:focus-visible { outline: 2px solid var(--mh-blue); outline-offset: 2px; }
+.qd-chip__t { font-size: 14px; font-weight: 500; line-height: 1.2; white-space: nowrap; }
+.qd-chip__g {
+  padding: 2px 7px; border-radius: 20px; background: var(--mh-hover);
+  font-size: 10px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--mh-muted); white-space: nowrap;
+}
+.qd-chip.is-active {
+  background: var(--mh-fg); border-color: var(--mh-fg); color: var(--mh-bg);
+}
+.qd-chip.is-active .qd-chip__t { font-weight: 600; }
+.qd-chip.is-active .qd-chip__g {
+  background: color-mix(in srgb, currentColor 16%, transparent); color: inherit; opacity: .85;
+}
+
+/* ---- the selected screen, above its table -------------------------------- */
+
+.qd-screen {
+  padding: 20px 22px; margin-bottom: 22px;
+  background: var(--mh-soft); border: 1px solid var(--mh-border); border-radius: 12px;
+}
+.qd-screen__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; }
+.qd-screen__t { margin: 0; font-size: 21px; font-weight: 700; letter-spacing: -.02em; }
+.qd-screen__tag {
+  padding: 3px 9px; border-radius: 20px; background: var(--mh-hover);
+  font-size: 10px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--mh-fg);
+}
+.qd-screen__alias { font-size: 12px; color: var(--mh-muted); font-style: italic; }
+.qd-screen__b { margin: 10px 0 0; max-width: 92ch; font-size: 14px; line-height: 1.65; }
+.qd-screen__n { margin: 14px 0 0; max-width: 100ch; font-size: 12px; line-height: 1.7; color: var(--mh-muted); }
+
+/* The rules, printed where they are applied: a threshold the reader cannot
+   see is a threshold they cannot check. */
+.qd-rules { margin: 14px 0 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 7px; }
+.qd-rules li {
+  padding: 5px 11px; border: 1px dashed var(--mh-border); border-radius: 7px;
+  font-size: 12px; line-height: 1.4; color: var(--mh-fg);
+}
+.qd-rules--none { display: block; font-size: 12px; color: var(--mh-muted); font-style: italic; }
+
+/* The embedded screener carries its own padding on its own page; here the
+   desk supplies it. */
+.qd-table .sc-page { padding: 0; min-height: 0; }
+.qd-table .sc-header { padding-top: 0; }
+.sc-preset-row--bare { justify-content: flex-end; }
+
+/* ---- the three reading tabs ---------------------------------------------- */
+
+.qd-read { display: grid; gap: 26px; max-width: 1080px; }
+.qd-panel {
+  padding: 24px 26px; background: var(--mh-soft);
+  border: 1px solid var(--mh-border); border-radius: 12px;
+}
+.qd-panel__t { margin: 0 0 14px; font-size: 20px; font-weight: 700; letter-spacing: -.02em; }
+.qd-p { margin: 0 0 12px; max-width: 88ch; font-size: 14px; line-height: 1.75; color: var(--mh-fg); }
+.qd-p:last-child { margin-bottom: 0; }
+.qd-note { margin: 14px 0 0; max-width: 96ch; font-size: 12px; line-height: 1.7; color: var(--mh-muted); }
+.qd-warn {
+  margin: 0 0 14px; padding: 13px 16px; max-width: 92ch;
+  font-size: 13px; line-height: 1.7;
+  background: var(--mh-bg); border: 1px solid var(--mh-border);
+  border-left: 3px solid var(--warning, #ff7a1a); border-radius: 8px;
+}
+.qd-warn b { font-weight: 700; }
+
+.qd-scroll { overflow-x: auto; margin-top: 4px; }
+.qd-grid { width: 100%; border-collapse: collapse; font-size: 13px; }
+.qd-grid th {
+  padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 600;
+  letter-spacing: .06em; text-transform: uppercase; color: var(--mh-muted);
+  border-bottom: 1px solid var(--mh-border); white-space: nowrap;
+}
+.qd-grid td {
+  padding: 11px 14px; line-height: 1.6; border-bottom: 1px solid var(--mh-border);
+  vertical-align: top;
+}
+.qd-grid td:first-child { font-weight: 500; white-space: nowrap; }
+.qd-grid tr:last-child td { border-bottom: 0; }
+
+/* The five bands, in the product's own grade ladder rather than a green/red
+   pair — a rating is a position in a distribution, not a verdict. */
+.qd-band {
+  display: inline-block; padding: 3px 9px; border-radius: 20px;
+  font-size: 11px; font-weight: 600; white-space: nowrap;
+}
+.qd-band--strong { background: var(--grade-strong-bg); color: var(--grade-strong); }
+.qd-band--good { background: var(--grade-good-bg); color: var(--grade-good); }
+.qd-band--mid { background: var(--grade-mid-bg); color: var(--grade-mid); }
+.qd-band--weak { background: var(--grade-weak-bg); color: var(--grade-weak); }
+.qd-band--poor { background: var(--grade-poor-bg); color: var(--grade-poor); }
+
+/* ---- the factor cards ----------------------------------------------------- */
+
+.qd-factors {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px;
+  margin-top: 4px;
+}
+.qd-factor {
+  display: flex; flex-direction: column; gap: 6px; padding: 18px;
+  background: var(--mh-bg); border: 1px solid var(--mh-border); border-radius: 10px;
+}
+.qd-factor__t { margin: 0; font-size: 16px; font-weight: 700; }
+.qd-factor__q { margin: 0; font-size: 13px; line-height: 1.6; color: var(--mh-muted); }
+.qd-factor__m {
+  margin: 2px 0 8px; font-size: 11px; letter-spacing: .03em; text-transform: uppercase;
+  color: var(--mh-muted);
+}
+.qd-factor__go, .qd-factor__alt {
+  display: inline-flex; align-items: center; gap: 4px; margin-top: auto;
+  padding: 0; border: 0; background: none; font: inherit; font-size: 13px;
+  text-align: left; cursor: pointer;
+}
+.qd-factor__go { color: var(--mh-blue); font-weight: 600; }
+.qd-factor__alt { color: var(--mh-muted); font-size: 12px; margin-top: 4px; }
+.qd-factor__go:hover, .qd-factor__alt:hover { text-decoration: underline; }
+
+/* ---- buttons -------------------------------------------------------------- */
+
+.qd-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+.qd-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 16px; border: 1px solid var(--mh-border); border-radius: 8px;
+  background: var(--mh-bg); color: var(--mh-fg); font: inherit; font-size: 13px; cursor: pointer;
+}
+.qd-btn:hover { background: var(--mh-hover); }
+.qd-btn--primary { background: var(--mh-blue); border-color: var(--mh-blue); color: #fff; }
+.qd-btn--primary:hover { filter: brightness(1.08); background: var(--mh-blue); }
+
+@media (max-width: 700px) {
+  .qd-screen { padding: 16px; }
+  .qd-panel { padding: 18px; }
+  .qd-chip { padding: 8px 11px; }
+  .qd-chip__g { display: none; }
+  .qd-read { gap: 18px; }
+}
+
+/* ==========================================================================
+   The Shariah desk's one addition: the compliance rules read differently from
+   the rule a screen adds on top, so they are marked rather than separated.
+   ========================================================================== */
+
+.sd-page .qd-rules__core {
+  border-style: solid;
+  border-color: var(--mh-blue);
+  color: var(--mh-fg);
+}
+.sd-page .qd-rules__core::before {
+  content: 'compliance';
+  display: inline-block; margin-right: 7px; padding: 1px 6px; border-radius: 4px;
+  background: var(--mh-hover); color: var(--mh-muted);
+  font-size: 9px; letter-spacing: .06em; text-transform: uppercase; vertical-align: 1px;
+}
+
+/* ==========================================================================
+   The Earnings desk's table.
+
+   Its own classes rather than the screener's, because the columns change with
+   the screen: a result has an actual and a surprise, a scheduled report has
+   neither, and the two column sets share only the date and the identity.
+   ========================================================================== */
+
+.ed { padding-bottom: 20px; }
+.ed-controls { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; margin: 4px 0 22px; }
+.ed-field { display: grid; gap: 5px; min-width: 0; }
+.ed-field--grow { flex: 1 1 240px; }
+.ed-field > span {
+  font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase;
+  color: var(--mh-muted);
+}
+.ed-select, .ed-search {
+  min-height: 38px; padding: 7px 12px; font: inherit; font-size: 14px;
+  color: var(--mh-fg); background: var(--mh-bg);
+  border: 1px solid var(--mh-border); border-radius: 7px; max-width: 100%;
+}
+.ed-search { width: 100%; }
+.ed-select:focus-visible, .ed-search:focus-visible { outline: 2px solid var(--mh-blue); outline-offset: 1px; }
+
+.ed-stats {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px;
+  margin: 14px 0 0; font-size: 12px; color: var(--mh-muted);
+}
+.ed-stats b { color: var(--mh-fg); font-weight: 650; }
+.ed-drop { cursor: help; border-bottom: 1px dotted var(--mh-border); }
+
+.ed-table { padding-top: 18px; }
+.ed-scroll { overflow-x: auto; border-top: 1px solid var(--mh-border); scrollbar-width: thin; }
+.ed-grid { width: 100%; border-collapse: collapse; font-size: 13px; }
+.ed-th {
+  padding: 0; text-align: left; font-weight: 400; white-space: nowrap;
+  background: var(--mh-bg); border-bottom: 1px solid var(--mh-border);
+}
+.ed-th--num { text-align: right; }
+.ed-th--id { position: sticky; left: 0; z-index: 2; min-width: 250px; }
+.ed-sort {
+  width: 100%; padding: 11px 11px; border: 0; background: none;
+  color: var(--mh-muted); font: inherit; font-size: 12px; text-align: inherit; cursor: pointer;
+}
+.ed-th--num .ed-sort { text-align: right; }
+.ed-sort:hover { color: var(--mh-fg); }
+.ed-sort.is-active { color: var(--mh-fg); font-weight: 600; }
+.ed-sort__a { font-size: 11px; }
+
+.ed-td {
+  padding: 8px 11px; height: 46px; border-bottom: 1px solid var(--mh-border);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.ed-td--num { text-align: right; }
+.ed-td--id {
+  position: sticky; left: 0; z-index: 1;
+  padding: 4px 12px 4px 0; background: var(--mh-bg);
+  min-width: 250px; max-width: 250px;
+}
+.ed-grid tbody tr:hover .ed-td { background: var(--mh-hover); }
+
+.ed-id {
+  display: flex; align-items: center; gap: 10px; width: 100%; min-width: 0;
+  padding: 6px 8px; border: 0; border-radius: 6px; background: transparent;
+  color: var(--mh-fg); font: inherit; text-align: left; cursor: pointer;
+}
+.ed-id:hover { background: var(--mh-soft); }
+.ed-id:focus-visible { outline: 2px solid var(--mh-blue); outline-offset: -2px; }
+.ed-id .mh-mark { flex: 0 0 24px; width: 24px; height: 24px; font-size: 8px; }
+.ed-id__text { display: grid; min-width: 0; flex: 1; }
+.ed-id__name {
+  font-size: 13px; font-weight: 500; line-height: 1.3;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.ed-id__sym {
+  flex: 0 0 auto; padding: 3px 7px; border-radius: 4px;
+  background: var(--mh-hover); font-size: 11px; font-weight: 600; letter-spacing: .02em;
+}
+.ed-open {
+  display: inline-flex; align-items: center; gap: 4px; padding: 0;
+  border: 0; background: none; color: var(--mh-blue); font: inherit; font-size: 12px; cursor: pointer;
+}
+.ed-open:hover { text-decoration: underline; }
+
+.ed-pc { font-weight: 500; }
+.ed-pc.is-up { color: var(--mh-up); }
+.ed-pc.is-down { color: var(--mh-down); }
+.ed-na { color: var(--mh-muted); }
+.ed-sector { color: var(--mh-muted); font-size: 12px; }
+
+.ed-more {
+  width: 100%; margin-top: 14px; padding: 13px; border-radius: 8px;
+  border: 1px solid var(--mh-border); background: var(--mh-bg);
+  color: var(--mh-fg); font: inherit; font-size: 13px; cursor: pointer;
+}
+.ed-more:hover { background: var(--mh-hover); }
+.ed-coverage { margin-top: 30px; }
+
+/* ---- the written summaries ------------------------------------------------ */
+
+.ed-sums { padding-bottom: 34px; margin-bottom: 8px; border-bottom: 1px solid var(--mh-border); }
+.ed-sums__head { display: flex; align-items: baseline; gap: 12px; }
+.ed-sums__t { margin: 0; font-size: 17px; font-weight: 650; }
+.ed-sums__n { font-size: 12px; color: var(--mh-muted); }
+.ed-sums__b { margin: 8px 0 16px; max-width: 92ch; font-size: 12px; line-height: 1.65; color: var(--mh-muted); }
+.ed-sums__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; }
+.ed-sum {
+  display: grid; gap: 7px; padding: 16px; text-align: left; cursor: pointer;
+  background: var(--mh-soft); border: 1px solid var(--mh-border); border-radius: 10px;
+  color: var(--mh-fg); font: inherit;
+}
+.ed-sum:hover { background: var(--mh-hover); }
+.ed-sum__h { display: flex; align-items: baseline; gap: 8px; }
+.ed-sum__q { font-size: 11px; color: var(--mh-muted); }
+.ed-sum__t { margin: 0; font-size: 13px; line-height: 1.5; }
+.ed-sum__by { font-size: 11px; color: var(--mh-muted); }
+
+/* ---- the Insights tab ---------------------------------------------------
+
+   The article cards themselves are `.acard`, from app.css, unchanged. They
+   resolve their colour through the token set that `reportcanvas.css` remaps
+   inside `.mh-page`, so a research card renders on the market canvas without
+   a line of its own CSS — the same bridge the company report's fifteen tabs
+   arrived on. Everything below is the frame around them. */
+
+.ed-ins__foot { margin-top: 26px; padding-top: 20px; border-top: 1px solid var(--mh-border); }
+
+.ed-ins__more {
+  padding: 9px 16px; border: 1px solid var(--mh-border); border-radius: 999px;
+  background: var(--mh-bg); color: var(--mh-fg); font: inherit; font-size: 13px;
+  font-weight: 550; cursor: pointer;
+}
+.ed-ins__more:hover { background: var(--mh-hover); border-color: var(--mh-blue); }
+.ed-ins__more:focus-visible { outline: 2px solid var(--mh-blue); outline-offset: 2px; }
+
+.ed-ins__n { margin: 14px 0 0; font-size: 12px; color: var(--mh-muted); }
+
+.ed-ins__note {
+  margin: 12px 0 0; padding: 12px 14px; max-width: 92ch;
+  background: var(--mh-soft); border: 1px solid var(--mh-border); border-radius: 8px;
+  font-size: 12px; line-height: 1.65; color: var(--mh-muted);
+}
+.ed-ins__note b { color: var(--mh-fg); font-weight: 600; }
+
+.ed-ins__all {
+  display: inline-flex; align-items: center; gap: 6px; margin-top: 16px; padding: 0;
+  background: none; border: 0; color: var(--mh-blue); font: inherit; font-size: 13px;
+  font-weight: 550; cursor: pointer;
+}
+.ed-ins__all:hover { text-decoration: underline; }
+.ed-ins__all:focus-visible { outline: 2px solid var(--mh-blue); outline-offset: 3px; }
+
+.ed-ins__wait { font-size: 13px; color: var(--mh-muted); }
+
+@media (max-width: 800px) {
+  .ed-th--id, .ed-td--id { min-width: 190px; max-width: 190px; }
+  .ed-field--grow { flex-basis: 100%; }
+}

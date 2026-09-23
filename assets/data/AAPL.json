@@ -1,6 +1,6 @@
 {
  "symbol": "AAPL",
- "capturedAt": "2026-08-24",
+ "capturedAt": "2026-09-22",
  "extras": {
   "peerRatios": {
    "MSFT": {
@@ -35,7 +35,7 @@
    }
   },
   "benchmarks": {
-   "note": "Sector benchmark: XLK (Technology Select Sector SPDR), bundled with this snapshot. The market benchmark needs a live FMP connection.",
+   "note": "Sector benchmark: XLK (Technology Select Sector SPDR). Market benchmark: SPY. Both bundled with this snapshot, so relative-strength and sector-context readings work with no API key.",
    "industry": [
     {
      "symbol": "XLK",
@@ -1287,10 +1287,1376 @@
      "date": "2025-08-25",
      "price": 130.92
     }
+   ],
+   "market": [
+    {
+     "symbol": "SPY",
+     "date": "2026-09-22",
+     "price": 774.14
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-09-21",
+     "price": 773.5
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-09-18",
+     "price": 761.69
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-09-17",
+     "price": 762.6
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-09-16",
+     "price": 754.05
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-09-15",
+     "price": 757.39
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-09-14",
+     "price": 760.88
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-09-11",
+     "price": 764.29
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-09-10",
+     "price": 757.83
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-09-09",
+     "price": 762.4
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-09-08",
+     "price": 765.96
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-09-04",
+     "price": 770.19
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-09-03",
+     "price": 773.17
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-09-02",
+     "price": 765.16
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-09-01",
+     "price": 761.78
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-08-31",
+     "price": 767.05
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-08-28",
+     "price": 769.35
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-08-27",
+     "price": 771.1
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-08-26",
+     "price": 766.08
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-08-25",
+     "price": 765.91
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-08-24",
+     "price": 763.47
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-08-21",
+     "price": 765.72
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-08-20",
+     "price": 762.6
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-08-19",
+     "price": 769.06
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-08-18",
+     "price": 767.45
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-08-17",
+     "price": 772.67
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-08-14",
+     "price": 776.34
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-08-13",
+     "price": 777.88
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-08-12",
+     "price": 772.49
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-08-11",
+     "price": 770.56
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-08-10",
+     "price": 773.03
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-08-07",
+     "price": 773.26
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-08-06",
+     "price": 768.56
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-08-05",
+     "price": 769.79
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-08-04",
+     "price": 771.33
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-08-03",
+     "price": 757.67
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-07-31",
+     "price": 747.03
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-07-30",
+     "price": 741.69
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-07-29",
+     "price": 729.46
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-07-28",
+     "price": 740.86
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-07-27",
+     "price": 739.09
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-07-24",
+     "price": 738.93
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-07-23",
+     "price": 738.18
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-07-22",
+     "price": 747.41
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-07-21",
+     "price": 748.28
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-07-20",
+     "price": 742.09
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-07-17",
+     "price": 743.29
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-07-16",
+     "price": 750.72
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-07-15",
+     "price": 754.81
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-07-14",
+     "price": 751.83
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-07-13",
+     "price": 749.17
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-07-10",
+     "price": 754.95
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-07-09",
+     "price": 751.71
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-07-08",
+     "price": 745.4
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-07-07",
+     "price": 747.71
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-07-06",
+     "price": 751.28
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-07-02",
+     "price": 744.78
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-07-01",
+     "price": 745.76
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-06-30",
+     "price": 746.77
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-06-29",
+     "price": 741.0
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-06-26",
+     "price": 728.99
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-06-25",
+     "price": 734.3
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-06-24",
+     "price": 733.24
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-06-23",
+     "price": 733.58
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-06-22",
+     "price": 744.39
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-06-18",
+     "price": 746.74
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-06-17",
+     "price": 740.96
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-06-16",
+     "price": 750.33
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-06-15",
+     "price": 754.83
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-06-12",
+     "price": 741.75
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-06-11",
+     "price": 737.76
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-06-10",
+     "price": 725.43
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-06-09",
+     "price": 737.05
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-06-08",
+     "price": 739.22
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-06-05",
+     "price": 737.55
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-06-04",
+     "price": 757.09
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-06-03",
+     "price": 754.24
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-06-02",
+     "price": 759.57
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-06-01",
+     "price": 758.54
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-05-29",
+     "price": 756.48
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-05-28",
+     "price": 754.6
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-05-27",
+     "price": 750.46
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-05-26",
+     "price": 750.59
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-05-22",
+     "price": 745.64
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-05-21",
+     "price": 742.72
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-05-20",
+     "price": 741.25
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-05-19",
+     "price": 733.73
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-05-18",
+     "price": 738.65
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-05-15",
+     "price": 739.17
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-05-14",
+     "price": 748.17
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-05-13",
+     "price": 742.31
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-05-12",
+     "price": 738.18
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-05-11",
+     "price": 739.3
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-05-08",
+     "price": 737.62
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-05-07",
+     "price": 731.58
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-05-06",
+     "price": 733.83
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-05-05",
+     "price": 723.77
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-05-04",
+     "price": 718.01
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-05-01",
+     "price": 720.65
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-04-30",
+     "price": 718.66
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-04-29",
+     "price": 711.58
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-04-28",
+     "price": 711.69
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-04-27",
+     "price": 715.17
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-04-24",
+     "price": 713.94
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-04-23",
+     "price": 708.45
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-04-22",
+     "price": 711.21
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-04-21",
+     "price": 704.08
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-04-20",
+     "price": 708.72
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-04-17",
+     "price": 710.14
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-04-16",
+     "price": 701.66
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-04-15",
+     "price": 699.94
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-04-14",
+     "price": 694.46
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-04-13",
+     "price": 686.1
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-04-10",
+     "price": 679.46
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-04-09",
+     "price": 679.91
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-04-08",
+     "price": 676.01
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-04-07",
+     "price": 659.22
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-04-06",
+     "price": 658.93
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-04-02",
+     "price": 655.83
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-04-01",
+     "price": 655.24
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-03-31",
+     "price": 650.34
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-03-30",
+     "price": 631.97
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-03-27",
+     "price": 634.09
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-03-26",
+     "price": 645.09
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-03-25",
+     "price": 656.82
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-03-24",
+     "price": 653.18
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-03-23",
+     "price": 655.38
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-03-20",
+     "price": 648.57
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-03-19",
+     "price": 659.8
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-03-18",
+     "price": 661.43
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-03-17",
+     "price": 670.79
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-03-16",
+     "price": 669.03
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-03-13",
+     "price": 662.29
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-03-12",
+     "price": 666.06
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-03-11",
+     "price": 676.33
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-03-10",
+     "price": 677.18
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-03-09",
+     "price": 678.27
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-03-06",
+     "price": 672.38
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-03-05",
+     "price": 681.31
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-03-04",
+     "price": 685.13
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-03-03",
+     "price": 680.33
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-03-02",
+     "price": 686.38
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-02-27",
+     "price": 685.99
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-02-26",
+     "price": 689.3
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-02-25",
+     "price": 693.15
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-02-24",
+     "price": 687.35
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-02-23",
+     "price": 682.39
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-02-20",
+     "price": 689.43
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-02-19",
+     "price": 684.48
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-02-18",
+     "price": 686.29
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-02-17",
+     "price": 682.85
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-02-13",
+     "price": 681.75
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-02-12",
+     "price": 681.27
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-02-11",
+     "price": 691.96
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-02-10",
+     "price": 692.12
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-02-09",
+     "price": 693.95
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-02-06",
+     "price": 690.62
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-02-05",
+     "price": 677.62
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-02-04",
+     "price": 686.19
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-02-03",
+     "price": 689.53
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-02-02",
+     "price": 695.41
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-01-30",
+     "price": 691.97
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-01-29",
+     "price": 694.04
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-01-28",
+     "price": 695.42
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-01-27",
+     "price": 695.49
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-01-26",
+     "price": 692.73
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-01-23",
+     "price": 689.23
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-01-22",
+     "price": 688.98
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-01-21",
+     "price": 685.4
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-01-20",
+     "price": 677.58
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-01-16",
+     "price": 691.66
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-01-15",
+     "price": 692.24
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-01-14",
+     "price": 690.36
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-01-13",
+     "price": 693.77
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-01-12",
+     "price": 695.16
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-01-09",
+     "price": 694.07
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-01-08",
+     "price": 689.51
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-01-07",
+     "price": 689.58
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-01-06",
+     "price": 691.81
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-01-05",
+     "price": 687.72
+    },
+    {
+     "symbol": "SPY",
+     "date": "2026-01-02",
+     "price": 683.17
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-12-31",
+     "price": 681.92
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-12-30",
+     "price": 687.01
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-12-29",
+     "price": 687.85
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-12-26",
+     "price": 690.31
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-12-24",
+     "price": 690.38
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-12-23",
+     "price": 687.96
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-12-22",
+     "price": 684.83
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-12-19",
+     "price": 680.59
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-12-18",
+     "price": 676.47
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-12-17",
+     "price": 671.4
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-12-16",
+     "price": 678.87
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-12-15",
+     "price": 680.73
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-12-12",
+     "price": 681.76
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-12-11",
+     "price": 689.17
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-12-10",
+     "price": 687.57
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-12-09",
+     "price": 683.04
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-12-08",
+     "price": 683.63
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-12-05",
+     "price": 685.69
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-12-04",
+     "price": 684.39
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-12-03",
+     "price": 683.89
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-12-02",
+     "price": 681.53
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-12-01",
+     "price": 680.27
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-11-28",
+     "price": 683.39
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-11-26",
+     "price": 679.68
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-11-25",
+     "price": 675.02
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-11-24",
+     "price": 668.73
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-11-21",
+     "price": 659.03
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-11-20",
+     "price": 652.53
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-11-19",
+     "price": 662.63
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-11-18",
+     "price": 660.08
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-11-17",
+     "price": 665.67
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-11-14",
+     "price": 671.93
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-11-13",
+     "price": 672.04
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-11-12",
+     "price": 683.38
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-11-11",
+     "price": 683.0
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-11-10",
+     "price": 681.44
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-11-07",
+     "price": 670.97
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-11-06",
+     "price": 670.31
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-11-05",
+     "price": 677.58
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-11-04",
+     "price": 675.24
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-11-03",
+     "price": 683.34
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-10-31",
+     "price": 682.06
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-10-30",
+     "price": 679.83
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-10-29",
+     "price": 687.39
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-10-28",
+     "price": 687.06
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-10-27",
+     "price": 685.24
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-10-24",
+     "price": 677.25
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-10-23",
+     "price": 671.76
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-10-22",
+     "price": 667.8
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-10-21",
+     "price": 671.29
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-10-20",
+     "price": 671.3
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-10-17",
+     "price": 664.39
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-10-16",
+     "price": 660.64
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-10-15",
+     "price": 665.17
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-10-14",
+     "price": 662.23
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-10-13",
+     "price": 663.04
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-10-10",
+     "price": 653.02
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-10-09",
+     "price": 671.16
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-10-08",
+     "price": 673.11
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-10-07",
+     "price": 669.12
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-10-06",
+     "price": 671.61
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-10-03",
+     "price": 669.21
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-10-02",
+     "price": 669.22
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-10-01",
+     "price": 668.45
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-09-30",
+     "price": 666.18
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-09-29",
+     "price": 663.68
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-09-26",
+     "price": 661.82
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-09-25",
+     "price": 658.05
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-09-24",
+     "price": 661.1
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-09-23",
+     "price": 663.21
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-09-22",
+     "price": 666.84
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-09-19",
+     "price": 663.7
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-09-18",
+     "price": 662.26
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-09-17",
+     "price": 659.18
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-09-16",
+     "price": 660.0
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-09-15",
+     "price": 660.91
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-09-12",
+     "price": 657.41
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-09-11",
+     "price": 657.63
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-09-10",
+     "price": 652.21
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-09-09",
+     "price": 650.33
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-09-08",
+     "price": 648.83
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-09-05",
+     "price": 647.24
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-09-04",
+     "price": 649.12
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-09-03",
+     "price": 643.74
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-09-02",
+     "price": 640.27
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-08-29",
+     "price": 645.05
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-08-28",
+     "price": 648.92
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-08-27",
+     "price": 646.63
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-08-26",
+     "price": 645.16
+    },
+    {
+     "symbol": "SPY",
+     "date": "2025-08-25",
+     "price": 642.47
+    }
    ]
+  },
+  "transcripts": {
+   "2026|3": {
+    "symbol": "AAPL",
+    "period": "Q3",
+    "year": 2026,
+    "date": "2026-07-30",
+    "content": "Suhasini Chandramouli: Good afternoon, welcome to the Apple Q3 fiscal year 2026 earnings conference call. My name is Suhasini Chandramouli, Director of Investor Relations. Today's call is being recorded. Speaking first today is Apple CEO Tim Cook, followed by CFO Kevan Parekh. Also joining us on today's call is incoming CEO John Ternus. After the prepared remarks, we'll open the call to questions from analysts. Please note that some of the information you'll hear during our discussion today will consist of forward-looking statements, including, without limitation, those regarding revenue, gross margin, operating expenses, other income and expense, taxes, and future business outlook. These statements involve risks and uncertainties that may cause actual results or trends to differ materially from our forecast, including risks related to the potential impact to the company's business and results of operations from macroeconomic conditions, tariffs and other measures, and legal and regulatory proceedings. For more information, please refer to the risk factors discussed in Apple's most recently filed reports on Form 10-Q and Form 10-K, and the Form 8-K filed with the SEC today, along with the associated press release. Additional information will also be in our report on Form 10-Q for the quarter ended June 27, 2026, to be filed tomorrow, and in other reports and filings we make with the SEC. Apple assumes no obligation to update any forward-looking statements which speak only as of the date they are made. I'd now like to turn the call over to Tim for introductory remarks.\n\nTim Cook: Thank you, Suhasini. Good afternoon, everyone, thanks for joining the call. Today, Apple is pleased to report $109.4 billion in revenue, up 16% from a year ago and a June quarter record. We were able to achieve this despite supply constraints and sequential foreign exchange headwinds. We continue to see enormous customer enthusiasm for our most popular lineup ever, with iPhone revenue growing 22% from a year ago to reach a June quarter record. We saw so much excitement around the best Mac lineup we've ever had, growing a strong 29% to achieve a June quarter revenue record. Services also set a June quarter record with $30.7 billion in revenue. We achieved June quarter revenue records in every geographic segment. We were pleased to see strength across the board with June quarter records in the U.S., Latin America, Western Europe, India, China Mainland, Japan, and Southeast Asia. We also achieved June quarter revenue records in both developed and emerging markets and saw double-digit growth in most emerging markets. This year's WWDC was a wonderful showcase of our latest innovations. We were tremendously excited to unveil the all-new Siri AI, a completely reimagined version of Siri that is profoundly capable, deeply personal, and integrated seamlessly across our platforms. We've been absolutely thrilled by the response from people who've been using Siri AI in the developer and public betas. The reviews from early users have been phenomenal, it's been so wonderful to hear from people who are excited about the capabilities we've built. It underscores our philosophy that building AI that is private and based on personal context can change how users find information and get things done with our products in a way that truly enriches their lives. We really couldn't be more excited about it, we are feeling incredibly enthusiastic about the impact it's going to have. At WWDC, we also announced new tools to help parents keep kids safe online, we were pleased by the overwhelmingly positive reaction. New child safety features like Ask to Browse and Time Allowances will help parents encourage kids to develop healthy digital habits. These new tools integrate guidance from leading clinical and child development research, including the American Academy of Pediatrics. Our goal is to make it easier for parents to manage what their children see, who they interact with, and how and when they can use their devices. We're looking forward to bringing these new capabilities to users this fall, in addition to amazing new updates across our operating systems. Let me turn to the results for the quarter, beginning with iPhone. iPhone revenue for the June quarter was $54.3 billion, up 22% from a year ago. We achieved June quarter records in every geographic segment and set a June quarter record for upgraders. According to IDC, we gained share globally during the quarter. As I've said before, this is the most powerful and most popular iPhone lineup we've ever had. More people are relying on iPhone every day for AI, powered by the outstanding performance of A19 and A19 Pro. Across the lineup, iPhone continues to deliver the performance, battery life, durability, and camera capabilities that people count on every day. Whether it's the extraordinary camera system of iPhone 17 Pro and Pro Max, the remarkably thin design of iPhone Air, the balanced performance and durability of iPhone 17, or the exceptional value of iPhone 17e, there's an iPhone for every customer. Mac delivered its best June quarter yet with $10.4 billion in revenue, growing an impressive 29% from a year ago despite significant supply constraints. This revenue growth was driven by the incredible strength of our latest lineup with MacBook Pro and the all-new MacBook Neo. According to IDC, we gained share globally. We also set a June quarter revenue record in developed markets and an all-time record in emerging markets with particular strength in Greater China, where we had an all-time revenue record. In addition, we achieved all-time records for upgraders and customers new to Mac. With the power of Apple silicon, the Mac lineup delivers outstanding power-efficient performance, massive memory bandwidth, and next-level AI capabilities. Mac continues to be the ultimate AI powerhouse, excelling at high throughput, on-device inference, and creation across a broad range of AI workloads. We're seeing customers increasingly put those capabilities to work, from using Mac mini as a powerful platform for agentic AI to deploying clusters of Mac Studio systems to run frontier class models locally. Across the lineup, customers continue to embrace the Mac family. MacBook Neo has been especially popular with its distinctive design and excellent value resonating with customers around the world, we're continuing to work hard to meet demand. MacBook Air, the world's most popular laptop, continues to deliver the portability and performance customers love with M5. MacBook Pro, powered by M5 Pro and M5 Max, remains a go-to choice for professionals tackling the most demanding AI development and creative workflows. In iPad, revenue was $6.2 billion for the June quarter. iPad continues to be the ultimate go-anywhere, do anything device for students, entrepreneurs, and creators of all kinds, thanks to its incredible power, portability, and versatility. The addition of M4 to iPad Air has made it even more capable, delivering a significant performance boost for everything from personal productivity and immersive learning to advanced creative workflows. Together with the remarkable performance of iPad Pro, the amazing value and versatility of iPad, and the ultra-portable iPad mini, we're offering customers our strongest iPad lineup ever. Revenue for wearables, home, and accessories was $7.9 billion, up 6% from a year ago. We grew in every geographic segment and achieved a June quarter record for upgraders for Apple Watch. Our Apple Watch lineup brings together the most comprehensive set of health and fitness features we've ever had. We're delivering useful features backed by research to enable users to better understand their health and well-being. It's gratifying to receive almost daily reminders of the meaningful impact Apple's health innovations are having for users all over the world, changing, even saving lives. Meanwhile, we continue raising the bar across our AirPods lineup, whether it's the immersive listening experience of AirPods Pro 3 or the premium listening experience and exceptional active noise cancellation of AirPods Max 2. With live translation powered by Apple Intelligence, people are crossing language barriers and connecting like never before. As I mentioned earlier, we're excited about the work we're doing on the next generation of Apple Intelligence, including Siri AI and the AI features we're developing across our platforms. These experiences are intuitive and useful, while also deeply integrated in a way that's personal and private with the latest models running on-device and on servers using private cloud compute. We began laying the groundwork for users to have the best possible experience with AI when we introduced the Neural Engine in 2017. Ever since then, we've innovated and invested deliberately in silicon, systems, and scalable unified memory architecture designed with AI at their core. What sets Apple apart is the unique combination of massive unified memory bandwidth, industry-leading power-efficient performance, and deep on-device intelligence, all built around the customer experience from the ground up. The result is that Apple has created the world's best hardware to experience AI, whether using Apple Intelligence, including Siri AI, or third-party offerings. That's why developers and researchers are increasingly using Apple devices to build ever more advanced tools and models. Turning to services, revenue was $30.7 billion, a June quarter revenue record and up 12% from a year ago, despite significant sequential foreign exchange headwinds. We also set an all-time revenue record in developed markets and a June quarter record in emerging markets. Apple TV continues to leave audiences spellbound with new releases like \"Widow's Bay\" and \"Cape Fear,\" alongside returning favorites like \"Silo\" and \"Sugar.\" Next week, we're excited that \"Ted Lasso\" is back for its fourth season. It was wonderful to see Apple TV earn the industry's top honors, adding Tony Awards this year to its Emmy, Grammy, and Oscar wins. We reached that milestone faster than any streamer in history. We're also looking forward to this year's Emmy Awards, where Apple has landed a record 89 nominations, leading all networks in both the major drama and comedy series categories, with three Outstanding Drama Series nominations and three Outstanding Comedy Series nominations. \"Widow's Bay\" also stands out as the year's most nominated new program, earning 19 Emmy nominations. In the six and a half years since launch, Apple TV has earned more than 850 wins and nearly 3,800 nominations. In time for the World Cup, we expanded Apple Sports to include more than 170 countries and regions worldwide and made it easier than ever for fans to follow every moment of the tournament, from the opening game to the final whistle. At the same time, we're halfway through an unforgettable year of F1, and Apple TV subscribers have been tuning in all season to follow their favorite drivers and teams. In retail, we were pleased to announce Apple Upgrade this week for customers in the U.S. Apple Upgrade is a new hardware leasing program launched in partnership with Klarna and makes it even easier for customers to get their hands on Apple's latest products with a plan that's right for them. In all of our work, we're thoughtful and intentional in how we show up for our users and across our communities. That means innovating to protect user privacy with the next generation of Apple Intelligence, or helping parents keep kids safe, as I mentioned earlier. In honor of Global Accessibility Awareness Day, we unveiled new features to help users get more out of the products they use every day. New intelligent capabilities are coming to VoiceOver, Magnifier, Voice Control, and Accessibility Reader to make them more useful and intuitive. We're also using on-device speech recognition to generate subtitles for video content without captions. Apple Vision Pro is adding a feature for power wheelchair users to control drive systems using just their eyes. All of these features were born out of Apple's long-standing commitment to ensuring that the benefits of technology are shared with everyone. As we continue to develop new capabilities for users around the world, we're also doing our part to invest in innovation close to home. Last year, we made a $600 billion commitment to the U.S. over four years, and now, as we said before, we plan to reinvest the tariff refunds we've received into the U.S. We're pleased with the progress we've already made advancing the American supply chain. Earlier this month, Apple announced a new agreement with Broadcom to design and produce custom silicon components and cutting-edge wireless connectivity technologies. The new multi-year agreement with Broadcom, which is part of Apple's American Manufacturing Program, is expected to exceed $30 billion. This marks our largest-ever American manufacturing program commitment. It's also an important step forward in our work to build an end-to-end silicon supply chain here in the U.S. We're excited for the upcoming opening of the Apple Advanced Manufacturing Center in Houston. The center is located in a facility where we currently assemble advanced AI servers. Later this year, we'll make Mac mini there, too. The center will teach students, supplier employees, and business of all sizes the same innovative processes we use to make our products. The goal is to empower American manufacturers to take their work to the next level and strengthen the entire advanced manufacturing ecosystem. We have an exciting fall ahead and an incredible future beyond. Our roadmap is phenomenal, and we are so excited about the way Siri AI will enrich our users' lives. Throughout all of it, we will remain guided by our North Star: building the best products and services to enable people to do magical things. It's a special privilege to be part of people's lives in lasting and meaningful ways, helping them to create, connect, and experience the world around them. I couldn't be more excited to watch our phenomenal story of innovation continue to unfold, and I've never been more confident that the best is yet to come. With that, I'll turn it over to Kevan.\n\nKevan Parekh: Thanks, Tim, good afternoon, everyone. Here's a quick rundown of our key financial metrics. Our revenue of $109.4 billion was up 16% year-over-year, a June quarter revenue record. We saw strong performance around the world, with double-digit growth in every geographic segment despite supply constraints. Products revenue was $78.7 billion, up 18% year-over-year, driven by double-digit growth on iPhone and Mac, both of which set new June quarter records. Our installed base of over two and a half billion active devices has reached another all-time high across all major product categories and geographic segments. Services revenue was $30.7 billion, up 12% year-over-year. We set revenue records in every services category, including all-time records in cloud services and payment services. Company gross margin was 50.1%, up 80 basis points sequentially. This included a benefit from tariff refunds, which had a favorable impact of approximately two percentage points. When you remove this favorable impact, we would have been at the midpoint of the guidance range we provided last quarter. Products gross margin was 40.1%, up 140 basis points sequentially. This also included a benefit from the tariff refunds I just mentioned, which had a favorable impact of over two and a half percentage points. Services gross margin was 75.6%, down 110 basis points sequentially, driven by a different mix. Operating expenses came in at $19.1 billion, up 23% year-over-year, driven by investments in R&D. Net income was $29.8 billion. Diluted earnings per share was $2.02, up 29% year-over-year, and included $0.11 of favorable impact from tariff refunds. Operating cash flow was very strong at $34.4 billion. All three of these metrics set June quarter records, even when excluding the tariff refund benefit. I'm going to provide some more details for each of our revenue categories. iPhone revenue was $54.3 billion, up 22% year-over-year, driven by the iPhone 17 family. We grew double digits in the vast majority of markets we track and reached June quarter revenue records across both developed and emerging markets. The iPhone active install base grew to an all-time high and set a June quarter record for upgraders. According to a recent survey from Worldpanel, iPhone was the top-selling model in the U.S., urban China, the U.K., France, Australia, and Japan. We were thrilled with the response to the iPhone 17 family. Customer satisfaction in the U.S. was recently measured at 99% by 451 Research. Mac revenue was $10.4 billion, up 29% year-over-year, a new June quarter record, driven by the strength of MacBook Neo and MacBook Pro. We grew in both developed and emerging markets, with strong double-digit growth in markets like Latin America, India, and Southeast Asia. The customer reception to MacBook Neo has been incredible. We continue to attract new customers to the product around the world. As Tim mentioned, Mac had its best quarter ever for customers new to the Mac and for upgraders worldwide, including in the U.S., China Mainland, and India. In the U.S., customer satisfaction for Mac was recently measured at 95%. iPad revenue was $6.2 billion, down 6% year-over-year, driven by the continued difficult compare against the launch of the A16-powered iPad in the prior year. At the same time, the iPad install base reached a new all-time high, and over half of the customers who purchased an iPad were new to the product. 451 Research recently measured customer satisfaction at 98% in the U.S. Wearables, home, and accessories revenue was $7.9 billion, up 6% year-over-year, driven by strength in wearables and accessories, and we saw growth in both developed and emerging markets. The wearables install base reached a new all-time high. We set a June quarter record for upgraders on Apple Watch, and over half the customers purchasing an Apple Watch during the quarter were new to the product. In the U.S., customer satisfaction on Apple Watch was reported at 95%. Our services revenue reached a June quarter record of $30.7 billion, up 12% year-over-year, despite significant sequential FX headwinds. For the total services business, we saw double-digit growth in the vast majority of markets we track. We set records in every category, with June quarter records in advertising, App Store, AppleCare, Apple Music, and Apple TV+, as well as all-time records in cloud services and payment services. We are optimistic about the long-term future of our services business. With our large install base of over two and a half billion active devices, we have an incredibly strong foundation for growth opportunities. Our services continue to attract more customers, and we have now surpassed one and a half billion in paid subscriptions. Both transacting and paid accounts reached new all-time highs in the quarter, with double-digit growth for both in emerging markets. We continue to improve and expand our services offerings, from powerful updates to Creator Studio to exciting new features we're bringing to services later this year, like splitting bills with Apple Cash using visual intelligence. Turning now to enterprise and education. Organizations are using the Apple platform to drive AI innovation and empower the next generation of students. Starting with enterprise, Morgan Stanley has deployed over 20,000 iPhone 17 devices globally as part of a shift from employee-owned to corporate-owned devices for liability and security. More companies are choosing Mac for on-device AI advantages, including lower costs, better performance, and enhanced privacy and security. At Disney, creative teams are increasingly turning to Mac for on-device AI workflows that reduce overall cloud token costs and keep their IP secure. Cr\u00e9dit Agricole, France's leading retail bank, is using on-device AI on MacBook Pro to streamline regulatory workflows, reducing manual processing time by over 80%. Our newest addition to the Mac lineup, MacBook Neo, is reaching new enterprise users in many environments, from bank branches to retail storefronts. In education, MacBook Neo continued to accelerate adoption of Apple products, with many districts leveraging Apple Financial Services to deploy at scale. Pinellas County Schools, one of the largest districts in Florida, is transitioning 25,000 students from Windows devices to MacBook Neo across its 18 high schools. In Washington, Peninsula School District 401 moved over 8,000 students from Chromebooks to MacBook Neo. In Oklahoma, Midwest City-Del City School District purchased over 6,000 MacBook Neos to become an all-Apple district for students. In fact, in the last quarter, about half of the MacBook Neo large purchases by U.S. education institutions displaced Windows and Chromebook devices. Let's turn to our cash position and capital return program. We ended the quarter with $147 billion in cash and marketable securities and $84 billion in total debt. During the quarter, we returned $33 billion to shareholders. This included $4 billion in dividends and equivalents and $25.8 billion in share repurchases. As we move ahead into the September quarter, I'd like to review our outlook, which includes the types of forward-looking information that Suhasini referred to. Importantly, the color we're providing assumes that global tariff rates, policies, and their application remain in effect as of this call, and the global macroeconomic outlook does not worsen from today. We also expect our September quarter total company revenue to be impacted by two main factors. First, we expect foreign exchange to be a sequential headwind of about two and a half percentage points to the year-over-year total company growth rate from the June quarter to the September quarter. Second, we expect the impact from supply constraints to increase significantly sequentially. The projected supply constraints in the September quarter affect iPhone, Mac, and iPad. As a result, we expect our September quarter total company revenue to grow between 9%-11% year-over-year. On iPhone, we expect to continue to see high levels of demand. However, we do expect iPhone revenue to be impacted by these foreign exchange headwinds and supply constraints. Therefore, we expect the September quarter reported growth rate for iPhone to be mid-teens year-over-year. For services, we expect the September quarter year-over-year reported growth rate to be largely similar to what we reported in the June quarter after removing the negative sequential impact of about two and a half percentage points from foreign exchange that we just described. We expect gross margin to be between 47%-48%. This includes an expected benefit of approximately one percentage point related to tariff refunds. We expect operating expenses to be between $19.1 billion-$19.4 billion. We expect OIE to be around $350 million, excluding any potential impact from the mark to market of minority investments, and our tax rate to be around 16.5%. Finally, today, our board of directors has declared a cash dividend of $0.27 per share of common stock payable on August 13th, 2026, to shareholders of record as of August 10th, 2026. Before we take questions, let me turn it back over to Tim.\n\nTim Cook: Thanks, Kevan. Before we get into questions, I just wanted to take a moment to say thank you to all of you, from our shareholders, particularly our long-term shareholders, who have put their trust in us for so many years, to the analysts who have followed our company so closely. As you know, this will be my final earnings call, and John will lead these calls going forward. The transition is going seamlessly, and I am beyond excited for John to step into his new role and lead Apple into its next era. He is truly one of a kind, and there is no better person to take the helm of the company. As I've said, I couldn't be more confident in his leadership, in our executive team, and in the extraordinary people at Apple who are determined to enrich the lives of our users all over the world. We have a bright future ahead, and I truly have never been more optimistic. Thank you all, and now Kevan and I will be happy to take your questions.\n\nSuhasini Chandramouli: Thank you, Tim. We ask that you limit yourself to two questions. Operator, may we have the first question, please?\n\nOperator: Certainly. We will go ahead and take our first question from Amit Daryanani from Evercore. Please go ahead.\n\nAmit Daryanani: Yep. Thanks. I'll take my question. Tim, best of luck. It's been a pleasure working with you over the years. Maybe to start with, if I think about the 9%-11% sort of growth that's guided for September, it's about a 500 basis point or so deceleration versus what we've seen really in June quarter, even through this year, I would say. Can you just talk about how much of this decel is really supply constraint versus other factors like FX? If you could just flesh out what these supply constraints are that are broadening beyond these advanced SOCs you talked about last quarter as well.\n\nKevan Parekh: Yeah, Amit, this is Kevin. How are you doing? Why don't I start with just kind of describing the sequential change, then I'll let Tim jump into a bit more color on the supply constraints. I think, as I mentioned in my prepared remarks, we expect the September quarter total revenue to grow by 9%-11% year-over-year. We expect that to be impacted by two main factors. First, when we look at going from the June quarter to September quarter, we expect foreign exchange to be a sequential headwind of around two and a half percentage points to the year-over-year total company growth rate. The second impact is that the impact from supply constraints is we expect that to increase significantly when we go sequentially from June to September. That projected supply constraint in the September quarter will affect the iPhone, Mac, and the iPad. Really, when you combine those two factors, we get pretty close to the June overall total company growth rate.\n\nTim Cook: Yeah, Amit, it's Tim. First of all, thank you for your comments. During the June quarter, we did experience supply constraints, primarily on the Mac, and to a lesser extent, on iPhone and iPad. These were driven by very high levels of demand. As we've said before, we are seeing less flexibility in the supply chain than normal. The constraints were primarily driven by the availability of the advanced nodes that our SoCs are produced on. If you look forward into the current quarter, the September quarter, we continue to expect high levels of demand. However, with less flexibility in supply chain, we expect the impact from the supply constraints to increase significantly sequentially. The projected supply constraints in the September quarter, as Kevan said, affect iPhone, Mac, and iPad. We're seeing some very significant constraints currently, with limited flexibility in the supply chain to remedy it.\n\nAmit Daryanani: Got it. That's really helpful. Thanks a lot for that. Tim, I just have a memory question for you. Apple has historically, I think, done a really excellent job about delivering capability and utility to customers without really making them pay disproportionately more. The stagnant memory inflation seems to challenge that equation for you folks right now. There are reports that suggest that you're seeking greater sourcing flexibility for memory. Can you just talk about, is this sourcing options really about ensuring that you have supply and it's a way to mitigate memory inflation? Or is it more to preserve the value proposition for your customers? Just any light you could shed on this would be helpful. Thank you.\n\nTim Cook: Yeah. Let me back up and talk about memory in general, because I know this is a subject on many of your minds. If you look at, as I'd said on the last call, we paid more for memory in the March quarter than the December quarter. As I alluded to last quarter, we expected to pay significantly more in the June quarter than the March quarter, and that is what happened. It was partially offset by the benefit of carry-in inventory. For September, we expect to pay even higher memory costs, and we're able to offset partly by a few factors, and let me walk through kind of what they are. The first is, as you would expect, we have a benefit from some carry-in inventory in the September quarter. However, we believe we'll see decreasing benefit from this over time beyond the September quarter. The second is, we're expecting lower costs on certain non-memory components that are in our BOM. If you look beyond September, we see the market pricing for memory continuing to increase, which could drive an increasing impact on our business, and we're continuing to evaluate this. In terms of the sources of supply, primarily the DRAM market has three suppliers. Obviously if there were more suppliers, that would be good, and it would help us on the supply side and perhaps the pricing side. It's unclear on the pricing side, it could help on the supply side. We're evaluating all options.\n\nSuhasini Chandramouli: All right. Thank you, Amit. Operator, could we have the next question, please?\n\nOperator: Our next question is from Michael Ng of Goldman Sachs. Please go ahead.\n\nMichael Ng: Good afternoon. First, Tim, congratulations on the extraordinary run you on these earnings calls. In terms of my questions, I have two as well. First, on the Apple Upgrade Program, could you talk a little bit about the expected adoption rates across your two and a half billion device install base in success? Do you see it shortening the replacement cycle for iPhone or also having an equal impact to Mac and iPad, which may have not have benefited from device subsidies in the U.S. like iPhone has historically? Thank you.\n\nTim Cook: Michael, first of all, thank you for your comments. I really appreciate that. If you look at the Apple Upgrade, what it's all about is making it easier for customers to get their hands on our latest products with a leasing plan that's right for them. Of course, as you know, the residual values on Apple products are generally much higher than the residual value on several of our competition. It's a way to get into a product on a fairly affordable basis, particularly for those customers who want to upgrade on some kind of schedule. We're very excited about it. It is offered in our retail stores, it's not widely offered in all channels. We'll see what the customer uptake is, but the early feedback on it is quite positive.\n\nKevan Parekh: Michael, I'll just mention that it's only available in the U.S. right now as well.\n\nMichael Ng: Great. Thank you. That's very helpful. My second question, just on iOS 27 and Apple Intelligence, went into public beta earlier this month. Could you talk about learnings from the public beta? Will the new Siri AI be a demand driver for iPhones this holiday? How does the Apple Intelligence usage to date in the open beta inform how you're thinking about compute costs and the ability to recover some of those costs through iCloud+? Thank you.\n\nTim Cook: Thank you for that. First of all, we are off the charts excited about Siri AI. We had a great reception from WWDC. We released the developer beta immediately after the keynote. The developer feedback has been overwhelmingly positive. The feedback from reviewers and so forth have been overwhelmingly positive. We released it to the public for a public beta a few weeks ago, the continued feedback is really, really great. I think it's a very big idea to have AI that's private, that's based on your personal context, and that's integrated across the operating system. We couldn't be happier with how things are going. In terms of what it means for compute cost, it's obviously early going for us. I don't want to say that we have a complete plan for that. We do believe there will be people that want to use it a lot. We will have some kind of upgrade possibilities on iCloud+ where people can buy up the stack on iCloud+. We'll see how the pickup for that is. We could not be more excited about where the product is.\n\nMichael Ng: Wonderful. Thank you for all the thoughts, Tim.\n\nTim Cook: Thank you.\n\nSuhasini Chandramouli: Thank you, Michael. Operator, could we have the next question, please?\n\nOperator: Our next question is from Ben Reitzes from Melius Research. Please go ahead.\n\nBen Reitzes: Yeah. Hey, guys. Thanks a lot for the question and, obviously, Tim, known you a long time. I'll really miss you. I wanted to ask about the supply constraints again. I think people are just trying to make sense of it a little bit this way, is that the Street had you at 12% growth for the quarter, September. You could argue that to get to the 10% you guided, that's just the FX. In the 1st quarter, which is December, Street has you decelerating quite a bit, to like 8%-9%. I think what we're struggling with after hours here is how much do these supply constraints really hit you in December and impact that because the Street did a pretty good job of taking that number into the higher single digits. Is there any guidance you can give us there as you see it, Tim, and we'd really appreciate it. Thanks.\n\nTim Cook: Let me talk about the constraints a little more, and then Kevin can weigh in on the guidance for revenue. As I'd mentioned before, the primary issue is advanced nodes that we run our SoCs on. That's the primary supply constraint now. The root cause of it is not a regular supply issue. It's a demand forecast issue, to be candid, where the iPhone and the Mac are both doing remarkably better than we thought they would do. We had high expectations, so it wasn't that our expectations were low. As you can see from iPhone's growth being 22% and Mac's growth at 29%, and the iPhone is 22% year-to-date as well, that these are extraordinary numbers. The supply chain just has less flexibility in it than normal. We've been pulling supply ahead. At some point, there's a limit to that. We've got a quarter that we're going to be scrambling on the supply side, essentially. Kevan, you want to add on the revenue guidance?\n\nKevan Parekh: Yeah. Thanks, Tim. Ben, let me jump in here. The dynamics Tim mentioned, combined with the foreign exchange impact I mentioned earlier sequentially, is really what's built into the 9%-11% guidance we're giving for the September total company revenue year-over-year growth rate. Beyond September, we're not providing any color at this point. I think you mentioned December, so we're not providing any kind of color or guidance beyond the September quarter.\n\nBen Reitzes: Okay. If I could just ask, you guys know what's in the press all the time, but there's this little company that is also building a fab in Arizona that you guys have been speculated you guys could work with that could potentially alleviate some, at least your silicon constraints. Is there any possibility that you guys broaden out your silicon providers in a reasonable time frame to alleviate these so we feel better about supply?\n\nTim Cook: Yeah. Let me stress again, this isn't a partner or supplier issue. This issue is an incredibly strong, it's a great issue in some ways. It's an incredibly strong iPhone and Mac product cycle that has really yielded demand beyond our expectation. In Arizona, we do source over 100 million components this year out of Arizona, it is part of our $600 billion commitment to the U.S., and we could not be more pleased with how that fab has ramped and is producing for us.\n\nBen Reitzes: Thanks, Tim.\n\nTim Cook: Yep. Thank you.\n\nSuhasini Chandramouli: Thank you, Ben. Operator, could we get the next question, please?\n\nOperator: Our next question is from Erik Woodring of Morgan Stanley. Please go ahead.\n\nErik Woodring: Great. Thanks so much for taking my questions, guys. Tim, just echo what everyone is saying, it's been a pleasure working with you. Hope to still talk to you in the future. I want to maybe focus on pricing here, Tim, and kind of unprecedented for you to take pricing in the ways that you have. I guess two related questions is just, is it your intention to pursue some of these multi-year LTAs with your suppliers just to ensure access to supply at pre-agreed prices? When you approach product pricing in this environment, is it your intention to protect product gross profit dollars? Is it your intention to protect product gross margins? Would just love the kind of thought process behind the pricing. Then a quick follow-up, please. Thank you.\n\nTim Cook: Yeah. On the pricing front, we reluctantly raised prices, I would say. We did it because we're in what I would characterize as a 100-year flood on the memory pricing, with exponential increases in memory prices. That was the rationale for it. In terms of our philosophy on dollars or percentages, we look at units, revenue, and margin, then come to a business judgment as to how to handle that. It's not a mathematical formula that gets us to a specific result or just looking at one dimension of that. We look at all three dimensions and think about it over the long term, instead of a 90-day clock. Hopefully that helps.\n\nErik Woodring: Okay. I appreciate that.\n\nTim Cook: Yeah.\n\nErik Woodring: Yeah. No, that does help. Thank you, Tim. Just maybe a quick follow-up, I guess, Tim or Kevan, just 12% services growth was just a bit below your guidance. I imagine FX maybe played a role there. I think the fiscal 4Q guidance assumes another deceleration. I think the math would imply below 10% year-over-year as reported. Can you maybe just help us understand the kind of function factors underlying that deceleration? If that's App Store, which I think some third-party data sources would suggest, is that a function of AI maybe reprioritizing time away from parts of the App Store? Just want to make sure we understand the moving pieces on services, please. Thank you so much.\n\nKevan Parekh: Hey, Erik, this is Kevan. I'll take that one. Let's walk from kind of the 16% in our fiscal second quarter to kind of the 12% that we just talked about in the June quarter that you referenced. We look at that, relative to the March quarter. Foreign exchange was the main driver for the change in the year-over-year growth rate sequentially. Also a couple other factors to keep in mind. One is we had the theatrical release of F1, which is one of the highest grossing sports films in history, and this year we didn't have a theatrical release. That had a favorable impact on both the June quarter and also the September quarter in the year ago. We also had some factors that impacted the performance of the App Store. We did see some headwinds in mobile gaming. Keep in mind, we also made some changes to the App Store business model in certain countries. In the U.S., we do continue to operate under a court ruling impacting the link-out transactions. We're pleased the Supreme Court will hear our appeal. Despite this, the App Store did set a June quarter revenue record. We take a step back. There are several positive trends in the services business. During the June quarter, we saw strong double-digit growth in categories like cloud services, video, payment services, and advertising. We set revenue records in every category with June quarter records in advertising, the App Store, AppleCare, music, and video, where Apple TV+ viewership reached an all-time high in the quarter. We also set all-time records in cloud services and payment services, where Apple Pay saw a record level of users in both developed and emerging markets. Services also had a June quarter record in emerging markets. As we outlined in the prepared remarks, our services continue to attract more customers, and we now have surpassed one and a half billion in paid subscriptions. Our transacting and paid accounts hit an all-time high with double-digit growth in both those two in emerging markets. I think when I step back, if I look at how we landed versus our expectations that we had outlined in the March quarter for the June quarter, I would say that we roughly met our expectations, but we did see a bit more softness on mobile gaming in the App Store. As we go into the September quarter, what I would say is we expect foreign exchange will continue to be a headwind. In fact, this is a theme that's impacting the services business more so than the total company. We expect foreign exchange to drive about a 5 percentage point headwind to the year-over-year growth rate from the March to September quarter. If we look at the sequential change from the June quarter, the 12% services we reported to what we're guiding for the September quarter, we are going to see another two and a half point sequential headwind.\n\nErik Woodring: Great. Thank you so much, Kevan. I appreciate the detail there.\n\nKevan Parekh: Sure. No problem, Erik. Thanks.\n\nSuhasini Chandramouli: Awesome. Thanks, Erik. Operator, could we get the next question, please?\n\nOperator: Our next question is from Aaron Rakers of Wells Fargo. Please go ahead.\n\nAaron Rakers: Thanks for taking the questions, also best wishes, Tim. I guess I want to, maybe it tethers with the memory pricing dynamic, as you look at the demand that you're seeing right now, I'm curious of how you assess whether or not you've seen any pull forward of demand, either from the consumer or even the enterprise and education markets. Whether or not you're factoring that into your views as we look forward at all.\n\nTim Cook: You're talking about on iPhone, I assume, in general. We've been running at this 22% growth rate for the last while. For this cycle has been a 22% increase year to date. It's not obvious, I would say. It's not obvious in the data that what you're asking is true. Obviously, we've now had to increase prices on iPad and Mac, the price elasticity there, it's just too early to come to a definitive conclusion of what happens there. Because it takes a little while for the channels to adjust since there's channel inventory, it takes a while for the consumer to respond. We'll understand that more in the weeks ahead.\n\nAaron Rakers: Very helpful. Then as a quick follow-up, maybe more longer term thematically, as AI proliferates towards the edge and more consumers utilize AI, I'm curious, Tim, if you see AI opening up additional opportunities. I can appreciate that you're not going to give us specifics, do you see other kind of addressable markets evolving from AI over time?\n\nTim Cook: I think there are enormous opportunities for Apple moving forward in AI. I'm so excited about Siri AI and where it is and where it's going. I'm excited about the feedback that we're getting there. Of course, the ability to run some percentage of request on device is also very strategic and sort of a competitive weapon, if you will. I could not be more excited about the opportunities there.\n\nAaron Rakers: Thank you.\n\nTim Cook: Yeah.\n\nSuhasini Chandramouli: Thanks, Aaron. Operator, could we get the next question, please?\n\nOperator: Our next question is from Wamsi Mohan of Bank of America. Please go ahead.\n\nWamsi Mohan: Yes. Thank you. Tim, first, congrats on your tenure as CEO. You joined back in 2011 when Apple reported $108 billion in revenue, and you just delivered a quarter of $109 billion. Just an amazing journey.\n\nTim Cook: Thank you for that.\n\nWamsi Mohan: For my question.\n\nTim Cook: I really appreciate it.\n\nWamsi Mohan: Yeah, sure, Tim. It's been a pleasure. For my question, first on Siri AI, do you expect that Siri AI would change the capital intensity of Apple, despite the fact that you have the ability to do so much differentiated workloads on device, and you have this distributed compute. You do have some requests that go into the back end, both in your own first-party cloud as well as third party. Is it right to think that the capital intensity of Apple will change in the future because of Siri AI? I have a follow-up.\n\nTim Cook: We use a hybrid model, as I know Kevan has reviewed with you earlier. We use some third-party cloud, and we do our own data centers. There will be a mix. Generally speaking, as you know, we have been growing our OpEx and spending more in AI in general and quite a bit more. There are other locations on the P&L other than OpEx, like COGS etc., that also have AI expenditures. We'll see what Siri AI does from the cost side of it. There's also the ability when people use it a lot for them to move up on an iCloud Plan as well. What the balance of that is a bit uncertain at the moment.\n\nWamsi Mohan: Okay. Thanks, Tim.\n\nTim Cook: Yeah.\n\nWamsi Mohan: John, since you're on the call, congrats on the new role. I'd love to get maybe a just a high-level take from you if you think that the competitive landscape here is changing, especially as you hear about potentially companies like OpenAI building an AI-enabled competitive device or SpaceX AI potentially having a phone that could bypass some of the typical carrier attacks. Just would love your high-level thoughts on how you see the competitive landscape evolving and Apple's position there.\n\nJohn Ternus: Well, thank you for asking. I guess I would just reiterate what Tim said, there is so much opportunity for us with everything that's happening in this space. We're just really focused on our plans and very excited about it.\n\nWamsi Mohan: Thank you.\n\nSuhasini Chandramouli: Awesome. Thank you, Wamsi. Operator, can we have the last question, please?\n\nOperator: We will now go to Samik Chatterjee of JPMorgan. Please go ahead.\n\nSamik Chatterjee: Hi, thanks for squeezing me in here. Tim, best wishes from my side as well. Maybe just for my first one, if I go back to WWDC, when you announced Siri AI, you also did mention, along with the rollout, that probably we won't have the initial rollout in China and Europe. Just wanted to get your updated thoughts on that front and any more color in terms of what hurdles you need to cross to be able to launch it in those regions. I have a follow-up. Thank you.\n\nTim Cook: Thanks for the question. Let me take them individually. You look at the EU, we're working closely with the commission. Obviously, our complete desire is to launch everything everywhere at the same time. That's always the philosophy that we have. We have not been able to do that in the European Union, but we're working closely with them to try to get to something that would allow us to offer Siri AI there. It is offered or will be offered for the Mac there, because the Mac is not covered by the same regulations as the iPhone and the iPad. Net-net, we're working with them and hope to reach some sort of solution. You look at China, last week we received approval to ship sort of the original features of Apple Intelligence, things like cleanup and so forth. We're working now through the rollout of those, and there will be more work required down the road for Siri AI. We're at the front end of that.\n\nSamik Chatterjee: Okay. Got it. Great. For my follow-up, Kevan, just not to beat sort of this FX thing to death here, but if I look at the gross margin, you delivered 48% in the quarter without the tariff refund benefit. You're guiding to like 46.5%. Any way to walk us through the sequential driver there and how much of that is FX impacting it versus maybe increased commodity costs, et cetera, that's driving that sequential moderation? It does seem a bit more atypical than your normal sort of years.\n\nKevan Parekh: Yeah, Samik, that's a good question. Let me walk through kind of what's impacting our gross margins. We look at our gross margin change from the 49.3% we had at the total company level for the March quarter, and as you mentioned, the 48.1% adjusted for the tariff refund in the June quarter, that 120 basis point change. You look at the drivers of that, more than 100% of that can be explained by the memory cost change that Tim outlined. While FX was a factor, really the main driver was really the memory cost impact. As Tim outlined earlier when we talked a bit about the dynamics around the memory costs, is we did see some partial offsets from things like the benefit of carry and inventory, reduction in non-memory component costs, and some favorable mix. We are seeing the same dynamics when you go from the 48.1% that we printed in the June quarter to the 46.5% midpoint you referenced of our range without the tariff refund impact. That 160 basis point change is also more than that is explained by the change in memory cost. We had some partial offsets again from things like the benefit of carry and inventory, lower cost of non-memory components, and as well, favorable mix. I think that FX was a pretty minimal impact when you look at that versus the memory. Generally, the sequential change from the March quarter to the 46.5% you referenced is really driven by memory.\n\nSamik Chatterjee: Great. Thank you both for taking my questions. Congrats again, Tim. Thank you.\n\nTim Cook: Thank you so much for saying that. I appreciate it.\n\nSuhasini Chandramouli: Thank you, Samik. A replay of today's call will be available on Apple Podcasts and at apple.com/investor. Thanks again for joining us today.\n\nOperator: Once again, this does conclude today's conference. We do appreciate your participation.\n"
+   }
   }
  },
- "note": "Captured from Financial Modeling Prep on 2026-08-24 through the FMP-moi connector (Ultimate tier), so every feed the report uses is present. Statement, dividend and ownership rows are trimmed to the fields the analysis model reads; use the app's \"Save snapshot\" action to capture full payloads for another ticker.",
+ "note": "Captured from Financial Modeling Prep on 2026-09-22 through the FMP-moi connector (Ultimate tier), so every feed the report uses is present. Statement, dividend and ownership rows are trimmed to the fields the app reads. The five Alpha Signal feeds (incomeQ, cashflowQ, gradesHistorical, targetSummary, holdersSummary) were added on 2026-09-22 so the Alpha Signal tab renders at full category coverage with no API key. The insiderStats rows were re-captured on 2026-09-22 with the open-market Form 4 fields (totalPurchases / totalSales) the earlier trim dropped, so insider conviction is measured from codes P and S rather than reported unavailable. Every figure is Apple's filed or FMP-published data as of that date \u2014 none of it is synthesised \u2014 but it is a point-in-time capture, not a live read, and any date-relative reading on the page (freshness, days-until-earnings) is measured against today rather than against the capture date.",
  "feeds": {
   "quote": {
    "symbol": "AAPL",
@@ -3870,89 +5236,194 @@
    {
     "symbol": "AAPL",
     "periodOfReport": "2025-09-27",
-    "filingDate": "2025-09-27",
+    "filingDate": "2025-10-31",
     "employeeCount": 166000,
     "formType": "10-K"
    },
    {
     "symbol": "AAPL",
     "periodOfReport": "2024-09-28",
-    "filingDate": "2024-09-28",
+    "filingDate": "2024-11-01",
     "employeeCount": 164000,
     "formType": "10-K"
    },
    {
     "symbol": "AAPL",
     "periodOfReport": "2023-09-30",
-    "filingDate": "2023-09-30",
+    "filingDate": "2023-11-03",
     "employeeCount": 161000,
+    "formType": "10-K"
+   },
+   {
+    "symbol": "AAPL",
+    "periodOfReport": "2022-09-24",
+    "filingDate": "2022-10-28",
+    "employeeCount": 164000,
+    "formType": "10-K"
+   },
+   {
+    "symbol": "AAPL",
+    "periodOfReport": "2021-09-25",
+    "filingDate": "2021-10-29",
+    "employeeCount": 154000,
+    "formType": "10-K"
+   },
+   {
+    "symbol": "AAPL",
+    "periodOfReport": "2020-09-26",
+    "filingDate": "2020-10-30",
+    "employeeCount": 147000,
+    "formType": "10-K"
+   },
+   {
+    "symbol": "AAPL",
+    "periodOfReport": "2019-09-28",
+    "filingDate": "2019-10-31",
+    "employeeCount": 137000,
+    "formType": "10-K"
+   },
+   {
+    "symbol": "AAPL",
+    "periodOfReport": "2018-09-29",
+    "filingDate": "2018-11-05",
+    "employeeCount": 132000,
+    "formType": "10-K"
+   },
+   {
+    "symbol": "AAPL",
+    "periodOfReport": "2017-09-30",
+    "filingDate": "2017-11-03",
+    "employeeCount": 123000,
+    "formType": "10-K"
+   },
+   {
+    "symbol": "AAPL",
+    "periodOfReport": "2016-09-24",
+    "filingDate": "2016-10-26",
+    "employeeCount": 116000,
     "formType": "10-K"
    }
   ],
   "insiderStats": [
    {
     "symbol": "AAPL",
+    "cik": "0000320193",
     "year": 2026,
     "quarter": 3,
-    "totalAcquired": 0,
-    "totalDisposed": 2878,
-    "acquiredDisposedRatio": 0.0
+    "acquiredTransactions": 2,
+    "disposedTransactions": 8,
+    "acquiredDisposedRatio": 0.25,
+    "totalAcquired": 37794,
+    "totalDisposed": 54964,
+    "averageAcquired": 18897.0,
+    "averageDisposed": 6870.5,
+    "totalPurchases": 0,
+    "totalSales": 6
    },
    {
     "symbol": "AAPL",
+    "cik": "0000320193",
     "year": 2026,
     "quarter": 2,
+    "acquiredTransactions": 7,
+    "disposedTransactions": 40,
+    "acquiredDisposedRatio": 0.175,
     "totalAcquired": 303199,
     "totalDisposed": 927380,
-    "acquiredDisposedRatio": 0.3269
+    "averageAcquired": 43314.1429,
+    "averageDisposed": 23184.5,
+    "totalPurchases": 0,
+    "totalSales": 14
    },
    {
     "symbol": "AAPL",
+    "cik": "0000320193",
     "year": 2026,
     "quarter": 1,
+    "acquiredTransactions": 15,
+    "disposedTransactions": 10,
+    "acquiredDisposedRatio": 1.5,
     "totalAcquired": 76696,
     "totalDisposed": 102492,
-    "acquiredDisposedRatio": 0.7483
+    "averageAcquired": 5113.0667,
+    "averageDisposed": 10249.2,
+    "totalPurchases": 0,
+    "totalSales": 0
    },
    {
     "symbol": "AAPL",
+    "cik": "0000320193",
     "year": 2025,
     "quarter": 4,
+    "acquiredTransactions": 6,
+    "disposedTransactions": 33,
+    "acquiredDisposedRatio": 0.1818,
     "totalAcquired": 578243,
     "totalDisposed": 1113027,
-    "acquiredDisposedRatio": 0.5195
+    "averageAcquired": 96373.8333,
+    "averageDisposed": 33728.0909,
+    "totalPurchases": 0,
+    "totalSales": 15
    },
    {
     "symbol": "AAPL",
+    "cik": "0000320193",
     "year": 2025,
     "quarter": 3,
+    "acquiredTransactions": 6,
+    "disposedTransactions": 3,
+    "acquiredDisposedRatio": 2.0,
     "totalAcquired": 391455,
     "totalDisposed": 125256,
-    "acquiredDisposedRatio": 3.1252
+    "averageAcquired": 65242.5,
+    "averageDisposed": 41752.0,
+    "totalPurchases": 0,
+    "totalSales": 2
    },
    {
     "symbol": "AAPL",
+    "cik": "0000320193",
     "year": 2025,
     "quarter": 2,
+    "acquiredTransactions": 6,
+    "disposedTransactions": 38,
+    "acquiredDisposedRatio": 0.1579,
     "totalAcquired": 466004,
     "totalDisposed": 892618,
-    "acquiredDisposedRatio": 0.5221
+    "averageAcquired": 77667.3333,
+    "averageDisposed": 23489.9474,
+    "totalPurchases": 0,
+    "totalSales": 13
    },
    {
     "symbol": "AAPL",
+    "cik": "0000320193",
     "year": 2025,
     "quarter": 1,
+    "acquiredTransactions": 14,
+    "disposedTransactions": 8,
+    "acquiredDisposedRatio": 1.75,
     "totalAcquired": 19255,
     "totalDisposed": 12128,
-    "acquiredDisposedRatio": 1.5876
+    "averageAcquired": 1375.3571,
+    "averageDisposed": 1516.0,
+    "totalPurchases": 0,
+    "totalSales": 1
    },
    {
     "symbol": "AAPL",
+    "cik": "0000320193",
     "year": 2024,
     "quarter": 4,
+    "acquiredTransactions": 6,
+    "disposedTransactions": 38,
+    "acquiredDisposedRatio": 0.1579,
     "totalAcquired": 994544,
     "totalDisposed": 2297088,
-    "acquiredDisposedRatio": 0.433
+    "averageAcquired": 165757.3333,
+    "averageDisposed": 60449.6842,
+    "totalPurchases": 0,
+    "totalSales": 22
    }
   ],
   "insiderTrades": [
@@ -4038,7 +5509,7 @@
     "epsActual": null,
     "epsEstimated": 1.98,
     "revenueActual": null,
-    "revenueEstimated": 113205200000
+    "revenueEstimated": 113261600000
    },
    {
     "symbol": "AAPL",
@@ -4063,6 +5534,86 @@
     "epsEstimated": 2.67,
     "revenueActual": 143756000000,
     "revenueEstimated": 138391000000
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-10-30",
+    "epsActual": 1.85,
+    "epsEstimated": 1.73,
+    "revenueActual": 102466000000,
+    "revenueEstimated": 102227100000
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-07-31",
+    "epsActual": 1.57,
+    "epsEstimated": 1.44,
+    "revenueActual": 94036000000,
+    "revenueEstimated": 89562740000
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-05-01",
+    "epsActual": 1.65,
+    "epsEstimated": 1.63,
+    "revenueActual": 95359000000,
+    "revenueEstimated": 94542180000
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-01-30",
+    "epsActual": 2.4,
+    "epsEstimated": 2.36,
+    "revenueActual": 124300000000,
+    "revenueEstimated": 124257400000
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2024-10-31",
+    "epsActual": 1.64,
+    "epsEstimated": 1.6,
+    "revenueActual": 94930000000,
+    "revenueEstimated": 94511950000
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2024-08-01",
+    "epsActual": 1.4,
+    "epsEstimated": 1.34,
+    "revenueActual": 85777000000,
+    "revenueEstimated": 84480710000
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2024-05-02",
+    "epsActual": 1.53,
+    "epsEstimated": 1.51,
+    "revenueActual": 90753000000,
+    "revenueEstimated": 90366110000
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2024-02-01",
+    "epsActual": 2.18,
+    "epsEstimated": 2.1,
+    "revenueActual": 119575000000,
+    "revenueEstimated": 117986600000
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2023-11-02",
+    "epsActual": 1.46,
+    "epsEstimated": 1.39,
+    "revenueActual": 89498000000,
+    "revenueEstimated": 89303800000
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2023-08-03",
+    "epsActual": 1.26,
+    "epsEstimated": 1.19,
+    "revenueActual": 81797000000,
+    "revenueEstimated": 81794920000
    }
   ],
   "news": [
@@ -4174,7 +5725,13 @@
     "fiscalYear": "2025",
     "period": "FY",
     "returnOnEquity": 1.5191298333175105,
-    "earningsYield": 0.029331635106467118
+    "earningsYield": 0.029331635106467118,
+    "marketCap": 3818743810000,
+    "returnOnInvestedCapital": 0.5196842110031786,
+    "returnOnCapitalEmployed": 0.6872062393471412,
+    "capexToOperatingCashFlow": 0.11405428679069267,
+    "stockBasedCompensationToRevenue": 0.030908710811440764,
+    "investedCapital": 32160000000
    },
    {
     "symbol": "AAPL",
@@ -4182,7 +5739,13 @@
     "fiscalYear": "2024",
     "period": "FY",
     "returnOnEquity": 1.6459350307287095,
-    "earningsYield": 0.026818798327209237
+    "earningsYield": 0.026818798327209237,
+    "marketCap": 3495160329570,
+    "returnOnInvestedCapital": 0.4430708117427921,
+    "returnOnCapitalEmployed": 0.6533607652660827,
+    "capexToOperatingCashFlow": 0.07988736110406414,
+    "stockBasedCompensationToRevenue": 0.02988990755303234,
+    "investedCapital": 22275000000
    },
    {
     "symbol": "AAPL",
@@ -4190,7 +5753,13 @@
     "fiscalYear": "2023",
     "period": "FY",
     "returnOnEquity": 1.5607601454639075,
-    "earningsYield": 0.03598311584343425
+    "earningsYield": 0.03598311584343425,
+    "marketCap": 2695569789510,
+    "returnOnInvestedCapital": 0.4338918291689624,
+    "returnOnCapitalEmployed": 0.551446146423833,
+    "capexToOperatingCashFlow": 0.0991378920420108,
+    "stockBasedCompensationToRevenue": 0.028263563666723196,
+    "investedCapital": 52634000000
    },
    {
     "symbol": "AAPL",
@@ -4198,7 +5767,13 @@
     "fiscalYear": "2022",
     "period": "FY",
     "returnOnEquity": 1.9695887275023682,
-    "earningsYield": 0.040913477615088595
+    "earningsYield": 0.040913477615088595,
+    "marketCap": 2439367314090,
+    "returnOnInvestedCapital": 0.45174761493312454,
+    "returnOnCapitalEmployed": 0.6008713457059057,
+    "capexToOperatingCashFlow": 0.08766199212450164,
+    "stockBasedCompensationToRevenue": 0.022920005680550203,
+    "investedCapital": 33957000000
    },
    {
     "symbol": "AAPL",
@@ -4206,7 +5781,13 @@
     "fiscalYear": "2021",
     "period": "FY",
     "returnOnEquity": 1.5007132667617689,
-    "earningsYield": 0.038585824129614886
+    "earningsYield": 0.038585824129614886,
+    "marketCap": 2453750882240,
+    "returnOnInvestedCapital": 0.3892505618225257,
+    "returnOnCapitalEmployed": 0.48309913489209433,
+    "capexToOperatingCashFlow": 0.1065476076049136,
+    "stockBasedCompensationToRevenue": 0.021611898845597662,
+    "investedCapital": 58882000000
    },
    {
     "symbol": "AAPL",
@@ -4214,7 +5795,13 @@
     "fiscalYear": "2020",
     "period": "FY",
     "returnOnEquity": 0.8786635853012749,
-    "earningsYield": 0.02946728952812424
+    "earningsYield": 0.02946728952812424,
+    "marketCap": 1948295921320,
+    "returnOnInvestedCapital": 0.24269486859682882,
+    "returnOnCapitalEmployed": 0.3033831282952548,
+    "capexToOperatingCashFlow": 0.09059920172546297,
+    "stockBasedCompensationToRevenue": 0.024876600550061016,
+    "investedCapital": 83657000000
    },
    {
     "symbol": "AAPL",
@@ -4222,7 +5809,13 @@
     "fiscalYear": "2019",
     "period": "FY",
     "returnOnEquity": 0.6106445053487756,
-    "earningsYield": 0.05467822652278504
+    "earningsYield": 0.05467822652278504,
+    "marketCap": 1010566792560,
+    "returnOnInvestedCapital": 0.21577873710458856,
+    "returnOnCapitalEmployed": 0.2746157613037913,
+    "capexToOperatingCashFlow": 0.15124439768846104,
+    "stockBasedCompensationToRevenue": 0.0233228531674956,
+    "investedCapital": 94479000000
    },
    {
     "symbol": "AAPL",
@@ -4230,7 +5823,13 @@
     "fiscalYear": "2018",
     "period": "FY",
     "returnOnEquity": 0.5556011834209077,
-    "earningsYield": 0.053213212804837894
+    "earningsYield": 0.053213212804837894,
+    "marketCap": 1118725911520,
+    "returnOnInvestedCapital": 0.21399018541587575,
+    "returnOnCapitalEmployed": 0.28382360005764706,
+    "capexToOperatingCashFlow": 0.1719270604643955,
+    "stockBasedCompensationToRevenue": 0.020105800184491426,
+    "investedCapital": 56714000000
    },
    {
     "symbol": "AAPL",
@@ -4238,7 +5837,13 @@
     "fiscalYear": "2017",
     "period": "FY",
     "returnOnEquity": 0.3607018433832909,
-    "earningsYield": 0.060131976421677245
+    "earningsYield": 0.060131976421677245,
+    "marketCap": 804081337040,
+    "returnOnInvestedCapital": 0.15796433612874414,
+    "returnOnCapitalEmployed": 0.22347133931986668,
+    "capexToOperatingCashFlow": 0.19922148695990657,
+    "stockBasedCompensationToRevenue": 0.021113796382735545,
+    "investedCapital": 69629000000
    },
    {
     "symbol": "AAPL",
@@ -4246,8 +5851,1386 @@
     "fiscalYear": "2016",
     "period": "FY",
     "returnOnEquity": 0.3562366958026963,
-    "earningsYield": 0.07408652679479812
+    "earningsYield": 0.07408652679479812,
+    "marketCap": 616670830400,
+    "returnOnInvestedCapital": 0.17572216933558327,
+    "returnOnCapitalEmployed": 0.24733805834844239,
+    "capexToOperatingCashFlow": 0.20455677854780993,
+    "stockBasedCompensationToRevenue": 0.01952337007684139,
+    "investedCapital": 63493000000
    }
-  ]
+  ],
+  "segProduct": [
+   {
+    "symbol": "AAPL",
+    "fiscalYear": 2025,
+    "period": "FY",
+    "reportedCurrency": "USD",
+    "date": "2025-09-27",
+    "data": {
+     "Mac": 33708000000,
+     "Service": 109158000000,
+     "Wearables, Home and Accessories": 35686000000,
+     "iPad": 28023000000,
+     "iPhone": 209586000000
+    }
+   },
+   {
+    "symbol": "AAPL",
+    "fiscalYear": 2024,
+    "period": "FY",
+    "reportedCurrency": "USD",
+    "date": "2024-09-28",
+    "data": {
+     "Mac": 29984000000,
+     "Service": 96169000000,
+     "Wearables, Home and Accessories": 37005000000,
+     "iPad": 26694000000,
+     "iPhone": 201183000000
+    }
+   },
+   {
+    "symbol": "AAPL",
+    "fiscalYear": 2023,
+    "period": "FY",
+    "reportedCurrency": "USD",
+    "date": "2023-09-30",
+    "data": {
+     "Mac": 29357000000,
+     "Service": 85200000000,
+     "Wearables, Home and Accessories": 39845000000,
+     "iPad": 28300000000,
+     "iPhone": 200583000000
+    }
+   },
+   {
+    "symbol": "AAPL",
+    "fiscalYear": 2022,
+    "period": "FY",
+    "reportedCurrency": "USD",
+    "date": "2022-09-24",
+    "data": {
+     "Mac": 40177000000,
+     "Service": 78129000000,
+     "Wearables, Home and Accessories": 41241000000,
+     "iPad": 29292000000,
+     "iPhone": 205489000000
+    }
+   },
+   {
+    "symbol": "AAPL",
+    "fiscalYear": 2021,
+    "period": "FY",
+    "reportedCurrency": "USD",
+    "date": "2021-09-25",
+    "data": {
+     "Mac": 35190000000,
+     "Service": 68425000000,
+     "Wearables, Home and Accessories": 38367000000,
+     "iPad": 31862000000,
+     "iPhone": 191973000000
+    }
+   },
+   {
+    "symbol": "AAPL",
+    "fiscalYear": 2020,
+    "period": "FY",
+    "reportedCurrency": "USD",
+    "date": "2020-09-26",
+    "data": {
+     "Mac": 28622000000,
+     "Service": 53768000000,
+     "Wearables, Home and Accessories": 30620000000,
+     "iPad": 23724000000,
+     "iPhone": 137781000000
+    }
+   },
+   {
+    "symbol": "AAPL",
+    "fiscalYear": 2019,
+    "period": "FY",
+    "reportedCurrency": "USD",
+    "date": "2019-09-28",
+    "data": {
+     "Mac": 25740000000,
+     "Service": 46291000000,
+     "Wearables, Home and Accessories": 24482000000,
+     "iPad": 21280000000,
+     "iPhone": 142381000000
+    }
+   },
+   {
+    "symbol": "AAPL",
+    "fiscalYear": 2018,
+    "period": "FY",
+    "reportedCurrency": "USD",
+    "date": "2018-09-29",
+    "data": {
+     "Mac": 25484000000,
+     "Service": 37190000000,
+     "iPad": 18805000000,
+     "iPhone": 166699000000
+    }
+   },
+   {
+    "symbol": "AAPL",
+    "fiscalYear": 2017,
+    "period": "FY",
+    "reportedCurrency": "USD",
+    "date": "2017-09-30",
+    "data": {
+     "Mac": 25850000000,
+     "Service": 29980000000,
+     "iPad": 19222000000,
+     "iPhone": 141319000000
+    }
+   },
+   {
+    "symbol": "AAPL",
+    "fiscalYear": 2016,
+    "period": "FY",
+    "reportedCurrency": "USD",
+    "date": "2016-09-24",
+    "data": {
+     "Mac": 22831000000,
+     "iPad": 20628000000,
+     "iPhone": 136700000000,
+     "Service": 24348000000
+    }
+   }
+  ],
+  "segGeography": [
+   {
+    "symbol": "AAPL",
+    "fiscalYear": 2025,
+    "period": "FY",
+    "reportedCurrency": "USD",
+    "date": "2025-09-27",
+    "data": {
+     "Americas Segment": 178353000000,
+     "Europe Segment": 111032000000,
+     "Greater China Segment": 64377000000,
+     "Japan Segment": 28703000000,
+     "Rest of Asia Pacific Segment": 33696000000
+    }
+   },
+   {
+    "symbol": "AAPL",
+    "fiscalYear": 2024,
+    "period": "FY",
+    "reportedCurrency": "USD",
+    "date": "2024-09-28",
+    "data": {
+     "Americas Segment": 167045000000,
+     "Europe Segment": 101328000000,
+     "Greater China Segment": 66952000000,
+     "Japan Segment": 25052000000,
+     "Rest of Asia Pacific Segment": 30658000000
+    }
+   },
+   {
+    "symbol": "AAPL",
+    "fiscalYear": 2023,
+    "period": "FY",
+    "reportedCurrency": "USD",
+    "date": "2023-09-30",
+    "data": {
+     "Americas Segment": 162560000000,
+     "Europe Segment": 94294000000,
+     "Greater China Segment": 72559000000,
+     "Japan Segment": 24257000000,
+     "Rest of Asia Pacific Segment": 29615000000
+    }
+   },
+   {
+    "symbol": "AAPL",
+    "fiscalYear": 2022,
+    "period": "FY",
+    "reportedCurrency": "USD",
+    "date": "2022-09-24",
+    "data": {
+     "Americas Segment": 169658000000,
+     "Europe Segment": 95118000000,
+     "Greater China Segment": 74200000000,
+     "Japan Segment": 25977000000,
+     "Rest of Asia Pacific Segment": 29375000000
+    }
+   },
+   {
+    "symbol": "AAPL",
+    "fiscalYear": 2021,
+    "period": "FY",
+    "reportedCurrency": "USD",
+    "date": "2021-09-25",
+    "data": {
+     "Americas Segment": 153306000000,
+     "Europe Segment": 89307000000,
+     "Greater China Segment": 68366000000,
+     "Japan Segment": 28482000000,
+     "Rest of Asia Pacific Segment": 26356000000
+    }
+   },
+   {
+    "symbol": "AAPL",
+    "fiscalYear": 2020,
+    "period": "FY",
+    "reportedCurrency": "USD",
+    "date": "2020-09-26",
+    "data": {
+     "Americas Segment": 124556000000,
+     "Europe Segment": 68640000000,
+     "Greater China Segment": 40308000000,
+     "Japan Segment": 21418000000,
+     "Rest of Asia Pacific Segment": 19593000000
+    }
+   },
+   {
+    "symbol": "AAPL",
+    "fiscalYear": 2019,
+    "period": "FY",
+    "reportedCurrency": "USD",
+    "date": "2019-09-28",
+    "data": {
+     "Americas Segment": 116914000000,
+     "Europe Segment": 60288000000,
+     "Greater China Segment": 43678000000,
+     "Japan Segment": 21506000000,
+     "Rest of Asia Pacific Segment": 17788000000
+    }
+   },
+   {
+    "symbol": "AAPL",
+    "fiscalYear": 2018,
+    "period": "FY",
+    "reportedCurrency": "USD",
+    "date": "2018-09-29",
+    "data": {
+     "Americas Segment": 112093000000,
+     "Europe Segment": 62420000000,
+     "Greater China Segment": 51942000000,
+     "Japan Segment": 21733000000,
+     "Rest of Asia Pacific Segment": 17407000000
+    }
+   },
+   {
+    "symbol": "AAPL",
+    "fiscalYear": 2017,
+    "period": "FY",
+    "reportedCurrency": "USD",
+    "date": "2017-09-30",
+    "data": {
+     "Americas Segment": 96600000000,
+     "Europe Segment": 54938000000,
+     "Greater China Segment": 44764000000,
+     "Japan Segment": 17733000000,
+     "Rest of Asia Pacific Segment": 15199000000
+    }
+   },
+   {
+    "symbol": "AAPL",
+    "fiscalYear": 2016,
+    "period": "FY",
+    "reportedCurrency": "USD",
+    "date": "2016-09-24",
+    "data": {
+     "Americas Segment": 86613000000,
+     "Europe Segment": 49952000000,
+     "Greater China Segment": 48492000000,
+     "Japan Segment": 16928000000,
+     "Rest of Asia Pacific Segment": 13654000000
+    }
+   }
+  ],
+  "growth": [
+   {
+    "symbol": "AAPL",
+    "date": "2025-09-27",
+    "fiscalYear": "2025",
+    "period": "FY",
+    "reportedCurrency": "USD",
+    "revenueGrowth": 0.0642551178283274,
+    "grossProfitGrowth": 0.08035066940442653,
+    "ebitgrowth": 0.0748592946511722,
+    "operatingIncomeGrowth": 0.07981106349824699,
+    "netIncomeGrowth": 0.19495177946573355,
+    "epsgrowth": 0.22585924713584285,
+    "epsdilutedGrowth": 0.2269736842105263,
+    "weightedAverageSharesGrowth": -0.025761769441082424,
+    "weightedAverageSharesDilutedGrowth": -0.02618091334457634,
+    "dividendsPerShareGrowth": 0.03904275381624116,
+    "operatingCashFlowGrowth": -0.05726656180763441,
+    "receivablesGrowth": 0.1013541053394321,
+    "inventoryGrowth": -0.2152072467746363,
+    "assetGrowth": -0.015724149268453065,
+    "bookValueperShareGrowth": 0.3289327621427069,
+    "debtGrowth": -0.05612343459965227,
+    "rdexpenseGrowth": 0.10137073637233025,
+    "sgaexpensesGrowth": 0.05763114534237652,
+    "freeCashFlowGrowth": -0.09227347505215656,
+    "tenYRevenueGrowthPerShare": 1.7413426413189617,
+    "fiveYRevenueGrowthPerShare": 0.759746864116655,
+    "threeYRevenueGrowthPerShare": 0.1448507983899727,
+    "tenYOperatingCFGrowthPerShare": 1.1119537209402253,
+    "fiveYOperatingCFGrowthPerShare": 0.6040801412812578,
+    "threeYOperatingCFGrowthPerShare": -0.00995974428332331,
+    "tenYNetIncomeGrowthPerShare": 2.2296307380063842,
+    "fiveYNetIncomeGrowthPerShare": 1.264730804073461,
+    "threeYNetIncomeGrowthPerShare": 0.21747017302582256,
+    "tenYShareholdersEquityGrowthPerShare": -0.04893583739091923,
+    "fiveYShareholdersEquityGrowthPerShare": 0.3099186418475882,
+    "threeYShareholdersEquityGrowthPerShare": 0.5784796508310256,
+    "tenYDividendperShareGrowthPerShare": 1.0535518165116085,
+    "fiveYDividendperShareGrowthPerShare": 0.2712587064462357,
+    "threeYDividendperShareGrowthPerShare": 0.12718318394130193,
+    "ebitdaGrowth": 0.07038464388942414,
+    "growthCapitalExpenditure": -0.34592992484386575,
+    "tenYBottomLineNetIncomeGrowthPerShare": 2.2296307380063842,
+    "fiveYBottomLineNetIncomeGrowthPerShare": 1.264730804073461,
+    "threeYBottomLineNetIncomeGrowthPerShare": 0.21747017302582256
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2024-09-28",
+    "fiscalYear": "2024",
+    "period": "FY",
+    "reportedCurrency": "USD",
+    "revenueGrowth": 0.020219940775141214,
+    "grossProfitGrowth": 0.06819471705252206,
+    "ebitgrowth": 0.04942678190517469,
+    "operatingIncomeGrowth": 0.07799581805933456,
+    "netIncomeGrowth": -0.033599670086086914,
+    "epsgrowth": -0.008116883116883088,
+    "epsdilutedGrowth": -0.008156606851549727,
+    "weightedAverageSharesGrowth": -0.02543458616683152,
+    "weightedAverageSharesDilutedGrowth": -0.02557791606880283,
+    "dividendsPerShareGrowth": 0.040371570095532654,
+    "operatingCashFlowGrowth": 0.06975566069312394,
+    "receivablesGrowth": 0.08621792243994425,
+    "inventoryGrowth": 0.15084504817564365,
+    "assetGrowth": 0.035160515396374756,
+    "bookValueperShareGrowth": -0.059693251557224776,
+    "debtGrowth": -0.039304446058258696,
+    "rdexpenseGrowth": 0.04863780712017383,
+    "sgaexpensesGrowth": 0.04672709770575967,
+    "freeCashFlowGrowth": 0.092615279562982,
+    "tenYRevenueGrowthPerShare": 2.3937532854122625,
+    "fiveYRevenueGrowthPerShare": 0.8093292228858464,
+    "threeYRevenueGrowthPerShare": 0.163506592883552,
+    "tenYOperatingCFGrowthPerShare": 2.1417809176982403,
+    "fiveYOperatingCFGrowthPerShare": 1.051533221923415,
+    "threeYOperatingCFGrowthPerShare": 0.23720294833900227,
+    "tenYNetIncomeGrowthPerShare": 2.76381558093543,
+    "fiveYNetIncomeGrowthPerShare": 1.0421744314966246,
+    "threeYNetIncomeGrowthPerShare": 0.07761907162786884,
+    "tenYShareholdersEquityGrowthPerShare": -0.19003774225234785,
+    "fiveYShareholdersEquityGrowthPerShare": -0.24235004889283715,
+    "threeYShareholdersEquityGrowthPerShare": -0.017459858915902907,
+    "tenYDividendperShareGrowthPerShare": 1.1722201809466772,
+    "fiveYDividendperShareGrowthPerShare": 0.29890046876764864,
+    "threeYDividendperShareGrowthPerShare": 0.14617932692103452,
+    "ebitdaGrowth": 0.044446852648852835,
+    "growthCapitalExpenditure": 0.13796879277306323,
+    "tenYBottomLineNetIncomeGrowthPerShare": 2.76381558093543,
+    "fiveYBottomLineNetIncomeGrowthPerShare": 1.0421744314966246,
+    "threeYBottomLineNetIncomeGrowthPerShare": 0.07761907162786884
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2023-09-30",
+    "fiscalYear": "2023",
+    "period": "FY",
+    "reportedCurrency": "USD",
+    "revenueGrowth": -0.028004605303199367,
+    "grossProfitGrowth": -0.00956775304188966,
+    "ebitgrowth": -0.035768720192733174,
+    "operatingIncomeGrowth": -0.04300174987650393,
+    "netIncomeGrowth": -0.028135426790777834,
+    "epsgrowth": 0.001626016260162567,
+    "epsdilutedGrowth": 0.0032733224222585224,
+    "weightedAverageSharesGrowth": -0.029090594249629207,
+    "weightedAverageSharesDilutedGrowth": -0.031439280320331865,
+    "dividendsPerShareGrowth": 0.042731773310903005,
+    "operatingCashFlowGrowth": -0.0950299219818094,
+    "receivablesGrowth": 0.0008698220967636053,
+    "inventoryGrowth": 0.28002426202992314,
+    "assetGrowth": -0.00048759053734178114,
+    "bookValueperShareGrowth": 0.26318344802395743,
+    "debtGrowth": -0.06453804347826086,
+    "rdexpenseGrowth": 0.13957563521389663,
+    "sgaexpensesGrowth": -0.006455726468478521,
+    "freeCashFlowGrowth": -0.10641314393905404,
+    "tenYRevenueGrowthPerShare": 2.6905240454238135,
+    "fiveYRevenueGrowthPerShare": 0.816842026998005,
+    "threeYRevenueGrowthPerShare": 0.5388164047163655,
+    "tenYOperatingCFGrowthPerShare": 2.389734710129544,
+    "fiveYOperatingCFGrowthPerShare": 0.7972760681074091,
+    "threeYOperatingCFGrowthPerShare": 0.5101800197949481,
+    "tenYNetIncomeGrowthPerShare": 3.3097019469393576,
+    "fiveYNetIncomeGrowthPerShare": 1.051263292954884,
+    "threeYNetIncomeGrowthPerShare": 0.8620241100283557,
+    "tenYShareholdersEquityGrowthPerShare": -0.1722339004490628,
+    "fiveYShareholdersEquityGrowthPerShare": -0.26978894458196756,
+    "threeYShareholdersEquityGrowthPerShare": 0.048266631608940624,
+    "tenYDividendperShareGrowthPerShare": 1.3405599978590987,
+    "fiveYDividendperShareGrowthPerShare": 0.3795229029287352,
+    "threeYDividendperShareGrowthPerShare": 0.17601279383408341,
+    "ebitdaGrowth": -0.029668464300199794,
+    "growthCapitalExpenditure": -0.02344041837878222,
+    "tenYBottomLineNetIncomeGrowthPerShare": 3.3097019469393576,
+    "fiveYBottomLineNetIncomeGrowthPerShare": 1.051263292954884,
+    "threeYBottomLineNetIncomeGrowthPerShare": 0.8620241100283557
+   }
+  ],
+  "ownerEarnings": [
+   {
+    "symbol": "AAPL",
+    "reportedCurrency": "USD",
+    "fiscalYear": "2026",
+    "period": "Q3",
+    "date": "2026-06-27",
+    "averagePPE": 0.13466,
+    "maintenanceCapex": -383794540,
+    "ownersEarnings": 33985205460,
+    "growthCapex": -2071205460,
+    "ownersEarningsPerShare": 2.3
+   },
+   {
+    "symbol": "AAPL",
+    "reportedCurrency": "USD",
+    "fiscalYear": "2026",
+    "period": "Q2",
+    "date": "2026-03-28",
+    "averagePPE": 0.13466,
+    "maintenanceCapex": 159994500,
+    "ownersEarnings": 28861994500,
+    "growthCapex": -2130994500,
+    "ownersEarningsPerShare": 1.95
+   },
+   {
+    "symbol": "AAPL",
+    "reportedCurrency": "USD",
+    "fiscalYear": "2026",
+    "period": "Q1",
+    "date": "2025-12-27",
+    "averagePPE": 0.13466,
+    "maintenanceCapex": 246944960,
+    "ownersEarnings": 54171944960,
+    "growthCapex": -2619944960,
+    "ownersEarningsPerShare": 3.66
+   },
+   {
+    "symbol": "AAPL",
+    "reportedCurrency": "USD",
+    "fiscalYear": "2025",
+    "period": "Q4",
+    "date": "2025-09-27",
+    "averagePPE": 0.13466,
+    "maintenanceCapex": -2227202240,
+    "ownersEarnings": 27500797760,
+    "growthCapex": -1014797760,
+    "ownersEarningsPerShare": 1.83
+   }
+  ],
+  "ratings": {
+   "symbol": "AAPL",
+   "rating": "B",
+   "overallScore": 3,
+   "discountedCashFlowScore": 3,
+   "returnOnEquityScore": 5,
+   "returnOnAssetsScore": 5,
+   "debtToEquityScore": 1,
+   "priceToEarningsScore": 2,
+   "priceToBookScore": 1
+  },
+  "transcriptDates": [
+   {
+    "quarter": 3,
+    "fiscalYear": 2026,
+    "date": "2026-07-30"
+   },
+   {
+    "quarter": 2,
+    "fiscalYear": 2026,
+    "date": "2026-04-30"
+   },
+   {
+    "quarter": 1,
+    "fiscalYear": 2026,
+    "date": "2026-01-29"
+   },
+   {
+    "quarter": 4,
+    "fiscalYear": 2025,
+    "date": "2025-10-30"
+   },
+   {
+    "quarter": 3,
+    "fiscalYear": 2025,
+    "date": "2025-07-31"
+   },
+   {
+    "quarter": 2,
+    "fiscalYear": 2025,
+    "date": "2025-05-01"
+   },
+   {
+    "quarter": 1,
+    "fiscalYear": 2025,
+    "date": "2025-01-30"
+   },
+   {
+    "quarter": 4,
+    "fiscalYear": 2024,
+    "date": "2024-11-01"
+   },
+   {
+    "quarter": 3,
+    "fiscalYear": 2024,
+    "date": "2024-08-01"
+   },
+   {
+    "quarter": 2,
+    "fiscalYear": 2024,
+    "date": "2024-05-02"
+   },
+   {
+    "quarter": 1,
+    "fiscalYear": 2024,
+    "date": "2024-02-01"
+   },
+   {
+    "quarter": 4,
+    "fiscalYear": 2023,
+    "date": "2023-11-02"
+   },
+   {
+    "quarter": 3,
+    "fiscalYear": 2023,
+    "date": "2023-08-03"
+   },
+   {
+    "quarter": 2,
+    "fiscalYear": 2023,
+    "date": "2023-05-04"
+   },
+   {
+    "quarter": 1,
+    "fiscalYear": 2023,
+    "date": "2023-02-02"
+   },
+   {
+    "quarter": 4,
+    "fiscalYear": 2022,
+    "date": "2022-10-27"
+   },
+   {
+    "quarter": 3,
+    "fiscalYear": 2022,
+    "date": "2022-07-28"
+   },
+   {
+    "quarter": 2,
+    "fiscalYear": 2022,
+    "date": "2022-04-28"
+   },
+   {
+    "quarter": 1,
+    "fiscalYear": 2022,
+    "date": "2022-01-27"
+   },
+   {
+    "quarter": 4,
+    "fiscalYear": 2021,
+    "date": "2021-10-28"
+   }
+  ],
+  "incomeQ": [
+   {
+    "date": "2026-06-27",
+    "symbol": "AAPL",
+    "reportedCurrency": "USD",
+    "cik": "0000320193",
+    "filingDate": "2026-07-31",
+    "fiscalYear": "2026",
+    "period": "Q3",
+    "revenue": 109417000000,
+    "costOfRevenue": 54647000000,
+    "grossProfit": 54770000000,
+    "researchAndDevelopmentExpenses": 11729000000,
+    "sellingGeneralAndAdministrativeExpenses": 7346000000,
+    "operatingExpenses": 19075000000,
+    "depreciationAndAmortization": 3320000000,
+    "ebitda": 39015000000,
+    "ebit": 35695000000,
+    "operatingIncome": 35695000000,
+    "incomeBeforeTax": 36267000000,
+    "incomeTaxExpense": 6478000000,
+    "netIncome": 29789000000,
+    "eps": 2.04,
+    "epsDiluted": 2.03,
+    "weightedAverageShsOut": 14692515000,
+    "weightedAverageShsOutDil": 14750302000
+   },
+   {
+    "date": "2026-03-28",
+    "symbol": "AAPL",
+    "reportedCurrency": "USD",
+    "cik": "0000320193",
+    "filingDate": "2026-05-01",
+    "fiscalYear": "2026",
+    "period": "Q2",
+    "revenue": 111184000000,
+    "costOfRevenue": 56403000000,
+    "grossProfit": 54781000000,
+    "researchAndDevelopmentExpenses": 11419000000,
+    "sellingGeneralAndAdministrativeExpenses": 7477000000,
+    "operatingExpenses": 18896000000,
+    "depreciationAndAmortization": 3439000000,
+    "ebitda": 39324000000,
+    "ebit": 35833000000,
+    "operatingIncome": 35885000000,
+    "incomeBeforeTax": 35833000000,
+    "incomeTaxExpense": 6255000000,
+    "netIncome": 29578000000,
+    "eps": 2.02,
+    "epsDiluted": 2.01,
+    "weightedAverageShsOut": 14710718000,
+    "weightedAverageShsOutDil": 14768115000
+   },
+   {
+    "date": "2025-12-27",
+    "symbol": "AAPL",
+    "reportedCurrency": "USD",
+    "cik": "0000320193",
+    "filingDate": "2026-01-30",
+    "fiscalYear": "2026",
+    "period": "Q1",
+    "revenue": 143756000000,
+    "costOfRevenue": 74525000000,
+    "grossProfit": 69231000000,
+    "researchAndDevelopmentExpenses": 10887000000,
+    "sellingGeneralAndAdministrativeExpenses": 7492000000,
+    "operatingExpenses": 18379000000,
+    "depreciationAndAmortization": 3214000000,
+    "ebitda": 54216000000,
+    "ebit": 51002000000,
+    "operatingIncome": 50852000000,
+    "incomeBeforeTax": 51002000000,
+    "incomeTaxExpense": 8905000000,
+    "netIncome": 42097000000,
+    "eps": 2.85,
+    "epsDiluted": 2.84,
+    "weightedAverageShsOut": 14748158000,
+    "weightedAverageShsOutDil": 14810356000
+   },
+   {
+    "date": "2025-09-27",
+    "symbol": "AAPL",
+    "reportedCurrency": "USD",
+    "cik": "0000320193",
+    "filingDate": "2025-10-31",
+    "fiscalYear": "2025",
+    "period": "Q4",
+    "revenue": 102466000000,
+    "costOfRevenue": 54125000000,
+    "grossProfit": 48341000000,
+    "researchAndDevelopmentExpenses": 8866000000,
+    "sellingGeneralAndAdministrativeExpenses": 7048000000,
+    "operatingExpenses": 15914000000,
+    "depreciationAndAmortization": 3127000000,
+    "ebitda": 35931000000,
+    "ebit": 32804000000,
+    "operatingIncome": 32427000000,
+    "incomeBeforeTax": 32804000000,
+    "incomeTaxExpense": 5338000000,
+    "netIncome": 27466000000,
+    "eps": 1.85,
+    "epsDiluted": 1.85,
+    "weightedAverageShsOut": 14948500000,
+    "weightedAverageShsOutDil": 15004697000
+   },
+   {
+    "date": "2025-06-28",
+    "symbol": "AAPL",
+    "reportedCurrency": "USD",
+    "cik": "0000320193",
+    "filingDate": "2025-08-01",
+    "fiscalYear": "2025",
+    "period": "Q3",
+    "revenue": 94036000000,
+    "costOfRevenue": 50318000000,
+    "grossProfit": 43718000000,
+    "researchAndDevelopmentExpenses": 8866000000,
+    "sellingGeneralAndAdministrativeExpenses": 6650000000,
+    "operatingExpenses": 15516000000,
+    "depreciationAndAmortization": 2830000000,
+    "ebitda": 30861000000,
+    "ebit": 28031000000,
+    "operatingIncome": 28202000000,
+    "incomeBeforeTax": 28031000000,
+    "incomeTaxExpense": 4597000000,
+    "netIncome": 23434000000,
+    "eps": 1.57,
+    "epsDiluted": 1.57,
+    "weightedAverageShsOut": 14902886000,
+    "weightedAverageShsOutDil": 14948179000
+   },
+   {
+    "date": "2025-03-29",
+    "symbol": "AAPL",
+    "reportedCurrency": "USD",
+    "cik": "0000320193",
+    "filingDate": "2025-05-02",
+    "fiscalYear": "2025",
+    "period": "Q2",
+    "revenue": 95359000000,
+    "costOfRevenue": 50492000000,
+    "grossProfit": 44867000000,
+    "researchAndDevelopmentExpenses": 8550000000,
+    "sellingGeneralAndAdministrativeExpenses": 6728000000,
+    "operatingExpenses": 15278000000,
+    "depreciationAndAmortization": 2661000000,
+    "ebitda": 31971000000,
+    "ebit": 29310000000,
+    "operatingIncome": 29589000000,
+    "incomeBeforeTax": 29310000000,
+    "incomeTaxExpense": 4530000000,
+    "netIncome": 24780000000,
+    "eps": 1.65,
+    "epsDiluted": 1.65,
+    "weightedAverageShsOut": 14994082000,
+    "weightedAverageShsOutDil": 15056133000
+   },
+   {
+    "date": "2024-12-28",
+    "symbol": "AAPL",
+    "reportedCurrency": "USD",
+    "cik": "0000320193",
+    "filingDate": "2025-01-31",
+    "fiscalYear": "2025",
+    "period": "Q1",
+    "revenue": 124300000000,
+    "costOfRevenue": 66025000000,
+    "grossProfit": 58275000000,
+    "researchAndDevelopmentExpenses": 8268000000,
+    "sellingGeneralAndAdministrativeExpenses": 7175000000,
+    "operatingExpenses": 15443000000,
+    "depreciationAndAmortization": 3080000000,
+    "ebitda": 45664000000,
+    "ebit": 42584000000,
+    "operatingIncome": 42832000000,
+    "incomeBeforeTax": 42584000000,
+    "incomeTaxExpense": 6254000000,
+    "netIncome": 36330000000,
+    "eps": 2.41,
+    "epsDiluted": 2.4,
+    "weightedAverageShsOut": 15081724000,
+    "weightedAverageShsOutDil": 15150865000
+   },
+   {
+    "date": "2024-09-28",
+    "symbol": "AAPL",
+    "reportedCurrency": "USD",
+    "cik": "0000320193",
+    "filingDate": "2024-11-01",
+    "fiscalYear": "2024",
+    "period": "Q4",
+    "revenue": 94930000000,
+    "costOfRevenue": 51051000000,
+    "grossProfit": 43879000000,
+    "researchAndDevelopmentExpenses": 7765000000,
+    "sellingGeneralAndAdministrativeExpenses": 6523000000,
+    "operatingExpenses": 14288000000,
+    "depreciationAndAmortization": 2911000000,
+    "ebitda": 32521000000,
+    "ebit": 29610000000,
+    "operatingIncome": 29591000000,
+    "incomeBeforeTax": 29610000000,
+    "incomeTaxExpense": 14874000000,
+    "netIncome": 14736000000,
+    "eps": 0.97,
+    "epsDiluted": 0.97,
+    "weightedAverageShsOut": 15171990000,
+    "weightedAverageShsOutDil": 15242853000
+   },
+   {
+    "date": "2024-06-29",
+    "symbol": "AAPL",
+    "reportedCurrency": "USD",
+    "cik": "0000320193",
+    "filingDate": "2024-08-02",
+    "fiscalYear": "2024",
+    "period": "Q3",
+    "revenue": 85777000000,
+    "costOfRevenue": 46099000000,
+    "grossProfit": 39678000000,
+    "researchAndDevelopmentExpenses": 8006000000,
+    "sellingGeneralAndAdministrativeExpenses": 6320000000,
+    "operatingExpenses": 14326000000,
+    "depreciationAndAmortization": 2850000000,
+    "ebitda": 28344000000,
+    "ebit": 25494000000,
+    "operatingIncome": 25352000000,
+    "incomeBeforeTax": 25494000000,
+    "incomeTaxExpense": 4046000000,
+    "netIncome": 21448000000,
+    "eps": 1.4,
+    "epsDiluted": 1.4,
+    "weightedAverageShsOut": 15287521000,
+    "weightedAverageShsOutDil": 15348175000
+   },
+   {
+    "date": "2024-03-30",
+    "symbol": "AAPL",
+    "reportedCurrency": "USD",
+    "cik": "0000320193",
+    "filingDate": "2024-05-03",
+    "fiscalYear": "2024",
+    "period": "Q2",
+    "revenue": 90753000000,
+    "costOfRevenue": 48482000000,
+    "grossProfit": 42271000000,
+    "researchAndDevelopmentExpenses": 7903000000,
+    "sellingGeneralAndAdministrativeExpenses": 6468000000,
+    "operatingExpenses": 14371000000,
+    "depreciationAndAmortization": 2836000000,
+    "ebitda": 30894000000,
+    "ebit": 28058000000,
+    "operatingIncome": 27900000000,
+    "incomeBeforeTax": 28058000000,
+    "incomeTaxExpense": 4422000000,
+    "netIncome": 23636000000,
+    "eps": 1.53,
+    "epsDiluted": 1.53,
+    "weightedAverageShsOut": 15405856000,
+    "weightedAverageShsOutDil": 15464709000
+   },
+   {
+    "date": "2023-12-30",
+    "symbol": "AAPL",
+    "reportedCurrency": "USD",
+    "cik": "0000320193",
+    "filingDate": "2024-02-02",
+    "fiscalYear": "2024",
+    "period": "Q1",
+    "revenue": 119575000000,
+    "costOfRevenue": 64720000000,
+    "grossProfit": 54855000000,
+    "researchAndDevelopmentExpenses": 7696000000,
+    "sellingGeneralAndAdministrativeExpenses": 6786000000,
+    "operatingExpenses": 14482000000,
+    "depreciationAndAmortization": 2848000000,
+    "ebitda": 43171000000,
+    "ebit": 40323000000,
+    "operatingIncome": 40373000000,
+    "incomeBeforeTax": 40323000000,
+    "incomeTaxExpense": 6407000000,
+    "netIncome": 33916000000,
+    "eps": 2.19,
+    "epsDiluted": 2.18,
+    "weightedAverageShsOut": 15509763000,
+    "weightedAverageShsOutDil": 15576641000
+   },
+   {
+    "date": "2023-09-30",
+    "symbol": "AAPL",
+    "reportedCurrency": "USD",
+    "cik": "0000320193",
+    "filingDate": "2023-11-03",
+    "fiscalYear": "2023",
+    "period": "Q4",
+    "revenue": 89498000000,
+    "costOfRevenue": 49071000000,
+    "grossProfit": 40427000000,
+    "researchAndDevelopmentExpenses": 7307000000,
+    "sellingGeneralAndAdministrativeExpenses": 6151000000,
+    "operatingExpenses": 13458000000,
+    "depreciationAndAmortization": 2653000000,
+    "ebitda": 30653000000,
+    "ebit": 28000000000,
+    "operatingIncome": 26969000000,
+    "incomeBeforeTax": 26998000000,
+    "incomeTaxExpense": 4042000000,
+    "netIncome": 22956000000,
+    "eps": 1.47,
+    "epsDiluted": 1.46,
+    "weightedAverageShsOut": 15599434000,
+    "weightedAverageShsOutDil": 15672400000
+   }
+  ],
+  "cashflowQ": [
+   {
+    "date": "2026-06-27",
+    "symbol": "AAPL",
+    "reportedCurrency": "USD",
+    "cik": "0000320193",
+    "filingDate": "2026-07-31",
+    "fiscalYear": "2026",
+    "period": "Q3",
+    "netIncome": 29789000000,
+    "depreciationAndAmortization": 3320000000,
+    "stockBasedCompensation": 3401000000,
+    "changeInWorkingCapital": -1821000000,
+    "netCashProvidedByOperatingActivities": 34369000000,
+    "operatingCashFlow": 34369000000,
+    "capitalExpenditure": -2455000000,
+    "freeCashFlow": 31914000000
+   },
+   {
+    "date": "2026-03-28",
+    "symbol": "AAPL",
+    "reportedCurrency": "USD",
+    "cik": "0000320193",
+    "filingDate": "2026-05-01",
+    "fiscalYear": "2026",
+    "period": "Q2",
+    "netIncome": 29578000000,
+    "depreciationAndAmortization": 3439000000,
+    "stockBasedCompensation": 3528000000,
+    "changeInWorkingCapital": -6654000000,
+    "netCashProvidedByOperatingActivities": 28702000000,
+    "operatingCashFlow": 28702000000,
+    "capitalExpenditure": -1971000000,
+    "freeCashFlow": 26731000000
+   },
+   {
+    "date": "2025-12-27",
+    "symbol": "AAPL",
+    "reportedCurrency": "USD",
+    "cik": "0000320193",
+    "filingDate": "2026-01-30",
+    "fiscalYear": "2026",
+    "period": "Q1",
+    "netIncome": 42097000000,
+    "depreciationAndAmortization": 3214000000,
+    "stockBasedCompensation": 3594000000,
+    "changeInWorkingCapital": 5548000000,
+    "netCashProvidedByOperatingActivities": 53925000000,
+    "operatingCashFlow": 53925000000,
+    "capitalExpenditure": -2373000000,
+    "freeCashFlow": 51552000000
+   },
+   {
+    "date": "2025-09-27",
+    "symbol": "AAPL",
+    "reportedCurrency": "USD",
+    "cik": "0000320193",
+    "filingDate": "2025-10-31",
+    "fiscalYear": "2025",
+    "period": "Q4",
+    "netIncome": 27466000000,
+    "depreciationAndAmortization": 3127000000,
+    "stockBasedCompensation": 3183000000,
+    "changeInWorkingCapital": -5707000000,
+    "netCashProvidedByOperatingActivities": 29728000000,
+    "operatingCashFlow": 29728000000,
+    "capitalExpenditure": -3242000000,
+    "freeCashFlow": 26486000000
+   },
+   {
+    "date": "2025-06-28",
+    "symbol": "AAPL",
+    "reportedCurrency": "USD",
+    "cik": "0000320193",
+    "filingDate": "2025-08-01",
+    "fiscalYear": "2025",
+    "period": "Q3",
+    "netIncome": 23434000000,
+    "depreciationAndAmortization": 2830000000,
+    "stockBasedCompensation": 3168000000,
+    "changeInWorkingCapital": -2034000000,
+    "netCashProvidedByOperatingActivities": 27867000000,
+    "operatingCashFlow": 27867000000,
+    "capitalExpenditure": -3462000000,
+    "freeCashFlow": 24405000000
+   },
+   {
+    "date": "2025-03-29",
+    "symbol": "AAPL",
+    "reportedCurrency": "USD",
+    "cik": "0000320193",
+    "filingDate": "2025-05-02",
+    "fiscalYear": "2025",
+    "period": "Q2",
+    "netIncome": 24780000000,
+    "depreciationAndAmortization": 2661000000,
+    "stockBasedCompensation": 3226000000,
+    "changeInWorkingCapital": -6507000000,
+    "netCashProvidedByOperatingActivities": 23952000000,
+    "operatingCashFlow": 23952000000,
+    "capitalExpenditure": -3071000000,
+    "freeCashFlow": 20881000000
+   },
+   {
+    "date": "2024-12-28",
+    "symbol": "AAPL",
+    "reportedCurrency": "USD",
+    "cik": "0000320193",
+    "filingDate": "2025-01-31",
+    "fiscalYear": "2025",
+    "period": "Q1",
+    "netIncome": 36330000000,
+    "depreciationAndAmortization": 3080000000,
+    "stockBasedCompensation": 3286000000,
+    "changeInWorkingCapital": -10752000000,
+    "netCashProvidedByOperatingActivities": 29935000000,
+    "operatingCashFlow": 29935000000,
+    "capitalExpenditure": -2940000000,
+    "freeCashFlow": 26995000000
+   },
+   {
+    "date": "2024-09-28",
+    "symbol": "AAPL",
+    "reportedCurrency": "USD",
+    "cik": "0000320193",
+    "filingDate": "2024-11-01",
+    "fiscalYear": "2024",
+    "period": "Q4",
+    "netIncome": 14736000000,
+    "depreciationAndAmortization": 2911000000,
+    "stockBasedCompensation": 2858000000,
+    "changeInWorkingCapital": 6608000000,
+    "netCashProvidedByOperatingActivities": 26811000000,
+    "operatingCashFlow": 26811000000,
+    "capitalExpenditure": -2908000000,
+    "freeCashFlow": 23903000000
+   },
+   {
+    "date": "2024-06-29",
+    "symbol": "AAPL",
+    "reportedCurrency": "USD",
+    "cik": "0000320193",
+    "filingDate": "2024-08-02",
+    "fiscalYear": "2024",
+    "period": "Q3",
+    "netIncome": 21448000000,
+    "depreciationAndAmortization": 2850000000,
+    "stockBasedCompensation": 2869000000,
+    "changeInWorkingCapital": 1684000000,
+    "netCashProvidedByOperatingActivities": 28858000000,
+    "operatingCashFlow": 28858000000,
+    "capitalExpenditure": -2151000000,
+    "freeCashFlow": 26707000000
+   },
+   {
+    "date": "2024-03-30",
+    "symbol": "AAPL",
+    "reportedCurrency": "USD",
+    "cik": "0000320193",
+    "filingDate": "2024-05-03",
+    "fiscalYear": "2024",
+    "period": "Q2",
+    "netIncome": 23636000000,
+    "depreciationAndAmortization": 2836000000,
+    "stockBasedCompensation": 2964000000,
+    "changeInWorkingCapital": -5764000000,
+    "netCashProvidedByOperatingActivities": 22690000000,
+    "operatingCashFlow": 22690000000,
+    "capitalExpenditure": -1996000000,
+    "freeCashFlow": 20694000000
+   },
+   {
+    "date": "2023-12-30",
+    "symbol": "AAPL",
+    "reportedCurrency": "USD",
+    "cik": "0000320193",
+    "filingDate": "2024-02-02",
+    "fiscalYear": "2024",
+    "period": "Q1",
+    "netIncome": 33916000000,
+    "depreciationAndAmortization": 2848000000,
+    "stockBasedCompensation": 2997000000,
+    "changeInWorkingCapital": 1123000000,
+    "netCashProvidedByOperatingActivities": 39895000000,
+    "operatingCashFlow": 39895000000,
+    "capitalExpenditure": -2392000000,
+    "freeCashFlow": 37503000000
+   },
+   {
+    "date": "2023-09-30",
+    "symbol": "AAPL",
+    "reportedCurrency": "USD",
+    "cik": "0000320193",
+    "filingDate": "2023-11-03",
+    "fiscalYear": "2023",
+    "period": "Q4",
+    "netIncome": 22956000000,
+    "depreciationAndAmortization": 2653000000,
+    "stockBasedCompensation": 2625000000,
+    "changeInWorkingCapital": -6060000000,
+    "netCashProvidedByOperatingActivities": 21598000000,
+    "operatingCashFlow": 21598000000,
+    "capitalExpenditure": -2163000000,
+    "freeCashFlow": 19435000000
+   }
+  ],
+  "gradesHistorical": [
+   {
+    "symbol": "AAPL",
+    "date": "2026-09-01",
+    "analystRatingsStrongBuy": 6,
+    "analystRatingsBuy": 19,
+    "analystRatingsHold": 14,
+    "analystRatingsSell": 3,
+    "analystRatingsStrongSell": 3
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-08-01",
+    "analystRatingsStrongBuy": 6,
+    "analystRatingsBuy": 22,
+    "analystRatingsHold": 14,
+    "analystRatingsSell": 3,
+    "analystRatingsStrongSell": 2
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-07-01",
+    "analystRatingsStrongBuy": 6,
+    "analystRatingsBuy": 23,
+    "analystRatingsHold": 17,
+    "analystRatingsSell": 2,
+    "analystRatingsStrongSell": 2
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-06-01",
+    "analystRatingsStrongBuy": 7,
+    "analystRatingsBuy": 23,
+    "analystRatingsHold": 16,
+    "analystRatingsSell": 2,
+    "analystRatingsStrongSell": 2
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-05-01",
+    "analystRatingsStrongBuy": 7,
+    "analystRatingsBuy": 25,
+    "analystRatingsHold": 16,
+    "analystRatingsSell": 1,
+    "analystRatingsStrongSell": 2
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-04-01",
+    "analystRatingsStrongBuy": 7,
+    "analystRatingsBuy": 25,
+    "analystRatingsHold": 15,
+    "analystRatingsSell": 1,
+    "analystRatingsStrongSell": 1
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-03-01",
+    "analystRatingsStrongBuy": 6,
+    "analystRatingsBuy": 25,
+    "analystRatingsHold": 16,
+    "analystRatingsSell": 1,
+    "analystRatingsStrongSell": 1
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-02-01",
+    "analystRatingsStrongBuy": 6,
+    "analystRatingsBuy": 25,
+    "analystRatingsHold": 16,
+    "analystRatingsSell": 1,
+    "analystRatingsStrongSell": 2
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2026-01-01",
+    "analystRatingsStrongBuy": 6,
+    "analystRatingsBuy": 24,
+    "analystRatingsHold": 17,
+    "analystRatingsSell": 1,
+    "analystRatingsStrongSell": 3
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-12-01",
+    "analystRatingsStrongBuy": 5,
+    "analystRatingsBuy": 24,
+    "analystRatingsHold": 15,
+    "analystRatingsSell": 1,
+    "analystRatingsStrongSell": 3
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-11-01",
+    "analystRatingsStrongBuy": 5,
+    "analystRatingsBuy": 24,
+    "analystRatingsHold": 15,
+    "analystRatingsSell": 1,
+    "analystRatingsStrongSell": 3
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-10-01",
+    "analystRatingsStrongBuy": 6,
+    "analystRatingsBuy": 24,
+    "analystRatingsHold": 15,
+    "analystRatingsSell": 2,
+    "analystRatingsStrongSell": 3
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-09-01",
+    "analystRatingsStrongBuy": 5,
+    "analystRatingsBuy": 23,
+    "analystRatingsHold": 15,
+    "analystRatingsSell": 1,
+    "analystRatingsStrongSell": 3
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-08-01",
+    "analystRatingsStrongBuy": 5,
+    "analystRatingsBuy": 23,
+    "analystRatingsHold": 15,
+    "analystRatingsSell": 1,
+    "analystRatingsStrongSell": 1
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-07-01",
+    "analystRatingsStrongBuy": 6,
+    "analystRatingsBuy": 23,
+    "analystRatingsHold": 18,
+    "analystRatingsSell": 2,
+    "analystRatingsStrongSell": 1
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-06-01",
+    "analystRatingsStrongBuy": 7,
+    "analystRatingsBuy": 22,
+    "analystRatingsHold": 17,
+    "analystRatingsSell": 2,
+    "analystRatingsStrongSell": 1
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-05-01",
+    "analystRatingsStrongBuy": 7,
+    "analystRatingsBuy": 23,
+    "analystRatingsHold": 16,
+    "analystRatingsSell": 2,
+    "analystRatingsStrongSell": 1
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-04-01",
+    "analystRatingsStrongBuy": 8,
+    "analystRatingsBuy": 23,
+    "analystRatingsHold": 16,
+    "analystRatingsSell": 3,
+    "analystRatingsStrongSell": 1
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-03-01",
+    "analystRatingsStrongBuy": 7,
+    "analystRatingsBuy": 21,
+    "analystRatingsHold": 14,
+    "analystRatingsSell": 2,
+    "analystRatingsStrongSell": 2
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-02-01",
+    "analystRatingsStrongBuy": 8,
+    "analystRatingsBuy": 21,
+    "analystRatingsHold": 14,
+    "analystRatingsSell": 2,
+    "analystRatingsStrongSell": 2
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2025-01-01",
+    "analystRatingsStrongBuy": 8,
+    "analystRatingsBuy": 24,
+    "analystRatingsHold": 13,
+    "analystRatingsSell": 2,
+    "analystRatingsStrongSell": 2
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2024-12-01",
+    "analystRatingsStrongBuy": 8,
+    "analystRatingsBuy": 24,
+    "analystRatingsHold": 12,
+    "analystRatingsSell": 1,
+    "analystRatingsStrongSell": 2
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2024-11-01",
+    "analystRatingsStrongBuy": 11,
+    "analystRatingsBuy": 24,
+    "analystRatingsHold": 12,
+    "analystRatingsSell": 1,
+    "analystRatingsStrongSell": 2
+   },
+   {
+    "symbol": "AAPL",
+    "date": "2024-10-01",
+    "analystRatingsStrongBuy": 12,
+    "analystRatingsBuy": 24,
+    "analystRatingsHold": 12,
+    "analystRatingsSell": 1,
+    "analystRatingsStrongSell": 2
+   }
+  ],
+  "targetSummary": {
+   "symbol": "AAPL",
+   "lastMonthCount": 3,
+   "lastMonthAvgPriceTarget": 354.67,
+   "lastQuarterCount": 17,
+   "lastQuarterAvgPriceTarget": 333.39,
+   "lastYearCount": 69,
+   "lastYearAvgPriceTarget": 314.6,
+   "allTimeCount": 262,
+   "allTimeAvgPriceTarget": 233.71,
+   "publishers": "[\"StreetInsider\",\"Benzinga\",\"Pulse 2.0\",\"MarketWatch\",\"Investing\",\"Barrons\",\"Investor's Business Daily\"]"
+  },
+  "holdersSummary": {
+   "symbol": "AAPL",
+   "cik": "0000320193",
+   "date": "2026-03-31",
+   "investorsHolding": 6404,
+   "lastInvestorsHolding": 6398,
+   "investorsHoldingChange": 6,
+   "numberOf13Fshares": 9405440940,
+   "lastNumberOf13Fshares": 9546810294,
+   "numberOf13FsharesChange": -141369354,
+   "totalInvested": 2377497433164,
+   "lastTotalInvested": 2590260442529,
+   "totalInvestedChange": -212763009365,
+   "ownershipPercent": 63.936,
+   "lastOwnershipPercent": 64.7322,
+   "ownershipPercentChange": -0.7962,
+   "newPositions": 205,
+   "lastNewPositions": 725,
+   "newPositionsChange": -520,
+   "increasedPositions": 2618,
+   "lastIncreasedPositions": 2817,
+   "increasedPositionsChange": -199,
+   "closedPositions": 213,
+   "lastClosedPositions": 211,
+   "closedPositionsChange": 2,
+   "reducedPositions": 3108,
+   "lastReducedPositions": 2979,
+   "reducedPositionsChange": 129,
+   "totalCalls": 165833284,
+   "lastTotalCalls": 184870650,
+   "totalCallsChange": -19037366,
+   "totalPuts": 134025688,
+   "lastTotalPuts": 155489773,
+   "totalPutsChange": -21464085,
+   "putCallRatio": 0.8082,
+   "lastPutCallRatio": 0.8411,
+   "putCallRatioChange": -3.2878
+  }
  }
 }

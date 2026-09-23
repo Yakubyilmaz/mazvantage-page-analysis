@@ -1,0 +1,135 @@
+/* ==========================================================================
+   Maz Vantage — Investment Ideas, as a screener
+
+   The directory and the portfolio page, on the market canvas and in
+   TradingView's screener shape: a row of filter chips over a dense,
+   tab-switched table.
+
+   Everything here sits inside `.mh-page`, so the tokens are the market ones
+   and `reportcanvas.css` has already flattened the cards these pages are
+   built from. This file only adds what those two cannot: the chips, their
+   popovers, and the directory's rows.
+   ========================================================================== */
+
+/* ==========================================================================
+   The directory
+   ========================================================================== */
+
+/* `.pfgroup` is the group heading and belongs to app.css; this is the list. */
+.pfrows { display: grid; border-top: 1px solid var(--mh-border); }
+.pfrow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 110px 130px 90px 18px;
+  align-items: center; gap: 18px; width: 100%;
+  padding: 13px 10px; text-align: left; background: transparent;
+  border-bottom: 1px solid var(--mh-border);
+}
+.pfrow:hover { background: var(--mh-hover); }
+.pfrow:last-child { border-bottom: 0; }
+
+.pfrow__main { display: grid; gap: 3px; min-width: 0; }
+.pfrow__t { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.pfrow__t strong { font-size: 14px; font-weight: 600; color: var(--mh-fg); }
+.pfrow__s {
+  font-size: 12px; color: var(--mh-muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.pfrow__m { font-size: 12px; color: var(--mh-muted); white-space: nowrap; }
+.pfrow__m--cost { font-variant-numeric: tabular-nums; }
+.pfrow__go { color: var(--mh-muted); font-size: 16px; line-height: 1; }
+.pfrow:hover .pfrow__go { color: var(--mh-blue); }
+
+/* ==========================================================================
+   The chip toolbar
+   ========================================================================== */
+
+.pftools {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 18px; flex-wrap: wrap;
+}
+.pftools__chips { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; flex: 1; }
+.pftools__run { display: flex; align-items: center; gap: 10px; flex: none; }
+.pftools__cost { margin: 12px 0 0; font-size: 11px; color: var(--mh-muted); max-width: 96ch; }
+
+/* The wrapper is the popover's positioning context, so a chip's editor opens
+   against that chip rather than against the toolbar. */
+.pfchipwrap { position: relative; display: inline-flex; }
+
+.pfchip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 11px; border-radius: 8px;
+  border: 1px solid var(--mh-border); background: var(--mh-bg);
+  font-size: 12px; font-weight: 500; color: var(--mh-fg); white-space: nowrap;
+}
+.pfchip:hover { background: var(--mh-hover); }
+.pfchip[aria-expanded="true"] { border-color: var(--mh-blue); color: var(--mh-blue); }
+.pfchip__c { font-size: 11px; line-height: 1; color: var(--mh-muted); }
+.pfchip[aria-expanded="true"] .pfchip__c { color: var(--mh-blue); }
+
+/* A rule seeded by the portfolio, so it reads as content rather than chrome. */
+.pfchip--rule { border-color: color-mix(in srgb, var(--mh-blue) 35%, var(--mh-border)); }
+.pfchip--add { border-style: dashed; color: var(--mh-muted); }
+.pfchip--add:hover { color: var(--mh-fg); }
+/* Not adjustable: stated, not hidden — see the comment at its call site. */
+.pfchip--fixed { border-style: dotted; color: var(--mh-muted); cursor: default; }
+.pfchip--fixed:hover { background: var(--mh-bg); }
+
+/* ---- the popover --------------------------------------------------------- */
+
+.pfpop {
+  position: absolute; top: calc(100% + 6px); left: 0; z-index: 40;
+  min-width: 280px; display: grid; gap: 12px;
+  padding: 14px; border-radius: 12px;
+  border: 1px solid var(--mh-border); background: var(--mh-bg);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .28);
+}
+/* Near the right edge the popover would run off the page; anchoring the last
+   chips from the right keeps them on it without measuring anything. */
+.pfchipwrap:nth-last-child(-n+2) .pfpop { left: auto; right: 0; }
+
+.pfpop__body { display: grid; gap: 10px; }
+.pfpop__op { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; align-items: center; }
+.pfpop__foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.pfpop__rm { padding: 6px 10px; border-radius: 7px; font-size: 12px; color: var(--mh-down); background: transparent; }
+.pfpop__rm:hover { background: color-mix(in srgb, var(--mh-down) 12%, transparent); }
+.pfpop__done { padding: 6px 14px; font-size: 12px; }
+.pfpop__n { margin: 0; font-size: 11px; color: var(--mh-muted); }
+
+.pfpop .pfsel,
+.pfpop .pfnum {
+  width: 100%; padding: 7px 9px; border-radius: 7px;
+  border: 1px solid var(--mh-border); background: var(--mh-bg); color: var(--mh-fg);
+  font-size: 12px;
+}
+.pfpop .pfinput { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.pfpop .pfinput i { font-style: normal; font-size: 11px; color: var(--mh-muted); }
+.pfpop .pfinput__and { font-size: 11px; color: var(--mh-muted); }
+
+/* ==========================================================================
+   The results table
+   ========================================================================== */
+
+.pftable .ocard__head { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; }
+
+/* The sticky identity cell: logo, symbol, name. */
+.mt__idbtn { display: flex; align-items: center; gap: 9px; min-width: 0; text-align: left; background: transparent; padding: 0; }
+.mt__idbtn:hover .mt__idtext strong { color: var(--mh-blue); }
+.mt__idbtn .mh-mark { width: 24px; height: 24px; font-size: 8px; flex: none; }
+.mt__idtext { display: grid; gap: 1px; min-width: 0; }
+.mt__idtext strong { font-size: 13px; font-weight: 600; color: var(--mh-fg); }
+.mt__idtext small {
+  font-size: 10px; color: var(--mh-muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;
+}
+
+/* ==========================================================================
+   Narrow viewports
+   ========================================================================== */
+
+@media (max-width: 900px) {
+  .pfrow { grid-template-columns: minmax(0, 1fr) 16px; gap: 10px; }
+  .pfrow__m { display: none; }
+  .pftools { flex-direction: column; }
+  .pftools__run { width: 100%; justify-content: flex-end; }
+  .pfpop { position: fixed; left: 12px; right: 12px; top: auto; min-width: 0; }
+}

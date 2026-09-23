@@ -1,0 +1,118 @@
+/* ==========================================================================
+   Maz Vantage — the Sectors block
+
+   Two panels side by side: a selectable table of sectors, and a treemap of
+   whatever is selected. On the market canvas, so the tokens are the market
+   ones; the tile colours reuse `.heat__t`'s fixed scale from app.css via the
+   token bridge, restated here against the market palette so a tile reads the
+   same as every other up/down figure on the page.
+   ========================================================================== */
+
+.sb__body { margin-top: 4px; }
+.sb-grid { display: grid; grid-template-columns: minmax(0, 420px) minmax(0, 1fr); gap: 18px; align-items: stretch; }
+.sb-panel { border: 1px solid var(--mh-border); border-radius: 14px; padding: 16px 18px; min-width: 0; display: grid; align-content: start; gap: 12px; }
+.sb-panel__h { margin: 0; font-size: 13px; font-weight: 650; color: var(--mh-fg); }
+/* The map sets the row's height, so the table has room under its last row.
+   That is the reference's proportion too, not a gap to close. */
+
+/* ---- the table ----------------------------------------------------------- */
+
+.sb-list { display: grid; }
+.sb-list__h,
+.sb-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 84px 62px 62px;
+  align-items: center; gap: 10px;
+}
+.sb-list__h {
+  padding: 0 6px 8px; border-bottom: 1px solid var(--mh-border);
+  font-size: 11px; color: var(--mh-muted);
+}
+/* The header names three things over four columns — the bar and the number
+   are one idea, so the weight label spans them. */
+.sb-list__h > :nth-child(2) { grid-column: 2 / 4; text-align: right; }
+.sb-list__h > :nth-child(3) { text-align: right; }
+
+.sb-row {
+  width: 100%; padding: 9px 6px; text-align: left; background: transparent;
+  border-bottom: 1px solid var(--mh-border); border-radius: 6px;
+}
+.sb-row:last-child { border-bottom: 0; }
+.sb-row:hover { background: var(--mh-hover); }
+.sb-row.is-on { background: color-mix(in srgb, var(--mh-blue) 10%, transparent); }
+.sb-row.is-on .sb-row__n { color: var(--mh-fg); font-weight: 650; }
+
+.sb-row__n { font-size: 13px; font-weight: 500; color: var(--mh-fg); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sb-row__bar { display: block; height: 7px; border-radius: 20px; background: var(--mh-soft); overflow: hidden; }
+.sb-row__bar i { display: block; height: 100%; border-radius: 20px; background: var(--mh-blue); }
+.sb-row.is-on .sb-row__bar i { background: var(--mh-muted); }
+.sb-row__w,
+.sb-row__c { font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; color: var(--mh-fg); }
+.sb-row__c.is-up { color: var(--mh-up); }
+.sb-row__c.is-down { color: var(--mh-down); }
+
+/* ---- the treemap --------------------------------------------------------- */
+
+/* The map panel fills the row's height rather than packing to the top, and
+   its middle row takes the slack — so the treemap grows to meet the bottom of
+   the table beside it however many sectors that table is listing. */
+.sb-panel--map { align-content: stretch; }
+.sb-mapwrap { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: 10px; height: 100%; }
+.sb-map__head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.sb-map__head strong { font-size: 13px; font-weight: 650; color: var(--mh-fg); }
+.sb-map__by { flex: 1; min-width: 0; font-size: 11px; color: var(--mh-muted); }
+.sb-map__acts { display: flex; align-items: baseline; gap: 4px; }
+.sb-back { padding: 2px 6px; border-radius: 6px; font-size: 12px; color: var(--mh-blue); background: transparent; white-space: nowrap; }
+.sb-back:hover { background: var(--mh-hover); }
+
+/* Tiles are absolutely placed in per cent, so the map is one box of any shape
+   and the browser does the arithmetic. No aspect ratio, therefore: the height
+   comes from the row, and the minimum keeps it readable when the table beside
+   it is short — one sector's industries, say. */
+.sb-map { position: relative; width: 100%; height: 100%; min-height: 520px; border-radius: 10px; overflow: hidden; background: var(--mh-soft); }
+.sb-map__t {
+  position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; padding: 6px; text-align: center; overflow: hidden;
+  border: 1px solid var(--mh-bg); color: #fff;
+}
+button.sb-map__t { cursor: pointer; }
+button.sb-map__t:hover { outline: 2px solid var(--mh-fg); outline-offset: -2px; z-index: 2; }
+.sb-map__k { font-size: 15px; font-weight: 650; line-height: 1.15; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sb-map__v { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+/* Smaller tiles step the type down rather than clipping it. */
+.sb-map__t.is-small .sb-map__k { font-size: 11px; }
+.sb-map__t.is-small .sb-map__v { font-size: 10px; }
+.sb-map__t.is-tiny .sb-map__k { font-size: 9px; }
+.sb-map__t.is-tiny .sb-map__v { font-size: 9px; }
+/* Below about this size no label fits at all; the tile keeps its colour and
+   its tooltip and says nothing, which is better than saying half a word. */
+.sb-map__t.is-tiny { padding: 2px; }
+
+/* The fixed scale, in the market palette. Same five steps either side that
+   `heatTone` returns — see ui.js for why the thresholds are fixed. */
+.sb-map__t.is-flat   { background: var(--mh-muted); }
+.sb-map__t.is-na     { background: var(--mh-soft); color: var(--mh-muted); }
+.sb-map__t.is-up-1   { background: color-mix(in srgb, var(--mh-up) 45%, #0b6b5e); }
+.sb-map__t.is-up-2   { background: color-mix(in srgb, var(--mh-up) 70%, #0b6b5e); }
+.sb-map__t.is-up-3   { background: var(--mh-up); }
+.sb-map__t.is-up-4   { background: color-mix(in srgb, var(--mh-up) 75%, #000); }
+.sb-map__t.is-down-1 { background: color-mix(in srgb, var(--mh-down) 55%, #8c1d33); }
+.sb-map__t.is-down-2 { background: color-mix(in srgb, var(--mh-down) 75%, #8c1d33); }
+.sb-map__t.is-down-3 { background: var(--mh-down); }
+.sb-map__t.is-down-4 { background: color-mix(in srgb, var(--mh-down) 70%, #000); }
+
+.sb-mapwrap .heatleg { justify-content: flex-end; }
+
+/* ---- narrow viewports ---------------------------------------------------- */
+
+@media (max-width: 1100px) {
+  /* Stacked, so there is no table height to match — the map sets its own. */
+  .sb-grid { grid-template-columns: minmax(0, 1fr); }
+  .sb-map { min-height: 0; aspect-ratio: 16 / 10; }
+}
+@media (max-width: 700px) {
+  .sb-list__h, .sb-row { grid-template-columns: minmax(0, 1fr) 54px 58px; }
+  .sb-row__bar { display: none; }
+  .sb-list__h > :nth-child(2) { grid-column: 2 / 3; }
+  .sb-map { min-height: 0; aspect-ratio: 4 / 3; }
+}

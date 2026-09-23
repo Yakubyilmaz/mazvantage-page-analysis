@@ -29,10 +29,18 @@ function svgEl(tag, attrs = {}, children = []) {
   return n;
 }
 
-function frame(height, cls = '') {
+/**
+ * The drawing surface.
+ *
+ * `width` is the viewBox width, not a pixel size: every chart stretches to
+ * its container, so a smaller viewBox means the same 11px label is scaled
+ * down less and stays readable in a narrow card. The 760 default suits a
+ * two-thirds or full-width card; a quarter-width one wants about 340.
+ */
+function frame(height, cls = '', width = W) {
   return svgEl('svg', {
     class: `chart ${cls}`.trim(),
-    viewBox: `0 0 ${W} ${height}`,
+    viewBox: `0 0 ${width} ${height}`,
     role: 'img',
     preserveAspectRatio: 'xMidYMid meet',
   });
@@ -117,20 +125,132 @@ function yAxis(g, scale, domain, { fmt = (v) => trim(v, 1), x0, x1, labelX }) {
    Line / area chart — price history
    ========================================================================== */
 
+/* ==========================================================================
+   Event markers on a price line
+
+   Small glyphs at the dates something happened — an insider filing, a fund's
+   reported position change. Only the timing: no size, no price, no attempt to
+   draw a magnitude, because the question these answer is "when", and a
+   marker scaled by value invites the reader to compare a 1,400-share sale
+   with a 900,000-share one on a chart that is about neither.
+
+   Two shapes, and the difference matters more than it looks:
+
+   * a **triangle** is an exact date. An insider files a Form 4 with the day
+     the trade happened on it.
+   * a **diamond** is a quarter end. A 13F says what a fund held on the last
+     day of a quarter, not when it traded — the marker is placed where the
+     evidence is, and the shape says the date is a reporting date rather than
+     a trade date.
+
+   Markers on the same day collapse into one glyph, and the tooltip lists
+   what was underneath. A hundred Form 4s in a year would otherwise be a hedge
+   along the bottom of the chart.
+   ========================================================================== */
+
+const MARKER_STYLE = {
+  insiderBuy:  { color: 'var(--good)', below: true,  exact: true },
+  insiderSell: { color: 'var(--bad)',  below: false, exact: true },
+  fundBuy:     { color: 'var(--good)', below: true,  exact: false },
+  fundSell:    { color: 'var(--bad)',  below: false, exact: false },
+};
+
+/** The index of the charted point nearest a date, or null when out of range. */
+function nearestIndex(pts, date) {
+  const t = new Date(date).getTime();
+  if (!Number.isFinite(t)) return null;
+  const first = new Date(pts[0].date).getTime();
+  const last = new Date(pts.at(-1).date).getTime();
+  // A day of slack at each end: a Form 4 dated on a weekend or a holiday sits
+  // just outside a series of closes and should still land on the chart.
+  if (t < first - 4 * 864e5 || t > last + 4 * 864e5) return null;
+
+  let lo = 0; let hi = pts.length - 1;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (new Date(pts[mid].date).getTime() < t) lo = mid + 1; else hi = mid;
+  }
+  // Whichever neighbour is closer in time.
+  const prev = Math.max(0, lo - 1);
+  const dPrev = Math.abs(new Date(pts[prev].date).getTime() - t);
+  const dLo = Math.abs(new Date(pts[lo].date).getTime() - t);
+  return dPrev < dLo ? prev : lo;
+}
+
+function drawMarkers(g, markers, pts, { sx, sy, y0, y1 }) {
+  // Bucket by (charted point, kind) so a day with six filings draws once.
+  const buckets = new Map();
+  for (const m of markers) {
+    const style = MARKER_STYLE[m.kind];
+    if (!style) continue;
+    const i = nearestIndex(pts, m.date);
+    if (i == null) continue;
+    const key = `${i}|${m.kind}`;
+    if (!buckets.has(key)) buckets.set(key, { i, kind: m.kind, style, items: [] });
+    buckets.get(key).items.push(m);
+  }
+
+  const layer = svgEl('g', { class: 'chart__markers' });
+
+  for (const b of buckets.values()) {
+    const x = sx(b.i);
+    const yLine = sy(pts[b.i].value);
+    // Held off the line itself so the price stays readable underneath, and
+    // clamped inside the plot so a marker on a high never leaves the frame.
+    const y = b.style.below
+      ? Math.min(y0 - 4, yLine + 13)
+      : Math.max(y1 + 4, yLine - 13);
+
+    const r = 4.5;
+    const d = b.style.below
+      ? `M${x},${y - r} L${x + r},${y + r} L${x - r},${y + r} Z`   // up
+      : `M${x},${y + r} L${x + r},${y - r} L${x - r},${y - r} Z`;  // down
+
+    const shape = b.style.exact
+      ? svgEl('path', { d, fill: b.style.color, stroke: 'var(--surface-1)', 'stroke-width': 1 })
+      : svgEl('rect', {
+          x: x - r, y: y - r, width: r * 2, height: r * 2,
+          transform: `rotate(45 ${x} ${y})`,
+          fill: 'none', stroke: b.style.color, 'stroke-width': 1.6,
+        });
+
+    bindTip(shape, () => {
+      // Each item's **own** date, not the charted point it was snapped to.
+      // A filing dated on a weekend lands on the next trading day's x, and a
+      // tooltip reading that day back would be quietly wrong. The chart's
+      // `labelFmt` is not used either — it is an axis format ("Aug 26") with
+      // no day in it, which is exactly the part that matters here.
+      const lines = b.items.slice(0, 6)
+        .map((m) => `<span class="k">${fmtDate(m.date)} — ${m.label}</span>`)
+        .join('<br>');
+      const more = b.items.length > 6 ? `<br><span class="k">+${b.items.length - 6} more</span>` : '';
+      return `${lines}${more}`;
+    });
+    layer.append(shape);
+  }
+
+  g.append(layer);
+}
+
 export function lineChart(series, {
   height = 260,
   color = 'var(--brand-01)',
   fill = true,
   valueFmt = (v) => price(v),
   labelFmt = (d) => fmtDate(d),
+  refLine = null,                    // { value, label } — a level drawn across
+  markers = [],                      // [{ date, kind, label }] — pings on the line
+  empty: emptyMsg = 'Not enough price history',
   pad = { t: 12, r: 16, b: 26, l: 56 },
 } = {}) {
   const svg = frame(height);
   const pts = series.filter((p) => isNum(p.value));
-  if (pts.length < 2) return empty(svg, height, 'Not enough price history');
+  if (pts.length < 2) return empty(svg, height, emptyMsg);
 
   const x0 = pad.l, x1 = W - pad.r, y0 = height - pad.b, y1 = pad.t;
   const values = pts.map((p) => p.value);
+  // The reference has to fit inside the plot or it is drawn off it.
+  if (refLine && isNum(refLine.value)) values.push(refLine.value);
   const dom = niceDomain(Math.min(...values), Math.max(...values), 4);
   const sx = linear(0, pts.length - 1, x0, x1);
   const sy = linear(dom.lo, dom.hi, y0, y1);
@@ -152,6 +272,21 @@ export function lineChart(series, {
     g.append(svgEl('path', { d: `${d}L${sx(pts.length - 1)},${y0}L${x0},${y0}Z`, fill: `url(#${gid})` }));
   }
   g.append(svgEl('path', { d, fill: 'none', stroke: color, 'stroke-width': 2, 'stroke-linejoin': 'round' }));
+
+  // A level to read the line against — a median, a threshold. Dashed and in
+  // the neutral colour, because it is a rule rather than a second series.
+  if (refLine && isNum(refLine.value)) {
+    const ry = sy(refLine.value);
+    g.append(svgEl('line', {
+      x1: x0, x2: x1, y1: ry, y2: ry,
+      stroke: refLine.color || 'var(--neutral)', 'stroke-width': 1, 'stroke-dasharray': '5 4',
+    }));
+    if (refLine.label) {
+      g.append(svgEl('text', {
+        x: x0 + 4, y: ry - 5, 'font-size': 11, fill: refLine.color || 'var(--neutral)',
+      }, refLine.label));
+    }
+  }
 
   // x labels: first, middle, last
   const marks = [0, Math.floor((pts.length - 1) / 2), pts.length - 1];
@@ -189,6 +324,11 @@ export function lineChart(series, {
   hit.addEventListener('pointerleave', () => { hover.setAttribute('opacity', 0); tip().classList.remove('on'); });
   g.append(hit);
 
+  // After the hit rect, not before. SVG has no z-index — paint order is
+  // document order — so a transparent rect appended later sits on top of the
+  // markers and eats every pointer event they need.
+  if (markers.length) drawMarkers(g, markers, pts, { sx, sy, y0, y1 });
+
   svg.append(g);
   return svg;
 }
@@ -204,13 +344,14 @@ export function columnChart(categories, series, {
   valueFmt = (v) => money(v),
   forecastFrom = null,               // index at which bars become forecasts
   refLine = null,                    // { value, label } drawn across the plot
+  width = W,                         // viewBox width — shrink it in narrow cards
   pad = { t: 16, r: 16, b: 34, l: 62 },
   legend = true,
 } = {}) {
-  const svg = frame(height);
+  const svg = frame(height, '', width);
   if (!categories.length || !series.length) return empty(svg, height, 'No data');
 
-  const x0 = pad.l, x1 = W - pad.r, y0 = height - pad.b, y1 = pad.t;
+  const x0 = pad.l, x1 = width - pad.r, y0 = height - pad.b, y1 = pad.t;
 
   let lo = 0, hi = 0;
   if (stacked) {
@@ -303,7 +444,9 @@ export function columnChart(categories, series, {
   }
 
   const ax = svgEl('g', { class: 'axis' });
-  const every = Math.ceil(categories.length / 12);
+  // Roughly one label per 60 viewBox units, so a narrow chart thins its own
+  // axis instead of overprinting every second year on top of the last.
+  const every = Math.ceil(categories.length / Math.max(Math.floor((x1 - x0) / 60), 3));
   categories.forEach((c, i) => {
     if (i % every) return;
     ax.append(svgEl('text', {
@@ -1106,10 +1249,72 @@ export function volatilityStrip({ stock, market, industry }, { height = 96 } = {
 /* ---------- empty state --------------------------------------------------- */
 
 function empty(svg, height, msg) {
+  // Centred on the chart's own viewBox, which is not always the shared 760 —
+  // a narrow chart would otherwise print its "no data" line off its own edge.
+  const box = (svg.getAttribute('viewBox') || `0 0 ${W} ${height}`).split(/\s+/);
+  const width = Number(box[2]) || W;
   svg.append(svgEl('text', {
-    x: W / 2, y: height / 2, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--text-subtle)',
+    x: width / 2, y: height / 2, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--text-subtle)',
   }, msg));
   return svg;
 }
 
 export { W as CHART_WIDTH };
+
+/* ==========================================================================
+   Sparkline
+
+   The one chart on this page that carries no axes, no labels and no numbers.
+   It is a shape, read beside a figure that already says the level and the
+   change — so anything else on it would be decoration competing with the two
+   things the tile is actually for.
+
+   Its own viewBox rather than the shared `W`, because a tile is wide and short
+   and the shared frame is neither.
+   ========================================================================== */
+
+/**
+ * `points` is `[{ value }]` in time order, oldest first.
+ *
+ * Coloured by the direction of the whole run rather than by the last tick: a
+ * series that ended the day down inside a month that is up should read as the
+ * month, which is the window the tile is showing.
+ */
+export function sparkline(points, { width = 160, height = 38, up = null } = {}) {
+  const vals = (points || []).map((p) => (isNum(p?.value) ? p.value : null)).filter(isNum);
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+  svg.setAttribute('class', 'spark');
+  svg.setAttribute('preserveAspectRatio', 'none');
+  svg.setAttribute('aria-hidden', 'true');
+
+  if (vals.length < 2) return svg;
+
+  const rising = up == null ? vals.at(-1) >= vals[0] : up;
+  const lo = Math.min(...vals);
+  const hi = Math.max(...vals);
+  // A flat series has no range to divide by; centring it is the only honest
+  // rendering and beats a division by zero.
+  const span = hi - lo || 1;
+  const pad = 3;
+  const x = (i) => (i / (vals.length - 1)) * width;
+  const y = (v) => height - pad - ((v - lo) / span) * (height - pad * 2);
+
+  const d = vals.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join(' ');
+
+  const area = document.createElementNS(NS, 'path');
+  area.setAttribute('d', `${d} L${width} ${height} L0 ${height} Z`);
+  area.setAttribute('class', `spark__a ${rising ? 'is-up' : 'is-down'}`);
+  svg.append(area);
+
+  const line = document.createElementNS(NS, 'path');
+  line.setAttribute('d', d);
+  line.setAttribute('fill', 'none');
+  line.setAttribute('stroke-width', '1.5');
+  line.setAttribute('stroke-linecap', 'round');
+  line.setAttribute('stroke-linejoin', 'round');
+  line.setAttribute('class', `spark__l ${rising ? 'is-up' : 'is-down'}`);
+  svg.append(line);
+
+  return svg;
+}

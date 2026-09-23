@@ -12,7 +12,14 @@ export function el(tag, attrs = {}, children = []) {
     if (k === 'class') node.className = v;
     else if (k === 'html') node.innerHTML = v;
     else if (k === 'text') node.textContent = v;
-    else if (k === 'style' && typeof v === 'object') Object.assign(node.style, v);
+    // Custom properties need setProperty: assigning `--x` as a JS property on
+    // a style declaration is silently ignored, which loses every themed colour.
+    else if (k === 'style' && typeof v === 'object') {
+      for (const [prop, value] of Object.entries(v)) {
+        if (prop.startsWith('--')) node.style.setProperty(prop, value);
+        else node.style[prop] = value;
+      }
+    }
     else if (k.startsWith('on') && typeof v === 'function') node.addEventListener(k.slice(2).toLowerCase(), v);
     else node.setAttribute(k, v === true ? '' : String(v));
   }
@@ -100,6 +107,19 @@ export function cagr(first, last, years) {
 }
 
 export function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
+
+/**
+ * Year-on-year change, or null where either end is missing or crosses zero.
+ *
+ * A sign flip has no percentage: "improved by 340%" from a loss to a profit is
+ * a sentence about arithmetic rather than about the company, so the callers
+ * that print a delta print nothing instead.
+ */
+export function yoy(now, prev) {
+  if (!isNum(now) || !isNum(prev) || prev === 0) return null;
+  if (prev < 0 !== now < 0) return null;
+  return now / Math.abs(prev) - 1;
+}
 
 /**
  * Sample standard deviation (n−1), for the consistency metrics.

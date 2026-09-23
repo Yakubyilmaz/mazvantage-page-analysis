@@ -14,12 +14,14 @@
    the page is the mean of the metric grades above it.
    ========================================================================== */
 
-import { el, esc, isNum, pct, dec, money, mult, yearOf, price as priceFmt } from './util.js';
+import { el, esc, isNum, pct, dec, money, mult, yearOf, fmtDate, price as priceFmt } from './util.js';
 import { card, blockEl, notice, icon, keyInfo, checkRow, feedGate, curSymbol } from './ui.js';
 import {
   MODEL_GROUPS, MODELS, DEFAULT_MODEL_ID, DEFAULT_BASIS, modelById, allFairValues,
 } from './valuation-models.js';
-import { toneForLetter, letterFor, histogramRank, rankLabel, MAX_SCORE } from './grading.js';
+import {
+  toneForLetter, letterFor, histogramRank, rankLabel, verdictWord, verdictTone, MAX_SCORE,
+} from './grading.js';
 import { FACTOR_BY_KEY } from './factors.js';
 import { snowflake, AXES } from './snowflake.js';
 import {
@@ -110,15 +112,60 @@ function rankColumnLabel(metrics) {
   return 'Sector Ranking';
 }
 
+function medianColumnLabel(metrics) {
+  const sources = new Set(metrics.filter((m) => m.state === 'ok').map((m) => m.source));
+  if (sources.size === 1 && sources.has('peers')) return 'Peer Median';
+  if (sources.has('peers')) return 'Median';
+  return 'Sector Median';
+}
+
+/**
+ * The number the company's figure was ranked against.
+ *
+ * Blank for an `absolute` metric on purpose. Those are graded on an invented
+ * linear scale, so the middle of that scale is a midpoint and not a median —
+ * no company was ever measured against it, and printing it in a column headed
+ * "Sector Median" would state something untrue in the most quotable place on
+ * the row.
+ */
+function medianCell(m, fmt) {
+  const show = fmt || m.fmt || ((v) => dec(v, 2));
+
+  if (m.source === 'absolute') {
+    return el('span', {
+      class: 'subtle',
+      title: 'Graded against a fixed scale rather than the sector, so there is no median.',
+      text: '—',
+    });
+  }
+  if (!isNum(m.median)) {
+    return el('span', {
+      class: 'subtle',
+      title: m.why || 'No distribution is loaded for this ratio.',
+      text: '—',
+    });
+  }
+  return el('span', {
+    title: isNum(m.sampleSize)
+      ? `Median of ${m.sampleSize.toLocaleString('en-US')} companies`
+      : null,
+    text: show(m.median),
+  });
+}
+
 function gradeTable(a, metrics) {
   const sym = a.facts.symbol;
 
   const head = el('thead', {}, [
     el('tr', {}, [
+      // The row reads left to right the way the grade is arrived at: what the
+      // company's number is, what it was measured against, where that puts it
+      // in the sector, and only then the letter that follows from it.
       el('th', { text: 'Ratio' }),
-      el('th', { class: 'num', text: gradeColumnLabel(metrics) }),
       el('th', { class: 'num', text: sym }),
+      el('th', { class: 'num', text: medianColumnLabel(metrics) }),
       el('th', { text: rankColumnLabel(metrics) }),
+      el('th', { class: 'num', text: gradeColumnLabel(metrics) }),
     ]),
   ]);
 
@@ -145,7 +192,7 @@ function gradeTable(a, metrics) {
     const panel = METRIC_PANELS[m.id]?.(a, m) || null;
     if (panel) {
       body.append(el('tr', { class: 'ratio ratio--full' }, [
-        el('td', { colspan: '4' }, [panel]),
+        el('td', { colspan: '5' }, [panel]),
       ]));
       continue;
     }
@@ -154,14 +201,15 @@ function gradeTable(a, metrics) {
       el('td', {}, [
         el('div', { class: 'ratio__name' }, [medianTick(m), el('span', { text: m.label })]),
       ]),
-      el('td', { class: 'num' }, [m.ungraded ? notScored() : gradePill(m.grade, m.letter)]),
       el('td', { class: 'num ratio__value', text: isNum(m.value) ? fmt(m.value) : 'n/a' }),
+      el('td', { class: 'num ratio__median' }, [medianCell(m, fmt)]),
       el('td', {}, [m.ungraded ? null : rankBar(m)]),
+      el('td', { class: 'num' }, [m.ungraded ? notScored() : gradePill(m.grade, m.letter)]),
     ]));
 
     if (m.explanation) {
       body.append(el('tr', { class: 'ratio__whyrow' }, [
-        el('td', { colspan: '4' }, [el('p', { class: 'ratio__why', text: m.explanation })]),
+        el('td', { colspan: '5' }, [el('p', { class: 'ratio__why', text: m.explanation })]),
       ]));
     }
 
@@ -171,7 +219,7 @@ function gradeTable(a, metrics) {
     const after = ROW_CHARTS[m.id]?.(a) || null;
     if (after) {
       body.append(el('tr', { class: 'ratio__chartrow' }, [
-        el('td', { colspan: '4' }, [after]),
+        el('td', { colspan: '5' }, [after]),
       ]));
     }
   }
@@ -364,19 +412,22 @@ function pairLegCells(m, pair, legLabel, twin) {
     }
   }
 
+  // The leg label rides with the figure it names rather than with the grade.
+  // A pair shares one name cell, so without it here there is nothing on the
+  // row saying which of the two legs the number belongs to — and the grade,
+  // which used to carry it, is now at the far end of the row.
   return [
-    el('td', { class: 'num' }, [
-      el('div', { class: 'pair__gradecell' }, [
-        el('span', { class: 'pair__leg', text: legLabel }),
-        medianTick(m),
-        m.ungraded ? notScored() : gradePill(m.grade, m.letter),
-      ]),
-    ]),
     el('td', { class: 'num ratio__value' }, [
+      el('div', { class: 'pair__legcell' }, [
+        medianTick(m),
+        el('span', { class: 'pair__leg', text: legLabel }),
+      ]),
       el('span', { text: isNum(m.value) ? fmt(m.value) : 'n/a' }),
       delta,
     ]),
+    el('td', { class: 'num ratio__median' }, [medianCell(m, fmt)]),
     el('td', {}, [m.ungraded ? null : rankBar(m)]),
+    el('td', { class: 'num' }, [m.ungraded ? notScored() : gradePill(m.grade, m.letter)]),
   ];
 }
 
@@ -416,13 +467,13 @@ function pairRows(a, lead, follow, pair) {
     .filter(Boolean);
   if (why.length) {
     out.push(el('tr', { class: 'ratio__whyrow ratio__whyrow--pair' }, [
-      el('td', { colspan: '4' }, why),
+      el('td', { colspan: '5' }, why),
     ]));
   }
 
   const chart = pair.chart ? pair.chart(a, lead, follow) : pairChart(a, lead, follow, pair);
   if (chart) {
-    out.push(el('tr', { class: 'ratio__chartrow' }, [el('td', { colspan: '4' }, [chart])]));
+    out.push(el('tr', { class: 'ratio__chartrow' }, [el('td', { colspan: '5' }, [chart])]));
   }
   return out;
 }
@@ -779,7 +830,7 @@ function pairChart(a, lead, follow, pair) {
  * risk. Both bars derive from Settings — the sector distribution and
  * `riskFreeRate` + `equityRiskPremium`.
  */
-function analystForecastPanel(a) {
+export function analystForecastPanel(a) {
   const pt = a.ds.get('priceTarget');
   const cur = curSymbol(a.facts.currency);
   const price = a.facts.price;
@@ -1700,4 +1751,655 @@ function competitorTable(a) {
       ]))),
     ]),
   ]);
+}
+
+/* ==========================================================================
+   A factor as its own tab
+
+   The same graded ratios the Analysis tab carries, opened out rather than
+   stacked: a hero with the grade and how its subtopics contributed, the
+   handful of ratios carrying the grade and the handful dragging it, then one
+   card per subtopic instead of one long card holding all of them.
+
+   Nothing here re-grades anything. `gradeAll()` has already run; this is the
+   same `a.scores[key]` the Analysis tab renders, laid out for a reader who
+   came to look at one factor rather than to read the whole report.
+   ========================================================================== */
+
+/** The id a subtopic's card gets, so the hero's rows can scroll to it. */
+const groupId = (key, group) => `ft-${key}-${group.key}`;
+
+/**
+ * What a factor tab carries under its summary cards.
+ *
+ * A factor listed here shows only what its entry returns; a factor left out
+ * shows a card per subtopic, which is every ratio the factor holds. The two
+ * that are listed are summaries by choice — the Analysis tab is where every
+ * ratio table already lives, and repeating all of them here made the two tabs
+ * the same page twice.
+ */
+const FACTOR_TAB_DETAIL = {
+  growth: () => [],
+  // The three that keep something keep the one thing that exists nowhere else
+  // in the product: the thirteen fair-value models, and the two Sankeys.
+  valuation: (a) => [fairValueCard(a)],
+  profitability: onlyGroups('profitability', ['flow']),
+  health: onlyGroups('health', ['sheet']),
+};
+
+/** A detail list of named subtopics, in the order given. */
+function onlyGroups(key, wanted) {
+  return (a) => wanted.map((gk) => {
+    const g = (a.scores[key]?.groups || []).find((x) => x.key === gk);
+    return g ? groupCard(a, key, g) : null;
+  });
+}
+
+/**
+ * How each of a factor's ratios sits against its sector median.
+ *
+ * The tick, counted. `vsMedian` is a display marker and nothing else — it is
+ * never summed into a grade, and the number beside it on this card is the
+ * mean of the ratio percentiles, not of these. Two different readings of the
+ * same ratios, which is why they sit under separate headings.
+ *
+ * `ungraded` metrics are left out so the three counts total the same set the
+ * "N of M ratios graded" line above them describes. Counting all 24 of
+ * Valuation's rows under a line that says 18 reads as an error, whichever
+ * number the eye lands on first.
+ */
+function countChecks(f) {
+  const out = { pass: 0, fail: 0, na: 0 };
+  for (const g of f.groups) {
+    for (const m of g.metrics) {
+      if (m.ungraded) continue;
+      if (m.vsMedian === 'pass') out.pass++;
+      else if (m.vsMedian === 'fail') out.fail++;
+      else out.na++;
+    }
+  }
+  return out;
+}
+
+export function renderFactorTab(a, key, nav = {}) {
+  const meta = FACTOR_BY_KEY[key];
+  const f = a.scores[key];
+  if (!meta || !f) return null;
+
+  // Ranked ratios only: an ungraded row has no position to be best or worst
+  // in, and a missing one has no figure at all.
+  const ranked = f.groups
+    .flatMap((g) => g.metrics)
+    .filter((m) => !m.ungraded && isNum(m.grade) && isNum(m.pctile))
+    .sort((x, y) => y.grade - x.grade);
+
+  // Split at the factor's own score rather than into halves, so both headings
+  // are true by construction: everything on the left grades at or above the
+  // number in the hero, everything on the right below it. A factor where the
+  // ratios all point the same way then shows one card, not an invented
+  // "worst" that is in fact carrying the grade too.
+  const above = ranked.filter((m) => m.grade >= f.score).slice(0, 5);
+  const below = ranked.filter((m) => m.grade < f.score)
+    .sort((x, y) => x.grade - y.grade).slice(0, 5);
+
+  const detail = (FACTOR_TAB_DETAIL[key]
+    ? FACTOR_TAB_DETAIL[key](a)
+    : f.groups.map((g) => groupCard(a, key, g))).filter(Boolean);
+
+  return el('div', { class: 'ovw' }, [
+    factorHero(a, meta, f, key, nav),
+    factorFlakeCard(a, key, nav),
+    (above.length || below.length) ? ratioLeaders(a, key, meta, above, below) : null,
+    ...detail,
+  ]);
+}
+
+/** Grade, how the ratios sit against the sector median, and the way out. */
+function factorHero(a, meta, f, key, nav = {}) {
+  const question = meta.question.replace('{SYM}', a.facts.symbol);
+  const missing = f.total - f.graded;
+  const width = isNum(f.score) ? (f.score / MAX_SCORE) * 100 : 0;
+  const checks = countChecks(f);
+
+  const tile = (state, count, label) => el('div', { class: `fcheck is-${state}` }, [
+    icon(state, `fcheck__icon ${state}`),
+    el('div', {}, [
+      el('b', { text: String(count) }),
+      el('span', { text: label }),
+    ]),
+  ]);
+
+  return card(`ft-${key}`, [
+    el('div', { class: 'ocard__head' }, [
+      el('h2', { text: meta.title }),
+      gradePill(f.score, f.letter, { size: 'lg' }),
+    ]),
+    el('p', { class: 'fhero__q', text: question }),
+
+    el('div', { class: 'fhero__score' }, [
+      el('b', { text: isNum(f.score) ? dec(f.score, 2) : '—' }),
+      el('i', { text: `/${MAX_SCORE}` }),
+      el('span', { class: 'fhero__basis', text: `${f.graded} of ${f.total} ratios graded`
+        + (missing ? ` · ${missing} not assessed` : '') }),
+    ]),
+    el('div', { class: 'gradebar' }, [
+      el('div', { class: `gradebar__fill is-${toneForLetter(f.letter)}`, style: { width: `${width}%` } }),
+    ]),
+
+    el('p', { class: 'osub' }, [
+      'Against the sector median',
+      icon('info', 'ocard__info', 'How many of this factor\u2019s ratios fall on the better side of '
+        + 'the sector median. A reading aid only: the tick is never summed into a grade, and the '
+        + 'score above is the mean of the ratio percentiles rather than of these.'),
+    ]),
+    el('div', { class: 'fchecks' }, [
+      tile('pass', checks.pass, 'beat the median'),
+      tile('fail', checks.fail, 'below it'),
+      tile('na', checks.na, 'not assessed'),
+    ]),
+
+    el('button', {
+      type: 'button', class: 'omore', text: 'Read the full analysis',
+      onclick: () => nav.openAnalysis?.(meta.anchor),
+    }),
+  ], 'ocard ovw__c8');
+}
+
+/** Where this grade sits against the other four. */
+function factorFlakeCard(a, key, nav) {
+  const scores = Object.fromEntries(AXES.map((x) => [x.key, a.scores[x.key]?.score ?? null]));
+
+  return card(`ft-flake-${key}`, [
+    el('div', { class: 'ocard__head' }, [el('h2', { text: 'Against the other factors' })]),
+    el('div', { class: 'fflake' }, [
+      // The wedges open their own tab here. Their default is to scroll to a
+      // factor anchor, and those anchors live on the Analysis panel, which is
+      // not in the document while a factor tab is.
+      snowflake(scores, { size: 268, highlight: key, onSelect: (ax) => nav.openFactor?.(ax.key) }),
+    ]),
+  ], 'ocard ovw__c4');
+}
+
+/**
+ * The ratios at both ends of the factor, in one card.
+ *
+ * One block rather than two, because the split is the point: the same five
+ * columns down both halves, so a ratio carrying the grade and one dragging it
+ * can be read against each other without moving between cards. The division
+ * stays as a heading over each half.
+ */
+function ratioLeaders(a, key, meta, above, below) {
+  return card(`ft-${key}-ratios`, [
+    el('div', { class: 'ocard__head' }, [
+      el('h2', {}, [
+        'Ratios behind the grade',
+        icon('info', 'ocard__info', 'Split at the factor\u2019s own score: every ratio on the left '
+          + 'grades at or above it, every one on the right below it. Five of each at most.'),
+      ]),
+    ]),
+    el('div', { class: 'fleadgrid' }, [
+      leadColumn(a, `Carrying the ${meta.title.toLowerCase()} grade`, above),
+      leadColumn(a, 'Holding it back', below),
+    ]),
+  ], 'ocard ovw__c12');
+}
+
+/** One half: a heading, a column head, and its ratios. */
+function leadColumn(a, title, metrics) {
+  return el('div', { class: 'flead__col' }, [
+    el('p', { class: 'osub', text: title }),
+    metrics.length ? el('div', { class: 'flead flead--head' }, [
+      el('span', { class: 'flead__n', text: 'Ratio' }),
+      el('span', { class: 'flead__v', text: a.facts.symbol }),
+      el('span', { class: 'flead__m', text: 'Median' }),
+      el('span', { text: 'Ranking' }),
+      el('span', { class: 'flead__g', text: 'Grade' }),
+    ]) : null,
+    metrics.length
+      ? el('ul', { class: 'fleads' }, metrics.map(leadRow))
+      : el('p', { class: 'rr__empty', text: 'No ratio falls on this side of the grade.' }),
+  ]);
+}
+
+/** Figure, what it was measured against, where that puts it, and the grade. */
+function leadRow(m) {
+  const fmt = m.fmt || ((v) => dec(v, 2));
+  return el('li', { class: 'flead' }, [
+    el('span', { class: 'flead__n', title: m.label, text: m.label }),
+    el('span', { class: 'flead__v', text: isNum(m.value) ? fmt(m.value) : 'n/a' }),
+    el('span', { class: 'flead__m' }, [medianCell(m, fmt)]),
+    rankBar(m),
+    el('span', { class: 'flead__g' }, [gradePill(m.grade, m.letter)]),
+  ]);
+}
+
+/**
+ * The thirteen fair-value models, on their own.
+ *
+ * `fairValuePanel` is normally reached through the DCF row of the cash-flows
+ * subtopic. Pulled out here it is the whole card, because on the Valuation
+ * tab it is the thing worth opening the tab for.
+ */
+function fairValueCard(a) {
+  const m = (a.scores.valuation?.groups || [])
+    .flatMap((g) => g.metrics)
+    .find((x) => x.id === 'dcfDiscount');
+  if (!m) return null;
+
+  return card('ft-valuation-fairvalue', [
+    el('div', { class: 'ocard__head' }, [el('h2', { text: 'Fair value models' })]),
+    fairValuePanel(a, m),
+  ], 'ocard ovw__c12');
+}
+
+/** One subtopic: its own card, with the table the Analysis tab shows inline. */
+function groupCard(a, key, group) {
+  const panel = GROUP_PANELS[group.panel];
+  const extra = panel ? null : EXTRAS[`${key}.${group.key}`]?.(a) || null;
+
+  return card(groupId(key, group), [
+    el('div', { class: 'ocard__head' }, [
+      el('h2', { text: group.title }),
+      isNum(group.score) ? gradePill(group.score, group.letter) : null,
+    ]),
+    // Kept visible, unlike the Overview's card notes: this is the sentence
+    // that says what the table under it is asking, on a surface meant for
+    // reading rather than for scanning.
+    group.desc ? el('p', { class: 'fgroup__desc', text: group.desc }) : null,
+
+    ...(panel
+      ? [panel(a)]
+      : [
+          subtopicSummary(a, group.metrics),
+          gradeTable(a, group.metrics),
+          extra ? el('div', { class: 'mt3' }, [extra]) : null,
+        ]),
+  ], 'ocard ovw__c12');
+}
+
+
+/* ==========================================================================
+   Ratings as its own tab
+
+   The grade, taken apart. The Analysis tab's Ratings section answers "what
+   did it score"; this answers "why, and how much of it should you trust" —
+   the five factors with the question each was asked, the spread of the graded
+   ratios, the handful at either end of the whole report, the peer sort, and a
+   card that states plainly what the number is and is not.
+
+   Nothing here re-grades anything. Every figure is read off the `a.scores`
+   tree `gradeAll()` already built, and the last card exists because a page
+   called Ratings is exactly where a reader will over-read a single number.
+   ========================================================================== */
+
+export function renderRatingsTab(a, nav = {}) {
+  return el('div', { class: 'ovw' }, [
+    ratingsHero(a),
+    ratingsFlakeCard(a, nav),
+    ratingsFactorCard(a, nav),
+    ratingsLeaderCard(a),
+    gradeSpreadCard(a),
+    competitorCard(a),
+    ratingsBasisCard(a),
+  ]);
+}
+
+/** Every scored ratio in the report, with the factor it came from attached. */
+function allGraded(a) {
+  const out = [];
+  for (const meta of Object.values(FACTOR_BY_KEY)) {
+    for (const g of a.scores[meta.key]?.groups || []) {
+      for (const m of g.metrics) {
+        if (m.ungraded) continue;
+        out.push({ ...m, factor: meta.title, factorKey: meta.key });
+      }
+    }
+  }
+  return out;
+}
+
+/* ---------- 1. the headline ----------------------------------------------- */
+
+function ratingsHero(a) {
+  const f = a.facts;
+  const overall = a.scores.overall || {};
+  const rows = allGraded(a);
+  const graded = rows.filter((m) => isNum(m.grade)).length;
+  const word = verdictWord(overall.score);
+  const width = isNum(overall.score) ? (overall.score / MAX_SCORE) * 100 : 0;
+
+  return card('rt-overall', [
+    el('div', { class: 'ocard__head' }, [
+      el('h2', {}, [
+        `${f.name} rating`,
+        icon('info', 'ocard__info', 'The mean of the five factor grades, each of them the mean of '
+          + `its ratios, each of those a percentile against the ${f.sector || 'wider'} sector. `
+          + 'The five factors are weighted equally.'),
+      ]),
+      gradePill(overall.score, overall.letter, { size: 'lg' }),
+    ]),
+
+    word ? el('p', { class: `rverdict is-${verdictTone(overall.score)}`, text: word }) : null,
+
+    el('div', { class: 'fhero__score' }, [
+      el('b', { text: isNum(overall.score) ? dec(overall.score, 2) : '—' }),
+      el('i', { text: `/${MAX_SCORE}` }),
+      el('span', { class: 'fhero__basis', text: `${graded} of ${rows.length} ratios graded, `
+        + `across ${overall.factors ?? 0} factors` }),
+    ]),
+    el('div', { class: 'gradebar' }, [
+      el('div', {
+        class: `gradebar__fill is-${toneForLetter(overall.letter)}`,
+        style: { width: `${width}%` },
+      }),
+    ]),
+
+    el('p', { class: 'osub' }, [
+      'Where that sits in the sector',
+      icon('info', 'ocard__info', 'The strip is the 0-5 scale in fifths, with the grade marked on '
+        + 'it. The histogram under it is the spread of overall grades across the sector, with this '
+        + 'company’s bucket picked out.'),
+    ]),
+    distributionStrip(a, overall),
+  ], 'ocard ovw__c8');
+}
+
+/** The five factors as a shape, and a way into any one of them. */
+function ratingsFlakeCard(a, nav) {
+  const scores = Object.fromEntries(AXES.map((x) => [x.key, a.scores[x.key]?.score ?? null]));
+
+  return card('rt-flake', [
+    el('div', { class: 'ocard__head' }, [el('h2', { text: 'The five factors' })]),
+    el('div', { class: 'fflake' }, [
+      // Same reason as the factor tabs: a wedge's default is to scroll to an
+      // anchor on the Analysis panel, and that panel is not in the document
+      // while this one is.
+      snowflake(scores, { size: 268, onSelect: (ax) => nav.openFactor?.(ax.key) }),
+    ]),
+  ], 'ocard ovw__c4');
+}
+
+/* ---------- 2. the five grades -------------------------------------------- */
+
+/**
+ * A row per factor: the question it was asked, its grade, and how its ratios
+ * fell against the sector median.
+ *
+ * The median tally sits on the same row as the grade, which risks reading as
+ * its working — so the card says once, in the head, that it is not. It is the
+ * same ratios counted a second way: the grade is how far from the median,
+ * this is merely how many are on the better side of it.
+ */
+function ratingsFactorCard(a, nav) {
+  return card('rt-factors', [
+    el('div', { class: 'ocard__head' }, [
+      el('h2', {}, [
+        'Factor grades',
+        icon('info', 'ocard__info', 'Each grade is the mean of that factor’s ratio '
+          + `percentiles, on a scale of 0 to ${MAX_SCORE}. The median tally beside it counts the `
+          + 'same ratios a different way and is never summed into the grade.'),
+      ]),
+    ]),
+
+    el('div', { class: 'rfacs' }, Object.values(FACTOR_BY_KEY).map((meta) => {
+      const s = a.scores[meta.key];
+      if (!s) return null;
+      const checks = countChecks(s);
+      const width = isNum(s.score) ? (s.score / MAX_SCORE) * 100 : 0;
+
+      return el('button', {
+        type: 'button', class: 'rfac',
+        onclick: () => nav.openFactor?.(meta.key),
+        title: `Open the ${meta.title} tab`,
+      }, [
+        el('span', { class: 'rfac__n' }, [
+          el('b', { text: meta.title }),
+          el('i', { text: meta.question.replace('{SYM}', a.facts.symbol) }),
+        ]),
+        el('span', { class: 'rfac__bar' }, [
+          el('span', { class: 'gradebar' }, [
+            el('span', {
+              class: `gradebar__fill is-${toneForLetter(s.letter)}`,
+              style: { width: `${width}%` },
+            }),
+          ]),
+          el('span', { class: 'rfac__basis', text: `${s.graded} of ${s.total} graded`
+            + ` · ${checks.pass} beat the median` }),
+        ]),
+        el('span', { class: 'rfac__g' }, [gradePill(s.score, s.letter)]),
+      ]);
+    }).filter(Boolean)),
+  ], 'ocard ovw__c12');
+}
+
+/* ---------- 3. the ends of the report ------------------------------------- */
+
+/**
+ * The strongest and weakest ratios in the whole report.
+ *
+ * The factor tab's version of this splits at the factor's own score. Across
+ * five factors that cut means nothing — a ratio above Valuation's score can
+ * sit below Growth's — so this one is a straight sort of every graded ratio,
+ * five off each end, with the factor named on every row because the reader is
+ * no longer inside one.
+ */
+function ratingsLeaderCard(a) {
+  const ranked = allGraded(a)
+    .filter((m) => isNum(m.grade) && isNum(m.pctile))
+    .sort((x, y) => y.grade - x.grade);
+  if (!ranked.length) return null;
+
+  const best = ranked.slice(0, 5);
+  // Off the other end, and never the same rows: a report with nine graded
+  // ratios would otherwise show one of them in both columns.
+  const worst = ranked.slice(Math.max(best.length, ranked.length - 5)).reverse();
+
+  return card('rt-leaders', [
+    el('div', { class: 'ocard__head' }, [
+      el('h2', {}, [
+        'What moves the rating',
+        icon('info', 'ocard__info', 'The five highest and five lowest graded ratios anywhere in '
+          + 'the report. Ratios shown but not scored, and ratios with no data, have no position to '
+          + 'be either.'),
+      ]),
+    ]),
+    el('div', { class: 'fleadgrid' }, [
+      ratingsLeadColumn(a, 'Carrying the rating', best),
+      ratingsLeadColumn(a, 'Holding it back', worst),
+    ]),
+  ], 'ocard ovw__c12');
+}
+
+function ratingsLeadColumn(a, title, metrics) {
+  return el('div', { class: 'flead__col' }, [
+    el('p', { class: 'osub', text: title }),
+    metrics.length ? el('div', { class: 'flead flead--head' }, [
+      el('span', { class: 'flead__n', text: 'Ratio' }),
+      el('span', { class: 'flead__v', text: a.facts.symbol }),
+      el('span', { class: 'flead__m', text: 'Median' }),
+      el('span', { text: 'Ranking' }),
+      el('span', { class: 'flead__g', text: 'Grade' }),
+    ]) : null,
+    metrics.length
+      ? el('ul', { class: 'fleads' }, metrics.map(ratingsLeadRow))
+      : el('p', { class: 'rr__empty', text: 'Nothing on this side of the report graded.' }),
+  ]);
+}
+
+/** As `leadRow`, plus the factor — the row is out of its factor's context here. */
+function ratingsLeadRow(m) {
+  const fmt = m.fmt || ((v) => dec(v, 2));
+  return el('li', { class: 'flead' }, [
+    el('span', { class: 'flead__n' }, [
+      el('span', { title: m.label, text: m.label }),
+      el('i', { class: 'flead__f', text: m.factor }),
+    ]),
+    el('span', { class: 'flead__v', text: isNum(m.value) ? fmt(m.value) : 'n/a' }),
+    el('span', { class: 'flead__m' }, [medianCell(m, fmt)]),
+    rankBar(m),
+    el('span', { class: 'flead__g' }, [gradePill(m.grade, m.letter)]),
+  ]);
+}
+
+/* ---------- 4. the spread ------------------------------------------------- */
+
+/** The letter bands, best first, each with the tone it is painted in. */
+const SPREAD_BANDS = [
+  { tone: 'strong', label: 'A band', note: 'Top of the sector' },
+  { tone: 'good', label: 'B band', note: 'Better than most of the sector' },
+  { tone: 'mid', label: 'C band', note: 'Around the sector middle' },
+  { tone: 'weak', label: 'D band', note: 'Below most of the sector' },
+  { tone: 'poor', label: 'F band', note: 'Bottom of the sector' },
+];
+
+/**
+ * How the graded ratios themselves are spread.
+ *
+ * The headline is a mean, and a mean hides its shape: the same 3.0 is eighty
+ * ratios sat in the C band, or forty split between A and F. Bars are a share
+ * of the graded ratios so they total 100%, and the unassessed are named under
+ * them rather than folded in as a sixth band they are not.
+ */
+function gradeSpreadCard(a) {
+  const rows = allGraded(a);
+  const graded = rows.filter((m) => isNum(m.grade));
+  const missing = rows.length - graded.length;
+
+  const counts = Object.fromEntries(SPREAD_BANDS.map((b) => [b.tone, 0]));
+  for (const m of graded) {
+    const tone = toneForLetter(m.letter ?? letterFor(m.grade));
+    if (tone in counts) counts[tone] += 1;
+  }
+
+  return card('rt-spread', [
+    el('div', { class: 'ocard__head' }, [
+      el('h2', {}, [
+        'Grade spread',
+        icon('info', 'ocard__info', 'The graded ratios by letter band. The rating above is their '
+          + 'mean, which says nothing about whether they agree with each other — this says how '
+          + 'much they do.'),
+      ]),
+    ]),
+
+    graded.length ? el('div', { class: 'gspread' }, SPREAD_BANDS.map((b) => {
+      const n = counts[b.tone];
+      const share = (n / graded.length) * 100;
+      return el('div', { class: 'gspread__row', title: b.note }, [
+        el('span', { class: 'gspread__k', text: b.label }),
+        el('span', { class: 'gradebar' }, [
+          el('span', { class: `gradebar__fill is-${b.tone}`, style: { width: `${share}%` } }),
+        ]),
+        el('span', { class: 'gspread__n', text: n ? `${n} · ${Math.round(share)}%` : '—' }),
+      ]);
+    })) : el('p', { class: 'rr__empty', text: 'No ratio in the report could be graded.' }),
+
+    el('p', { class: 't-tiny subtle mt2', text: missing
+      ? `${graded.length} of ${rows.length} ratios graded; the ${missing} that could not be `
+        + 'assessed are left out of the bars above.'
+      : `All ${graded.length} ratios graded.` }),
+  ], 'ocard ovw__c4');
+}
+
+/* ---------- 5. the peer sort ---------------------------------------------- */
+
+/**
+ * The same table the Analysis tab carries, as a card.
+ *
+ * Its caveat — that the peers are scored on a reduced ratio set — moves into
+ * the head's info icon rather than sitting as a paragraph above the table: on
+ * a grid of cards that paragraph is longer than the table it qualifies.
+ */
+function competitorCard(a) {
+  return card('rt-peers', [
+    el('div', { class: 'ocard__head' }, [
+      el('h2', {}, [
+        'Competitor ranking',
+        icon('info', 'ocard__info', competitorNote(a)),
+      ]),
+    ]),
+    competitorTable(a),
+  ], 'ocard ovw__c8');
+}
+
+/* ---------- 6. what the number is ----------------------------------------- */
+
+/**
+ * The basis card.
+ *
+ * Everything above this point is a single figure with a letter beside it,
+ * which is the shape of a claim people quote without its footnotes. So the
+ * footnotes get a card of their own: what was counted, what it was ranked
+ * against, and the things the master spec's engine does that this one does
+ * not. None of it is hedging — every line is a fact about how the number at
+ * the top of the page was produced.
+ */
+function ratingsBasisCard(a) {
+  const f = a.facts;
+  const t = a.sectorTable;
+  const rows = allGraded(a);
+  const graded = rows.filter((m) => isNum(m.grade));
+  const shown = countShown(a);
+
+  // Named, not only counted: "12 not assessed" is a footnote, where seeing
+  // that all four Momentum windows are among them tells the reader which
+  // factor to discount.
+  const unassessed = rows.filter((m) => !isNum(m.grade)).map((m) => m.label);
+
+  return card('rt-basis', [
+    el('div', { class: 'ocard__head' }, [el('h2', { text: 'How this rating is built' })]),
+
+    keyInfo([
+      ['Ratios graded', `${graded.length} of ${rows.length}`],
+      ['Shown, not scored', String(shown)],
+      // `a.sectorTable` carries the distribution, not the sector's name — the
+      // name of the sector graded against is on the facts.
+      ['Ranked against', f.sector || 'no sector'],
+      ['Companies in that sector', isNum(t.count) ? t.count.toLocaleString('en-US') : 'n/a'],
+    ]),
+
+    t.quality === 'seed' ? notice(
+      'The sector distributions this report grades against are <b>modelled, not measured</b> — '
+      + 'shaped around published sector medians so the rating is sensible out of the box. Every '
+      + 'percentile, ranking and company count on this page inherits that. Run '
+      + '<code>python tools/build_sector_stats.py --apikey $FMP_KEY</code> to replace them.') : null,
+
+    !t.available ? notice(
+      `No sector distribution is loaded for <b>${esc(f.sector || 'this company’s sector')}</b>, `
+      + 'so each ratio falls back to the live peer sample where there is one and goes ungraded '
+      + 'where there is not.') : null,
+
+    el('p', { class: 'osub', text: 'What this rating does not do' }),
+    el('ul', { class: 'rlimits' }, [
+      'Weights the five factors equally. The master spec weights Momentum double.',
+      'Weights every ratio inside a factor equally. The spec gives each line its own weight, '
+        + 'from 0.9% to 25.9%.',
+      'Applies no sector mask: EV multiples and Altman Z are graded in Financials, and the '
+        + 'leverage cluster is not suppressed where the spec suppresses it.',
+      'Reads annual statements, so every year-on-year line is FY0 against FY−1 rather than '
+        + 'the trailing twelve months against the prior twelve.',
+    ].map((text) => el('li', { text }))),
+
+    unassessed.length ? el('div', {}, [
+      el('p', { class: 'osub', text: `Not assessed (${unassessed.length})` }),
+      el('p', { class: 't-xs soft', text: unassessed.slice(0, 10).join(', ')
+        + (unassessed.length > 10 ? `, and ${unassessed.length - 10} more.` : '.') }),
+      el('p', { class: 't-tiny subtle mt1', text: 'These are dropped from the mean rather than '
+        + 'scored zero: a figure the data plan does not return should lower confidence in the '
+        + 'grade, not manufacture a bad one.' }),
+    ]) : null,
+
+    t.generatedAt ? el('p', { class: 't-tiny subtle mt2',
+      text: `Sector table generated ${fmtDate(t.generatedAt)}.` }) : null,
+  ], 'ocard ovw__c12');
+}
+
+/** Ratios placed in the tree but deliberately outside every score. */
+function countShown(a) {
+  let n = 0;
+  for (const meta of Object.values(FACTOR_BY_KEY)) {
+    for (const g of a.scores[meta.key]?.groups || []) {
+      for (const m of g.metrics) if (m.ungraded) n += 1;
+    }
+  }
+  return n;
 }
