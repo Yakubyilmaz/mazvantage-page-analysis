@@ -1,0 +1,276 @@
+/* ==========================================================================
+   Maz Vantage — the market rail
+
+   A sticky column down the right of every page: the reader's watchlist, the
+   day's movers, and what reports next. TradingView's watchlist panel is the
+   reference — the same idea that whatever page you are on, the market is
+   still beside you.
+
+   ---------------------------------------------------------------------------
+   One node, kept across navigations
+   ---------------------------------------------------------------------------
+
+   `app.js` rebuilds the whole tree on every navigation (`app.replaceChildren`),
+   so a rail built inside `chrome()` would be thrown away and refetched every
+   time the reader opened a page. This module returns a **singleton**: the same
+   element is moved into each new layout rather than recreated, which
+   `replaceChildren` does without touching the node's own state. The reader
+   keeps their scroll position in the rail, the sections they collapsed, and
+   the quotes already fetched.
+
+   That also settles the cost question. The rail loads once per session and
+   then only when the reader asks it to, rather than once per page view.
+
+   ---------------------------------------------------------------------------
+   Scrolling
+   ---------------------------------------------------------------------------
+
+   The rail is its own scroll container: `position: sticky`, a viewport's
+   height, `overflow-y: auto`. That gives the behaviour asked for for free —
+   a wheel over the rail scrolls the rail, a wheel anywhere else scrolls the
+   page. The one thing it does not give for free is what happens when the rail
+   hits its end: by default the browser hands the remaining scroll to the page,
+   so a reader who reaches the bottom of their watchlist suddenly finds the
+   article behind it moving. `overscroll-behavior: contain` in the stylesheet
+   stops that, and is the reason the rail feels like a panel rather than a
+   tall div.
+   ========================================================================== */
+
+import { el, isNum, ago } from './util.js';
+import { fetchMarket, fetchCalendar, fetchBatchQuotes, hasApiKey } from './fmp.js';
+import { normalizeHubQuote } from './markethub-data.js';
+import { emptyState, instrumentMark, priceText, signed, changeOf, arrow } from './markethub-ui.js';
+
+/** Rows in a mover block, and symbols the watchlist starts with. */
+const ROWS = 6;
+const CALENDAR_ROWS = 6;
+const WATCHLIST_KEY = 'mazvantage.watchlist';
+const WATCHLIST_SEED = ['AAPL', 'NVDA', 'MSFT', 'AMZN', 'GOOGL'];
+/** Sections the reader has collapsed, so the rail reopens as they left it. */
+const COLLAPSED_KEY = 'mazvantage.rail.collapsed';
+
+/* ---- what the reader is watching ----------------------------------------
+   Their own list, so it is stored rather than derived. Every read is wrapped:
+   a private window or blocked site data throws on access, and a rail that
+   cannot remember a watchlist should still show one. */
+
+function readList(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : fallback;
+  } catch { return fallback; }
+}
+function writeList(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* not stored this session */ }
+}
+
+export const watchlist = () => readList(WATCHLIST_KEY, WATCHLIST_SEED)
+  .map((s) => String(s).toUpperCase()).filter(Boolean);
+
+function setWatchlist(symbols) {
+  writeList(WATCHLIST_KEY, [...new Set(symbols.map((s) => String(s).toUpperCase()))]);
+}
+
+/* ==========================================================================
+   The rail
+   ========================================================================== */
+
+let instance = null;
+
+/**
+ * The rail, built once and handed back on every later call.
+ *
+ * `nav` is rebound each time rather than captured, because the object
+ * `app.js` passes is recreated per navigation and the old one's `goSymbol`
+ * would route from a page the reader has left.
+ */
+export function marketRail(nav = {}) {
+  if (instance) { instance.setNav(nav); return instance; }
+
+  let current = nav;
+  const openSymbol = (row) => current.goSymbol?.(row.symbol || row);
+  const goView = (...args) => current.goView?.(...args);
+
+  const root = el('aside', { class: 'mr', 'aria-label': 'Market rail' });
+  const body = el('div', { class: 'mr__body' });
+
+  /* ---- a section, collapsible and remembered --------------------------- */
+  const collapsed = new Set(readList(COLLAPSED_KEY, []));
+  function section(id, title, seeAll) {
+    const slot = el('div', { class: 'mr__slot' }, [emptyState('loading', '', true)]);
+    const caret = el('span', { class: 'mr__caret', 'aria-hidden': 'true', text: '⌄' });
+    const head = el('button', {
+      type: 'button', class: 'mr__head', 'aria-expanded': String(!collapsed.has(id)),
+      onclick: () => {
+        const open = collapsed.has(id);
+        if (open) collapsed.delete(id); else collapsed.add(id);
+        writeList(COLLAPSED_KEY, [...collapsed]);
+        head.setAttribute('aria-expanded', String(open));
+        node.classList.toggle('is-collapsed', !open);
+      },
+    }, [caret, el('span', { class: 'mr__title', text: title })]);
+    const node = el('section', {
+      class: `mr__sec${collapsed.has(id) ? ' is-collapsed' : ''}`, 'data-section': id,
+    }, [
+      el('div', { class: 'mr__bar' }, [head, seeAll
+        ? el('button', { type: 'button', class: 'mr__all', 'aria-label': `See all ${title}`, onclick: seeAll },
+          [arrow()]) : null].filter(Boolean)),
+      slot,
+    ]);
+    // NOT `node.slot`: `Element.prototype.slot` is the shadow-DOM slot name, a
+    // DOMString, so assigning an element to it silently stores "[object
+    // HTMLDivElement]" and every later `.replaceChildren` throws.
+    node.rowsHost = slot;
+    return node;
+  }
+
+  /** One quote as a rail row: mark, symbol, last and change. */
+  const quoteRow = (row) => el('button', {
+    type: 'button', class: 'mr__row', 'aria-label': `Open ${row.symbol}`,
+    onclick: () => openSymbol(row),
+  }, [
+    instrumentMark(row),
+    el('span', { class: 'mr__id' }, [
+      el('strong', { text: String(row.symbol || '').replace(/^\^/, '') }),
+      el('small', { text: row.shortName || row.name || '' }),
+    ]),
+    el('span', { class: 'mr__v' }, [priceText(row), signed(changeOf(row))]),
+  ]);
+
+  const fill = (sec, rows, status, message) => {
+    sec.rowsHost.replaceChildren(rows.length
+      ? el('div', { class: 'mr__rows' }, rows.map(quoteRow))
+      : emptyState(status, message, true));
+  };
+
+  /* ---- the sections ---------------------------------------------------- */
+
+  const watch = section('watchlist', 'Watchlist', () => goView('markets', 'stocks'));
+  const gainers = section('gainers', 'Gainers', () => goView('markets', 'gainers'));
+  const losers = section('losers', 'Losers', () => goView('markets', 'losers'));
+  const active = section('active', 'Most active', () => goView('markets', 'active'));
+  const calendar = section('calendar', 'Stocks calendar', () => goView('calendar'));
+
+  /* The watchlist is the one section the reader edits, so it carries its own
+     control. Adding is a symbol and a return; removing is the row's own ×. */
+  const input = el('input', {
+    type: 'search', class: 'mr__add', placeholder: 'Add symbol', 'aria-label': 'Add a symbol to the watchlist',
+    maxlength: '12', autocomplete: 'off', spellcheck: 'false',
+  });
+  const addForm = el('form', { class: 'mr__addwrap', onsubmit: (e) => {
+    e.preventDefault();
+    const symbol = input.value.trim().toUpperCase();
+    if (!symbol) return;
+    setWatchlist([...watchlist(), symbol]);
+    input.value = '';
+    loadWatchlist();
+  } }, [input]);
+  watch.append(addForm);
+
+  async function loadWatchlist() {
+    const symbols = watchlist();
+    if (!symbols.length) {
+      watch.rowsHost.replaceChildren(emptyState('unavailable', 'Add a symbol to start a list.', true));
+      return;
+    }
+    if (!hasApiKey()) {
+      // Named, unpriced: the list is the reader's own and still worth showing.
+      watch.rowsHost.replaceChildren(el('div', { class: 'mr__rows' }, symbols.map((symbol) =>
+        withRemove(quoteRow(normalizeHubQuote({}, { symbol, kind: 'stock' })), symbol))));
+      return;
+    }
+    const res = await fetchBatchQuotes(symbols).catch(() => null);
+    const by = new Map((Array.isArray(res?.data) ? res.data : []).map((r) => [String(r.symbol).toUpperCase(), r]));
+    watch.rowsHost.replaceChildren(el('div', { class: 'mr__rows' }, symbols.map((symbol) =>
+      withRemove(quoteRow(normalizeHubQuote(by.get(symbol) || {}, { symbol, kind: 'stock' })), symbol))));
+  }
+
+  /** The row, plus the control that takes it off the list. */
+  function withRemove(row, symbol) {
+    const wrap = el('div', { class: 'mr__watch' }, [row]);
+    wrap.append(el('button', {
+      type: 'button', class: 'mr__rm', 'aria-label': `Remove ${symbol} from the watchlist`,
+      text: '×',
+      onclick: () => { setWatchlist(watchlist().filter((s) => s !== symbol)); loadWatchlist(); },
+    }));
+    return wrap;
+  }
+
+  async function loadMovers() {
+    if (!hasApiKey()) {
+      for (const sec of [gainers, losers, active]) {
+        sec.rowsHost.replaceChildren(emptyState('skipped', 'Connect FMP to see the day’s movers.', true));
+      }
+      return;
+    }
+    const [g, l, a] = await Promise.all([
+      fetchMarket('gainers'), fetchMarket('losers'), fetchMarket('active'),
+    ]);
+    const rows = (res) => (Array.isArray(res?.data) ? res.data : [])
+      .map((r) => normalizeHubQuote(r, { kind: 'stock' })).filter((r) => r.available).slice(0, ROWS);
+    fill(gainers, rows(g), g.status, g.message || 'No gainers returned.');
+    fill(losers, rows(l), l.status, l.message || 'No losers returned.');
+    fill(active, rows(a), a.status, a.message || 'No active listings returned.');
+  }
+
+  async function loadCalendar() {
+    if (!hasApiKey()) {
+      calendar.rowsHost.replaceChildren(emptyState('skipped', 'Connect FMP to see what reports next.', true));
+      return;
+    }
+    const iso = (days) => new Date(Date.now() + days * 864e5).toISOString().slice(0, 10);
+    const res = await fetchCalendar('earnings', iso(0), iso(7));
+    const rows = (Array.isArray(res?.data) ? res.data : [])
+      .filter((r) => r.symbol && /^[A-Z]{1,5}$/.test(r.symbol))
+      .sort((x, y) => String(x.date).localeCompare(String(y.date)))
+      .slice(0, CALENDAR_ROWS);
+    calendar.rowsHost.replaceChildren(rows.length
+      ? el('div', { class: 'mr__rows' }, rows.map((r) => el('button', {
+        type: 'button', class: 'mr__row mr__row--cal', 'aria-label': `Open ${r.symbol}`,
+        onclick: () => openSymbol(r),
+      }, [
+        instrumentMark({ symbol: r.symbol, kind: 'stock' }),
+        el('span', { class: 'mr__id' }, [
+          el('strong', { text: r.symbol }),
+          el('small', { text: r.date ? ago(r.date) : '' }),
+        ]),
+        el('span', { class: 'mr__est', text: isNum(r.epsEstimated) ? `${r.epsEstimated.toFixed(2)} est` : '' }),
+      ])))
+      : emptyState(res.status, 'No reports scheduled in the next week.', true));
+  }
+
+  body.append(watch, gainers, losers, active, calendar);
+  root.append(
+    el('div', { class: 'mr__top' }, [
+      el('span', { class: 'mr__brand', text: 'Markets' }),
+      el('button', { type: 'button', class: 'mr__refresh', 'aria-label': 'Refresh the rail',
+        text: '↻', onclick: () => load(true) }),
+    ]),
+    body,
+  );
+
+  /* The rail is loaded once and then only when asked. It is on every page, so
+     loading it per navigation would be the same four requests over and over. */
+  let loaded = false;
+  function load(force = false) {
+    if (loaded && !force) return;
+    loaded = true;
+    /* A section that throws says so. Swallowing it leaves the rail showing
+       "Loading market data" for the rest of the session, which reads as a slow
+       network rather than as the bug it is. */
+    const guard = (sec, run) => run().catch((error) => {
+      sec.rowsHost.replaceChildren(emptyState('error', String(error?.message || error), true));
+    });
+    guard(watch, loadWatchlist);
+    guard(gainers, loadMovers);
+    guard(calendar, loadCalendar);
+  }
+
+  instance = root;
+  root.setNav = (next) => { current = next || {}; };
+  root.reload = () => load(true);
+  load();
+  return root;
+}

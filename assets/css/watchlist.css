@@ -1,0 +1,78 @@
+/* ==========================================================================
+   Maz Vantage — Watchlists
+
+   The page is the market canvas and the table is the screener's, so this file
+   is only the parts that are this page's own: the list strip's counts, the
+   add box, and the remove button that sits in the identity cell.
+   ========================================================================== */
+
+.wl-page .wl-lists button { display: inline-flex; align-items: center; gap: 7px; }
+.wl-count {
+  min-width: 18px; padding: 1px 5px; border-radius: 20px;
+  background: var(--mh-hover); color: var(--mh-muted);
+  font-size: 10px; font-weight: 600; font-variant-numeric: tabular-nums;
+}
+.wl-lists .wl-new { color: var(--mh-blue); }
+
+.wl-tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin: 18px 0 14px; }
+.wl-add__row { display: flex; align-items: center; gap: 8px; }
+.wl-add {
+  width: min(280px, 60vw); padding: 8px 12px; font: inherit; font-size: 13px;
+  color: var(--mh-fg); background: transparent;
+  border: 1px solid var(--mh-border); border-radius: 8px;
+}
+.wl-add:focus-visible { outline: 2px solid var(--mh-blue); outline-offset: 1px; }
+.wl-tools__acts { display: flex; align-items: center; gap: 8px; }
+.wl-btn {
+  padding: 8px 12px; border: 1px solid var(--mh-border); border-radius: 8px;
+  background: transparent; color: var(--mh-fg); font-size: 13px;
+}
+.wl-btn:hover { background: var(--mh-hover); }
+.wl-btn--go { border-color: var(--mh-blue); color: var(--mh-blue); }
+
+/* The remove control lives in the sticky identity cell, so it has to stay out
+   of the way of the company name and only assert itself on hover. */
+.wl-identity { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
+.wl-remove {
+  flex: none; width: 22px; height: 22px; border-radius: 6px;
+  background: transparent; color: var(--mh-muted); font-size: 15px; line-height: 1;
+  opacity: 0; transition: opacity .12s ease;
+}
+tr:hover .wl-remove, .wl-remove:focus-visible { opacity: 1; }
+.wl-remove:hover { background: var(--mh-hover); color: var(--mh-down, #ed4355); }
+
+.wl-table { margin-top: 6px; }
+
+@media (max-width: 600px) {
+  .wl-tools { flex-direction: column; align-items: stretch; }
+  .wl-add { width: 100%; }
+  .wl-remove { opacity: 1; }
+}
+
+/* A page waiting to be filled in is not a search that found nothing. */
+.wl-blank { padding: 40px 0 24px; max-width: 62ch; }
+.wl-blank h2 { margin: 0 0 8px; font-size: 20px; font-weight: 650; letter-spacing: -.02em; }
+.wl-blank p { margin: 0; color: var(--mh-muted); font-size: 14px; line-height: 1.6; }
+
+/* ---- purification --------------------------------------------------------
+   The table is the board's, so this is the head, the two editable cells and
+   the total line under it. */
+.wl-purify { margin-top: 46px; padding-top: 34px; border-top: 1px solid var(--mh-border); }
+.wl-purify__head { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.wl-purify__head .mh-heading--section { margin-bottom: 0; }
+.wl-purify__co { display: block; font-size: 12px; color: var(--mh-muted); }
+.wl-purify__none { color: var(--mh-muted); font-size: 14px; line-height: 1.6; max-width: 70ch; }
+.wl-purify__src { display: block; margin-top: 3px; font-size: 10px; color: var(--mh-muted); white-space: nowrap; }
+.wl-purify__table tr.is-idle { color: var(--mh-muted); }
+
+.wl-cell {
+  width: 92px; padding: 5px 8px; font: inherit; font-size: 13px; text-align: right;
+  font-variant-numeric: tabular-nums; color: var(--mh-fg); background: transparent;
+  border: 1px solid var(--mh-border); border-radius: 6px;
+}
+.wl-cell:focus-visible { outline: 2px solid var(--mh-blue); outline-offset: 1px; }
+
+.wl-purify__total { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+.wl-purify__total-k { font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--mh-muted); }
+.wl-purify__total-v { font-size: 26px; font-weight: 650; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.wl-purify__total-n { font-size: 12px; color: var(--mh-muted); }

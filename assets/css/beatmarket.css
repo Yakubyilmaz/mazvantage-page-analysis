@@ -1,0 +1,142 @@
+/* ==========================================================================
+   Beat the Market.
+
+   The same block on two pages, so everything here is scoped to `.bm` and uses
+   the market canvas's own `--mh-*` tokens rather than anything either host
+   page defines.
+   ========================================================================== */
+
+.bm { padding-bottom: 40px; }
+.bm-head { max-width: 92ch; }
+.bm-head .mh-heading { margin: 0 0 8px; }
+.bm-lede { margin: 0; font-size: 14px; line-height: 1.65; color: var(--mh-muted); }
+
+/* ---- the controls -------------------------------------------------------- */
+
+.bm-controls {
+  display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end;
+  margin: 22px 0 10px;
+}
+.bm-field { display: grid; gap: 5px; min-width: 0; }
+.bm-field--grow { flex: 1 1 220px; }
+.bm-field > span {
+  font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase;
+  color: var(--mh-muted);
+}
+.bm-select, .bm-search {
+  min-height: 38px; padding: 7px 12px; font: inherit; font-size: 14px;
+  color: var(--mh-fg); background: var(--mh-bg);
+  border: 1px solid var(--mh-border); border-radius: 7px; max-width: 100%;
+}
+.bm-search { width: 100%; }
+.bm-select:focus-visible, .bm-search:focus-visible { outline: 2px solid var(--mh-blue); outline-offset: 1px; }
+.bm-cost { margin: 0 0 18px; font-size: 12px; color: var(--mh-muted); }
+.bm-cost:empty { display: none; }
+
+/* ---- the line to beat ---------------------------------------------------- */
+
+.bm-banner {
+  padding: 16px 18px; margin-bottom: 20px;
+  background: var(--mh-soft); border: 1px solid var(--mh-border);
+  border-left: 3px solid var(--mh-blue); border-radius: 8px;
+}
+.bm-banner:empty { display: none; }
+.bm-banner__line { margin: 0; font-size: 15px; line-height: 1.6; }
+.bm-banner__line b { font-weight: 650; }
+.bm-banner__sub { margin: 8px 0 0; font-size: 12px; line-height: 1.6; color: var(--mh-muted); }
+.bm-toggle {
+  display: flex; align-items: flex-start; gap: 8px; margin-top: 12px;
+  font-size: 12px; line-height: 1.5; color: var(--mh-muted); cursor: pointer;
+}
+.bm-toggle input { margin-top: 2px; flex: 0 0 auto; accent-color: var(--mh-blue); }
+
+/* ---- the table ----------------------------------------------------------- */
+
+.bm-count {
+  margin: 0 0 6px; font-size: 12px; color: var(--mh-muted); font-variant-numeric: tabular-nums;
+}
+.bm-scroll { overflow-x: auto; border-top: 1px solid var(--mh-border); scrollbar-width: thin; }
+.bm-grid { width: 100%; border-collapse: collapse; font-size: 13px; }
+.bm-th {
+  padding: 0; text-align: left; font-weight: 400; white-space: nowrap;
+  background: var(--mh-bg); border-bottom: 1px solid var(--mh-border);
+}
+.bm-th--num { text-align: right; }
+.bm-th--rank { width: 44px; padding: 11px 6px 11px 10px; font-size: 12px; color: var(--mh-muted); }
+/* The identity column is pinned sideways for the same reason the ETF boards
+   pin theirs: nine columns are wider than a laptop, and a row whose name has
+   scrolled off is a row about nothing. */
+.bm-th--id { position: sticky; left: 0; z-index: 2; min-width: 250px; }
+.bm-sort {
+  width: 100%; padding: 11px 11px; border: 0; background: none;
+  color: var(--mh-muted); font: inherit; font-size: 12px; text-align: inherit; cursor: pointer;
+}
+.bm-th--num .bm-sort { text-align: right; }
+.bm-sort:hover { color: var(--mh-fg); }
+.bm-sort.is-active { color: var(--mh-fg); font-weight: 600; }
+.bm-sort__a { font-size: 11px; }
+
+.bm-td {
+  padding: 8px 11px; height: 46px; border-bottom: 1px solid var(--mh-border);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.bm-td--num { text-align: right; }
+.bm-td--rank {
+  width: 44px; padding-left: 10px; padding-right: 6px;
+  color: var(--mh-muted); font-size: 12px;
+}
+.bm-td--id {
+  position: sticky; left: 0; z-index: 1;
+  padding: 4px 12px 4px 0; background: var(--mh-bg);
+  min-width: 250px; max-width: 250px;
+}
+.bm-grid tbody tr:hover .bm-td { background: var(--mh-hover); }
+
+.bm-id {
+  display: flex; align-items: center; gap: 10px; width: 100%; min-width: 0;
+  padding: 6px 8px; border: 0; border-radius: 6px; background: transparent;
+  color: var(--mh-fg); font: inherit; text-align: left; cursor: pointer;
+}
+.bm-id:hover { background: var(--mh-soft); }
+.bm-id:focus-visible { outline: 2px solid var(--mh-blue); outline-offset: -2px; }
+.bm-id .mh-mark { flex: 0 0 24px; width: 24px; height: 24px; font-size: 8px; }
+.bm-id__text { display: grid; min-width: 0; flex: 1; }
+.bm-id__name {
+  font-size: 13px; font-weight: 500; line-height: 1.3;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+/* Not a warning colour: a short history is a limit of the measurement, not a
+   fault in the listing. */
+.bm-id__flag {
+  justify-self: start; margin-top: 2px; padding: 1px 6px; border-radius: 4px;
+  background: var(--mh-hover); color: var(--mh-muted);
+  font-size: 10px; letter-spacing: .02em;
+}
+.bm-id__sym {
+  flex: 0 0 auto; padding: 3px 7px; border-radius: 4px;
+  background: var(--mh-hover); font-size: 11px; font-weight: 600; letter-spacing: .02em;
+}
+
+.bm-pc { font-weight: 500; }
+.bm-pc.is-up { color: var(--mh-up); }
+.bm-pc.is-down { color: var(--mh-down); }
+.bm-na { color: var(--mh-muted); }
+.bm-sector { color: var(--mh-muted); font-size: 12px; }
+/* The excess is the column the list exists for, so it reads a shade louder
+   than the raw returns beside it. */
+.bm-excess { display: inline-flex; align-items: baseline; gap: 4px; font-weight: 600; }
+.bm-pp { font-size: 10px; color: var(--mh-muted); font-weight: 400; }
+
+.bm-more {
+  width: 100%; margin-top: 14px; padding: 13px; border-radius: 8px;
+  border: 1px solid var(--mh-border); background: var(--mh-bg);
+  color: var(--mh-fg); font: inherit; font-size: 13px; cursor: pointer;
+}
+.bm-more:hover { background: var(--mh-hover); }
+.bm-coverage { margin-top: 30px; }
+
+@media (max-width: 800px) {
+  .bm-th--id, .bm-td--id { min-width: 190px; max-width: 190px; }
+  .bm-controls { gap: 10px; }
+  .bm-field--grow { flex-basis: 100%; }
+}

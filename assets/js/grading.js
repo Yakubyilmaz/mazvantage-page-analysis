@@ -68,6 +68,31 @@ export function toneForLetter(letter) {
   return 'poor';
 }
 
+/**
+ * Score -> the word for the position it argues for.
+ *
+ * Five equal bands across 0..MAX_SCORE, which is exactly how the score
+ * distribution strip is labelled. Kept here rather than in a view so the
+ * word one surface prints and the band another draws its marker in can never
+ * disagree.
+ */
+export const VERDICT_BANDS = ['Strong sell', 'Sell', 'Hold', 'Buy', 'Strong buy'];
+
+export function verdictWord(score) {
+  if (!isNum(score)) return null;
+  return VERDICT_BANDS[clamp(Math.floor(score), 0, VERDICT_BANDS.length - 1)];
+}
+
+/* Three tones, not five: the word above already makes the finer distinction,
+   and colouring "Sell" and "Strong sell" differently would imply a precision
+   the mean of five factor grades does not have. */
+export function verdictTone(score) {
+  if (!isNum(score)) return 'muted';
+  if (score >= 3) return 'good';
+  if (score >= 2) return 'warn';
+  return 'bad';
+}
+
 /* ==========================================================================
    Percentiles
    ========================================================================== */

@@ -1,0 +1,43 @@
+/* The Economy section's indicator chart block.
+
+   The rail is `.mh-quote-tab` and the chart is `.mhc`, both skinned in
+   markethub.css and markethub-chart.css: this file only says what an economic
+   series needs that a quote does not — a flag where a logo goes, the period a
+   reading covers where a daily change goes, and the note that prices a range. */
+
+.emc-block { padding: 6px 0 30px; border-bottom: 1px solid var(--mh-border); }
+.emc-block__rail { min-width: 0; }
+
+/* The rail card: flag, series, reading, period. Same pill as a quote tab, one
+   line taller because a period is spelled out rather than signed. */
+.emc-tab__flag { flex: none; width: 34px; height: 34px; }
+.emc-tab__flag .mh-flag__img { width: 30px; height: 22px; }
+.emc-tab .mh-price { font-size: 15px; font-weight: 600; }
+.emc-tab__period { color: var(--mh-muted); font-size: 11px; white-space: nowrap; }
+.emc-rail .mh-quote-tab { align-items: center; }
+
+/* One observation per point, and the points are drawn: a quarterly series is
+   four readings a year, and hiding that behind a smooth line would read as
+   continuous data the vendor never published. */
+.emc__line { stroke: var(--mh-blue); }
+.emc__point { fill: var(--mh-blue); stroke: var(--mh-bg); stroke-width: 1.5; }
+
+/* A range that came back short says so where the period is printed. */
+.emc__warn { color: var(--mh-down, #f23645); }
+
+.emc-block__note {
+  color: var(--mh-muted); font-size: 11px; line-height: 1.6;
+  margin: 10px 0 0; max-width: 104ch;
+}
+.emc-block__none { color: var(--mh-muted); font-size: 13px; padding: 22px 0; }
+
+/* A range that is loading disables the rest of the row rather than moving it. */
+.emc .mhc__range:disabled { opacity: .45; }
+
+@media (max-width: 600px) {
+  .emc-block { padding-bottom: 24px; }
+  .emc-tab__flag { width: 28px; height: 28px; }
+  .emc-tab__flag .mh-flag__img { width: 26px; height: 19px; }
+  .emc-tab .mh-price { font-size: 14px; }
+  .emc-block__note { font-size: 10px; }
+}

@@ -7,7 +7,7 @@
    without importing each other.
    ========================================================================== */
 
-import { el, esc, isNum, money, num, pct, mult, price, trim, dec, clamp } from './util.js';
+import { el, esc, isNum, money, num, pct, mult, price, trim, dec, cagr, clamp } from './util.js';
 
 /* ==========================================================================
    Shared building blocks
@@ -74,6 +74,41 @@ export function checkRow(c) {
   ]);
 }
 
+/**
+ * Label / value line. The workhorse of every small card on a dashboard tab.
+ *
+ * `note` is the qualifier that belongs to the figure rather than to the row —
+ * the period it covers, what it excludes — and prints small beside it.
+ */
+export function statLine(label, value, { tone = '', note = '', title = '' } = {}) {
+  return el('div', { class: 'ostat', title: title || null }, [
+    el('span', { class: 'ostat__k', text: label }),
+    el('span', { class: 'ostat__v' }, [
+      value instanceof Node ? value : el('span', { class: tone, text: String(value ?? 'n/a') }),
+      note ? el('i', { class: 'ostat__note', text: note }) : null,
+    ]),
+  ]);
+}
+
+/**
+ * Card head: title on the left, whatever the card wants on the right.
+ *
+ * `info` is the small print — what a figure is measured against, what the card
+ * deliberately does not claim. It hangs off an icon beside the title rather
+ * than sitting under the card as a grey paragraph: on a grid of a dozen cards
+ * every one of those competes with the numbers it qualifies. The sentence is
+ * still there, on hover and to a screen reader.
+ */
+export function ohead(title, aside, info) {
+  return el('div', { class: 'ocard__head' }, [
+    el('h2', {}, [
+      title,
+      info ? icon('info', 'ocard__info', info) : null,
+    ]),
+    aside || null,
+  ]);
+}
+
 export function keyInfo(items) {
   return el('div', { class: 'keyinfo' }, items
     .filter(Boolean)
@@ -126,6 +161,155 @@ export function feedGate(a, feed, what) {
   }
   return notice(`<b>${esc(what)}</b> could not be loaded — ${esc(a.ds.message(feed) || 'unknown error')}.`, 'notice--error');
 }
+/**
+ * The two numbers that summarise a run of bars: what it did in total, and
+ * what that is a year.
+ *
+ * Under a chart rather than in its title, because they are a reading of the
+ * chart rather than a label for it — and together, because either alone
+ * misleads. A total of 4,060% says nothing about how long it took; a
+ * compound rate says nothing about whether the run was steady or one year
+ * doing all the work, which the bars above are there to show.
+ *
+ * Both are null-safe and both refuse a sign flip: a series that starts
+ * negative has no compound rate, and printing one would be arithmetic
+ * pretending to be a fact about the company.
+ */
+export function perfCagr(first, last, years, {
+  fmt = (v) => pct(v, { sign: true }),
+  /* Pass `invert` for a series whose welcome direction is down — a share
+     count, a debt pile. The sign printed is still the sign; only the colour
+     turns over, because "fewer shares" is a fall and a gain at once and the
+     number has to stay honest about which of those it is measuring. */
+  invert = false,
+} = {}) {
+  const total = isNum(first) && isNum(last) && first > 0 ? last / first - 1 : null;
+  const rate = cagr(first, last, years);
+  if (!isNum(total) && !isNum(rate)) return null;
+
+  const good = (v) => (invert ? v < 0 : v > 0);
+  const pill = (label, v, title) => el('span', {
+    class: `perfpill ${isNum(v) && !good(v) ? 'is-down' : 'is-up'}`,
+    title: title || null,
+  }, [
+    el('i', { text: label }),
+    el('b', { text: isNum(v) ? fmt(v) : 'n/a' }),
+  ]);
+
+  return el('div', { class: 'perfrow' }, [
+    pill('Perf', total, `The whole span, start to finish, over ${years} year${years === 1 ? '' : 's'}.`),
+    pill('CAGR', rate, 'The constant annual rate that would have produced the same finish. '
+      + 'Not shown where the series starts at or below zero, which has no compound rate.'),
+  ]);
+}
+
+/**
+ * An asset's logo, with a letter behind it.
+ *
+ * The vendor serves these from its own image host and has one for most listed
+ * companies and funds — but not for every one, and not for an index, which is
+ * not a company at all. A broken image icon in a row of tiles is worse than no
+ * image, so a failed load swaps itself for the first letter of the symbol on a
+ * neutral square and the row keeps its rhythm.
+ *
+ * Takes a URL rather than a symbol, so this file goes on depending only on
+ * `util.js` — `logoUrl()` lives in `fmp.js` and the caller pairs them.
+ *
+ * `fallback: 'none'` drops the tile entirely when the vendor has no image,
+ * which is what a ticker chip wants: the chip already prints the symbol, so a
+ * letter square beside it repeats the first character and nothing else. Tiles
+ * and rows keep the default, where the square is what holds the rhythm.
+ */
+export function logo(url, label = '', { size = '', fallback = 'letter' } = {}) {
+  const cls = `alogo ${size ? `alogo--${size}` : ''}`.trim();
+  const blank = () => (fallback === 'none' ? null : el('span', {
+    class: `${cls} alogo--fb`, 'aria-hidden': 'true',
+    text: String(label || '?').replace(/[^A-Za-z0-9]/g, '')[0]?.toUpperCase() || '?',
+  }));
+  if (!url) return blank();
+
+  const img = el('img', { class: cls, src: url, alt: '', loading: 'lazy' });
+  img.addEventListener('error', () => {
+    const replacement = blank();
+    if (replacement) img.replaceWith(replacement); else img.remove();
+  });
+  return img;
+}
+
+/* ==========================================================================
+   Heatmap
+   ========================================================================== */
+
+/**
+ * A grid of tiles coloured by how far each moved.
+ *
+ * Two surfaces read this — Markets Data's equity page and the sector
+ * breakdown — so it lives here rather than in either of them. It takes an
+ * `onPick` callback instead of a `nav` object, which keeps this file's
+ * dependency list at `util.js` and means a caller decides what a tile click
+ * means.
+ *
+ * ---------------------------------------------------------------------------
+ * Why the buckets are fixed and not relative
+ * ---------------------------------------------------------------------------
+ *
+ * The obvious implementation scales colour to the biggest move on screen. It
+ * is also the wrong one: on a flat day the best sector at +0.2% would render
+ * as deep green, and the page would look like a rally. Fixed thresholds mean a
+ * quiet day *looks* quiet, which is the only honest behaviour for a display
+ * whose whole job is to be read at a glance.
+ *
+ * Five steps either side of zero, at 0.5 / 1 / 2 / 3 per cent.
+ */
+const HEAT_STEPS = [0.5, 1, 2, 3];
+
+export function heatTone(change) {
+  if (!isNum(change)) return 'na';
+  const a = Math.abs(change);
+  let step = 0;
+  for (const t of HEAT_STEPS) if (a >= t) step += 1;
+  if (step === 0) return 'flat';
+  return `${change >= 0 ? 'up' : 'down'}-${step}`;
+}
+
+/**
+ * `rows` is `[{ label, change, note? }]`, `change` already in per cent.
+ *
+ * `onPick(row)` makes a tile a button; without it the tiles are plain spans,
+ * because a tile that looks clickable and is not is worse than one that
+ * plainly is not.
+ */
+export function heatmap(rows, { onPick = null, title = (r) => r.label } = {}) {
+  return el('div', { class: 'heat' }, rows.map((r) => {
+    const kids = [
+      el('span', { class: 'heat__k', text: r.label }),
+      el('span', { class: 'heat__v', text: isNum(r.change) ? pct(r.change, { already: true, sign: true }) : 'n/a' }),
+      r.note ? el('i', { class: 'heat__n', text: r.note }) : null,
+    ];
+    const cls = `heat__t is-${heatTone(r.change)}`;
+
+    return onPick
+      ? el('button', { type: 'button', class: cls, title: title(r), onclick: () => onPick(r) }, kids)
+      : el('div', { class: cls, title: title(r) }, kids);
+  }));
+}
+
+/** The legend that says what the colours mean, since the scale is fixed. */
+export function heatLegend() {
+  const swatch = (tone, label) => el('span', { class: 'heatleg__i' }, [
+    el('i', { class: `heatleg__s is-${tone}` }),
+    el('span', { text: label }),
+  ]);
+  return el('div', { class: 'heatleg' }, [
+    swatch('down-4', '−3%'),
+    swatch('down-2', '−1%'),
+    swatch('flat', '0'),
+    swatch('up-2', '+1%'),
+    swatch('up-4', '+3%'),
+    el('span', { class: 'heatleg__n', text: 'fixed scale, so a quiet day looks quiet' }),
+  ]);
+}
+
 /** Currency code -> the symbol to print in front of a price. */
 export function curSymbol(code) {
   return ({ USD: 'US$', EUR: '€', GBP: '£', JPY: '¥', CAD: 'CA$', AUD: 'AU$', CHF: 'CHF ', INR: '₹' })[code] || `${code} `;

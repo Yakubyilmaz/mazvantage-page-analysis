@@ -9,8 +9,8 @@ import { el, esc, isNum, money, pct, price, trim, dec, fmtDate, ago, signClass }
 import { loadDataset, fetchFor, mapLimited, getApiKey, setApiKey, hasApiKey, clearCache } from './fmp.js';
 import { analyse, loadBenchmarks, saveBenchmarks, DEFAULT_BENCHMARKS } from './model.js';
 import { loadSectorStats, MAX_SCORE } from './grading.js';
-import { FACTOR_KEYS } from './factors.js';
-import { renderFactor, renderRatings } from './gradeview.js';
+import { FACTOR_KEYS, FACTOR_BY_KEY } from './factors.js';
+import { renderFactor, renderFactorTab, renderRatings, renderRatingsTab } from './gradeview.js';
 import { snowflake, AXES } from './snowflake.js';
 import { curSymbol } from './ui.js';
 import {
@@ -18,6 +18,32 @@ import {
   renderOwnership, renderCompetitors, renderDataStatus,
 } from './sections.js';
 import { renderOverviewHead, renderOverviewTab } from './overview.js';
+import { marketRail } from './marketrail.js';
+import { renderFinancialsTab } from './financials.js';
+import { renderStatisticsTab } from './statistics.js';
+import { renderAlphaDesk } from './alphadesk.js';
+import { renderAlphaTab } from './alphatab.js';
+import { renderForecastTab } from './forecast.js';
+import { renderDividendsTab } from './dividends.js';
+import { renderShariahTab } from './shariah.js';
+import { renderTranscriptsTab } from './transcripts.js';
+import { renderNewsTab } from './news.js';
+import { renderResearchTab } from './research.js';
+import { renderPortfoliosPage, IDEA_PARAMS } from './portfolios.js';
+import { renderCalendarPage } from './calendar.js';
+import { buildRailNav, NAV_VIEWS, defaultSub, hasSub, labelFor, NAV_BY_VIEW, SECTOR_ETF, MARKET_ETF } from './nav.js';
+import { renderMarketsPage } from './markets.js';
+import { renderNewsroomPage } from './newsroom.js';
+import { renderStocksPage } from './screens.js';
+import { renderQuantPage } from './quant.js';
+import { renderShariahDesk } from './shariahdesk.js';
+import { renderEtfScreenerPage } from './etfscreener.js';
+import { renderSectorsPage } from './sectorpage.js';
+import { renderWatchlistPage } from './watchlist.js';
+import { renderResearchHubPage } from './researchhub.js';
+import { RESEARCH_PARAMS, queryToParams } from './taxonomy.js';
+import { renderEarningsPage } from './earningsdesk.js';
+import { renderHomePage } from './home.js';
 
 /* ---------- constants ----------------------------------------------------- */
 
@@ -25,47 +51,100 @@ const DEFAULT_SYMBOL = 'AAPL';
 const THEME_KEY = 'mazvantage.theme';
 
 /**
- * The product navigation, down the black rail.
+ * The rail's second group: shortcuts, under the seven menus.
  *
- * Inert on purpose: these are the destinations the wider product will have,
- * and wiring them to nothing would be worse than not wiring them at all. They
- * carry no href, so nothing here looks clickable that is not.
+ * Short. Stock Screener, Sectors & Industries and Investment Ideas moved into
+ * the menus above when those were built, and listing a destination twice in
+ * one rail makes both copies look like different places.
+ *
+ * Calendar is the exception and stays: it is reached often enough to be worth
+ * one click from anywhere, and Research → Earnings is not an obvious place to
+ * look for it.
  */
 const SIDE_NAV = [
-  { label: 'Home', icon: 'dashboard' },
-  { label: 'Maz Picks', icon: 'trending' },
-  { label: 'Stock Screener', icon: 'search' },
+  { label: 'Maz Picks', icon: 'trending', view: 'quant', sub: 'screener' },
+  { label: 'Calendar', icon: 'calendar', view: 'calendar' },
   { label: 'Analysis reports', icon: 'file' },
-  { label: 'Investment Ideas', icon: 'bulb' },
-  { label: 'Sectors & Industries', icon: 'layers' },
 ];
+/* Home leads the rail rather than sitting in the shortcuts below it: it is the
+   market's front page, not a shortcut to one part of the product. */
+const HOME_ITEM = { label: 'Home', icon: 'dashboard', view: 'home' };
 
 /**
  * The tab strip under the report head.
  *
- * Two of these switch something: Overview is the summary page in
- * `overview.js`, Analysis is the full report. The other ten are destinations
- * the wider product will have and are marked `aria-disabled`, so a tab that
- * does nothing says so rather than swallowing the click.
+ * Overview is the summary page in `overview.js`, Analysis is the whole
+ * report, and the five factors each open their own view of the grade the
+ * report already computed. The rest are destinations the wider product will
+ * have and are marked `aria-disabled`, so a tab that does nothing says so
+ * rather than swallowing the click.
  */
+/* `Alpha Signal` sits directly after `Ratings`, which is where the report
+   stops describing what the company *is* and starts describing what has
+   recently happened to it. It is deliberately not next to the five factor
+   tabs: it is not a factor, it does not grade on the 0-5 scale, and putting
+   it inside that run would imply it was a sixth one. */
 const TABS = [
-  'Overview', 'Analysis', 'Ratings', 'Financials', 'Statistics & Metrics',
-  'Valuation', 'Growth', 'Financial Health', 'Profitability',
-  'Analysts Forecast', 'Dividends', 'Shariah Compliance',
+  'Overview', 'Analysis', 'Research', 'Ratings', 'Alpha Signal', 'Financials',
+  'Statistics & Metrics', 'Valuation', 'Growth', 'Financial Health',
+  'Profitability', 'Momentum', 'Analysts Forecast', 'Dividends', 'Transcripts', 'News',
+  'Shariah Compliance',
 ];
 
-/** The tabs with a panel behind them. */
-const LIVE_TABS = ['Overview', 'Analysis'];
-
-
-/** Sector → SPDR sector ETF, used as the industry benchmark for returns. */
-const SECTOR_ETF = {
-  'Technology': 'XLK', 'Communication Services': 'XLC', 'Consumer Cyclical': 'XLY',
-  'Consumer Defensive': 'XLP', 'Healthcare': 'XLV', 'Financial Services': 'XLF',
-  'Industrials': 'XLI', 'Energy': 'XLE', 'Basic Materials': 'XLB',
-  'Utilities': 'XLU', 'Real Estate': 'XLRE',
+/**
+ * Tab label -> factor key, for the five that open a factor.
+ *
+ * The labels are the product's, the keys are `factors.js`'s, and they differ
+ * in one place: the factor keyed `health` is called Financial Health on the
+ * strip and in every heading.
+ */
+const FACTOR_TABS = {
+  Valuation: 'valuation',
+  Growth: 'growth',
+  'Financial Health': 'health',
+  Profitability: 'profitability',
+  Momentum: 'momentum',
 };
-const MARKET_ETF = 'SPY';
+
+/**
+ * Tab label -> the renderer that builds its panel.
+ *
+ * Every one of these returns a card grid and takes `(a, nav)`, so the panel
+ * builder does not need a branch each. Overview is not here — it also owns
+ * the head above the tab strip — and neither are the five factors, which all
+ * go through one renderer keyed by `FACTOR_TABS` below.
+ */
+const PLAIN_TABS = {
+  Research: renderResearchTab,
+  'Alpha Signal': renderAlphaTab,
+  Ratings: renderRatingsTab,
+  Financials: renderFinancialsTab,
+  'Statistics & Metrics': renderStatisticsTab,
+  'Analysts Forecast': renderForecastTab,
+  Dividends: renderDividendsTab,
+  Transcripts: renderTranscriptsTab,
+  News: renderNewsTab,
+  'Shariah Compliance': renderShariahTab,
+};
+
+/** Factor key -> the tab label that opens it. */
+const TAB_FOR_FACTOR = Object.fromEntries(
+  Object.entries(FACTOR_TABS).map(([label, key]) => [key, label]));
+
+/** The tabs with a panel behind them. */
+/**
+ * The tabs with a panel behind them — which is now all thirteen.
+ *
+ * Kept as its own list rather than folded into `TABS` because `buildTabs`
+ * still greys anything absent from it, and that is the mechanism a future
+ * tab is added through: build the panel, add the label here.
+ */
+const LIVE_TABS = TABS;
+
+
+/* `SECTOR_ETF` and `MARKET_ETF` — the two benchmarks returns are measured
+   against — live in `nav.js` beside the sector list, because the sector pages
+   read them too. */
 
 /* ---------- theme --------------------------------------------------------- */
 
@@ -90,6 +169,21 @@ const STROKE = {
   bulb: '<path d="M9 18h6"/><path d="M10 22h4"/>'
     + '<path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A5.06 5.06 0 0 1 8.91 14"/>',
   layers: '<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>',
+  calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/>'
+    + '<line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/>',
+  bars: '<line x1="6" y1="20" x2="6" y2="13"/><line x1="12" y1="20" x2="12" y2="4"/>'
+    + '<line x1="18" y1="20" x2="18" y2="9"/>',
+  news: '<path d="M4 5h11v15H5a1 1 0 0 1-1-1z"/><path d="M15 9h4v9a2 2 0 0 1-2 2h-2"/>'
+    + '<line x1="7" y1="9" x2="12" y2="9"/><line x1="7" y1="13" x2="12" y2="13"/>'
+    + '<line x1="7" y1="16" x2="10" y2="16"/>',
+  target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/>',
+  basket: '<path d="M3 9h18l-1.6 9.2A2 2 0 0 1 17.4 20H6.6a2 2 0 0 1-2-1.8z"/>'
+    + '<path d="M8 9 10.5 4"/><path d="M16 9 13.5 4"/>'
+    + '<line x1="10" y1="13" x2="10" y2="16"/><line x1="14" y1="13" x2="14" y2="16"/>',
+  star: '<polygon points="12 3 14.9 9.2 21.5 10 16.7 14.6 18 21.1 12 17.9 6 21.1 7.3 14.6 2.5 10 9.1 9.2"/>',
+  shield: '<path d="M12 3l7 3v6c0 4.4-3 8-7 9-4-1-7-4.6-7-9V6z"/>',
+  mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/>'
+    + '<line x1="12" y1="18" x2="12" y2="21"/><line x1="8" y1="21" x2="16" y2="21"/>',
 };
 
 function strokeIcon(kind) {
@@ -155,18 +249,58 @@ function buildTopbar(onSearch) {
  * a 49,000px page into five destinations. `wireFlakeSpy` then keeps the wedge
  * you are reading lit.
  */
-function buildSideNav() {
-  return el('aside', { class: 'sidenav' }, [
-    el('div', { class: 'sidenav__brand' }, [
+/**
+ * The rail.
+ *
+ * An item with a `view` is a real destination and renders as a button; the
+ * rest stay inert spans, which is the same rule the tab strip follows — a
+ * thing that looks clickable and is not is worse than a thing that plainly
+ * is not built yet.
+ */
+function buildSideNav(current = null, nav = {}) {
+  const menus = buildRailNav(current, nav, strokeIcon);
+  const railItem = (item) => {
+    if (!item.view) {
+      return el('span', { class: 'sidenav__item', title: 'Not built yet' }, [
+        strokeIcon(item.icon),
+        el('span', { text: item.label }),
+      ]);
+    }
+    const on = current?.view === item.view && (!item.sub || current?.sub === item.sub);
+    return el('button', {
+      type: 'button',
+      class: `sidenav__item is-live ${on ? 'is-active' : ''}`.trim(),
+      'aria-current': on ? 'page' : null,
+      onclick: () => goView(item.view, item.sub || null),
+    }, [
+      strokeIcon(item.icon),
+      el('span', { text: item.label }),
+    ]);
+  };
+  // Into the menu group rather than above it, so it reads as the first item of
+  // the navigation instead of a second navigation with one item in it.
+  menus.prepend(railItem(HOME_ITEM));
+
+  const shortcuts = el('nav', { class: 'sidenav__nav sidenav__nav--minor', 'aria-label': 'Shortcuts' },
+    SIDE_NAV.map(railItem));
+
+  const aside = el('aside', { class: 'sidenav' }, [
+    el('button', {
+      type: 'button', class: 'sidenav__brand', title: 'Home',
+      onclick: () => goView('home'),
+    }, [
       el('img', { class: 'sidenav__mark', src: 'assets/img/logo-mark.svg', alt: '' }),
       el('img', { class: 'sidenav__word', src: 'assets/img/logo-word.svg', alt: 'Vantage' }),
     ]),
-    el('nav', { class: 'sidenav__nav' }, SIDE_NAV.map((item) =>
-      el('span', { class: 'sidenav__item' }, [
-        strokeIcon(item.icon),
-        el('span', { text: item.label }),
-      ]))),
+    menus,
+    el('div', { class: 'sidenav__rule' }),
+    shortcuts,
   ]);
+
+  // The rail owns the menus' document listeners now, so it owns tearing them
+  // down. `chrome()` calls this before replacing the rail.
+  aside.dispose = () => menus.dispose?.();
+  return aside;
 }
 
 /**
@@ -331,7 +465,10 @@ function buildTabs(active, onSelect) {
   });
   mark(active);
 
-  return { node: el('div', { class: 'tabs' }, [el('div', { class: 'tabs__strip' }, buttons)]), mark };
+  // On the market canvas like everything below it: the strip sat on the report
+  // canvas's own surface, which read as a beige band between a white head and
+  // a white panel.
+  return { node: el('div', { class: 'tabs mh-page' }, [el('div', { class: 'tabs__strip' }, buttons)]), mark };
 }
 
 function logoMark() {
@@ -542,10 +679,19 @@ function openSettings() {
    Loading / error states
    ========================================================================== */
 
+/**
+ * The chrome with no page behind it yet.
+ *
+ * The loading and error screens carry the same rail, utility bar and nav bar
+ * as a finished page, so the chrome does not appear and shift once the report
+ * lands. It builds its own nav adapter because there is no page nav yet.
+ */
+function chromeShell(body) {
+  return chrome(null, navFor({}), el('div', {}, body));
+}
+
 function skeleton(symbol) {
-  return el('div', { class: 'layout' }, [
-    buildSideNav(),
-    el('div', { class: 'content' }, [buildTopbar(go), el('div', { class: 'shell' }, [
+  return chromeShell([el('div', { class: 'shell' }, [
     el('main', {}, [
       el('div', { class: 'sk sk--line', style: { width: '260px', height: '28px' } }),
       el('div', { class: 'sk sk--line', style: { width: '40%' } }),
@@ -558,14 +704,11 @@ function skeleton(symbol) {
       ]),
       el('p', { class: 't-xs softer center', text: `Loading ${symbol}…` }),
     ]),
-    ])]),
-  ]);
+  ])]);
 }
 
 function errorScreen(symbol, message, extra) {
-  return el('div', { class: 'layout' }, [
-    buildSideNav(),
-    el('div', { class: 'content' }, [buildTopbar(go), el('div', { class: 'shell' }, [
+  return chromeShell([el('div', { class: 'shell' }, [
     el('main', {}, [
       el('div', { class: 'card' }, [
         el('div', { class: 'card__head' }, [el('h2', { text: `Could not build a report for ${symbol}` })]),
@@ -577,8 +720,7 @@ function errorScreen(symbol, message, extra) {
         ]),
       ]),
     ]),
-    ])]),
-  ]);
+  ])]);
 }
 
 /* ==========================================================================
@@ -597,9 +739,14 @@ function symbolFromUrl() {
  * so a link to one is a link into that tab rather than a broken jump on the
  * Overview.
  */
+/* Punctuation out, not just whitespace: "Statistics & Metrics" would
+   otherwise slug to `statistics-&-metrics` and reach the address bar
+   percent-encoded. Every other label is unaffected. */
+const tabSlug = (tab) => tab.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
 function tabFromUrl() {
   const q = (new URLSearchParams(location.search).get('tab') || '').toLowerCase();
-  const named = LIVE_TABS.find((t) => t.toLowerCase() === q);
+  const named = LIVE_TABS.find((t) => tabSlug(t) === q);
   if (named) return named;
   return location.hash ? 'Analysis' : 'Overview';
 }
@@ -610,14 +757,140 @@ function tabFromUrl() {
 function setTabInUrl(tab) {
   const url = new URL(location.href);
   if (tab === LIVE_TABS[0]) url.searchParams.delete('tab');
-  else url.searchParams.set('tab', tab.toLowerCase());
+  else url.searchParams.set('tab', tabSlug(tab));
   history.replaceState({ ...history.state, tab }, '', url);
 }
 
 function go(symbol) {
   const url = new URL(location.href);
   url.searchParams.set('symbol', symbol);
+  // Searching a ticker means "show me that company", so it leaves whatever
+  // non-report view the reader was on rather than searching inside it.
+  url.searchParams.delete('view');
+  VIEW_PARAMS.forEach((p) => url.searchParams.delete(p));
   history.pushState({ symbol }, '', url);
+  boot();
+}
+
+/* ==========================================================================
+   Views
+
+   The app is a company report with tabs, plus — from the rail — a small
+   number of pages that are not about one company at all. `?view=` picks
+   between them; absent, the report is the view.
+   ========================================================================== */
+
+/**
+ * Every page that is not a company report.
+ *
+ * `ideas` and `calendar` predate the nav bar and keep their own slugs; the
+ * seven in `NAV_VIEWS` come from `nav.js`, which is the one place the menu
+ * and the router agree on what a destination is called.
+ *
+ * `home` is in neither list on purpose. It is not in `NAV_PAGES` because
+ * every page there renders from nothing and fetches afterwards, and Home
+ * cannot: its top tile is a company, so it has to wait for the dataset. It
+ * is dispatched further down `render`, after the load the report also pays
+ * for.
+ */
+// `ideas` is no longer listed here: it is a rail menu now, so `NAV_VIEWS`
+// already carries it and a second copy could only ever disagree.
+const VIEWS = new Set(['home', 'calendar', ...NAV_VIEWS]);
+
+/**
+ * Query parameters that belong to a view rather than to the report.
+ *
+ * Cleared on every `goView`, so a filter left over from one page is never
+ * carried into another. `RESEARCH_PARAMS` is the Research feed's own set —
+ * imported rather than repeated, because a filter added to the taxonomy and
+ * forgotten here would survive a navigation and quietly filter the next page.
+ */
+const VIEW_PARAMS = ['kind', 'week', 'country', 'collection', 'board', 'table', 'bench', 'sample', 'screen', 'days', 'sub', 'industry', ...IDEA_PARAMS, ...RESEARCH_PARAMS];
+
+/** The ten nav pages and the renderer each one dispatches to. */
+const NAV_PAGES = {
+  markets:  renderMarketsPage,
+  watchlist: renderWatchlistPage,
+  news:     renderNewsroomPage,
+  stocks:   renderStocksPage,
+  // Funds got a menu of their own: same screener component, its own page, so
+  // a fund collection is not filed under a menu called Stock Screener.
+  etfs:     renderEtfScreenerPage,
+  sectors:  renderSectorsPage,
+  ideas:    renderPortfoliosPage,
+  research: renderResearchHubPage,
+  earnings: renderEarningsPage,
+  quant:    renderQuantPage,
+  alpha:    renderAlphaDesk,
+  shariah:  renderShariahDesk,
+};
+
+function viewFromUrl() {
+  const v = (new URLSearchParams(location.search).get('view') || '').toLowerCase();
+  return VIEWS.has(v) ? v : null;
+}
+
+/**
+ * Which section of a nav page to open.
+ *
+ * An unknown or absent `sub` falls back to the page's first section, so
+ * `?view=markets` and a stale link to a section that has been renamed both
+ * land somewhere real rather than on an empty page.
+ */
+function subFromUrl(view) {
+  const raw = (new URLSearchParams(location.search).get('sub') || '').toLowerCase();
+  return hasSub(view, raw) ? raw : defaultSub(view);
+}
+
+/**
+ * Push a view onto the history. `null` goes back to the company report.
+ *
+ * The second argument is the section, for every nav page. It used to mean an
+ * idea key when `view` was `ideas`, which was the one place this signature
+ * meant two things; Investment Ideas became a rail menu with its own sections,
+ * so a portfolio now travels in the third argument as `{ idea: key }` like any
+ * other page state and the special case is gone.
+ *
+ * The optional third is a bag of extra query parameters for pages that carry
+ * state beyond their section — today only the Research feed's filters. Every
+ * existing caller passes two arguments and is unaffected.
+ */
+function goView(view, arg = null, params = null) {
+  if (view === 'markets' && arg === 'country') {
+    arg = 'overview';
+    params = { ...params, country: 'US' };
+  }
+  const url = new URL(location.href);
+  if (view) url.searchParams.set('view', view);
+  else url.searchParams.delete('view');
+  // Every view's own state, cleared on the way out. A calendar week left in
+  // the query string behind an idea is dead weight in a link somebody shares.
+  VIEW_PARAMS.forEach((p) => url.searchParams.delete(p));
+  // `tab` belongs to the company report and means nothing on a view. `symbol`
+  // stays: it is the company context a reader returns to, and `goSymbolTab`
+  // reads it back out.
+  url.searchParams.delete('tab');
+  url.hash = '';
+  if (arg && NAV_PAGES[view]) url.searchParams.set('sub', arg);
+
+  // A third argument, for a page whose section is not the whole of its state.
+  // The Research feed is the only one so far: its filters are the URL, so a
+  // pill click is a navigation rather than a re-render, and the back button
+  // steps through filters for free. Written after `VIEW_PARAMS` has cleared
+  // the old ones, so a query replaces the previous one rather than merging
+  // with it.
+  if (params) {
+    for (const [k, v] of Object.entries(params)) {
+      // `null` means "not set"; an empty string does not. The screener needs
+      // `f=` present and empty to mean "this portfolio, with its rules
+      // deliberately cleared", which is a different screen from `f=` absent.
+      if (v == null) continue;
+      url.searchParams.set(k, String(v));
+    }
+  }
+  // A push, not a replace: a page somebody arrived at deliberately is one the
+  // browser's back button should leave.
+  history.pushState({ view, arg }, '', url);
   boot();
 }
 
@@ -667,16 +940,184 @@ async function loadExtras(ds, facts) {
   return out;
 }
 
-let booting = false;
+/**
+ * The Calendar view.
+ *
+ * Mounted once and left alone. Unlike the report and unlike an idea, the page
+ * owns its own fetching — a week is a request and the reader pages through
+ * them — so re-booting the app on every arrow would tear down the filters
+ * they had set to get there. It keeps `?view=calendar&kind=&week=` in step
+ * with `replaceState` instead, which is enough to make the link shareable.
+ */
+/**
+ * One of the seven nav pages.
+ *
+ * Every one of them is a `(view, sub)` pair, renders synchronously into a
+ * node, and fetches whatever it needs afterwards — none of them pays for the
+ * company dataset. `nav` is the same three ways out for all of them:
+ * another page, a company, or a tab on the company report.
+ */
+/* Home boots the way the nav pages do. It used to wait for a company dataset,
+   because it used to be about a company; the market's front page needs no
+   symbol and should not pay for one before it draws. */
+const BOOT_PAGES = { ...NAV_PAGES, home: renderHomePage };
 
+function bootNavPage(app, view) {
+  const sub = view === 'home' ? null : subFromUrl(view);
+  const label = view === 'home' ? 'Home' : (labelFor(view, sub) || NAV_BY_VIEW[view]?.label || view);
+  document.title = `${label} — Maz Vantage`;
+
+  const nav = {
+    goView: (v, arg, params) => goView(v, arg, params),
+    openSettings: () => openSettings(),
+    // The Research feed's filters travel here. Everything else on a page uses
+    // `goView`; this is the one that also writes a query.
+    goQuery: (v, arg, params) => goView(v, arg, queryToParams(params || {})),
+    goSymbol: (sym) => go(sym),
+    goSymbolTab: (tab, symbol) => goSymbolTab(tab, symbol),
+    openSymbol: (sym) => go(sym),
+    openIdeas: () => goView('ideas', 'all'),
+    // A portfolio is page state, not a section, so it travels in the params
+    // bag. `goIdea` is what the directory tiles and the portfolio switcher
+    // call; `openIdea` is the older name the result views still use.
+    goIdea: (key, extra = null) => goView('ideas', null, { idea: key, ...(extra || {}) }),
+    openIdea: (key) => goView('ideas', null, { idea: key }),
+    // An industry is page state for the same reason a portfolio is: the vendor
+    // publishes about a hundred and thirty of them and renames them, so there
+    // is no fixed list to slug against and the name travels in the query.
+    goIndustry: (name) => goView('sectors', 'industry', { industry: name }),
+  };
+
+  app.replaceChildren(chrome({ view, sub }, nav,
+    el('div', { class: 'shell shell--wide' }, [BOOT_PAGES[view](sub, nav)])));
+  window.scrollTo({ top: 0, behavior: 'instant' });
+}
+
+/**
+ * Leave whatever page this is and open a tab on the company report.
+ *
+ * The nav bar offers several of these — Stock Analysis, Valuation, Dividends
+ * — and they are the one kind of destination that needs a symbol. There is
+ * always one: `symbolFromUrl` falls back to the default ticker.
+ */
+function goSymbolTab(tab, symbol = null) {
+  const url = new URL(location.href);
+  url.searchParams.delete('view');
+  VIEW_PARAMS.forEach((p) => url.searchParams.delete(p));
+  // A caller can name the company — the Earnings library opens a transcript
+  // for whichever row was clicked, not for whatever was last in the URL.
+  url.searchParams.set('symbol', (symbol || symbolFromUrl()).toUpperCase());
+  if (tab) url.searchParams.set('tab', tabSlug(tab));
+  else url.searchParams.delete('tab');
+  history.pushState({ tab }, '', url);
+  boot();
+}
+
+/**
+ * The frame every page shares: rail, utility bar, nav bar, body.
+ *
+ * `current` is the `(view, sub)` the bar should mark active, or null on the
+ * company report. The previous bar's document listeners are torn down here —
+ * the bar is rebuilt on every navigation, and without this each one would
+ * leave a live click and keydown handler behind.
+ */
+let liveRail = null;
+function chrome(current, nav, body) {
+  document.querySelector('.mh-page')?.dispose?.();
+  liveRail?.dispose?.();
+  const rail = buildSideNav(current, nav);
+  liveRail = rail;
+
+  /* The market rail is a singleton that survives navigation, so it is moved
+     into each new layout rather than rebuilt — see `marketrail.js`. It carries
+     the market canvas's own class so it themes with the rest of the app. */
+  const market = marketRail(navFor(nav));
+  market.classList.add('mh-page');
+
+  return el('div', { class: 'layout has-rail' }, [
+    rail,
+    el('div', { class: 'content' }, [buildTopbar(go), body]),
+    market,
+  ]);
+}
+
+/** The bar needs `goView`/`goSymbol`/`goSymbolTab`; older pages pass their own. */
+function navFor(nav = {}) {
+  return {
+    ...nav,
+    goView: nav.goView || ((v, arg, params) => goView(v, arg, params)),
+    goQuery: nav.goQuery || ((v, arg, params) => goView(v, arg, queryToParams(params || {}))),
+    goIdea: nav.goIdea || ((key, extra = null) => goView('ideas', null, { idea: key, ...(extra || {}) })),
+    goIndustry: nav.goIndustry || ((name) => goView('sectors', 'industry', { industry: name })),
+    goSymbol: nav.goSymbol || nav.openSymbol || ((sym) => go(sym)),
+    goSymbolTab: nav.goSymbolTab || ((tab, symbol) => goSymbolTab(tab, symbol)),
+  };
+}
+
+function bootCalendar(app) {
+  document.title = 'Calendar — Maz Vantage';
+
+  const nav = { openSymbol: (sym) => go(sym) };
+
+  app.replaceChildren(chrome({ view: 'calendar' }, navFor(nav), renderCalendarPage(nav)));
+  window.scrollTo({ top: 0, behavior: 'instant' });
+}
+
+let booting = false;
+// Named apart from the flake's own rAF `queued` below, which is function-local
+// and unrelated.
+let queuedBoot = null;
+
+/**
+ * Render whatever the URL currently says, one pass at a time.
+ *
+ * A pass can take seconds — 27 feeds on a cold cache — and the reader can
+ * navigate inside that window: the rail, the ticker search and the browser's
+ * own back button all land here. Dropping the second call, which is what a
+ * bare `if (booting) return` did, left the address bar on the new page and
+ * the screen on the old one.
+ *
+ * So a call that arrives mid-pass is remembered rather than discarded, and
+ * runs once the pass in flight lands. Only the newest is kept: three clicks
+ * during one load should end on the third, not replay all three.
+ */
 export async function boot(force = false) {
-  if (booting) return;
+  if (booting) { queuedBoot = { force }; return; }
   booting = true;
+  try {
+    await render(force);
+  } finally {
+    booting = false;
+    const next = queuedBoot;
+    queuedBoot = null;
+    if (next) boot(next.force);
+  }
+}
+
+async function render(force) {
+  const app = document.getElementById('app');
+
+  // A view off the rail is not about a company, so it does not pay for a
+  // dataset. It returns before the 27-feed load below ever starts.
+  // A URL that names neither a view nor a company is somebody arriving at
+  // the product rather than at a report, so it lands on Home. `?symbol=AAPL`
+  // with no view still opens the report directly, which is what every link
+  // this app writes for a company looks like.
+  const params = new URLSearchParams(location.search);
+  const view = viewFromUrl() || (!params.get('view') && !params.get('symbol') ? 'home' : null);
+
+  if (view === 'calendar') {
+    bootCalendar(app);
+    return;
+  }
+  if (view === 'home' || NAV_PAGES[view]) {
+    bootNavPage(app, view);
+    return;
+  }
 
   const symbol = symbolFromUrl();
   document.title = `${symbol} — Maz Vantage Stock Analysis`;
 
-  const app = document.getElementById('app');
   app.replaceChildren(skeleton(symbol));
 
   try {
@@ -721,14 +1162,47 @@ export async function boot(force = false) {
         : 'No API key configured — showing the <b>bundled snapshot</b>. Open Settings to connect your FMP key for live data on any ticker.' }),
     ]));
 
-    /** Everything on the Overview and the Analysis can send the reader to a factor. */
-    const nav = { openAnalysis: (anchor) => selectTab('Analysis', anchor) };
+    /** How anything on any panel sends the reader somewhere else.
+     *
+     *  The first two switch tabs inside this report. The rest leave it: the
+     *  rebuilt stock page has a breadcrumb into the markets pages, peer cards
+     *  that open another company, and section headings that open the tab
+     *  behind them, and all three need the app's own router. */
+    const nav = {
+      openAnalysis: (anchor) => selectTab('Analysis', anchor),
+      openFactor: (key) => selectTab(TAB_FOR_FACTOR[key] || 'Analysis',
+        TAB_FOR_FACTOR[key] ? null : FACTOR_BY_KEY[key]?.anchor),
+      goView: (v, arg, params) => goView(v, arg, params),
+      goSymbol: (sym) => go(sym),
+      // A tab on *this* report is a panel switch, not a navigation: rebuilding
+      // the page to move between its own tabs would throw away every panel
+      // already built. Only another company's tab goes through the router.
+      goSymbolTab: (tab, symbol = null) => (
+        !symbol || String(symbol).toUpperCase() === String(a.facts.symbol).toUpperCase()
+          ? selectTab(tab)
+          : goSymbolTab(tab, symbol)),
+      openSettings: () => openSettings(),
+    };
 
+    /* Every panel is mounted on the market canvas.
+     *
+     * `.mh-page` is what carries that canvas's tokens, and `reportcanvas.css`
+     * remaps the report's own token set onto them inside it — so a panel
+     * built from the shared `ui.js` primitives adopts the canvas without a
+     * line of its rendering code changing. `--flush` because the shell below
+     * already owns the page gutter. */
+    const CANVAS = 'mh-page mh-page--flush';
     const buildPanel = (tab) => {
       if (tab === 'Overview') {
-        // No flake column: the Overview is a grid of cards rather than a long
-        // scroll through five sections, so there is nothing for it to spy on.
-        return el('div', { class: 'shell shell--wide' }, [banner(), renderOverviewTab(a, extras, nav)]);
+        // No flake column: the Overview is a grid of sections rather than a
+        // long scroll through five of them, so there is nothing to spy on.
+        return el('div', { class: `shell shell--wide ${CANVAS}` }, [banner(), renderOverviewTab(a, extras, nav)]);
+      }
+      const plain = PLAIN_TABS[tab];
+      if (plain) return el('div', { class: `shell shell--wide ${CANVAS}` }, [banner(), plain(a, nav)]);
+      if (FACTOR_TABS[tab]) {
+        return el('div', { class: `shell shell--wide ${CANVAS}` },
+          [banner(), renderFactorTab(a, FACTOR_TABS[tab], nav)]);
       }
       const main = el('main', {}, [
         banner(),
@@ -745,7 +1219,7 @@ export async function boot(force = false) {
         renderDataStatus(a),
         buildFooter(),
       ]);
-      return el('div', { class: 'shell' }, [buildPageFlake(a), main]);
+      return el('div', { class: `shell ${CANVAS}` }, [buildPageFlake(a), main]);
     };
 
     // Panels are built on first visit and kept: the Analysis is ~50,000px of
@@ -760,7 +1234,9 @@ export async function boot(force = false) {
       if (tab !== current) {
         current = tab;
         tabs.mark(tab);
-        headSlot.replaceChildren(tab === 'Overview' ? renderOverviewHead(a, nav) : buildPriceHead(a));
+        headSlot.replaceChildren(tab === 'Overview'
+          ? renderOverviewHead(a, nav)
+          : el('div', { class: `${CANVAS} rc-head` }, [buildPriceHead(a)]));
         if (!panels[tab]) panels[tab] = buildPanel(tab);
         panelSlot.replaceChildren(panels[tab]);
         setTabInUrl(tab);
@@ -790,18 +1266,14 @@ export async function boot(force = false) {
 
     const tabs = buildTabs(tabFromUrl(), (t) => selectTab(t));
 
-    app.replaceChildren(el('div', { class: 'layout' }, [
-      buildSideNav(),
-      el('div', { class: 'content' }, [buildTopbar(go), headSlot, tabs.node, panelSlot]),
-    ]));
+    app.replaceChildren(chrome(null, navFor(nav),
+      el('div', {}, [headSlot, tabs.node, panelSlot])));
 
     selectTab(tabFromUrl(), location.hash ? location.hash.slice(1) : null);
   } catch (err) {
     console.error(err);
     app.replaceChildren(errorScreen(symbol, `Unexpected error: ${err.message}`,
       el('pre', { class: 't-tiny softer', style: { whiteSpace: 'pre-wrap' }, text: String(err.stack || '') })));
-  } finally {
-    booting = false;
   }
 }
 

@@ -1,0 +1,185 @@
+/* ==========================================================================
+   Maz Vantage — the stock page
+
+   The company report's Overview, on the market canvas. Everything here sits
+   inside `.mh-page`, so the tokens (--mh-bg, --mh-fg, --mh-border, --mh-up,
+   --mh-down) are the market ones and not app.css's.
+
+   The layout idea, borrowed from TradingView's symbol page: sections are
+   flat, not carded. A heading, then a four-column grid of label-over-value.
+   Boxes are reserved for the things that really are objects — the chart, a
+   peer, the flake — so the page reads as one document rather than a wall of
+   panels.
+   ========================================================================== */
+
+/* This canvas is mounted inside the report's own shell, which already owns
+   the page gutter, so the market page's own padding would double it. */
+.mh-page--flush { min-height: 0; overflow: visible; }
+.mh-page--flush:not(.shell) { padding: 0; }
+
+/* ---- the head, above the tab strip --------------------------------------- */
+
+.sp-head { padding-bottom: 18px; }
+
+.sp-crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12px; color: var(--mh-muted); margin-bottom: 18px; }
+.sp-crumb { padding: 0; background: none; color: inherit; font: inherit; }
+button.sp-crumb:hover { color: var(--mh-blue); text-decoration: underline; }
+.sp-crumbs > :not(:last-child)::after { content: '/'; margin-left: 6px; color: var(--mh-border); }
+.sp-crumbs > :last-child { color: var(--mh-fg); font-weight: 600; }
+
+.sp-head__row { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+
+.sp-head__logo {
+  position: relative; display: inline-grid; place-items: center; flex: none;
+  width: 62px; height: 62px; border-radius: 50%; overflow: hidden;
+  background: var(--mh-soft); color: var(--mh-muted); font-size: 15px; font-weight: 700;
+}
+.sp-head__logo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #fff; padding: 6px; }
+
+.sp-head__id { min-width: 0; margin-right: auto; }
+.sp-head__name { margin: 0; font-size: 34px; line-height: 1.15; font-weight: 650; letter-spacing: -.03em; color: var(--mh-fg); }
+.sp-head__sub { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 6px; font-size: 13px; color: var(--mh-muted); }
+.sp-head__sub b { color: var(--mh-fg); font-weight: 600; }
+.sp-tag { border: 1px solid var(--mh-border); border-radius: 20px; padding: 2px 9px; font-size: 11px; }
+
+.sp-head__quote { display: grid; gap: 2px; }
+.sp-head__price { display: flex; align-items: baseline; gap: 7px; flex-wrap: wrap; }
+.sp-head__price b { font-size: 30px; font-weight: 650; letter-spacing: -.02em; color: var(--mh-fg); font-variant-numeric: tabular-nums; }
+.sp-head__price i { font-style: normal; font-size: 12px; color: var(--mh-muted); }
+.sp-head__chg { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sp-head__chg.is-up { color: var(--mh-up); }
+.sp-head__chg.is-down { color: var(--mh-down); }
+.sp-head__asof { margin: 0; font-size: 11px; color: var(--mh-muted); }
+
+.sp-head__score {
+  display: grid; justify-items: center; gap: 5px; flex: none;
+  border: 1px solid var(--mh-border); border-radius: 14px; padding: 12px 20px; background: var(--mh-soft);
+}
+.sp-head__score:hover { background: var(--mh-hover); }
+.sp-head__scorek { font-size: 10px; font-weight: 600; letter-spacing: .09em; text-transform: uppercase; color: var(--mh-muted); }
+.sp-head__verdict { font-size: 12px; font-weight: 600; }
+.sp-head__verdict.is-good { color: var(--mh-up); }
+.sp-head__verdict.is-bad { color: var(--mh-down); }
+
+/* ---- the page ------------------------------------------------------------ */
+
+/* Section spacing is the page's rhythm. The gap between two sections has to
+   beat the gap between a heading and its own grid by a clear margin, or a
+   heading reads as belonging to the rows above it rather than below. */
+.sp-page { display: grid; gap: 58px; padding-top: 10px; }
+.sp-block { display: grid; gap: 18px; min-width: 0; }
+.sp-block > .mh-heading { margin-bottom: 0; }
+.sp-block > .mh-section-description { margin: -4px 0 0; max-width: 96ch; }
+
+/* The stat grid every section is laid out on. */
+.sp-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 28px 26px; }
+.sp-stat { display: grid; gap: 3px; min-width: 0; border-top: 1px solid var(--mh-border); padding-top: 11px; }
+.sp-stat__k { font-size: 12px; color: var(--mh-muted); }
+.sp-stat__v { display: flex; align-items: baseline; gap: 5px; min-width: 0; }
+.sp-stat__v b { font-size: 19px; font-weight: 600; letter-spacing: -.01em; color: var(--mh-fg); font-variant-numeric: tabular-nums; overflow: hidden; text-overflow: ellipsis; }
+.sp-stat__v i { font-style: normal; font-size: 11px; color: var(--mh-muted); }
+.sp-stat__v.is-up b { color: var(--mh-up); }
+.sp-stat__v.is-down b { color: var(--mh-down); }
+.sp-stat__n { font-size: 11px; color: var(--mh-muted); }
+
+/* ---- chart and the windows under it -------------------------------------- */
+
+.sp-block--chart { gap: 0; }
+.sp-block--chart .mhc { border: 1px solid var(--mh-border); border-radius: 14px; }
+.sp-block--chart .mhc__plot { height: 380px; }
+
+.sp-perf { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1px; margin-top: 14px; background: var(--mh-border); border: 1px solid var(--mh-border); border-radius: 12px; overflow: hidden; }
+.sp-perf__i { display: grid; gap: 3px; padding: 12px 16px; background: var(--mh-bg); }
+.sp-perf__k { font-size: 11px; color: var(--mh-muted); }
+.sp-perf__v { font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.sp-perf__v.is-up { color: var(--mh-up); }
+.sp-perf__v.is-down { color: var(--mh-down); }
+
+/* The disconnected page still charts, from the bundled dataset's own series. */
+.sp-snapshot { border: 1px solid var(--mh-border); border-radius: 14px; padding: 16px 18px; }
+.sp-snapshot__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; margin-bottom: 10px; }
+.sp-snapshot__head b { font-size: 15px; font-weight: 650; color: var(--mh-fg); }
+.sp-snapshot__head span { font-size: 11px; color: var(--mh-muted); }
+
+/* ---- peers --------------------------------------------------------------- */
+
+.sp-peers { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.sp-peer { display: grid; gap: 12px; text-align: left; border: 1px solid var(--mh-border); border-radius: 12px; padding: 14px; background: var(--mh-bg); }
+.sp-peer:hover { background: var(--mh-hover); }
+.sp-peer__id { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.sp-peer__id > div { min-width: 0; display: grid; gap: 1px; }
+.sp-peer__id strong { font-size: 13px; font-weight: 650; color: var(--mh-fg); }
+.sp-peer__id small { font-size: 11px; color: var(--mh-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sp-peer__mark {
+  position: relative; display: inline-grid; place-items: center; flex: none;
+  width: 32px; height: 32px; border-radius: 50%; overflow: hidden;
+  background: var(--mh-soft); color: var(--mh-muted); font-size: 9px; font-weight: 700;
+}
+.sp-peer__mark img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #fff; padding: 3px; }
+.sp-peer__v { display: flex; align-items: baseline; gap: 8px; font-variant-numeric: tabular-nums; }
+.sp-peer__v b { font-size: 16px; font-weight: 600; color: var(--mh-fg); }
+.sp-peer__mult { font-size: 12px; color: var(--mh-muted); }
+.sp-peer__v .is-up { color: var(--mh-up); font-size: 12px; font-weight: 600; }
+.sp-peer__v .is-down { color: var(--mh-down); font-size: 12px; font-weight: 600; }
+
+/* ---- the factor grades --------------------------------------------------- */
+
+.sp-grades { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 26px; align-items: center; border: 1px solid var(--mh-border); border-radius: 14px; padding: 20px; }
+.sp-grades__flake { display: grid; place-items: center; }
+.sp-grades__rows { display: grid; gap: 10px; min-width: 0; }
+
+.sp-grade { display: grid; grid-template-columns: 130px minmax(0, 1fr) 42px; align-items: center; gap: 12px; padding: 4px 6px; border-radius: 8px; text-align: left; }
+.sp-grade:hover { background: var(--mh-hover); }
+.sp-grade__k { font-size: 13px; color: var(--mh-fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sp-grade__bar { height: 7px; border-radius: 20px; background: var(--mh-soft); overflow: hidden; }
+.sp-grade__bar i { display: block; height: 100%; border-radius: 20px; background: var(--mh-muted); }
+.sp-grade__bar i.is-good { background: var(--mh-up); }
+.sp-grade__bar i.is-bad { background: var(--mh-down); }
+.sp-grade__v { font-size: 13px; font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; color: var(--mh-fg); }
+
+.sp-grades__foot { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 6px; }
+.sp-grades__foot .sp-stat__v b { font-size: 16px; }
+
+/* ---- the financial bars -------------------------------------------------- */
+
+.sp-bars { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 18px; align-items: end; height: 210px; border-bottom: 1px solid var(--mh-border); padding-bottom: 8px; }
+.sp-bars__yr { display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: 8px; height: 100%; min-width: 0; }
+.sp-bars__plot { display: flex; align-items: flex-end; justify-content: center; gap: 6px; height: 100%; }
+.sp-bars__b { display: block; width: 26px; border-radius: 4px 4px 0 0; min-height: 2px; }
+.sp-bars__b--rev { background: var(--mh-blue); }
+.sp-bars__b--ni { background: var(--mh-up); }
+.sp-bars__b--ni.is-neg { background: var(--mh-down); }
+.sp-bars__k { text-align: center; font-size: 11px; color: var(--mh-muted); }
+
+.sp-legend { display: flex; gap: 18px; font-size: 11px; color: var(--mh-muted); }
+.sp-legend__i { display: inline-flex; align-items: center; gap: 6px; }
+.sp-legend__sw { width: 10px; height: 10px; border-radius: 3px; }
+.sp-legend__sw--rev { background: var(--mh-blue); }
+.sp-legend__sw--ni { background: var(--mh-up); }
+
+/* ---- the description and the wire ---------------------------------------- */
+
+.sp-about { margin: 4px 0 0; max-width: 92ch; font-size: 13px; line-height: 1.65; color: var(--mh-muted); }
+.sp-block .nw-list { border-top: 1px solid var(--mh-border); }
+
+/* ---- responsive ---------------------------------------------------------- */
+
+@media (max-width: 1100px) {
+  .sp-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .sp-peers { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sp-grades { grid-template-columns: minmax(0, 1fr); }
+  .sp-grades__flake { order: -1; }
+}
+@media (max-width: 760px) {
+  .sp-head__name { font-size: 26px; }
+  .sp-head__logo { width: 48px; height: 48px; }
+  .sp-head__score { padding: 10px 14px; }
+  .sp-page { gap: 42px; }
+  .sp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 18px; }
+  .sp-perf { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sp-grades__foot { grid-template-columns: minmax(0, 1fr); }
+  .sp-grade { grid-template-columns: 112px minmax(0, 1fr) 34px; gap: 8px; }
+  .sp-bars { height: 160px; gap: 10px; }
+  .sp-bars__b { width: 16px; }
+  .sp-block--chart .mhc__plot { height: 280px; }
+}

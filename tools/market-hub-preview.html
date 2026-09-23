@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self'">
+  <title>Market hub · UI test fixtures</title>
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/app.css">
+  <link rel="stylesheet" href="../assets/css/markethub.css">
+  <link rel="stylesheet" href="../assets/css/markethub-chart.css">
+  <link rel="stylesheet" href="../assets/css/markethub-widgets.css">
+  <link rel="stylesheet" href="../assets/css/markethub-indices.css">
+  <link rel="stylesheet" href="../assets/css/economy-maps.css">
+  <link rel="stylesheet" href="../assets/css/economy-chart.css">
+  <link rel="stylesheet" href="../assets/css/newsdesk.css">
+  <link rel="stylesheet" href="../assets/css/homedesk.css">
+  <style>
+    body{margin:0;padding-top:44px}.fixture-banner{position:fixed;inset:0 0 auto;z-index:2000;min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff2be;color:#513900;padding:9px 24px;font:12px/1.5 system-ui}.fixture-banner strong{font-weight:700}.fixture-banner button{border:1px solid #bc9b3f;border-radius:5px;padding:3px 10px;font:inherit;cursor:pointer}.fixture-banner__tools{display:flex;gap:8px;align-items:center}.fixture-container{max-width:1600px;margin:auto}.fixture-container .mh-navigation{top:44px}.fixture-toast{position:fixed;bottom:20px;right:20px;z-index:2001;background:#14243a;color:white;padding:14px 18px;border-radius:9px;font:13px system-ui}.fixture-toast[hidden]{display:none}
+    @media(max-width:500px){.fixture-banner{padding-inline:12px;font-size:10px}.fixture-banner__detail{display:none}}
+  </style>
+</head>
+<body>
+  <aside class="fixture-banner"><div><strong>UI test fixtures — not live prices</strong><span class="fixture-banner__detail"> · Synthetic data. No API key or account is used.</span></div><div class="fixture-banner__tools"><button type="button" id="fixture-theme">Dark theme</button></div></aside>
+  <div id="fixture-root" class="fixture-container"></div>
+  <div id="fixture-toast" class="fixture-toast" role="status" hidden></div>
+  <script type="module" src="market-hub-preview.mjs"></script>
+</body>
+</html>

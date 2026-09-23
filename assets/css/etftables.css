@@ -1,0 +1,252 @@
+/* ==========================================================================
+   The ETF tables board.
+
+   Lives inside the market canvas, so every colour here is one of the canvas's
+   own tokens — `--mh-*`, defined on `.mh-page`. Nothing in this file sets a
+   literal colour except the two range-bar tints, which are alpha over the
+   current text colour and therefore follow the theme as well.
+   ========================================================================== */
+
+.etb { padding-bottom: 32px; }
+
+/* ---- search: the front door, so it sits above the rail ------------------- */
+
+.etb-search { display: grid; gap: 6px; margin: 0 0 22px; max-width: 620px; }
+.etb-search__label {
+  font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase;
+  color: var(--mh-muted);
+}
+.etb-search__row { display: flex; gap: 8px; align-items: center; }
+.etb-search__input {
+  flex: 1; min-width: 0; min-height: 42px; padding: 9px 14px;
+  font: inherit; font-size: 15px; color: var(--mh-fg);
+  background: var(--mh-soft); border: 1px solid var(--mh-border); border-radius: 8px;
+}
+.etb-search__input::placeholder { color: var(--mh-muted); }
+.etb-search__input:focus-visible { outline: 2px solid var(--mh-blue); outline-offset: 1px; }
+.etb-search__clear {
+  flex: 0 0 auto; padding: 9px 14px; min-height: 42px; font: inherit; font-size: 13px;
+  color: var(--mh-fg); background: var(--mh-bg);
+  border: 1px solid var(--mh-border); border-radius: 8px;
+}
+.etb-search__clear:hover { background: var(--mh-hover); }
+.etb-search__help { margin: 0; font-size: 12px; line-height: 1.5; color: var(--mh-muted); }
+
+/* ---- the board rail ------------------------------------------------------ */
+
+.etb .mh-carousel { position: relative; margin-bottom: 20px; }
+.etb-tabs {
+  gap: 6px; padding: 4px 0 14px;
+  /* The hub's rails snap because they carry cards. A tab strip that snapped
+     would fight the arrow keys, which move the selection rather than the
+     scroll. */
+  scroll-snap-type: none;
+  border-bottom: 1px solid var(--mh-border);
+}
+.etb-tab {
+  flex: 0 0 auto; padding: 9px 14px; border: 1px solid transparent; border-radius: 8px;
+  background: transparent; color: var(--mh-muted);
+  font: inherit; font-size: 14px; line-height: 1.2; white-space: nowrap; cursor: pointer;
+}
+.etb-tab:hover { background: var(--mh-hover); color: var(--mh-fg); }
+.etb-tab.is-active {
+  background: var(--mh-fg); border-color: var(--mh-fg); color: var(--mh-bg); font-weight: 600;
+}
+
+/* ---- what the open board is --------------------------------------------- */
+
+.etb-intro { margin: 4px 0 10px; max-width: 92ch; }
+.etb-intro__t { margin: 0 0 6px; font-size: 26px; font-weight: 700; letter-spacing: -.02em; }
+.etb-intro__b { margin: 0; font-size: 14px; line-height: 1.6; color: var(--mh-muted); }
+.etb-intro__n {
+  margin: 12px 0 0; padding: 10px 14px; font-size: 13px; line-height: 1.6;
+  color: var(--mh-fg); background: var(--mh-soft);
+  border: 1px solid var(--mh-border); border-left: 3px solid var(--mh-blue); border-radius: 6px;
+}
+.etb-status {
+  margin: 14px 0 0; font-size: 12px; color: var(--mh-muted);
+  font-variant-numeric: tabular-nums; display: flex; flex-wrap: wrap; gap: 6px;
+}
+.etb-status__gap { color: var(--mh-muted); opacity: .8; }
+.etb-panel { padding-top: 6px; }
+.etb-panel:focus { outline: none; }
+
+/* ---- one group ----------------------------------------------------------- */
+
+.etb-group { padding-top: 30px; }
+.etb-group__head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 4px; }
+.etb-group__t { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: -.01em; }
+.etb-group__t--link {
+  display: inline-flex; align-items: baseline; gap: 4px;
+  padding: 0; border: 0; background: none; color: inherit; font: inherit;
+  font-size: 17px; font-weight: 600; cursor: pointer;
+}
+.etb-group__t--link:hover { color: var(--mh-blue); }
+.etb-group__n { font-size: 12px; color: var(--mh-muted); font-variant-numeric: tabular-nums; }
+.etb-group__note {
+  margin: 0 0 10px; max-width: 100ch; font-size: 12px; line-height: 1.6; color: var(--mh-muted);
+}
+
+/* ---- the table ----------------------------------------------------------- */
+
+.etb-scroll {
+  overflow-x: auto; border-top: 1px solid var(--mh-border); margin-top: 8px;
+  scrollbar-width: thin;
+}
+.etb-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.etb-th {
+  padding: 0; text-align: left; font-weight: 400; white-space: nowrap;
+  background: var(--mh-bg); border-bottom: 1px solid var(--mh-border);
+}
+.etb-th--num { text-align: right; }
+/* Only the fund column is pinned, and only sideways: a group is short enough
+   to read whole, so the header never needs to follow a vertical scroll — but
+   ten columns are wider than a laptop, and a row with its name scrolled off is
+   a row about nothing. */
+.etb-th--id { position: sticky; left: 0; z-index: 2; min-width: 230px; }
+.etb-sort {
+  width: 100%; padding: 11px 11px; border: 0; background: none;
+  color: var(--mh-muted); font: inherit; font-size: 12px; text-align: inherit; cursor: pointer;
+}
+.etb-th--num .etb-sort { text-align: right; }
+.etb-sort:hover { color: var(--mh-fg); }
+.etb-sort.is-active { color: var(--mh-fg); font-weight: 600; }
+.etb-sort__a { font-size: 11px; }
+
+.etb-td {
+  padding: 8px 11px; height: 44px; border-bottom: 1px solid var(--mh-border);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.etb-td--num { text-align: right; }
+.etb-td--id {
+  position: sticky; left: 0; z-index: 1;
+  padding: 4px 12px 4px 0; background: var(--mh-bg);
+  min-width: 230px; max-width: 230px;
+}
+.etb-table tbody tr:hover .etb-td { background: var(--mh-hover); }
+.etb-table tbody tr:hover .etb-td--id { background: var(--mh-hover); }
+/* A fund the feed did not return is dimmed rather than removed: the catalogue
+   promised the row, so the row stays and says it has no quote. */
+.etb-table tr.is-blank .etb-td { opacity: .55; }
+
+.etb-id {
+  display: flex; align-items: center; gap: 10px; width: 100%; min-width: 0;
+  padding: 6px 8px; border: 0; border-radius: 6px; background: transparent;
+  color: var(--mh-fg); font: inherit; text-align: left; cursor: pointer;
+}
+.etb-id:hover { background: var(--mh-soft); }
+.etb-id:disabled { cursor: default; }
+.etb-id:disabled:hover { background: transparent; }
+.etb-id:focus-visible { outline: 2px solid var(--mh-blue); outline-offset: -2px; }
+.etb-id .mh-mark { flex: 0 0 24px; width: 24px; height: 24px; font-size: 8px; }
+.etb-id__text { display: grid; min-width: 0; flex: 1; }
+.etb-id__name {
+  font-size: 13px; font-weight: 500; line-height: 1.3;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.etb-id__sub {
+  font-size: 11px; color: var(--mh-muted); line-height: 1.3;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.etb-id__sub:empty { display: none; }
+.etb-id__sym {
+  flex: 0 0 auto; padding: 3px 7px; border-radius: 4px;
+  background: var(--mh-hover); font-size: 11px; font-weight: 600; letter-spacing: .02em;
+}
+
+.etb-price { font-weight: 500; }
+.etb-pc { font-weight: 500; }
+.etb-pc.is-up { color: var(--mh-up); }
+.etb-pc.is-down { color: var(--mh-down); }
+.etb-na { color: var(--mh-muted); }
+
+/* ---- the range bar -------------------------------------------------------
+   Low, high, and a marker for where the price sits between them. The track is
+   drawn from the current text colour at low alpha so it reads in both themes
+   without a token of its own. */
+
+.etb-range {
+  display: inline-grid; grid-template-columns: auto minmax(44px, 72px) auto;
+  align-items: center; gap: 6px; font-size: 11px; color: var(--mh-muted);
+}
+.etb-range__end { font-variant-numeric: tabular-nums; }
+.etb-range__track {
+  position: relative; height: 3px; border-radius: 2px;
+  background: color-mix(in srgb, currentColor 22%, transparent);
+}
+.etb-range__dot {
+  position: absolute; top: 50%; width: 7px; height: 7px; border-radius: 50%;
+  transform: translate(-50%, -50%); background: var(--mh-fg);
+}
+
+/* ---- the empty search ----------------------------------------------------- */
+
+.etb-empty { padding-top: 24px; display: grid; gap: 16px; justify-items: start; }
+.etb-cta {
+  padding: 10px 16px; border: 1px solid var(--mh-border); border-radius: 8px;
+  background: var(--mh-bg); color: var(--mh-fg); font: inherit; font-size: 13px; cursor: pointer;
+}
+.etb-cta:hover { background: var(--mh-hover); }
+
+@media (max-width: 900px) {
+  .etb-th--id, .etb-td--id { min-width: 200px; max-width: 200px; }
+  .etb-range { grid-template-columns: auto minmax(40px, 60px) auto; gap: 5px; }
+}
+@media (max-width: 600px) {
+  .etb-intro__t { font-size: 22px; }
+  .etb-th--id, .etb-td--id { min-width: 160px; max-width: 160px; }
+  .etb-id__sub { display: none; }
+  .etb-search { max-width: none; }
+  .etb-search__row { flex-wrap: wrap; }
+  .etb-search__clear { width: 100%; }
+}
+
+/* The one thing the country picker above does not reach. Said once, at the
+   top, rather than repeated on sixteen boards. */
+.etb-scope {
+  margin: -8px 0 20px; padding: 9px 14px; max-width: 92ch;
+  font-size: 12px; line-height: 1.6; color: var(--mh-muted);
+  background: var(--mh-soft); border: 1px solid var(--mh-border); border-radius: 6px;
+}
+.etb-scope b { color: var(--mh-fg); }
+
+/* ==========================================================================
+   The ETF Screener page (?view=etfs)
+
+   Its own rail menu now, so it gets a hero and the collections as a grouped
+   rail rather than as one long dropdown. The screener itself is the same
+   component the ETFs page embeds; only the chrome around it differs.
+   ========================================================================== */
+
+.efs-page { padding-bottom: 60px; }
+.efs-title { margin: 6px 0 0; font-size: clamp(30px, 3.4vw, 46px); font-weight: 700; letter-spacing: -.035em; }
+.efs-strap { margin: 12px 0 0; max-width: 78ch; font-size: 15px; line-height: 1.65; color: var(--mh-muted); }
+.efs-crumb {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 0; border: 0; background: none; color: var(--mh-blue);
+  font: inherit; font-size: 12px; cursor: pointer;
+}
+.efs-crumb:hover { text-decoration: underline; }
+
+.efs-groups { display: grid; gap: 18px; padding: 26px 0 4px; }
+.efs-group__t {
+  margin: 0 0 9px; font-size: 11px; font-weight: 600; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--mh-muted);
+}
+.efs-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.efs-chip {
+  padding: 7px 13px; border: 1px solid var(--mh-border); border-radius: 50px;
+  background: var(--mh-bg); color: var(--mh-fg);
+  font: inherit; font-size: 13px; line-height: 1.4; white-space: nowrap; cursor: pointer;
+}
+.efs-chip:hover { background: var(--mh-hover); }
+.efs-chip.is-active {
+  background: var(--mh-fg); border-color: var(--mh-fg); color: var(--mh-bg); font-weight: 600;
+}
+.efs-rule {
+  margin: 16px 0 0; max-width: 104ch; font-size: 12px; line-height: 1.65; color: var(--mh-muted);
+}
+.efs-rule--off { color: var(--mh-down); }
+.efs-table { padding-top: 18px; }
+.efs-table .sc-page { padding: 0; min-height: 0; }
+.efs-table .sc-header { padding-top: 0; }

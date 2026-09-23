@@ -1,0 +1,197 @@
+{
+  "_README": [
+    "HAND-CAPTURED DISCLOSURES for the Alpha Signal.",
+    "",
+    "Every figure in this file was read from the primary source named beside it and",
+    "typed in by hand, on the date in `capturedAt`. Nothing here is modelled,",
+    "estimated or derived from anything other than the cited page — the same rule",
+    "assets/data/summaries.json follows for earnings-call summaries, and for the same",
+    "reason: the app ships no scraper and no model, so a fact that needs a human to",
+    "read it says so and carries the link.",
+    "",
+    "WHAT THIS FILE IS FOR. Six of the eleven Alpha Signal categories have gaps that",
+    "no FMP endpoint can fill: consensus estimate revisions, backlog, patents and",
+    "launches, job postings, search interest, and corporate actions. Where a primary",
+    "source publishes the fact for free, it is captured here so the category can be",
+    "scored instead of reported dark.",
+    "",
+    "WHAT IT IS NOT. It is not a feed. It does not update. Every entry is frozen at",
+    "`capturedAt` and the UI prints that date beside anything built from it. A symbol",
+    "with no entry here shows the gaps exactly as before — nothing is defaulted,",
+    "extrapolated from another company, or carried over.",
+    "",
+    "TO REFRESH OR EXTEND: tools/capture/README.md lists the source URL and the",
+    "query behind every field, so each one can be re-read and re-typed. Replacing",
+    "this file with a real provider integration is the intended end state; the",
+    "shape below is deliberately close to what such a provider would return."
+  ],
+
+  "AAPL": {
+    "capturedAt": "2026-09-22",
+    "capturedBy": "Read by hand from the sources cited on each block.",
+
+    "estimateRevisions": {
+      "source": {
+        "publisher": "Yahoo Finance",
+        "title": "AAPL Analyst Estimates — EPS Trend and EPS Revisions",
+        "url": "https://finance.yahoo.com/quote/AAPL/analysis/",
+        "type": "licensed_provider",
+        "publicationDate": "2026-09-22"
+      },
+      "note": "Consensus EPS as it stood at four points in the past, which is the series FMP does not publish. Basis is GAAP as displayed.",
+      "periods": [
+        {
+          "label": "Current quarter (Sep 2026)",
+          "analysts": 27,
+          "current": 1.98, "d7": 1.98, "d30": 1.98, "d60": 2.02, "d90": 2.01,
+          "up7": 1, "down7": 0, "up30": 7, "down30": 14
+        },
+        {
+          "label": "Next quarter (Dec 2026)",
+          "analysts": 21,
+          "current": 2.90, "d7": 2.90, "d30": 2.91, "d60": 2.97, "d90": 2.95,
+          "up7": 0, "down7": 1, "up30": 1, "down30": 1
+        },
+        {
+          "label": "Current year (FY2026)",
+          "analysts": 39,
+          "current": 8.82, "d7": 8.82, "d30": 8.81, "d60": 8.77, "d90": 8.76,
+          "up7": 0, "down7": 1, "up30": 5, "down30": 2
+        },
+        {
+          "label": "Next year (FY2027)",
+          "analysts": 40,
+          "current": 9.58, "d7": 9.57, "d30": 9.54, "d60": 9.71, "d90": 9.67,
+          "up7": 1, "down7": 1, "up30": 2, "down30": 7
+        }
+      ]
+    },
+
+    "backlog": {
+      "source": {
+        "publisher": "U.S. Securities and Exchange Commission",
+        "title": "Apple Inc. Form 10-K for the fiscal year ended September 27, 2025",
+        "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/aapl-20250927.htm",
+        "type": "sec_filing",
+        "publicationDate": "2025-10-31"
+      },
+      "disclosed": false,
+      "mentions": 0,
+      "note": "The word \"backlog\" does not appear anywhere in Apple's FY2025 Form 10-K. The company does not disclose it, so there is no figure to omit — this is a measured absence in a primary source, not a missing data feed.",
+      "nearestDisclosed": {
+        "name": "Total deferred revenue",
+        "current": 13700000000,
+        "previous": 12800000000,
+        "currentAsOf": "2025-09-27",
+        "previousAsOf": "2024-09-28",
+        "quote": "As of September 27, 2025 and September 28, 2024, the Company had total deferred revenue of $13.7 billion and $12.8 billion, respectively.",
+        "realisation": "66% expected within one year, 23% within one-to-two years, 9% within two-to-three years, 2% beyond three years.",
+        "why": "Deferred revenue is the contract-liability disclosure required under ASC 606. It is the closest thing Apple publishes to a forward order book, and it is not the same measurement as backlog."
+      },
+      "purchaseObligations": {
+        "note": "Manufacturing purchase obligations cover forecast component and manufacturing requirements, typically for periods of up to 150 days.",
+        "unconditionalByYear": { "2026": 4752000000, "2027": 3708000000, "2028": 1981000000 }
+      }
+    },
+
+    "patents": {
+      "source": {
+        "publisher": "Google Patents",
+        "title": "Granted US patents, assignee Apple Inc.",
+        "url": "https://patents.google.com/?assignee=Apple+Inc.&country=US&type=PATENT",
+        "type": "government",
+        "publicationDate": "2026-09-22"
+      },
+      "note": "Counts of granted US patents by publication date, assignee Apple Inc. Family members outside the US are excluded so one invention is counted once per jurisdiction rather than ten times.",
+      "windows": [
+        { "from": "2025-09-22", "to": "2026-09-22", "count": 3788, "settled": false },
+        { "from": "2024-09-22", "to": "2025-09-22", "count": 6188, "settled": true },
+        { "from": "2023-09-22", "to": "2024-09-22", "count": 6662, "settled": true }
+      ],
+      "lagWarning": "Patents publish months after grant and the index lags further, so the newest window always undercounts and is marked unsettled. Only the two settled windows are compared."
+    },
+
+    "launches": {
+      "source": {
+        "publisher": "Apple Newsroom",
+        "title": "Apple Newsroom — press releases and updates",
+        "url": "https://www.apple.com/newsroom/",
+        "type": "company_ir",
+        "publicationDate": "2026-09-22"
+      },
+      "note": "Dated, company-published product and commercial events. Announcement text only — no judgement about commercial significance is recorded here.",
+      "events": [
+        { "date": "2026-09-22", "kind": "product", "title": "Mac mini with M6 and M5 Pro, and Mac Studio with M5 Max and M5 Ultra, available" },
+        { "date": "2026-09-21", "kind": "commercial", "title": "Apple opens Apple Music Hall, a live music venue in London" },
+        { "date": "2026-09-18", "kind": "product", "title": "The latest iPhone, Apple Watch and AirPods lineups arrive in stores worldwide" },
+        { "date": "2026-09-16", "kind": "marketing", "title": "Celebrating “What Holds Us” on iPhone 18 Pro" },
+        { "date": "2026-09-15", "kind": "content", "title": "Widow’s Bay most decorated freshman comedy in Emmy history" },
+        { "date": "2026-09-14", "kind": "product", "title": "Major updates for Apple’s software platforms now available" }
+      ]
+    },
+
+    "corporateActions": {
+      "source": {
+        "publisher": "Apple Investor Relations",
+        "title": "Apple Inc. dividend history",
+        "url": "https://investor.apple.com/dividend-history/default.aspx",
+        "type": "company_ir",
+        "publicationDate": "2026-09-22"
+      },
+      "note": "Declared dividends, as published by the company. Amounts are not split adjusted.",
+      "dividends": [
+        { "declared": "2026-07-30", "record": "2026-08-10", "payable": "2026-08-13", "amount": 0.27 },
+        { "declared": "2026-04-30", "record": "2026-05-11", "payable": "2026-05-14", "amount": 0.27 },
+        { "declared": "2026-01-29", "record": "2026-02-09", "payable": "2026-02-12", "amount": 0.26 },
+        { "declared": "2025-10-30", "record": "2025-11-10", "payable": "2025-11-13", "amount": 0.26 },
+        { "declared": "2025-07-31", "record": "2025-08-11", "payable": "2025-08-14", "amount": 0.26 },
+        { "declared": "2025-05-01", "record": "2025-05-12", "payable": "2025-05-15", "amount": 0.26 },
+        { "declared": "2025-01-30", "record": "2025-02-10", "payable": "2025-02-13", "amount": 0.25 },
+        { "declared": "2024-10-31", "record": "2024-11-11", "payable": "2024-11-14", "amount": 0.25 }
+      ]
+    },
+
+    "searchInterest": {
+      "source": {
+        "publisher": "Google Trends",
+        "title": "Search interest for “AAPL”, United States, past 12 months",
+        "url": "https://trends.google.com/trends/explore?date=today%2012-m&geo=US&q=AAPL",
+        "type": "attention_data",
+        "publicationDate": "2026-09-22"
+      },
+      "note": "Weekly relative search interest, 0-100, where 100 is the peak week of the window. It is an index, not a count, and it is comparable only within this series.",
+      "geo": "US",
+      "term": "AAPL",
+      "weekly": [
+        ["2025-09-21", 73], ["2025-09-28", 54], ["2025-10-05", 48], ["2025-10-12", 45],
+        ["2025-10-19", 61], ["2025-10-26", 100], ["2025-11-02", 59], ["2025-11-09", 57],
+        ["2025-11-16", 45], ["2025-11-23", 43], ["2025-11-30", 50], ["2025-12-07", 42],
+        ["2025-12-14", 39], ["2025-12-21", 35], ["2025-12-28", 32], ["2026-01-04", 45],
+        ["2026-01-11", 41], ["2026-01-18", 39], ["2026-01-25", 79], ["2026-02-01", 63],
+        ["2026-02-08", 50], ["2026-02-15", 43], ["2026-02-22", 55], ["2026-03-01", 50],
+        ["2026-03-08", 43], ["2026-03-15", 92], ["2026-03-22", 42], ["2026-03-29", 41],
+        ["2026-04-05", 44], ["2026-04-12", 55], ["2026-04-19", 69], ["2026-04-26", 84],
+        ["2026-05-03", 67], ["2026-05-10", 61], ["2026-05-17", 48], ["2026-05-24", 46],
+        ["2026-05-31", 60], ["2026-06-07", 69], ["2026-06-14", 52], ["2026-06-21", 61],
+        ["2026-06-28", 49], ["2026-07-05", 55], ["2026-07-12", 62], ["2026-07-19", 53],
+        ["2026-07-26", 100], ["2026-08-02", 59], ["2026-08-09", 48], ["2026-08-16", 41],
+        ["2026-08-23", 40], ["2026-08-30", 44], ["2026-09-06", 51], ["2026-09-13", 44],
+        ["2026-09-20", 41]
+      ]
+    },
+
+    "jobPostings": {
+      "attempted": true,
+      "source": {
+        "publisher": "Apple",
+        "title": "Careers at Apple — job search",
+        "url": "https://jobs.apple.com/en-us/search",
+        "type": "company_ir",
+        "publicationDate": "2026-09-22"
+      },
+      "available": false,
+      "reason": "Apple's careers site reports “600+ Result(s)” and returns that same capped figure for every team and location filter, exposes no per-function facet counts, and its search API rejects unauthenticated requests. A capped total that does not move with the filter carries no information, so nothing is recorded rather than a number that looks like a measurement.",
+      "wouldNeed": "A job-postings provider (LinkUp, Revelio, or direct ATS ingestion), which would also have to be labelled postings rather than hiring."
+    }
+  }
+}

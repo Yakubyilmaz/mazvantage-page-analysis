@@ -18,6 +18,7 @@ import {
   card, blockEl, notice, keyInfo, cmpBars, table, feedGate, icon, curSymbol,
 } from './ui.js';
 import { normalisePrices, computeReturns, weeklyVolatility } from './model.js';
+import { createPings } from './pings.js';
 import { FACTOR_BY_KEY } from './factors.js';
 import { gradePill } from './gradeview.js';
 import { MAX_SCORE } from './grading.js';
@@ -119,6 +120,13 @@ export function renderPriceHistory(a, ctx) {
   const sel = el('div', { class: 'rangesel' });
   let active = '1Y';
 
+  /* ---------- the markers -------------------------------------------------
+     Shared with the Overview and Research charts through `pings.js`, which
+     memoises the eight-request fund pull per symbol so pressing the button on
+     any one of the three pays for all of them. */
+
+  const pings = createPings(a, { onChange: () => draw() });
+
   const draw = () => {
     const days = RANGES.find((r) => r.key === active).days;
     const cutoff = Date.now() - days * 864e5;
@@ -128,6 +136,7 @@ export function renderPriceHistory(a, ctx) {
         ? lineChart(pts.map((p) => ({ date: p.date, value: p.price })), {
             valueFmt: (v) => price(v, curSymbol(f.currency)),
             labelFmt: (d) => fmtDate(d, { month: 'short', year: '2-digit' }),
+            markers: pings.markers(),
           })
         : (feedGate(a, 'prices', 'Price history') || notice('No price history for this range.')),
     );
@@ -160,7 +169,7 @@ export function renderPriceHistory(a, ctx) {
     el('div', { class: 'card__head' }, [el('h2', { text: 'Price History & Performance' })]),
 
     blockEl('Share price', `Closing prices${prices.length ? ` since ${fmtDate(prices[0].date)}` : ''}.`,
-      [chartHost], sel),
+      [chartHost, pings.legend, pings.note], sel),
 
     blockEl('Shareholder Returns', 'Total price return over each period, against the sector.', [
       table([{ label: '' }, ...periods.map((p) => ({ label: p, num: true }))], retRows),

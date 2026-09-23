@@ -1,0 +1,1262 @@
+{
+  "_comment": "SAMPLE EDITORIAL DATA — not live, not generated from filings. These articles are fixtures so the Research feed, its taxonomy and the article layout can be seen working end to end. The tickers are real and the figures are realistic, but no figure here was computed by this report. The single exception is 'apple-june-quarter-thirteenth-beat' and 'is-apple-overvalued-thirteen-models', which quote the bundled AAPL snapshot's own numbers (price US$309.35, fair value US$186.53, quant Hold / B / 2.89) so at least one worked example agrees with what the company report renders. See assets/js/articles.js for the store and assets/js/taxonomy.js for the field vocabulary.",
+
+  "_schema": {
+    "slug": "URL identity. Never reuse one.",
+    "primaryCategory": "One of the seven keys in taxonomy.js CATEGORIES.",
+    "articleType": "One of that category's type keys. Nothing finer belongs here — a sector, an industry or a theme is an attribute, not a type.",
+    "tickers": "Drives companies[], sectors[] and industries[] at load. Do not write those out unless the piece has no ticker.",
+    "themes": "Editorial themes from taxonomy.js THEMES.",
+    "quantRating": "0-5. The verdict word is derived from it by grading.js, never stored.",
+    "shariahStatus": "compliant | questionable | non-compliant | unrated, defined as the pass count across the five standards in shariah.js.",
+    "body": "Blocks: p, h, metrics, table, bullbear, quant, note, quote. No article here uses `quote`: it is for text quoted verbatim from an earnings call transcript, and inventing a quotation attributed to a named company is a different and worse thing than inventing a ratio. The renderer supports it for when a real transcript is the source."
+  },
+
+  "articles": [
+    {
+      "id": "r001",
+      "slug": "nvidia-q3-data-centre-growth-multiple",
+      "title": "Nvidia's Q3: Data Centre Growth Holds, But the Multiple Now Prices It In",
+      "subtitle": "A fourth consecutive quarter of triple-digit data centre growth, against a valuation that has stopped leaving room for disappointment.",
+      "summary": "Revenue growth remains exceptional and the gross margin held above 73%, but every valuation multiple we rank now sits in the top decile of the Technology sector.",
+      "primaryCategory": "earnings",
+      "articleType": "earnings-analysis",
+      "tickers": ["NVDA"],
+      "themes": ["ai", "semiconductors", "growth"],
+      "quantRating": 4.41,
+      "quantLetter": "A-",
+      "shariahStatus": "compliant",
+      "standardsPassed": 5,
+      "standardsOf": 5,
+      "author": "Vantace Research",
+      "publishedAt": "2026-09-10T13:20:00Z",
+      "views": 8420,
+      "stockTab": "Earnings",
+      "readingMinutes": 7,
+      "seoTitle": "Nvidia Q3 Earnings Analysis: Data Centre Growth vs Valuation",
+      "metaDescription": "Nvidia's third quarter beat on both lines, but the valuation factor is now the weakest of the six. What the quant grades say about the risk/reward.",
+      "body": [
+        { "type": "p", "text": "Nvidia's third quarter did what the last three did: it beat, it raised, and it left the growth question answered and the price question open. Data centre revenue grew again at a rate no company of this size has sustained before, and the gross margin held above 73% while it did — which is the part that matters, because a growth rate bought with price cuts is a different business from one that is not." },
+        { "type": "p", "text": "The tension in the report is not between the business and the estimates. It is between the business and the multiple. Growth grades at the top of the Technology sector on every line we rank. Valuation grades near the bottom of it on every line we rank. Both of those are measurements of the same company on the same day, and a reader who takes one without the other has taken half the report." },
+        { "type": "h", "text": "The quarter against expectations" },
+        {
+          "type": "table",
+          "title": "Reported against consensus",
+          "headers": ["", "Consensus", "Actual", "Surprise"],
+          "numFrom": 1,
+          "rows": [
+            ["Earnings per share", "US$1.24", "US$1.31", "+5.6%"],
+            ["Revenue", "US$54.1b", "US$56.3b", "+4.1%"],
+            ["Gross margin", "73.0%", "73.6%", "+60bp"],
+            ["Data centre revenue", "US$47.8b", "US$49.9b", "+4.4%"]
+          ]
+        },
+        { "type": "p", "text": "The guide for the fourth quarter came in above the consensus that existed before the call, which is the fifth consecutive quarter that has been true. Guiding above the street five times running says something about how management sets expectations as well as about demand, and it is worth separating the two: a company that guides conservatively will beat in a decelerating quarter too." },
+        { "type": "h", "text": "Where the grades sit" },
+        {
+          "type": "quant",
+          "score": 4.41,
+          "letter": "A-",
+          "factors": [["Valuation", "C-"], ["Growth", "A"], ["Profitability", "A"], ["Financial Health", "A"], ["Momentum", "A-"], ["EPS Revisions", "A"]]
+        },
+        { "type": "p", "text": "Five of the six factors grade in the A range. The sixth is the one that decides what a buyer pays. Valuation is eighteen price-based multiples ranked against Technology peers, and Nvidia is in the most expensive quintile of the sector on fourteen of them — including the two that are least sensitive to the accounting, EV/Sales and EV/EBITDA." },
+        {
+          "type": "bullbear",
+          "bull": [
+            "Data centre revenue has compounded for four quarters without the gross margin giving way, which is the signature of pricing power rather than volume.",
+            "The balance sheet carries more cash than debt, so none of the growth is being funded by leverage.",
+            "EPS revisions have been positive in every one of the last six months, and revisions are the factor with the shortest lag to price."
+          ],
+          "bear": [
+            "Fourteen of eighteen valuation multiples sit in the sector's most expensive quintile. There is no version of this that is cheap.",
+            "Customer concentration is high enough that a single hyperscaler's capex pause is a revenue event rather than a rounding error.",
+            "The comparison base from here is the hardest it has ever been: growth decelerates arithmetically even if demand does not."
+          ]
+        },
+        { "type": "note", "text": "The quant rating is a sector-relative ranking of measurable ratios. It is not a recommendation, it knows nothing about the reader's circumstances, and it is not a forecast." }
+      ]
+    },
+
+    {
+      "id": "r002",
+      "slug": "apple-june-quarter-thirteenth-beat",
+      "title": "Apple's June Quarter: A Thirteenth Straight Beat, and a Wider Spread on Capital",
+      "subtitle": "Return on invested capital reached 51.9% against a cost of capital we put at 8.9% — the widest spread of the ten filed years.",
+      "summary": "Earnings of US$2.02 against a US$1.89 consensus, on revenue 0.3% ahead. The operating business keeps improving; the share price has moved further than it has.",
+      "primaryCategory": "earnings",
+      "articleType": "earnings-analysis",
+      "tickers": ["AAPL"],
+      "themes": ["megacap", "quality", "buybacks"],
+      "quantRating": 2.89,
+      "quantLetter": "B",
+      "shariahStatus": "compliant",
+      "standardsPassed": 5,
+      "standardsOf": 5,
+      "author": "Vantace Research",
+      "publishedAt": "2026-09-09T09:05:00Z",
+      "views": 11230,
+      "stockTab": "Research",
+      "readingMinutes": 8,
+      "seoTitle": "Apple June Quarter Earnings Analysis: ROIC, Beats and Valuation",
+      "metaDescription": "Apple beat on both lines for the thirteenth consecutive scored quarter. What the ROIC spread and the quant grades say now.",
+      "body": [
+        { "type": "p", "text": "The June quarter, reported 30 July 2026, beat on both lines: earnings per share of US$2.02 against a US$1.89 consensus, a 6.9% surprise, on revenue of US$109.4b that came in 0.3% ahead. That is the thirteenth beat in thirteen scored quarters — a 100% record that says as much about how the company guides as about how it trades." },
+        { "type": "p", "text": "The more interesting figure is further down. Return on invested capital reached 51.9% against a weighted average cost of capital we put at 8.9%, a spread of 43% and the widest of the ten filed years. It is the tenth consecutive year above the hurdle, and the average spread across the run is 23.9%. Very few businesses of this size sustain anything close to it." },
+        {
+          "type": "metrics",
+          "title": "The quarter",
+          "items": [
+            ["EPS actual", "US$2.02", "vs US$1.89 consensus"],
+            ["EPS surprise", "+6.9%", "13th consecutive beat"],
+            ["Revenue", "US$109.4b", "+0.3% vs consensus"],
+            ["ROIC", "51.9%", "widest spread in ten years"],
+            ["WACC", "8.9%", "our estimate"]
+          ]
+        },
+        { "type": "h", "text": "Why the rating is a Hold" },
+        { "type": "p", "text": "The composite reads 2.89 of 5 — a Hold, letter B. That will read oddly beside a 43% return spread, so it is worth saying exactly where the drag comes from: the Valuation factor. The shares change hands at US$309.35 against a US$186.53 fair value estimate, a 1.66 price to fair value, and every one of the thirteen models behind that estimate lands below the current price." },
+        { "type": "p", "text": "Those are two independent findings that happen to agree. The valuation grade is eighteen multiples ranked against Technology peers — no fair value enters it. The fair value estimate is the median of thirteen models of intrinsic worth — no sector ranking enters it. When a relative measure and an absolute one both say expensive, that is more informative than either alone." },
+        { "type": "note", "text": "The figures above come from the bundled AAPL snapshot, dated 8 September 2026. A live connection will move the price, the multiples and the rating, and this article will not follow them." }
+      ]
+    },
+
+    {
+      "id": "r003",
+      "slug": "microsoft-guides-cloud-lower-capex-higher",
+      "title": "Microsoft Guides Cloud Growth Lower and the Capex Line Higher",
+      "subtitle": "Azure growth guided to the high twenties from a low-thirties base, with capital expenditure rising again to meet it.",
+      "summary": "The guidance change is small in isolation. What matters is the second derivative: growth decelerating while the capital needed to produce it accelerates.",
+      "primaryCategory": "earnings",
+      "articleType": "guidance",
+      "tickers": ["MSFT"],
+      "themes": ["cloud", "ai", "capex", "megacap"],
+      "quantRating": 3.64,
+      "quantLetter": "A-",
+      "shariahStatus": "compliant",
+      "standardsPassed": 5,
+      "standardsOf": 5,
+      "author": "Vantace Research",
+      "publishedAt": "2026-09-08T16:40:00Z",
+      "views": 6180,
+      "stockTab": "Analysts Forecast",
+      "readingMinutes": 6,
+      "metaDescription": "Microsoft's Azure guidance stepped down while capex stepped up. What the combination does to free cash flow conversion and the quant grades.",
+      "body": [
+        { "type": "p", "text": "Management guided Azure to the high twenties in constant currency, from a low-thirties base. On its own that is a normal deceleration in a business of this scale, and not the sort of thing that changes a thesis. What makes it worth writing about is the line underneath it: capital expenditure guided higher again, the fifth consecutive quarter of that." },
+        { "type": "h", "text": "The two lines together" },
+        {
+          "type": "table",
+          "title": "Guidance, quarter on quarter",
+          "headers": ["", "Two quarters ago", "Last quarter", "Guided"],
+          "numFrom": 1,
+          "rows": [
+            ["Azure growth, cc", "33%", "31%", "27–29%"],
+            ["Capex", "US$19.4b", "US$22.1b", "US$24–26b"],
+            ["Capex as % of revenue", "27%", "30%", "32–34%"],
+            ["Operating margin guide", "45.1%", "44.6%", "43.5–44.0%"]
+          ]
+        },
+        { "type": "p", "text": "Revenue growth decelerating while the capital intensity required to produce it rises is the combination that compresses free cash flow conversion, and free cash flow conversion is what the Financial Health factor is largely measuring. It has not moved yet — the grade is unchanged this quarter — but the direction of both inputs is now the same, and one more quarter of it would move it." },
+        { "type": "p", "text": "The counter-argument is that the capital is being spent into demand that already exists rather than demand that is hoped for, and the commercial bookings line supports that reading. Nothing in the reported numbers settles it. It is a question about the next three years, and this report deliberately grades the last ten." },
+        { "type": "note", "text": "Guidance is management's forecast, not a filed figure. Nothing in this report's grades is computed from it." }
+      ]
+    },
+
+    {
+      "id": "r004",
+      "slug": "amd-beat-both-lines-where-margin-came-from",
+      "title": "AMD Beat on Both Lines. The Surprise Was Where the Margin Came From",
+      "subtitle": "A 9.2% earnings surprise driven by mix rather than by volume, which is the more durable of the two.",
+      "summary": "Data centre took a larger share of revenue than guided and carried a higher margin than the client business it displaced. That is a better beat than a volume beat.",
+      "primaryCategory": "earnings",
+      "articleType": "earnings-surprise",
+      "tickers": ["AMD"],
+      "themes": ["semiconductors", "ai", "growth"],
+      "quantRating": 3.82,
+      "quantLetter": "A-",
+      "shariahStatus": "compliant",
+      "standardsPassed": 5,
+      "standardsOf": 5,
+      "author": "Vantace Research",
+      "publishedAt": "2026-09-07T11:15:00Z",
+      "views": 5940,
+      "stockTab": "Earnings",
+      "readingMinutes": 5,
+      "metaDescription": "AMD's earnings surprise came from segment mix rather than unit volume. Why that distinction changes what the beat implies.",
+      "body": [
+        { "type": "p", "text": "AMD reported earnings per share of US$1.42 against a US$1.30 consensus, a 9.2% surprise, on revenue 3.1% ahead. The headline is a clean beat. The composition is the part worth ten minutes." },
+        {
+          "type": "metrics",
+          "title": "The beat, decomposed",
+          "items": [
+            ["EPS surprise", "+9.2%", "US$1.42 vs US$1.30"],
+            ["Revenue surprise", "+3.1%", ""],
+            ["Data centre share of revenue", "58%", "guided 54%"],
+            ["Gross margin", "54.8%", "+140bp vs guide"]
+          ]
+        },
+        { "type": "p", "text": "Roughly two-thirds of the gross margin beat is attributable to mix — data centre came in four points above its guided share of revenue, and it carries a materially higher margin than the client business. Only the remaining third came from volume leverage over fixed cost." },
+        { "type": "p", "text": "This matters because the two decay differently. Volume leverage reverses the moment units soften. A mix shift persists until the mix shifts back, and the mix here is being pulled by a product cycle with visible order books behind it. A beat of the second kind is worth more than a beat of the first, and the consensus revision pattern over the following fortnight suggests the sell side reached the same conclusion." },
+        { "type": "note", "text": "The decomposition above is an estimate from the segment disclosure, not a figure the company reported. Companies do not publish a mix-versus-volume split." }
+      ]
+    },
+
+    {
+      "id": "r005",
+      "slug": "costco-earnings-preview-september",
+      "title": "Costco Reports This Week: What the Consensus Actually Expects",
+      "subtitle": "Membership fee income, not merchandise margin, is the line that decides whether this is a beat.",
+      "summary": "Consensus looks for US$4.11 in earnings on US$79.2b of revenue. The renewal rate and the fee income line matter more than either.",
+      "primaryCategory": "earnings",
+      "articleType": "earnings-preview",
+      "tickers": ["COST"],
+      "themes": ["quality"],
+      "quantRating": 3.12,
+      "quantLetter": "B+",
+      "shariahStatus": "compliant",
+      "standardsPassed": 5,
+      "standardsOf": 5,
+      "author": "Vantace Research",
+      "publishedAt": "2026-09-06T08:00:00Z",
+      "views": 3410,
+      "stockTab": "Analysts Forecast",
+      "readingMinutes": 4,
+      "metaDescription": "A preview of Costco's quarter: the consensus figures, the renewal rate, and why membership income is the line that decides the print.",
+      "body": [
+        { "type": "p", "text": "Thirty-one analysts have published for the quarter. The consensus sits at US$4.11 of earnings per share on US$79.2b of revenue, which would be growth of 8.4% and 7.1% respectively. Neither of those is the number to watch." },
+        {
+          "type": "table",
+          "title": "Consensus",
+          "headers": ["", "Consensus", "Year ago", "Growth"],
+          "numFrom": 1,
+          "rows": [
+            ["EPS", "US$4.11", "US$3.79", "+8.4%"],
+            ["Revenue", "US$79.2b", "US$73.9b", "+7.1%"],
+            ["Membership fee income", "US$1.28b", "US$1.16b", "+10.3%"],
+            ["Comparable sales, ex-fuel", "—", "5.9%", "—"]
+          ]
+        },
+        { "type": "p", "text": "Membership fee income is close to pure operating profit and has grown faster than revenue in each of the last eight quarters. It is also the line least exposed to the merchandise margin pressure that moves this sector's earnings around. A renewal rate holding above 92% in the US and Canada would matter more to the next twelve months than a two-cent beat on the headline." },
+        { "type": "note", "text": "Consensus estimates are the vendor's collection of published analyst forecasts. Nothing graded in this report is computed from them." }
+      ]
+    },
+
+    {
+      "id": "r006",
+      "slug": "alphabet-returns-on-capital-while-capex-doubles",
+      "title": "Alphabet's Returns on Capital Are Improving While Its Capex Doubles",
+      "subtitle": "Two things that usually cannot happen at once, and the reason they are happening here.",
+      "summary": "Return on invested capital rose to 31.4% in a year when capital expenditure grew 71%. The explanation is in the depreciation schedule, not in the operating business.",
+      "primaryCategory": "stock-analysis",
+      "articleType": "profitability-analysis",
+      "tickers": ["GOOGL"],
+      "themes": ["ai", "capex", "megacap", "quality"],
+      "quantRating": 3.97,
+      "quantLetter": "A-",
+      "shariahStatus": "compliant",
+      "standardsPassed": 5,
+      "standardsOf": 5,
+      "author": "Vantace Research",
+      "publishedAt": "2026-09-05T14:30:00Z",
+      "views": 7220,
+      "stockTab": "Profitability",
+      "readingMinutes": 7,
+      "metaDescription": "Alphabet's ROIC improved while capex grew 71%. Why the depreciation schedule explains most of it, and what happens when it catches up.",
+      "body": [
+        { "type": "p", "text": "Return on invested capital rose to 31.4% from 28.8% in a year when capital expenditure grew 71%. Those two facts are usually incompatible: spending heavily on fixed assets enlarges the denominator faster than the new assets can enlarge the numerator, and returns fall for a few years before they recover." },
+        { "type": "h", "text": "Where the arithmetic goes" },
+        { "type": "p", "text": "Most of the reconciliation is in the depreciation schedule rather than in the operating business. Server useful life was extended, which lowers the annual depreciation charge on a growing asset base and flatters operating income for as long as the extension holds. It is a legitimate accounting judgement and it is disclosed. It is also non-recurring in effect: the charge that was deferred arrives later." },
+        {
+          "type": "table",
+          "title": "Three years of the two lines",
+          "headers": ["", "FY24", "FY25", "FY26"],
+          "numFrom": 1,
+          "rows": [
+            ["ROIC", "26.1%", "28.8%", "31.4%"],
+            ["Capex", "US$44.2b", "US$52.5b", "US$89.8b"],
+            ["Capex / operating cash flow", "40%", "44%", "62%"],
+            ["Depreciation / gross PP&E", "12.4%", "11.6%", "10.1%"]
+          ]
+        },
+        { "type": "p", "text": "The last row is the one to keep. A falling depreciation rate on a rising asset base is the mechanism, and it reverses. Strip it out and the underlying improvement is real but roughly half the reported one — which is still a good year, and a different sentence from the headline." },
+        {
+          "type": "bullbear",
+          "bull": [
+            "The advertising business is still funding the whole capital programme out of operating cash flow, with free cash flow positive in every quarter of the build.",
+            "Cloud reached a full-year operating profit and is no longer a drag on the consolidated margin.",
+            "Even on a normalised depreciation charge, ROIC has improved in each of the last three years."
+          ],
+          "bear": [
+            "The useful-life extension flatters the comparison and will unwind.",
+            "Capex at 62% of operating cash flow leaves materially less room for buybacks than the last five years did.",
+            "Regulatory outcomes in two jurisdictions are unresolved and are not modelled in any grade here."
+          ]
+        }
+      ]
+    },
+
+    {
+      "id": "r007",
+      "slug": "meta-vs-alphabet-two-balance-sheets",
+      "title": "Meta vs Alphabet: Two Advertising Businesses, Two Very Different Balance Sheets",
+      "subtitle": "Near-identical revenue models, and a leverage profile that has diverged sharply over three years.",
+      "summary": "Both grade in the A range on Profitability. On Financial Health they are two grades apart, and the whole gap is in how each has funded its capital programme.",
+      "primaryCategory": "stock-analysis",
+      "articleType": "stock-comparison",
+      "tickers": ["META", "GOOGL"],
+      "themes": ["megacap", "capex", "quality"],
+      "quantRating": 3.88,
+      "quantLetter": "A-",
+      "shariahStatus": "questionable",
+      "standardsPassed": 3,
+      "standardsOf": 5,
+      "author": "Vantace Research",
+      "publishedAt": "2026-09-04T10:00:00Z",
+      "views": 9110,
+      "stockTab": "Financial Health",
+      "readingMinutes": 6,
+      "metaDescription": "Meta and Alphabet compared on profitability, financial health and valuation. The divergence is entirely in how each funded its capex.",
+      "body": [
+        { "type": "p", "text": "These two businesses monetise attention through auction-priced advertising, at similar gross margins, with similar customer concentration and similar regulatory exposure. On the income statement they are close relatives. On the balance sheet they have been drifting apart for three years." },
+        {
+          "type": "table",
+          "title": "Head to head",
+          "headers": ["", "META", "GOOGL"],
+          "numFrom": 1,
+          "rows": [
+            ["Operating margin", "41.2%", "34.8%"],
+            ["ROIC", "29.6%", "31.4%"],
+            ["Total debt", "US$49.1b", "US$13.2b"],
+            ["Net cash / (debt)", "US$(4.8)b", "US$82.4b"],
+            ["Capex / operating cash flow", "58%", "62%"],
+            ["Financial Health grade", "B", "A"]
+          ]
+        },
+        { "type": "p", "text": "Both are spending a comparable share of operating cash flow on capital. One has funded it out of the cash pile and stayed in a large net cash position; the other has funded it partly with issued debt and has crossed into a small net debt position for the first time. Neither is imprudent at these coverage ratios. But they are no longer the same balance sheet, and the Financial Health factor — twenty-three ratios, of which nine are leverage or coverage — reads the difference." },
+        { "type": "p", "text": "The Shariah screen reads it too, and reaches a split verdict: the debt-to-market-cap ratio passes three of the five published standards and fails the two that divide by total assets. That is the ordinary disagreement between methodologies rather than a borderline company — see the screening note linked below." }
+      ]
+    },
+
+    {
+      "id": "r008",
+      "slug": "tesla-fell-fourteen-percent-three-sessions",
+      "title": "Tesla Fell 14% in Three Sessions. Only One of the Three Had a Reason",
+      "subtitle": "Separating the delivery miss from the two days that followed it.",
+      "summary": "The first session was a response to a filed number. The next two were not, and the distinction is the whole point of writing about a price move at all.",
+      "primaryCategory": "stock-analysis",
+      "articleType": "price-movement",
+      "tickers": ["TSLA"],
+      "themes": ["growth"],
+      "quantRating": 2.14,
+      "quantLetter": "C+",
+      "shariahStatus": "compliant",
+      "standardsPassed": 5,
+      "standardsOf": 5,
+      "author": "Vantace Research",
+      "publishedAt": "2026-09-03T18:45:00Z",
+      "views": 12840,
+      "stockTab": "Momentum",
+      "readingMinutes": 5,
+      "metaDescription": "Tesla's three-session decline decomposed: what the delivery miss explains, and what it does not.",
+      "body": [
+        { "type": "p", "text": "We do not write about a stock moving 2%. A 14% move over three sessions in a company of this size is worth an article, but only if it can be attributed to something, and here it can be attributed to one of the three days." },
+        {
+          "type": "table",
+          "title": "The three sessions",
+          "headers": ["Session", "Move", "Volume vs 20-day", "Attributable event"],
+          "numFrom": 1,
+          "rows": [
+            ["Day 1", "−9.2%", "3.4x", "Q3 deliveries 6.8% below consensus"],
+            ["Day 2", "−3.1%", "1.8x", "None identified"],
+            ["Day 3", "−2.4%", "1.2x", "None identified"]
+          ]
+        },
+        { "type": "p", "text": "Day one is a repricing against a filed number: deliveries came in 6.8% below the consensus, on more than three times average volume, and the move is proportionate to the revenue implication. Days two and three carry no company-specific news we can identify, decaying volume, and a sector that was broadly flat. That pattern is consistent with position unwinding rather than with information." },
+        { "type": "p", "text": "The distinction is not academic. The Momentum factor — four return windows ranked against the sector — treats all three days identically, because a percentile of realised return has no opinion about why the return happened. The grade fell from B− to C+ on the week. Whether that is a signal or an artefact is exactly the sort of thing a grade cannot tell you and an article can." },
+        { "type": "note", "text": "\"No event identified\" means we found none in the news and press-release feeds this report loads. It is not a claim that none existed." }
+      ]
+    },
+
+    {
+      "id": "r009",
+      "slug": "broadcom-debt-after-vmware-financial-health",
+      "title": "Broadcom's Debt Load After VMware: The Financial Health Grade Explained",
+      "subtitle": "Nine of the twenty-three health ratios are leverage or coverage lines, and eight of the nine sit below the sector median.",
+      "summary": "A C grade on Financial Health beside an A on Profitability is not a contradiction. It is what an acquisition funded with debt looks like on a balance sheet.",
+      "primaryCategory": "stock-analysis",
+      "articleType": "financial-health-analysis",
+      "tickers": ["AVGO"],
+      "themes": ["semiconductors", "quality"],
+      "quantRating": 3.31,
+      "quantLetter": "B+",
+      "shariahStatus": "non-compliant",
+      "standardsPassed": 0,
+      "standardsOf": 5,
+      "author": "Vantace Research",
+      "publishedAt": "2026-09-02T12:10:00Z",
+      "views": 4670,
+      "stockTab": "Financial Health",
+      "readingMinutes": 6,
+      "metaDescription": "Why Broadcom grades C on Financial Health while grading A on Profitability, and what the leverage cluster is measuring.",
+      "body": [
+        { "type": "p", "text": "Broadcom grades A on Profitability and C on Financial Health. Readers reasonably ask how both can be true of one company at one moment. They can, and the reason is that the two factors are measuring different halves of the same transaction." },
+        { "type": "p", "text": "The Profitability factor reads the income statement and the returns on capital that the acquired software business produces. Those are genuinely excellent. The Financial Health factor reads the balance sheet that bought it. Nine of its twenty-three ratios are leverage or coverage lines, and eight of those nine sit below the Technology sector median." },
+        {
+          "type": "metrics",
+          "title": "The leverage cluster",
+          "items": [
+            ["Net debt / EBITDA", "2.9x", "sector median 0.4x"],
+            ["Debt / equity", "1.71", "sector median 0.38"],
+            ["Interest cover", "6.2x", "sector median 24.1x"],
+            ["Cash / total debt", "0.17", "sector median 1.32"]
+          ]
+        },
+        { "type": "p", "text": "None of those figures is alarming on its own. Interest cover above six times is comfortable, and the free cash flow is more than sufficient to amortise the facility on the stated schedule. But the grade is a percentile against a sector where the typical company carries almost no debt at all, and against that distribution these are bottom-quartile readings. A sector-relative grade is exactly what it says it is." },
+        { "type": "p", "text": "The same balance sheet fails all five Shariah screens, and for the same reason: interest-bearing debt at 34% of market capitalisation is above every published limit. That is a mechanical screening outcome, and it is a separate question from whether the business is attractive — on which the composite reads Buy." }
+      ]
+    },
+
+    {
+      "id": "r010",
+      "slug": "amd-upgraded-to-buy-what-moved",
+      "title": "AMD Upgraded to Buy: What Moved, and Which Factor Did the Work",
+      "subtitle": "The composite crossed from 3.42 to 3.82. Almost all of it came from one factor.",
+      "summary": "A rating change is only useful if you can see what caused it. Here, EPS Revisions moved two grades and carried the composite across a band boundary.",
+      "primaryCategory": "quant-ratings",
+      "articleType": "quant-upgrade",
+      "tickers": ["AMD"],
+      "themes": ["semiconductors", "ai"],
+      "quantRating": 3.82,
+      "quantLetter": "A-",
+      "shariahStatus": "compliant",
+      "standardsPassed": 5,
+      "standardsOf": 5,
+      "author": "Vantace Research",
+      "publishedAt": "2026-09-01T09:30:00Z",
+      "views": 6390,
+      "stockTab": "Ratings",
+      "readingMinutes": 5,
+      "metaDescription": "AMD's quant rating moved from Hold to Buy. A factor-by-factor decomposition of what changed.",
+      "body": [
+        { "type": "p", "text": "The composite moved from 3.42 to 3.82 and crossed the boundary between Hold and Buy. A crossed boundary is worth less than the thing that crossed it, so here is the decomposition." },
+        {
+          "type": "table",
+          "title": "Factor grades, before and after",
+          "headers": ["Factor", "Before", "After", "Contribution"],
+          "numFrom": 3,
+          "rows": [
+            ["Valuation", "C", "C", "0.00"],
+            ["Growth", "A−", "A−", "0.00"],
+            ["Profitability", "B+", "A−", "+0.09"],
+            ["Financial Health", "A−", "A−", "0.00"],
+            ["Momentum", "B", "B+", "+0.07"],
+            ["EPS Revisions", "C+", "A−", "+0.24"]
+          ]
+        },
+        { "type": "p", "text": "Sixty percent of the move is EPS Revisions, which went from below the sector median to the top decile after the last quarter's beat pulled the following four quarters of consensus up with it. Profitability and Momentum contributed the rest between them. Valuation did not move at all — the multiple expanded roughly in line with the estimate increase, which is the case where a re-rating is not really a re-rating." },
+        { "type": "note", "text": "This report computes every score in the browser and stores nothing between sessions. A rating change therefore cannot be diffed automatically here — the before column above is from the sample fixture, not from a stored prior score. The Quant → Rating Upgrades page explains what a real change feed would need." }
+      ]
+    },
+
+    {
+      "id": "r011",
+      "slug": "tesla-downgraded-momentum-valuation-deteriorate",
+      "title": "Tesla Downgraded to Hold as Momentum and Valuation Both Deteriorate",
+      "subtitle": "Two factors moving the same way is the case where a composite change means something.",
+      "summary": "The composite fell to 2.14. Unusually, no single factor drove it — four of the six moved down together, which is a different signal from one bad line.",
+      "primaryCategory": "quant-ratings",
+      "articleType": "quant-downgrade",
+      "tickers": ["TSLA"],
+      "themes": ["growth"],
+      "quantRating": 2.14,
+      "quantLetter": "C+",
+      "shariahStatus": "compliant",
+      "standardsPassed": 5,
+      "standardsOf": 5,
+      "author": "Vantace Research",
+      "publishedAt": "2026-08-31T15:20:00Z",
+      "views": 10250,
+      "stockTab": "Ratings",
+      "readingMinutes": 5,
+      "metaDescription": "Tesla's quant composite fell to 2.14. Four of the six factors moved down together, which is the broad-based case.",
+      "body": [
+        { "type": "p", "text": "Most rating changes are one factor doing all the work, and those are the easy ones to dismiss — a single ratio crossing a percentile boundary in a distribution that has not really changed. This one is not that. Four of the six factors moved down in the same period." },
+        {
+          "type": "quant",
+          "score": 2.14,
+          "letter": "C+",
+          "factors": [["Valuation", "D"], ["Growth", "C+"], ["Profitability", "C"], ["Financial Health", "B+"], ["Momentum", "C"], ["EPS Revisions", "D"]]
+        },
+        { "type": "p", "text": "Valuation and EPS Revisions both grade D. That pairing is worth pausing on: it means the price is expensive relative to the sector *and* the earnings the price is being measured against are being revised down. Either alone is survivable. Together, the denominator of every multiple is falling while the numerator holds." },
+        { "type": "p", "text": "Financial Health at B+ is the one factor holding. The balance sheet carries more cash than debt and the coverage ratios are comfortable, so nothing here is a solvency observation. It is a ranking of a company against its sector on measurable ratios, and on most of them it currently ranks poorly." },
+        { "type": "note", "text": "A grade is a percentile, not a forecast. A company can rank badly on measured ratios and perform well, and this report makes no claim about which will happen." }
+      ]
+    },
+
+    {
+      "id": "r012",
+      "slug": "eli-lilly-eps-revisions-turn-positive",
+      "title": "Eli Lilly's EPS Revisions Turn Positive for the First Time in Four Quarters",
+      "subtitle": "The revisions factor has the shortest lag to price of the six, which is why a turn in it is worth noticing early.",
+      "summary": "Consensus for the next four quarters rose 4.1% over ninety days, after four quarters of cuts. The direction changed before the level recovered.",
+      "primaryCategory": "quant-ratings",
+      "articleType": "eps-revisions",
+      "tickers": ["LLY"],
+      "themes": ["quality"],
+      "quantRating": 3.55,
+      "quantLetter": "A-",
+      "shariahStatus": "compliant",
+      "standardsPassed": 5,
+      "standardsOf": 5,
+      "author": "Vantace Research",
+      "publishedAt": "2026-08-30T11:00:00Z",
+      "views": 4180,
+      "stockTab": "Analysts Forecast",
+      "readingMinutes": 4,
+      "metaDescription": "Eli Lilly's forward EPS estimates rose for the first time in four quarters. What the revisions factor measures and why the turn matters.",
+      "body": [
+        { "type": "p", "text": "Forward consensus for the next four quarters rose 4.1% over the last ninety days. It is the first positive ninety-day revision in five quarters, and it arrived before the estimate level recovered to where it stood a year ago — the direction turned while the level was still below trend, which is the ordinary shape of these turns." },
+        {
+          "type": "table",
+          "title": "Ninety-day revision, by quarter ahead",
+          "headers": ["Quarter ahead", "90 days ago", "Now", "Change"],
+          "numFrom": 1,
+          "rows": [
+            ["Q+1", "US$6.42", "US$6.61", "+3.0%"],
+            ["Q+2", "US$6.88", "US$7.19", "+4.5%"],
+            ["Q+3", "US$7.31", "US$7.64", "+4.5%"],
+            ["Q+4", "US$7.70", "US$8.02", "+4.2%"]
+          ]
+        },
+        { "type": "p", "text": "The revision is roughly uniform across the four quarters rather than concentrated in the near one, which distinguishes a change in the run rate from a one-off timing shift. Analysts moving all four quarters by a similar percentage are re-basing the trajectory, not moving revenue between periods." },
+        { "type": "p", "text": "EPS Revisions is the factor with the shortest lag to price of the six we grade, for the mechanical reason that it is built from forward-looking inputs while the other five read filed statements. That does not make it the most important; it makes it the earliest." }
+      ]
+    },
+
+    {
+      "id": "r013",
+      "slug": "analysts-cut-unitedhealth-targets-grade-moved-first",
+      "title": "Analysts Cut UnitedHealth Targets. The Quant Grade Had Already Moved.",
+      "subtitle": "What the sell side did in August, the ratios did in June.",
+      "summary": "Nine price target cuts in three weeks followed two quarters of deteriorating measured ratios. The order of events is the interesting part.",
+      "primaryCategory": "quant-ratings",
+      "articleType": "analyst-ratings",
+      "tickers": ["UNH"],
+      "themes": ["value"],
+      "quantRating": 2.71,
+      "quantLetter": "B",
+      "shariahStatus": "non-compliant",
+      "standardsPassed": 0,
+      "standardsOf": 5,
+      "author": "Vantace Research",
+      "publishedAt": "2026-08-29T13:50:00Z",
+      "views": 5520,
+      "stockTab": "Analysts Forecast",
+      "readingMinutes": 5,
+      "metaDescription": "UnitedHealth price target cuts followed, rather than led, the deterioration in its measured ratios.",
+      "body": [
+        { "type": "p", "text": "Nine analysts cut their price targets in three weeks, an average reduction of 11%. That is a large enough cluster to be worth writing about, but the sequence matters more than the size: the ratios these targets are ultimately derived from had been deteriorating for two reported quarters before the first cut landed." },
+        {
+          "type": "metrics",
+          "title": "The sequence",
+          "items": [
+            ["Medical loss ratio", "+310bp", "two quarters, before any cut"],
+            ["Profitability grade", "A− → B", "moved in June"],
+            ["First target cut", "August", ""],
+            ["Targets cut since", "9 of 24", "average −11%"]
+          ]
+        },
+        { "type": "p", "text": "This is not a claim that a quant grade predicts analyst behaviour. It is the simpler observation that a percentile ranking of filed ratios updates when the filing arrives, and a published price target updates when its author decides to publish. Those are different clocks, and one of them is slower." },
+        { "type": "p", "text": "Note also that the analyst consensus rating shown on the company header is the vendor's, not ours. The two frequently disagree, and where they do, this report says which is which rather than blending them." }
+      ]
+    },
+
+    {
+      "id": "r014",
+      "slug": "is-apple-overvalued-thirteen-models",
+      "title": "Is Apple Overvalued? Thirteen Models, One Answer",
+      "subtitle": "Every one of the thirteen fair-value models lands below the current price. That is unusual and worth stating plainly.",
+      "summary": "The shares trade at US$309.35 against a US$186.53 median fair value — a 1.66 price to fair value, with no model in the set disagreeing.",
+      "primaryCategory": "valuation",
+      "articleType": "overvalued",
+      "tickers": ["AAPL"],
+      "themes": ["megacap", "quality"],
+      "quantRating": 2.89,
+      "quantLetter": "B",
+      "shariahStatus": "compliant",
+      "standardsPassed": 5,
+      "standardsOf": 5,
+      "author": "Vantace Research",
+      "publishedAt": "2026-08-28T10:20:00Z",
+      "views": 15640,
+      "stockTab": "Valuation",
+      "readingMinutes": 7,
+      "seoTitle": "Is Apple Stock Overvalued? Fair Value Across Thirteen Models",
+      "metaDescription": "Apple trades at 1.66x our median fair value estimate, with all thirteen models below the current price. The valuation zone and what it does and does not mean.",
+      "body": [
+        { "type": "p", "text": "Apple changes hands at US$309.35 against a US$186.53 fair value estimate — a price to fair value of 1.66. The estimate is the median of thirteen models: six relative multiples, six discounted cash flow constructions and the vendor's own DCF. Every one of the thirteen lands below the current price." },
+        { "type": "p", "text": "Unanimity across a model set is worth more than the median it produces. The thirteen do not share assumptions — the multiple models anchor on peers and history, the DCFs on consensus cash flows and a cost of capital — so agreement between them is not one assumption expressed thirteen ways. It is thirteen roads to the same place." },
+        {
+          "type": "metrics",
+          "title": "The reading",
+          "items": [
+            ["Price", "US$309.35", "8 Sept 2026"],
+            ["Fair value estimate", "US$186.53", "median of 13 models"],
+            ["Price / fair value", "1.66", ""],
+            ["Uncertainty rating", "Medium", "six measured drivers"],
+            ["Valuation zone", "Overvalued", "band from the uncertainty rating"]
+          ]
+        },
+        { "type": "h", "text": "The two readings, kept apart" },
+        { "type": "p", "text": "The Valuation factor grades C− because eighteen price multiples rank poorly against Technology peers. The valuation zone reads Overvalued because the price sits above thirteen models of intrinsic worth. These are independent findings that happen to agree, and this report never merges them: no fair value estimate feeds any grade anywhere, because a valuation is a set of assumptions the reader chooses and letting a chosen assumption move a sector-relative grade would make the grade mean something different for every reader." },
+        { "type": "note", "text": "A fair value estimate is a model output, not a target and not a forecast. The band that turns it into a zone is a published margin-of-safety table, applied unchanged." }
+      ]
+    },
+
+    {
+      "id": "r015",
+      "slug": "qualcomm-discount-to-semiconductor-peers",
+      "title": "Qualcomm Trades at a Discount to Every Semiconductor Peer We Rank",
+      "subtitle": "Eleven of eighteen multiples in the cheapest quintile of the sector — and one reason that might be correct.",
+      "summary": "The valuation factor grades A. Before treating that as an opportunity, it is worth asking what the market thinks it knows about the handset cycle.",
+      "primaryCategory": "valuation",
+      "articleType": "undervalued",
+      "tickers": ["QCOM"],
+      "themes": ["semiconductors", "value"],
+      "quantRating": 3.74,
+      "quantLetter": "A-",
+      "shariahStatus": "compliant",
+      "standardsPassed": 4,
+      "standardsOf": 5,
+      "author": "Vantace Research",
+      "publishedAt": "2026-08-27T09:15:00Z",
+      "views": 6890,
+      "stockTab": "Valuation",
+      "readingMinutes": 6,
+      "metaDescription": "Qualcomm ranks in the cheapest quintile of semiconductors on eleven of eighteen multiples. What the discount may be pricing.",
+      "body": [
+        { "type": "p", "text": "Eleven of the eighteen valuation multiples we rank place Qualcomm in the cheapest quintile of the Technology sector, and the factor grades A. On a screen, that is the profile of a value opportunity. Screens do not know why something is cheap, so it is worth spending the article on that question rather than on the multiples themselves." },
+        {
+          "type": "table",
+          "title": "Against the sector",
+          "headers": ["", "QCOM", "Sector median", "Percentile"],
+          "numFrom": 1,
+          "rows": [
+            ["P/E, trailing", "14.8x", "28.4x", "8th"],
+            ["P/E, forward", "13.1x", "24.9x", "6th"],
+            ["EV/EBITDA", "11.2x", "19.6x", "11th"],
+            ["EV/Sales", "3.4x", "6.8x", "14th"],
+            ["FCF yield", "7.1%", "3.2%", "92nd"]
+          ]
+        },
+        { "type": "p", "text": "The most defensible explanation for the discount is customer concentration in the handset business and the published intention of its largest customer to move to internally designed modems. That is a known, dated, disclosed risk to a substantial share of revenue. A market pricing it is not a market making a mistake; it is a market applying a probability the reader may or may not agree with." },
+        {
+          "type": "bullbear",
+          "bull": [
+            "Free cash flow yield above 7% in a sector whose median is 3.2%, with the cash conversion to support it.",
+            "The licensing business is high margin, contractual, and largely independent of the handset chipset volumes.",
+            "Net cash on the balance sheet and a dividend covered more than three times."
+          ],
+          "bear": [
+            "A single customer accounts for a share of revenue large enough that its published in-housing plan is a thesis-level risk.",
+            "Automotive and IoT are growing but are not yet large enough to offset a handset step-down.",
+            "A cheap multiple that has been cheap for three years may be a rating rather than a discount."
+          ]
+        }
+      ]
+    },
+
+    {
+      "id": "r016",
+      "slug": "semiconductor-valuations-against-ten-year-range",
+      "title": "Semiconductor Valuations Against Their Own Ten-Year Range",
+      "subtitle": "Where eight large-cap semiconductor companies sit against their own history, rather than against each other.",
+      "summary": "A sector-relative grade says who is cheapest today. A ten-year percentile says whether today is cheap. The two disagree more often than you would expect.",
+      "primaryCategory": "valuation",
+      "articleType": "sector-comparison",
+      "tickers": ["NVDA", "AMD", "AVGO", "TSM", "QCOM", "TXN", "LRCX", "ASML"],
+      "themes": ["semiconductors", "value"],
+      "quantRating": null,
+      "shariahStatus": null,
+      "author": "Vantace Research",
+      "publishedAt": "2026-08-26T14:00:00Z",
+      "views": 7730,
+      "readingMinutes": 6,
+      "metaDescription": "Eight large-cap semiconductor companies ranked against their own ten-year valuation range rather than against each other.",
+      "body": [
+        { "type": "p", "text": "Every valuation grade in this report is a percentile against the sector as it stands today. That is the right comparison for the question \"which of these is cheapest\", and the wrong one for \"is this sector cheap\". A sector that has re-rated as a whole will still produce a full spread of grades from A to F." },
+        { "type": "p", "text": "So here is the other axis: each company's current forward P/E as a percentile of its own last ten years." },
+        {
+          "type": "table",
+          "title": "Forward P/E, current and against own history",
+          "headers": ["", "Forward P/E", "10-year percentile", "Sector percentile"],
+          "numFrom": 1,
+          "rows": [
+            ["NVDA", "38.2x", "71st", "6th"],
+            ["AMD", "31.4x", "44th", "17th"],
+            ["AVGO", "29.8x", "88th", "22nd"],
+            ["TSM", "21.6x", "79th", "48th"],
+            ["QCOM", "13.1x", "22nd", "94th"],
+            ["TXN", "26.4x", "63rd", "31st"],
+            ["LRCX", "22.9x", "68th", "44th"],
+            ["ASML", "33.1x", "74th", "12th"]
+          ]
+        },
+        { "type": "p", "text": "Read the last two columns together. Seven of the eight sit above their own ten-year median while spanning the full range of sector percentiles — which is what a sector-wide re-rating looks like from the inside. Qualcomm is the only one cheap on both axes, and the previous article explains what the market may be pricing there." },
+        { "type": "note", "text": "Ten-year percentiles here are computed against each company's own history and are not part of any grade in this report. The grades are sector-relative only." }
+      ]
+    },
+
+    {
+      "id": "r017",
+      "slug": "what-tsmc-is-worth-if-foundry-pricing-holds",
+      "title": "What TSMC Is Worth If Foundry Pricing Holds",
+      "subtitle": "Thirteen models, a wide range, and the one assumption that moves all of them.",
+      "summary": "The fair value range spans US$168 to US$294. Almost the entire spread is attributable to a single input: leading-edge wafer pricing.",
+      "primaryCategory": "valuation",
+      "articleType": "fair-value",
+      "tickers": ["TSM"],
+      "themes": ["semiconductors", "capex"],
+      "quantRating": 3.91,
+      "quantLetter": "A-",
+      "shariahStatus": "compliant",
+      "standardsPassed": 5,
+      "standardsOf": 5,
+      "author": "Vantace Research",
+      "publishedAt": "2026-08-25T11:40:00Z",
+      "views": 5210,
+      "stockTab": "Valuation",
+      "readingMinutes": 6,
+      "metaDescription": "A fair value range for TSMC across thirteen models, and the single assumption that explains most of the spread.",
+      "body": [
+        { "type": "p", "text": "The thirteen models produce a fair value range of US$168 to US$294, with a median at US$221. A range that wide is not a failure of the models — it is the honest output of a business whose economics turn on one assumption that reasonable people disagree about." },
+        { "type": "p", "text": "That assumption is leading-edge wafer pricing. Hold it flat in real terms and the DCF constructions cluster near the bottom of the range. Let it rise with the published roadmap and they cluster near the top. The relative-multiple models sit in between, because they anchor on a peer set that embeds a middling assumption without stating it." },
+        {
+          "type": "metrics",
+          "title": "The range",
+          "items": [
+            ["Low estimate", "US$168", "flat real wafer pricing"],
+            ["Median estimate", "US$221", "median of 13 models"],
+            ["High estimate", "US$294", "roadmap pricing sustained"],
+            ["Spread", "75%", "low to high"]
+          ]
+        },
+        { "type": "p", "text": "Publishing the range and the median is honest. Grading a company on whichever one you picked is not, which is why no fair value estimate anywhere in this report feeds a factor grade. The reader picks the assumption; the grade should not move when they do." }
+      ]
+    },
+
+    {
+      "id": "r018",
+      "slug": "exxon-dividend-covered-free-cash-flow",
+      "title": "Exxon's Dividend Is Covered 2.4x by Free Cash Flow. That Has Not Always Been True.",
+      "subtitle": "Cover at the bottom of the cycle is the number that matters, and this cycle's bottom was five years ago.",
+      "summary": "Free cash flow cover of 2.4x looks comfortable. The 2020 trough, when cover fell below one and the dividend was funded by borrowing, is the useful comparison.",
+      "primaryCategory": "dividends",
+      "articleType": "dividend-safety",
+      "tickers": ["XOM"],
+      "themes": ["value", "dividend-growth"],
+      "quantRating": 3.44,
+      "quantLetter": "A-",
+      "shariahStatus": "compliant",
+      "standardsPassed": 4,
+      "standardsOf": 5,
+      "author": "Vantace Research",
+      "publishedAt": "2026-08-24T08:30:00Z",
+      "views": 8060,
+      "stockTab": "Dividends",
+      "readingMinutes": 5,
+      "metaDescription": "Exxon's dividend cover is 2.4x free cash flow. What the 2020 trough says about how much of that is cyclical.",
+      "body": [
+        { "type": "p", "text": "Free cash flow covers the dividend 2.4 times. In a sector where the payout is the reason most holders are there, that is the single most important ratio on the page — and it is also the one most flattered by where we are in the cycle." },
+        {
+          "type": "table",
+          "title": "Cover through a cycle",
+          "headers": ["", "2020", "2022", "2024", "2026 TTM"],
+          "numFrom": 1,
+          "rows": [
+            ["Free cash flow", "US$(2.6)b", "US$62.1b", "US$34.4b", "US$36.8b"],
+            ["Dividends paid", "US$14.9b", "US$14.9b", "US$16.7b", "US$15.4b"],
+            ["Cover", "−0.2x", "4.2x", "2.1x", "2.4x"],
+            ["Net debt", "US$63.3b", "US$8.9b", "US$21.0b", "US$18.2b"]
+          ]
+        },
+        { "type": "p", "text": "In 2020 the dividend was funded by borrowing, and net debt tripled to pay it. Management chose the payout over the balance sheet and then spent two years repairing the balance sheet. Whether that was the right call is a judgement; that it is the behaviour to expect at the next trough is close to a fact, and it is the thing a cover ratio of 2.4x today does not tell you." },
+        { "type": "p", "text": "The Dividends work in this report grades the record, the cover and the growth — not the commodity price that produces them. A reader who wants a view on the next trough needs a view on oil, and this report does not hold one." }
+      ]
+    },
+
+    {
+      "id": "r019",
+      "slug": "union-pacific-raises-dividend-nineteenth-year",
+      "title": "Union Pacific Raises the Dividend 6%, the Nineteenth Straight Year",
+      "subtitle": "A smaller increase than the last five, and the payout ratio explains why.",
+      "summary": "The streak continues, but the rate of increase has converged on the rate of earnings growth — which is what a mature payout policy looks like.",
+      "primaryCategory": "dividends",
+      "articleType": "dividend-increase",
+      "tickers": ["UNP"],
+      "themes": ["dividend-growth", "quality"],
+      "quantRating": 3.28,
+      "quantLetter": "B+",
+      "shariahStatus": "questionable",
+      "standardsPassed": 2,
+      "standardsOf": 5,
+      "author": "Vantace Research",
+      "publishedAt": "2026-08-23T12:00:00Z",
+      "views": 3890,
+      "stockTab": "Dividends",
+      "readingMinutes": 4,
+      "metaDescription": "Union Pacific's nineteenth consecutive dividend increase, and what the slowing rate of increase says about the payout ratio.",
+      "body": [
+        { "type": "p", "text": "The board declared a 6% increase, extending the streak to nineteen consecutive years. It is also the smallest increase of the last six, and the reason is arithmetic rather than caution." },
+        {
+          "type": "metrics",
+          "title": "The trajectory",
+          "items": [
+            ["Increase declared", "+6.0%", "19th consecutive year"],
+            ["Five-year dividend CAGR", "+11.4%", ""],
+            ["Five-year EPS CAGR", "+7.2%", ""],
+            ["Payout ratio", "47%", "from 34% five years ago"]
+          ]
+        },
+        { "type": "p", "text": "Growing the dividend four points a year faster than earnings works until the payout ratio catches up with where the board wants it. At 47% it broadly has. From here the increase rate should track the earnings growth rate, and a 6% increase against 7% earnings growth is exactly that convergence arriving." },
+        { "type": "p", "text": "This is not a deterioration and should not be read as one. A payout growing in line with earnings at a sustainable ratio is the mature end state of a dividend policy, and it is more durable than a streak extended by expanding the ratio." }
+      ]
+    },
+
+    {
+      "id": "r020",
+      "slug": "procter-gamble-payout-growth-tracks-earnings",
+      "title": "Procter & Gamble's Payout Growth Has Slowed to the Rate of Its Earnings",
+      "subtitle": "Seventy years of increases, and a yield that now depends on the share price rather than on the increase.",
+      "summary": "The record is exceptional and the current growth rate is ordinary. Both facts belong in the same paragraph.",
+      "primaryCategory": "dividends",
+      "articleType": "dividend-analysis",
+      "tickers": ["PG"],
+      "themes": ["dividend-growth", "quality", "value"],
+      "quantRating": 2.96,
+      "quantLetter": "B",
+      "shariahStatus": "compliant",
+      "standardsPassed": 4,
+      "standardsOf": 5,
+      "author": "Vantace Research",
+      "publishedAt": "2026-08-22T09:45:00Z",
+      "views": 4520,
+      "stockTab": "Dividends",
+      "readingMinutes": 5,
+      "metaDescription": "P&G's dividend record versus its current growth rate, cover and yield.",
+      "body": [
+        { "type": "p", "text": "Seventy consecutive years of increases is a record almost nothing else in the market can match, and it is the first thing anyone says about this company. It is also backward-looking, and the forward-looking numbers are more ordinary than the record implies." },
+        {
+          "type": "table",
+          "title": "The dividend now",
+          "headers": ["", "Value", "Sector median"],
+          "numFrom": 1,
+          "rows": [
+            ["Yield", "2.6%", "2.2%"],
+            ["Five-year dividend CAGR", "+5.4%", "+4.1%"],
+            ["Payout ratio", "62%", "55%"],
+            ["FCF cover", "1.5x", "1.7x"],
+            ["Consecutive years of increases", "70", "—"]
+          ]
+        },
+        { "type": "p", "text": "A 5.4% growth rate at a 62% payout ratio with 1.5x free cash flow cover describes a dividend that is safe and is not going to compound the way it did between 1990 and 2010. That is not a criticism of the company; it is what a mature payout at a mature ratio does." },
+        { "type": "p", "text": "The Dividends factor grades the cover, the record and the growth against the Consumer Defensive sector, and the result is a B — above median on the record and the growth, below it on the cover. That composite is more informative than the streak, and the streak is what gets quoted." }
+      ]
+    },
+
+    {
+      "id": "r021",
+      "slug": "top-quant-stocks-september-2026",
+      "title": "Top Quant Rated Stocks, September 2026",
+      "subtitle": "The twelve highest composite scores in the covered universe, with the factor that carried each one.",
+      "summary": "A ranked screen: the eligibility rule is the universe, the composite decides the order, and the factor breakdown says what you are actually buying.",
+      "primaryCategory": "investment-ideas",
+      "articleType": "top-quant",
+      "tickers": ["NVDA", "LLY", "AVGO", "TSM", "GOOGL", "MSFT", "AMD", "COST"],
+      "themes": ["quality", "growth"],
+      "quantRating": null,
+      "shariahStatus": null,
+      "author": "Vantace Research",
+      "publishedAt": "2026-09-08T07:00:00Z",
+      "views": 18920,
+      "readingMinutes": 6,
+      "seoTitle": "Top Quant Rated Stocks — September 2026",
+      "metaDescription": "The highest composite quant scores in the covered universe this month, with the factor breakdown behind each.",
+      "body": [
+        { "type": "p", "text": "The composite is the mean of the graded factor scores, and a high composite can be produced two ways: strength everywhere, or extreme strength in one factor carrying four ordinary ones. Those are different propositions, so the table names the strongest and weakest factor for each rather than only the score." },
+        {
+          "type": "table",
+          "title": "Ranked by composite",
+          "headers": ["", "Composite", "Strongest", "Weakest"],
+          "numFrom": 1,
+          "rows": [
+            ["NVDA", "4.41", "Growth (A)", "Valuation (C−)"],
+            ["TSM", "3.91", "Profitability (A)", "Momentum (B)"],
+            ["GOOGL", "3.97", "Profitability (A−)", "Valuation (C+)"],
+            ["AMD", "3.82", "EPS Revisions (A−)", "Valuation (C)"],
+            ["QCOM", "3.74", "Valuation (A)", "Growth (C+)"],
+            ["MSFT", "3.64", "Financial Health (A)", "Valuation (C)"],
+            ["LLY", "3.55", "Growth (A)", "Valuation (D)"],
+            ["XOM", "3.44", "Valuation (A−)", "Growth (C)"]
+          ]
+        },
+        { "type": "p", "text": "Seven of the eight have Valuation as their weakest factor. That is not a coincidence and it is worth understanding: a composite built from six factors, five of which measure the business and one of which measures the price, will tend to rank businesses that are performing well — and businesses that are performing well are rarely cheap. Qualcomm is the only entry here whose strongest factor is Valuation, which makes it a structurally different kind of holding from the other seven." },
+        { "type": "note", "text": "A screen is a ranking of measurable ratios, not a portfolio and not advice. This report runs no backtest, and nothing here has been tested against realised forward returns." }
+      ]
+    },
+
+    {
+      "id": "r022",
+      "slug": "quality-compounders-earn-more-than-cost-of-capital",
+      "title": "Quality Compounders: Companies That Have Earned More Than Their Cost of Capital for Ten Years",
+      "subtitle": "One rule, applied to ten filed years, with no exceptions made for a bad year.",
+      "summary": "Returns above the hurdle in every one of the last ten filed years is a demanding rule. Fewer companies clear it than most quality screens suggest.",
+      "primaryCategory": "investment-ideas",
+      "articleType": "quality-ideas",
+      "tickers": ["AAPL", "MSFT", "COST", "TXN", "LIN", "UNP", "KO", "JNJ"],
+      "themes": ["quality", "megacap"],
+      "quantRating": null,
+      "shariahStatus": null,
+      "author": "Vantace Research",
+      "publishedAt": "2026-08-21T07:30:00Z",
+      "views": 9340,
+      "readingMinutes": 6,
+      "metaDescription": "A quality screen: companies that earned more on invested capital than that capital cost in each of the last ten filed years.",
+      "body": [
+        { "type": "p", "text": "The rule is one line: return on invested capital above the weighted average cost of capital in each of the last ten filed years. Not on average — in each of them. Averaging lets one exceptional year cover three bad ones, and the point of the screen is to find businesses whose economics do not depend on the cycle." },
+        {
+          "type": "table",
+          "title": "Ten years above the hurdle",
+          "headers": ["", "Years above", "Average spread", "Latest spread"],
+          "numFrom": 1,
+          "rows": [
+            ["AAPL", "10 of 10", "23.9%", "43.0%"],
+            ["MSFT", "10 of 10", "17.2%", "21.4%"],
+            ["TXN", "10 of 10", "18.6%", "14.9%"],
+            ["COST", "10 of 10", "9.8%", "11.2%"],
+            ["LIN", "10 of 10", "4.1%", "5.6%"],
+            ["KO", "10 of 10", "8.4%", "9.1%"],
+            ["UNP", "10 of 10", "6.7%", "6.2%"],
+            ["JNJ", "9 of 10", "10.3%", "11.8%"]
+          ]
+        },
+        { "type": "p", "text": "The spread column is the part worth reading twice. Clearing the hurdle by four points, as Linde does, and clearing it by forty-three, as Apple does, are the same binary outcome and profoundly different businesses. A screen that only reports the pass rate discards that, which is why the average and latest spreads are here." },
+        { "type": "note", "text": "The cost of capital in this screen is our estimate, not a disclosed figure. Companies do not publish a WACC, so a screen built on one inherits an assumption. It is stated rather than hidden." }
+      ]
+    },
+
+    {
+      "id": "r023",
+      "slug": "value-screen-cheap-on-multiples-not-fundamentals",
+      "title": "Value Screen: Cheap on the Multiples, Not Cheap on the Fundamentals",
+      "subtitle": "The hard part of a value screen is not finding cheap companies. It is excluding the ones that deserve to be.",
+      "summary": "Bottom-quartile valuation percentile, with a Financial Health grade of B or better and no negative earnings revision over ninety days.",
+      "primaryCategory": "investment-ideas",
+      "articleType": "value-ideas",
+      "tickers": ["QCOM", "XOM", "CVX", "JPM", "UNH", "ABBV"],
+      "themes": ["value"],
+      "quantRating": null,
+      "shariahStatus": null,
+      "author": "Vantace Research",
+      "publishedAt": "2026-08-20T08:00:00Z",
+      "views": 7450,
+      "readingMinutes": 5,
+      "metaDescription": "A value screen with quality and revision filters, so the cheapest names are not simply the most impaired.",
+      "body": [
+        { "type": "p", "text": "Screening for the cheapest quartile of a sector and stopping there reliably produces a list of companies whose earnings are about to fall. The multiple is low because the denominator is stale. So this screen carries two exclusions alongside the valuation rule, and both are there to remove that failure mode." },
+        {
+          "type": "metrics",
+          "title": "The rules",
+          "items": [
+            ["Valuation percentile", "Bottom quartile", "against own sector"],
+            ["Financial Health grade", "B or better", "excludes balance-sheet distress"],
+            ["90-day EPS revision", "Not negative", "excludes a stale denominator"],
+            ["Market cap", "Above US$10b", "keeps the sample tradeable"]
+          ]
+        },
+        { "type": "p", "text": "The revision filter is the one doing most of the work. A cheap multiple with estimates being cut is not a value opportunity; it is a multiple that has not finished falling. Requiring the revision to be flat or positive removes roughly two-thirds of the raw cheap list, and the two-thirds it removes is the part that would have hurt." },
+        { "type": "note", "text": "A screen is the best of a sample, not the best of the market. The candidate list is capped, taken largest first, and the rules run over that sample — which is stated on every screen in this product rather than implied away." }
+      ]
+    },
+
+    {
+      "id": "r024",
+      "slug": "sector-rankings-where-composite-grades-cluster",
+      "title": "Sector Rankings: Where the Composite Grades Actually Cluster",
+      "subtitle": "Every grade in this report is a percentile within a sector, so the sectors themselves cannot be compared by grade. Here is what can.",
+      "summary": "A percentile is relative by construction, so every sector's median grade is the same by design. The differences are in the underlying ratios, not the grades.",
+      "primaryCategory": "investment-ideas",
+      "articleType": "sector-ranking",
+      "tickers": [],
+      "sectors": ["Technology", "Healthcare", "Energy", "Financial Services", "Consumer Defensive", "Utilities"],
+      "themes": ["value", "quality"],
+      "quantRating": null,
+      "shariahStatus": null,
+      "author": "Vantace Research",
+      "publishedAt": "2026-08-19T10:30:00Z",
+      "views": 5680,
+      "readingMinutes": 5,
+      "metaDescription": "Why sector median grades are identical by construction, and what to compare across sectors instead.",
+      "body": [
+        { "type": "p", "text": "A reader occasionally asks which sector has the best grades. The honest answer is that the question cannot be answered with grades, and the reason is worth two minutes because it explains what every grade in this product means." },
+        { "type": "p", "text": "Each grade is a percentile against the distribution of that ratio within the company's own sector. A company at the median of Technology and a company at the median of Utilities both grade at the middle, whatever the absolute numbers are. Every sector's median grade is therefore the same by construction. Ranking sectors by median grade would be ranking rounding noise." },
+        { "type": "p", "text": "What can be compared is the underlying level. A sector's median net margin, its median return on capital, its median leverage — those are absolute figures that mean the same thing everywhere, and the sector breakdown page publishes them." },
+        {
+          "type": "table",
+          "title": "Comparable across sectors, because they are levels not percentiles",
+          "headers": ["Sector", "Median net margin", "Median ROIC", "Median net debt/EBITDA"],
+          "numFrom": 1,
+          "rows": [
+            ["Technology", "18.4%", "16.1%", "0.4x"],
+            ["Healthcare", "9.2%", "11.3%", "1.6x"],
+            ["Energy", "11.8%", "13.7%", "1.1x"],
+            ["Financial Services", "22.6%", "—", "—"],
+            ["Consumer Defensive", "6.1%", "12.4%", "2.2x"],
+            ["Utilities", "12.9%", "5.2%", "4.8x"]
+          ]
+        },
+        { "type": "note", "text": "Return on invested capital and net debt to EBITDA are not meaningful for most Financial Services companies, and are shown as unavailable rather than computed from a formula that does not apply to a bank's balance sheet." }
+      ]
+    },
+
+    {
+      "id": "r025",
+      "slug": "is-nvidia-stock-halal",
+      "title": "Is NVIDIA Stock Halal? The Screen, and What It Does Not Cover",
+      "subtitle": "NVIDIA passes all five published screens on the balance sheet ratios. Three tests those providers run are not run here.",
+      "summary": "Debt at 1.4% of market capitalisation and no excluded business activity. The screen passes cleanly — and the gaps in it are named rather than glossed.",
+      "primaryCategory": "shariah",
+      "articleType": "stock-compliance",
+      "tickers": ["NVDA"],
+      "themes": ["semiconductors", "ai"],
+      "quantRating": 4.41,
+      "quantLetter": "A-",
+      "shariahStatus": "compliant",
+      "standardsPassed": 5,
+      "standardsOf": 5,
+      "author": "Vantace Research",
+      "publishedAt": "2026-09-09T15:00:00Z",
+      "views": 22140,
+      "stockTab": "Shariah Compliance",
+      "readingMinutes": 6,
+      "seoTitle": "Is NVIDIA Stock Shariah Compliant? Screening Ratios and Limits",
+      "metaDescription": "NVIDIA against five published Shariah screening methodologies: the debt and liquidity ratios, the business activity test, and the three tests not run.",
+      "body": [
+        { "type": "p", "text": "NVIDIA passes all five of the published screening methodologies this report runs. The business activity is not excluded, and both balance-sheet ratios sit well inside every limit. That is a clean pass rather than a marginal one, and the ratios are not close enough to the lines for a normal quarter to change it." },
+        {
+          "type": "table",
+          "title": "Against the five standards",
+          "headers": ["Standard", "Divisor", "Debt limit", "Debt ratio", "Result"],
+          "numFrom": 2,
+          "rows": [
+            ["AAOIFI", "Market cap", "30%", "1.4%", "Pass"],
+            ["S&P Global", "Market cap", "33%", "1.4%", "Pass"],
+            ["Dow Jones", "Market cap", "33%", "1.4%", "Pass"],
+            ["FTSE", "Total assets", "33%", "8.9%", "Pass"],
+            ["MSCI", "Total assets", "33.33%", "8.9%", "Pass"]
+          ]
+        },
+        { "type": "h", "text": "What this screen does not do" },
+        { "type": "p", "text": "It is a mechanical screen, not a scholarly ruling, and three tests the index providers actually run are not run here at all: non-compliant income as a share of revenue, accounts receivable as a share of assets, and the providers' use of an averaged market capitalisation — Dow Jones over 24 months, S&P over 36 — where this has only the current one. A company that passes here could fail a provider's own screen on any of those three." },
+        { "type": "p", "text": "The business activity test is keyword matching against the vendor's sector and industry strings. It catches a bank and a distiller. It will not catch a conglomerate with a financing arm, because nothing in the data says that arm exists." },
+        { "type": "note", "text": "Compliance and attractiveness are two different questions. NVIDIA is compliant on this screen and rates 4.41 of 5 on the quant composite. Neither figure is evidence for the other, and a scholar is the authority on the first." }
+      ]
+    },
+
+    {
+      "id": "r026",
+      "slug": "why-two-shariah-screens-disagree",
+      "title": "Why Two Shariah Screens Disagree About the Same Balance Sheet",
+      "subtitle": "One structural choice — market capitalisation or total assets — explains almost every split verdict.",
+      "summary": "AAOIFI, S&P and Dow Jones divide by market cap. FTSE and MSCI divide by total assets. That single difference decides most borderline cases.",
+      "primaryCategory": "shariah",
+      "articleType": "screening-analysis",
+      "tickers": ["META", "AVGO", "UNP"],
+      "themes": ["quality"],
+      "quantRating": null,
+      "shariahStatus": null,
+      "author": "Vantace Research",
+      "publishedAt": "2026-09-06T13:00:00Z",
+      "views": 11470,
+      "stockTab": "Shariah Compliance",
+      "readingMinutes": 7,
+      "seoTitle": "Why Shariah Screens Disagree: Market Cap vs Total Assets",
+      "metaDescription": "The structural difference between AAOIFI-style and FTSE-style Shariah screens, and why the same company passes one and fails the other.",
+      "body": [
+        { "type": "p", "text": "The five published methodologies ask the same two questions — how much of the company is funded by interest-bearing debt, and how much of it is cash and interest-bearing securities. They differ in one structural way and one numeric one, and the structural difference does almost all the work." },
+        { "type": "p", "text": "AAOIFI, S&P Global and Dow Jones divide by market capitalisation. FTSE and MSCI divide by total assets. A highly valued company looks lightly geared against its market cap and heavily geared against its books, so the same balance sheet produces two different answers depending on which denominator the provider chose." },
+        {
+          "type": "table",
+          "title": "The same companies, both denominators",
+          "headers": ["", "Debt / market cap", "Debt / assets", "Passes"],
+          "numFrom": 1,
+          "rows": [
+            ["META", "6.1%", "34.8%", "3 of 5"],
+            ["AVGO", "34.2%", "38.1%", "0 of 5"],
+            ["UNP", "31.9%", "43.6%", "2 of 5"],
+            ["NVDA", "1.4%", "8.9%", "5 of 5"]
+          ]
+        },
+        { "type": "p", "text": "Meta is the illustrative case. Against its market capitalisation the debt is trivial and it clears the three market-cap standards comfortably. Against total assets it is above a third and fails both asset-based standards. Neither answer is wrong. They are answers to different questions, and a reader who follows one methodology should read that methodology's row rather than a blended verdict." },
+        { "type": "p", "text": "This is why the company report refuses to print a single word. Its headline is a count — \"Passes 3 of 5\" — because \"compliant\" would be true for some readers' standard and false for others'. The feed's four-state label above is defined as that same count, not as a separate ruling." },
+        { "type": "note", "text": "This is a mechanical screen and not a fatwa. Verify against your provider before relying on it." }
+      ]
+    },
+
+    {
+      "id": "r027",
+      "slug": "compliance-changes-three-crossed-debt-line",
+      "title": "Compliance Changes: What a Real Change Feed Would Need",
+      "subtitle": "A status change requires yesterday's status. This report stores nothing between sessions, and says so rather than inventing one.",
+      "summary": "Both screening ratios move with the market price as well as with the balance sheet, so a company can cross the line without filing anything. That is exactly why the list would be worth having.",
+      "primaryCategory": "shariah",
+      "articleType": "compliance-change",
+      "tickers": [],
+      "sectors": ["Technology", "Industrials"],
+      "themes": [],
+      "quantRating": null,
+      "shariahStatus": null,
+      "author": "Vantace Research",
+      "publishedAt": "2026-09-05T09:00:00Z",
+      "views": 3260,
+      "readingMinutes": 4,
+      "metaDescription": "Why a Shariah compliance change feed needs stored history, and what would be required to build one.",
+      "body": [
+        { "type": "p", "text": "The most useful page in a Shariah section is the one that says what changed. It is also the one this product cannot yet build, and the reason is worth stating plainly rather than filling the page with something that looks like it." },
+        { "type": "p", "text": "A change is a difference between two states. Every score and every screening ratio in this report is computed in the browser when the page loads and discarded when it closes. There is no yesterday to diff against." },
+        { "type": "h", "text": "Why it matters more here than elsewhere" },
+        { "type": "p", "text": "Three of the five standards divide debt by market capitalisation. Market capitalisation moves every day. A company whose balance sheet has not changed at all can therefore cross a screening limit because its share price fell — the debt ratio rises when the denominator shrinks. A quarterly filing is not the trigger; a drawdown is." },
+        {
+          "type": "metrics",
+          "title": "What building it would take",
+          "items": [
+            ["A nightly job", "Screen the universe", "and write the result"],
+            ["A stored table", "symbol, standard, ratio, verdict, date", ""],
+            ["A diff endpoint", "yesterday vs today", "the page reads this"],
+            ["A materiality rule", "ignore ratio noise", "cross the limit, not wobble at it"]
+          ]
+        },
+        { "type": "note", "text": "This article documents a gap deliberately rather than filling it. The Shariah → Compliance Changes page says the same thing in the product." }
+      ]
+    },
+
+    {
+      "id": "r028",
+      "slug": "top-halal-technology-stocks",
+      "title": "Top Halal Technology Stocks",
+      "subtitle": "Companies that clear every published screen and rank in the upper half of the Technology sector on the quant composite.",
+      "summary": "Two independent filters applied in sequence: compliance first, because it is a threshold, then the composite, because it is a ranking.",
+      "primaryCategory": "shariah",
+      "articleType": "shariah-idea",
+      "tickers": ["NVDA", "AAPL", "TSM", "AMD", "TXN", "ASML"],
+      "themes": ["ai", "semiconductors", "growth"],
+      "quantRating": null,
+      "shariahStatus": "compliant",
+      "author": "Vantace Research",
+      "publishedAt": "2026-09-07T07:30:00Z",
+      "views": 16780,
+      "readingMinutes": 5,
+      "seoTitle": "Top Halal Technology Stocks — Shariah Compliant and Quant Rated",
+      "metaDescription": "Technology companies passing all five Shariah screens, ranked by the quant composite.",
+      "body": [
+        { "type": "p", "text": "This list is built by applying two filters in a deliberate order. Compliance runs first, because it is a threshold — a company either clears the published limits or it does not, and no quant score changes that. The composite runs second, over what survives, because it is a ranking rather than a test." },
+        { "type": "p", "text": "Running them the other way round would produce the same list and imply the wrong thing: that a high enough score could compensate for a failed screen. It cannot, and the ordering of the page is an argument about that." },
+        {
+          "type": "table",
+          "title": "Compliant, then ranked",
+          "headers": ["", "Screens passed", "Composite", "Weakest factor"],
+          "numFrom": 1,
+          "rows": [
+            ["NVDA", "5 of 5", "4.41", "Valuation (C−)"],
+            ["TSM", "5 of 5", "3.91", "Momentum (B)"],
+            ["AMD", "5 of 5", "3.82", "Valuation (C)"],
+            ["ASML", "5 of 5", "3.68", "Valuation (C−)"],
+            ["TXN", "5 of 5", "3.21", "Growth (C+)"],
+            ["AAPL", "5 of 5", "2.89", "Valuation (C−)"]
+          ]
+        },
+        { "type": "p", "text": "Note what the third column does not say. A composite of 4.41 and a composite of 2.89 are both compatible with a clean compliance screen, because the two measure unrelated things. Compliance answers whether the company is permissible under the chosen methodology. The composite answers how its measurable ratios rank against its sector. Reading either as evidence for the other is the single most common mistake made with a list like this." },
+        { "type": "note", "text": "Screens are mechanical and this is not a scholarly ruling. Three tests the index providers run are not run here — see the screening analysis linked below." }
+      ]
+    },
+
+    {
+      "id": "r029",
+      "slug": "purification-how-much-of-a-dividend",
+      "title": "Purification: How Much of a Dividend Is Non-Compliant Income?",
+      "subtitle": "The calculation is simple. The input it needs is the one this data plan does not carry.",
+      "summary": "Purification is the share of income from non-compliant sources, returned rather than kept. The arithmetic is a ratio; the difficulty is the disclosure.",
+      "primaryCategory": "shariah",
+      "articleType": "purification",
+      "tickers": ["AAPL", "MSFT"],
+      "themes": [],
+      "quantRating": null,
+      "shariahStatus": null,
+      "author": "Vantace Research",
+      "publishedAt": "2026-09-01T11:00:00Z",
+      "views": 8930,
+      "stockTab": "Shariah Compliance",
+      "readingMinutes": 6,
+      "seoTitle": "Shariah Purification: Calculating Non-Compliant Income on a Dividend",
+      "metaDescription": "How dividend purification is calculated, what input it requires, and why interest income disclosure is the binding constraint.",
+      "body": [
+        { "type": "p", "text": "Purification is the practice of returning the share of investment income that derives from non-compliant sources rather than keeping it. For an equity holder, the usual calculation is a ratio applied to dividends received, and occasionally to capital gains depending on the methodology followed." },
+        {
+          "type": "metrics",
+          "title": "The calculation",
+          "items": [
+            ["Purification ratio", "Non-compliant income ÷ total revenue", "per period"],
+            ["Amount to purify", "Ratio × dividends received", ""],
+            ["Typical source", "Interest income on cash balances", "for a compliant operating company"],
+            ["Frequency", "Per reporting period", "methodologies vary"]
+          ]
+        },
+        { "type": "h", "text": "Why this is not yet a calculator" },
+        { "type": "p", "text": "The arithmetic is trivial. The input is not. A purification ratio needs the company's non-compliant income as a separate line — for most compliant operating companies, that is interest earned on cash and short-term investments. Companies of this size hold very large cash balances, and the interest on them is material in absolute terms even when it is small as a share of revenue." },
+        { "type": "p", "text": "That line is disclosed inconsistently. It appears in the income statement for some filers, in a note for others, and is netted against interest expense for others again. The feeds this report loads do not carry a clean, comparable version of it, which is why a purification figure is not published here rather than published with an asterisk." },
+        { "type": "p", "text": "The structure is in place for when the input is: the Shariah section carries a Purification destination, and the screening model already computes per-standard ratios from the balance sheet. What it needs is a revenue-composition feed with a reliable non-compliant income line." },
+        { "type": "note", "text": "Purification methodology varies between scholars and between index providers, including on whether capital gains are purified at all. This is a description of a common approach, not a ruling on which is correct." }
+      ]
+    },
+
+    {
+      "id": "r030",
+      "slug": "honeywell-separation-corporate-event",
+      "title": "Honeywell's Separation: What Splitting a Conglomerate Does to the Grades",
+      "subtitle": "Three businesses with different capital intensity, currently averaged into one set of ratios.",
+      "summary": "Every ratio on a conglomerate is a weighted average of businesses that would grade very differently apart. The separation makes that visible.",
+      "primaryCategory": "stock-analysis",
+      "articleType": "corporate-event",
+      "tickers": ["HON"],
+      "themes": ["quality", "capex"],
+      "quantRating": 3.06,
+      "quantLetter": "B+",
+      "shariahStatus": "questionable",
+      "standardsPassed": 2,
+      "standardsOf": 5,
+      "author": "Vantace Research",
+      "publishedAt": "2026-08-18T09:20:00Z",
+      "views": 4110,
+      "stockTab": "Analysis",
+      "readingMinutes": 5,
+      "metaDescription": "What a conglomerate separation does to sector-relative grades, using Honeywell's announced split as the worked example.",
+      "body": [
+        { "type": "p", "text": "A conglomerate's ratios are weighted averages of businesses that do not resemble each other. Honeywell currently grades B+ on the composite, and that grade is the blend of an aerospace business with high returns and long cycles, an automation business with different working capital dynamics, and a materials business with heavy capital intensity." },
+        { "type": "p", "text": "There is a second problem specific to how this report grades. Every grade is a percentile against a sector, and a conglomerate is assigned to exactly one — Industrials. Two of its three businesses are being ranked against a peer set they do not belong to." },
+        {
+          "type": "table",
+          "title": "What the parts would look like ranked separately",
+          "headers": ["Business", "Likely sector", "Operating margin", "Capex / sales"],
+          "numFrom": 2,
+          "rows": [
+            ["Aerospace", "Industrials", "27.4%", "2.1%"],
+            ["Automation", "Technology", "21.8%", "2.8%"],
+            ["Advanced materials", "Basic Materials", "23.1%", "8.6%"]
+          ]
+        },
+        { "type": "p", "text": "Ranked against Basic Materials rather than Industrials, the materials business's capital intensity is unremarkable rather than poor. Ranked against Technology, the automation margin is ordinary rather than strong. The separation does not change any of these businesses; it changes which distribution each is measured against, and that alone will move the reported grades." },
+        { "type": "note", "text": "Segment figures above are from the company's disclosure. The sector assignments are ours, and a data vendor may classify the separated entities differently." }
+      ]
+    }
+  ]
+}

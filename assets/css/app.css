@@ -67,24 +67,41 @@ svg { display: block; }
   background: #000; color: #fff;
   position: sticky; top: 0; height: 100vh; overflow-y: auto;
   display: flex; flex-direction: column; gap: var(--x4);
-  padding: var(--x3) var(--x2);
+  /* Side padding trimmed with the rail's own width: at 224px the gutter and
+     the item inset together were costing more than the longest label
+     ("Investment Ideas") had left to sit in, and it wrapped to two lines. */
+  padding: var(--x3) var(--x1_5);
+  /* A sticky element is a stacking context whatever its z-index, so the rail
+     caps everything inside it — the hover flyouts ask for `--z-popover` and
+     still came out under the page, because 800 only ranks them against their
+     rail siblings. The rail is what has to outrank the page, so it carries the
+     popover level itself and the panels inherit the win. Modals stay above. */
+  z-index: var(--z-popover);
 }
 .sidenav__brand {
   display: flex; align-items: center; gap: var(--x1_5);
-  padding: var(--x1) var(--x2);
+  /* Side padding matches `.sidenav__item`, so the mark starts on the same
+     vertical line as the nav icons under it. */
+  padding: var(--x1) var(--x1_5);
 }
 /* Supplied artwork, both filled white, so they only ever sit on the rail. */
-.sidenav__mark { height: 26px; width: auto; flex: none; }
-.sidenav__word { height: 19px; width: auto; flex: none; }
+/* Scaled down with the rail. Both are set by height with `width: auto`, so
+   each keeps its own aspect ratio and the two stay in proportion. */
+.sidenav__mark { height: 22px; width: auto; flex: none; }
+.sidenav__word { height: 16px; width: auto; flex: none; }
 .sidenav__nav { display: grid; gap: 2px; }
 .sidenav__item {
   display: flex; align-items: center; gap: var(--x1_5);
-  padding: var(--x1_5) var(--x2); border-radius: var(--r-1);
+  padding: var(--x1_5); border-radius: var(--r-1);
   font-size: var(--text-sm); color: #a1a1aa;
   cursor: default; user-select: none;
   transition: background .12s ease, color .12s ease;
 }
 .sidenav__item:hover { background: rgba(255, 255, 255, 0.07); color: #fff; }
+/* A rail item with somewhere to go. The others keep the default cursor, which
+   is the only thing on the rail saying which of them are built. */
+.sidenav__item.is-live { cursor: pointer; width: 100%; text-align: left; }
+.sidenav__item.is-active { background: rgba(255, 255, 255, 0.10); color: #fff; font-weight: 600; }
 /* Stroked, not filled — a 20px filled glyph turns to mud on black. */
 .sidenav__icon {
   width: 20px; height: 20px; flex: none;
@@ -573,7 +590,12 @@ dialog .hint { font-size: var(--text-tiny); color: var(--text-softer); margin-to
 
 /* ---- ratio tables ------------------------------------------------------- */
 
-.tbl--ratios { width: 100%; min-width: 620px; }
+/* Five columns since the sector median joined them; below this the table
+   scrolls sideways inside its wrapper rather than crushing the rank bars. */
+.tbl--ratios { width: 100%; min-width: 700px; }
+/* The number the row was ranked against. Quieter than the company's own
+   figure beside it — it is the yardstick, not the reading. */
+.ratio__median { color: var(--text-softer); white-space: nowrap; }
 .tbl--ratios td { border-bottom: 0; padding-bottom: var(--x0_5); }
 .tbl--ratios tbody tr:hover { background: transparent; }
 .tbl--ratios tr.ratio:hover,
@@ -615,9 +637,11 @@ dialog .hint { font-size: var(--text-tiny); color: var(--text-softer); margin-to
 .pair__title { font-weight: 600; }
 .pair__subtitle { font-size: var(--text-micro); color: var(--text-subtle); }
 
-/* Leg label, tick and grade on one line, right-aligned with the column. */
-.pair__gradecell {
-  display: inline-flex; align-items: center; gap: var(--x1); justify-content: flex-end;
+/* Tick and leg label above the figure they belong to, right-aligned with the
+   value column they sit in. */
+.pair__legcell {
+  display: flex; align-items: center; gap: 5px; justify-content: flex-end;
+  margin-bottom: 1px;
 }
 .pair__leg {
   font-size: var(--text-micro); color: var(--text-softer);
@@ -656,7 +680,7 @@ dialog .hint { font-size: var(--text-tiny); color: var(--text-softer); margin-to
 .blocksum .chart { width: 100%; }
 
 @media (max-width: 560px) {
-  .pair__gradecell { flex-wrap: wrap; gap: 4px; }
+  .pair__legcell { flex-wrap: wrap; gap: 4px; }
 }
 
 /* A chart closing off a pair of ratio rows, inside the table. */
@@ -1189,8 +1213,11 @@ dialog .hint { font-size: var(--text-tiny); color: var(--text-softer); margin-to
 
 /* ---------- insider filings ------------------------------------------------------ */
 
-/* A sub-heading inside a card, for a list that needs naming but not a rule. */
+/* A sub-heading inside a card, for a list that needs naming but not a rule.
+   Flex so an info icon sits on the heading's line rather than wrapping under
+   it once the label runs the width of a phone. */
 .osub {
+  display: flex; align-items: center; gap: 5px;
   margin-top: var(--x2); font-size: var(--text-micro); font-weight: 600;
   text-transform: uppercase; letter-spacing: .06em; color: var(--text-softer);
 }
@@ -1257,4 +1284,2929 @@ dialog .hint { font-size: var(--text-tiny); color: var(--text-softer); margin-to
   .ovw { display: block; }
   .ovw > .card { margin-bottom: var(--x2); break-inside: avoid; }
   .ohead__actions, .omore { display: none !important; }
+}
+
+/* ==========================================================================
+   Factor tabs
+
+   Valuation, Growth, Financial Health, Profitability and Momentum, each in
+   the Overview's card grid: a hero with the grade and its subtopics, the
+   ratios at either end of it, then one card per subtopic carrying the same
+   ratio table the Analysis tab shows inline.
+   ========================================================================== */
+
+/* ---------- hero ---------------------------------------------------------- */
+
+/* The factor's question, in the model's own words. Content, not small print —
+   it is what the twenty ratios under it are collectively asking. */
+.fhero__q {
+  font-size: var(--text-sm); color: var(--text-soft);
+  line-height: 1.55; margin-bottom: var(--x2);
+}
+.fhero__score { display: flex; align-items: baseline; gap: var(--x1); flex-wrap: wrap; }
+.fhero__score b {
+  font-size: var(--text-mass); font-weight: 700; line-height: 1;
+  letter-spacing: -0.02em; font-variant-numeric: tabular-nums;
+}
+.fhero__score i { font-style: normal; font-size: var(--text-sm); color: var(--text-softer); }
+.fhero__basis {
+  margin-left: auto; font-size: var(--text-tiny); color: var(--text-subtle);
+}
+.fhero__score + .gradebar { margin-top: var(--x1_5); }
+
+/* ---------- the median tick, counted --------------------------------------- */
+
+/* Three tiles rather than a second bar. The card already carries one — the
+   grade — and a proportion bar directly under it would read as another
+   score, which this is not: it counts ticks that never enter a grade. */
+.fchecks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--x1_5); }
+.fcheck {
+  display: flex; align-items: center; gap: var(--x1_5);
+  padding: var(--x1_5); border-radius: var(--r-1);
+  background: var(--surface-2); border: 1px solid var(--border-soft);
+}
+.fcheck__icon { width: 20px; height: 20px; flex: none; }
+.fcheck__icon.pass { fill: var(--good); }
+.fcheck__icon.fail { fill: var(--bad); }
+.fcheck__icon.na   { fill: var(--text-subtle); }
+.fcheck b {
+  display: block; font-size: var(--text-xl); font-weight: 700;
+  line-height: 1.1; font-variant-numeric: tabular-nums;
+}
+.fcheck span { display: block; font-size: var(--text-micro); color: var(--text-softer); margin-top: 2px; }
+
+@media (max-width: 560px) {
+  .fchecks { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ---------- the flake ------------------------------------------------------ */
+
+.fflake { display: grid; place-items: center; }
+
+/* ---------- ratios behind the grade ----------------------------------------- */
+
+/* Two halves of one card, stacking rather than squeezing. The floor is set
+   by the widest thing inside them: below about 470px the five columns leave
+   the ratio name ~130px, which is not enough for "Capital expenditure
+   growth", so the halves go one above the other instead. */
+/* `min()` on the floor, so the 470px is a preference rather than a promise:
+   on a phone the track would otherwise hold itself at 470px inside a 375px
+   card and scroll the whole page sideways. Above 470px nothing changes. */
+.fleadgrid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(min(470px, 100%), 1fr));
+  gap: var(--x1) var(--x4);
+}
+.flead__col { min-width: 0; }
+
+.fleads { display: grid; }
+.flead {
+  /* The ratio name takes the slack and the ranking is fixed, not the other
+     way round: "Capital expenditure growth" needs the room, and a proportion
+     bar reads the same at 126px as at 200px. */
+  display: grid; grid-template-columns: minmax(0, 1fr) auto auto 126px auto;
+  align-items: center; gap: var(--x1_5);
+  padding: 9px 0; border-bottom: 1px solid var(--border-subtle); font-size: var(--text-xs);
+}
+.flead:last-child { border-bottom: 0; }
+/* Column head. Same grid as the rows under it, so the labels sit over the
+   numbers they name. */
+.flead--head {
+  padding: var(--x1) 0; border-bottom: 1px solid var(--border-soft);
+  font-size: var(--text-micro); font-weight: 500; color: var(--text-softer);
+  text-transform: uppercase; letter-spacing: .05em;
+}
+.flead--head span { font-weight: 500; }
+/* Wraps rather than truncates: the noun at the end is what tells "Forecast
+   revenue growth" from "Forecast return on equity". */
+.flead__n { line-height: 1.35; }
+.flead__v { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; }
+/* The yardstick, quieter than the figure it is measuring. */
+.flead__m { color: var(--text-softer); font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; }
+.flead__g { text-align: right; }
+/* On the Ratings tab a row is out of its factor's context, so the factor is
+   named under the ratio. `.flead__n` already wraps, and this sits inside it
+   rather than claiming a sixth column the narrow half has no room for. */
+.flead__f {
+  display: block; font-style: normal;
+  font-size: var(--text-micro); color: var(--text-subtle); margin-top: 1px;
+}
+/* The rank bar sets its own 150px floor for the wide table it was built for;
+   inside half a card that pushes the grade pill off the edge. */
+.flead .rankbar { min-width: 0; }
+
+/* ---------- subtopic cards -------------------------------------------------- */
+
+.fgroup__desc {
+  font-size: var(--text-xs); color: var(--text-softer);
+  line-height: 1.55; margin: -4px 0 var(--x2);
+}
+/* The ratio table was built for a full-width report card and sets its own
+   620px floor, so inside a grid card it scrolls sideways rather than forcing
+   the card wider than its column. */
+.ovw .tbl-wrap { max-width: 100%; }
+
+/* ==========================================================================
+   The Ratings tab
+   ========================================================================== */
+
+/* The verdict word, sized to be read before the number under it — it is the
+   one thing on the page that says what the grade argues for. */
+.rverdict {
+  font-size: var(--text-lg); font-weight: 700; line-height: 1.2;
+  margin-bottom: var(--x1_5);
+}
+.rverdict.is-good  { color: var(--good); }
+.rverdict.is-warn  { color: var(--neutral); }
+.rverdict.is-bad   { color: var(--bad); }
+.rverdict.is-muted { color: var(--text-softer); }
+
+/* ---------- the five factor rows ------------------------------------------- */
+
+.rfacs { display: grid; }
+/* Name and question take the slack, the bar is fixed: a proportion reads the
+   same at 200px as at 400px, where "Is AAPL cheap for what you actually get?"
+   does not. */
+.rfac {
+  display: grid; grid-template-columns: minmax(0, 1fr) 200px auto;
+  align-items: center; gap: var(--x2);
+  padding: var(--x1_5) 0; border-bottom: 1px solid var(--border-subtle);
+  text-align: left;
+}
+.rfac:last-child { border-bottom: 0; }
+.rfac:hover b { color: var(--brand-01); }
+.rfac__n { min-width: 0; }
+.rfac__n b { display: block; font-size: var(--text-sm); font-weight: 600; }
+.rfac__n i {
+  display: block; font-style: normal; margin-top: 2px;
+  font-size: var(--text-xs); color: var(--text-softer); line-height: 1.4;
+}
+/* Both bars on this page are spans, not divs: they sit inside a `<button>`
+   and inside a grid cell that is itself a span, and a button may only hold
+   phrasing content. `.gradebar` is written for a div, so it needs the box it
+   would otherwise have had — the same thing `.otrack` does on the Overview.
+   The `margin-top` it carries is for sitting under a score line; here the bar
+   is the top of its cell. */
+.rfac__bar .gradebar,
+.gspread__row .gradebar { display: block; margin-top: 0; }
+.rfac__bar .gradebar__fill,
+.gspread__row .gradebar__fill { display: block; }
+.rfac__basis {
+  display: block; margin-top: 5px;
+  font-size: var(--text-micro); color: var(--text-subtle);
+}
+.rfac__g { text-align: right; }
+
+@media (max-width: 640px) {
+  /* The bar drops under the name rather than to 200px of a 340px screen. */
+  .rfac { grid-template-columns: minmax(0, 1fr) auto; gap: var(--x1) var(--x1_5); }
+  .rfac__bar { grid-column: 1 / -1; }
+}
+
+/* ---------- the grade spread ----------------------------------------------- */
+
+.gspread { display: grid; gap: var(--x1_5); }
+.gspread__row {
+  display: grid; grid-template-columns: 54px minmax(0, 1fr) 62px;
+  align-items: center; gap: var(--x1_5); font-size: var(--text-xs);
+}
+.gspread__k { font-weight: 600; }
+.gspread__n {
+  text-align: right; color: var(--text-softer);
+  font-size: var(--text-tiny); font-variant-numeric: tabular-nums;
+}
+
+/* ---------- what the rating does not do ------------------------------------ */
+
+/* Deliberately not styled as a warning: these are properties of the model,
+   not faults in the data, and painting them amber would say the rating is
+   broken rather than that it is this particular thing. */
+.rlimits { display: grid; gap: var(--x1); margin-top: var(--x0_5); }
+.rlimits li {
+  display: flex; gap: var(--x1_5);
+  font-size: var(--text-xs); color: var(--text-soft); line-height: 1.5;
+}
+.rlimits li::before {
+  content: ""; flex: none; margin-top: 8px;
+  width: 6px; height: 6px; border-radius: 50%; background: var(--border-strong);
+}
+
+/* ==========================================================================
+   The Perf / CAGR badge row
+
+   Sits under a chart, centred, as a reading of the bars above rather than a
+   caption for them. Tinted rather than coloured type: these are summaries of
+   a whole series and should not compete with the figures on the bars.
+   ========================================================================== */
+.perfrow {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: var(--x1);
+  margin-top: var(--x1_5);
+}
+.perfpill {
+  display: inline-flex; align-items: baseline; gap: 6px;
+  padding: 5px var(--x1_5); border-radius: var(--r-pill);
+  font-size: var(--text-tiny); white-space: nowrap;
+}
+.perfpill i { font-style: normal; font-weight: 500; opacity: .75; }
+.perfpill b { font-weight: 700; font-variant-numeric: tabular-nums; }
+.perfpill.is-up { background: var(--good-subtle); color: var(--good); }
+.perfpill.is-down { background: var(--bad-subtle); color: var(--bad); }
+/* The middle of a three-way range — a reference, not a verdict. */
+.perfpill.is-mid { background: var(--neutral-subtle); color: var(--neutral); }
+
+/* ==========================================================================
+   Transcripts
+
+   A list of calls, then one call. The list row is a button rather than a
+   link: opening a transcript is a fetch and a view swap inside the tab, not a
+   navigation, and a link that does not change the address bar is a lie about
+   what the back button will do.
+   ========================================================================== */
+.trlist { display: grid; }
+.trrow {
+  display: grid; grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center; gap: var(--x2);
+  padding: var(--x1_5) var(--x1); text-align: left;
+  background: none; border: 0; border-bottom: 1px solid var(--border-soft);
+  cursor: pointer; width: 100%;
+}
+.trlist > .trrow:last-child { border-bottom: 0; }
+.trrow:hover { background: var(--surface-2); }
+.trrow__logo {
+  width: 40px; height: 40px; border-radius: var(--r-1); object-fit: contain;
+  background: #fff; border: 1px solid var(--border-soft);
+}
+.trrow__id { display: grid; gap: 3px; min-width: 0; }
+.trrow__title {
+  font-size: var(--text-sm); font-weight: 600; color: var(--text-solid);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.trrow__meta { font-size: var(--text-tiny); color: var(--text-subtle); }
+
+.trrow__metrics { display: flex; flex-wrap: wrap; gap: var(--x3); justify-content: flex-end; }
+.trrow__metric { display: grid; gap: 2px; justify-items: end; }
+.trrow__metric i {
+  font-style: normal; font-size: var(--text-micro); font-weight: 600;
+  letter-spacing: .04em; text-transform: uppercase; color: var(--text-subtle);
+  white-space: nowrap;
+}
+.trrow__metric b { font-size: var(--text-xs); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* The compact list beside an open call has no logo column and no figures. */
+.trrow--compact { grid-template-columns: minmax(0, 1fr); gap: var(--x1); }
+.trlist--compact .trrow { padding-left: 0; padding-right: 0; }
+
+/* A true right rail. The grid would drop these under a transcript metres
+   long, which is where the figures the call is about are no use to anybody. */
+.trside { display: grid; gap: var(--x3); align-content: start; min-width: 0; }
+.trside > .card { margin-bottom: 0; }
+
+/* The left column of an open call: summary first, then the transcript. Both
+   are grid items of their own so the sidebar can sit beside the pair rather
+   than under a transcript metres long. */
+.trmain { display: grid; gap: var(--x3); align-content: start; min-width: 0; }
+.trmain > .card { margin-bottom: 0; }
+
+/* Marks a call the report has written up. On the index it is the only thing
+   distinguishing one row of twelve, so it carries colour rather than weight. */
+.trrow__badge {
+  display: inline-block; margin-left: var(--x1);
+  padding: 2px 8px; border-radius: var(--r-pill);
+  background: var(--brand-01-soft); color: var(--brand-01);
+  font-size: var(--text-micro); font-weight: 700; letter-spacing: .02em;
+  vertical-align: middle;
+}
+
+.trnote {
+  font-size: var(--text-tiny); color: var(--text-subtle);
+  margin: var(--x1) 0 0; line-height: 1.6;
+}
+.trnote--lead { margin: 0 0 var(--x1_5); }
+.trnote__link {
+  background: none; padding: 0; font: inherit; cursor: pointer;
+  color: var(--brand-01); font-weight: 600; text-decoration: underline;
+}
+
+/* ---------- the written summary ------------------------------------------- */
+
+/* Tinted and ruled so it never reads as part of the call. Everything below it
+   is what was said; this is somebody's account of it. */
+/* The body of the summary card. It keeps the gold rule and tint — inside a
+   card of its own it still has to read as an account of the call rather than
+   as part of it. */
+.trsum {
+  padding: var(--x2);
+  border: 1px solid var(--brand-01-soft);
+  border-left: 3px solid var(--brand-01);
+  border-radius: var(--r-1);
+  background: var(--brand-01-subtle);
+}
+.trsum__badge {
+  font-size: var(--text-micro); font-weight: 600; color: var(--brand-01);
+  border: 1px solid var(--brand-01-soft); border-radius: var(--r-pill);
+  padding: 3px var(--x1); white-space: nowrap;
+}
+.trsum__lede {
+  font-size: var(--text-sm); font-weight: 600; color: var(--text-strong);
+  line-height: 1.55; margin-bottom: var(--x2);
+}
+.trsum__sec { margin-top: var(--x2); }
+.trsum__sec h4 {
+  font-size: var(--text-micro); font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--text-softer); margin-bottom: 6px;
+}
+.trsum__sec ul { display: grid; gap: 6px; padding-left: var(--x2); }
+.trsum__sec li {
+  font-size: var(--text-xs); color: var(--text-soft); line-height: 1.6;
+  list-style: disc;
+}
+.trsum__concl { font-size: var(--text-xs); color: var(--text-soft); line-height: 1.65; }
+.trsum__foot {
+  margin-top: var(--x2); padding-top: var(--x1_5);
+  border-top: 1px solid var(--brand-01-soft);
+  font-size: var(--text-micro); color: var(--text-subtle); line-height: 1.5;
+}
+
+/* ---------- one call ------------------------------------------------------ */
+
+/* A measure, not a column: an hour of speech set the full width of the card
+   is unreadable, and the transcript is the one thing on this tab somebody
+   sits and reads rather than scans. */
+.trbody { margin-top: var(--x2); max-width: 74ch; }
+.trpara {
+  font-size: var(--text-sm); line-height: 1.7; color: var(--text-soft);
+  margin-bottom: var(--x2);
+}
+.trpara__who {
+  display: block; color: var(--text-solid); font-weight: 700;
+  font-size: var(--text-xs); margin-bottom: 3px;
+}
+
+@media (max-width: 900px) {
+  .trrow { grid-template-columns: 32px minmax(0, 1fr); }
+  .trrow__logo { width: 32px; height: 32px; }
+  .trrow__metrics { grid-column: 1 / -1; justify-content: flex-start; gap: var(--x2); }
+  .trrow__metric { justify-items: start; }
+}
+
+/* ==========================================================================
+   Score bars
+
+   A row per test: name, a track filled to the score, the score. Horizontal
+   because the labels are sentences — "Discounted cash flow" under a vertical
+   bar would be set at 45 degrees or truncated, and either way unread.
+   ========================================================================== */
+.scorebars { display: grid; gap: var(--x1); }
+.scorebar {
+  display: grid; grid-template-columns: minmax(0, 1fr) 72px 16px;
+  align-items: center; gap: var(--x1);
+}
+/* Wraps rather than truncates. These labels are the whole content of the row
+   — "Discounted cash flow" cut to "Disc…" in a quarter-width card is a row
+   that has told the reader nothing. */
+.scorebar__label {
+  font-size: var(--text-xs); color: var(--text-soft);
+  line-height: 1.35; min-width: 0;
+}
+.scorebar__track {
+  height: 8px; border-radius: var(--r-pill);
+  background: var(--surface-3); overflow: hidden;
+}
+.scorebar__fill { display: block; height: 100%; border-radius: var(--r-pill); }
+.scorebar__fill.is-strong { background: var(--grade-strong); }
+.scorebar__fill.is-mid    { background: var(--grade-mid); }
+.scorebar__fill.is-weak   { background: var(--grade-weak); }
+.scorebar__fill.is-poor   { background: var(--grade-poor); }
+.scorebar__value {
+  font-size: var(--text-xs); font-weight: 700; text-align: right;
+  font-variant-numeric: tabular-nums; color: var(--text-solid);
+}
+
+/* ==========================================================================
+   The Calendar
+
+   A week as five columns of company tiles. The logo carries the naming,
+   because the calendar feeds return a symbol and a date and nothing else —
+   so the tile is deliberately mostly image, with the ticker under it for the
+   long tail the vendor has no picture for.
+   ========================================================================== */
+
+/* The filter row. Wraps to two lines under about 900px rather than shrinking
+   the selects, because a select narrower than its longest option truncates
+   the option and the reader cannot tell what they picked. */
+.calbar {
+  display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--x1_5);
+  margin-bottom: var(--x3);
+}
+
+.calfield { display: inline-flex; flex-direction: column; gap: 5px; min-width: 0; }
+.calfield__label {
+  font-size: var(--text-micro); font-weight: 600; letter-spacing: .04em;
+  text-transform: uppercase; color: var(--text-subtle);
+}
+.calfield__input {
+  padding: 8px var(--x1_5); border-radius: var(--r-sm);
+  background: var(--surface-1); border: 1px solid var(--border-soft);
+  color: var(--text-solid); font-size: var(--text-xs); font-family: var(--font-sans);
+  max-width: 200px;
+}
+.calfield__input:hover { border-color: var(--border-strong); }
+.calfield__input:focus { outline: none; border-color: var(--border-strong); }
+.calfield--search .calfield__input { width: 130px; }
+
+/* Pushed to the far end: the week is the page's other axis, and putting it
+   beside the filters would read as a sixth filter. */
+.calnav { display: inline-flex; align-items: center; gap: var(--x1); margin-left: auto; }
+.calnav__range {
+  font-size: var(--text-xs); color: var(--text-soft); font-variant-numeric: tabular-nums;
+  margin-right: var(--x1);
+}
+.calnav__btn {
+  min-width: 34px; height: 34px; padding: 0 var(--x1);
+  display: inline-grid; place-content: center;
+  border: 1px solid var(--border-soft); border-radius: var(--r-sm);
+  background: var(--surface-1); color: var(--text-soft);
+  font-size: var(--text-sm); font-weight: 600; cursor: pointer;
+}
+.calnav__btn:hover { color: var(--text-solid); border-color: var(--border-strong); }
+.calnav__btn--today { padding: 0 var(--x2); border-radius: var(--r-pill); }
+
+.calcount {
+  font-size: var(--text-tiny); color: var(--text-subtle);
+  margin-bottom: var(--x1_5); font-variant-numeric: tabular-nums;
+}
+
+/* One column per day. `--cal-cols` is set on the element because the week
+   grows a sixth and seventh column only when something is actually scheduled
+   on the weekend. */
+.calweek {
+  display: grid; gap: var(--x1_5);
+  grid-template-columns: repeat(var(--cal-cols, 5), minmax(0, 1fr));
+  align-items: start;
+}
+
+.calday {
+  background: var(--surface-1); border: 1px solid var(--border-soft);
+  border-radius: var(--r-2); padding: var(--x1_5);
+  display: flex; flex-direction: column; gap: var(--x1_5); min-width: 0;
+}
+/* Today is marked by its heading, not by a filled column: a tinted block
+   behind forty logos fights every one of them. */
+.calday.is-today { border-color: var(--brand-01); }
+.calday.is-today .calday__name { color: var(--brand-01); }
+
+.calday__head {
+  display: flex; align-items: baseline; justify-content: space-between; gap: var(--x1);
+  padding-bottom: var(--x1); border-bottom: 1px solid var(--border-soft);
+}
+.calday__name {
+  font-size: var(--text-xs); font-weight: 600; color: var(--text-solid);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.calday__count {
+  font-size: var(--text-micro); color: var(--text-subtle);
+  font-variant-numeric: tabular-nums; flex: none;
+}
+.calday__empty { font-size: var(--text-tiny); color: var(--text-subtle); padding: var(--x1) 0; }
+
+/* `auto-fill`, not `auto-fit`: a day with two events should show two tiles at
+   their own size rather than two tiles stretched across the whole column. */
+.calday__grid {
+  display: grid; gap: var(--x1);
+  grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+}
+
+.calday__more {
+  font-size: var(--text-tiny); font-weight: 600; color: var(--text-soft);
+  background: none; text-align: left; cursor: pointer;
+}
+.calday__more:hover { color: var(--text-solid); text-decoration: underline; }
+
+/* ---------- the tile ------------------------------------------------------ */
+
+.caltile {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  padding: 6px 2px; border-radius: var(--r-1);
+  background: none; border: 1px solid transparent; cursor: pointer; min-width: 0;
+}
+.caltile:hover { background: var(--surface-2); border-color: var(--border-soft); }
+
+/* White behind every logo in both themes. The vendor's images are mostly
+   transparent PNGs drawn for a light page, and a dark card turns half of
+   them into a silhouette. */
+.caltile__logo, .caltile__mono {
+  width: 40px; height: 40px; border-radius: var(--r-1); flex: none;
+  object-fit: contain; background: #fff; border: 1px solid var(--border-soft);
+}
+.caltile__mono {
+  display: grid; place-content: center;
+  font-size: 10px; font-weight: 700; letter-spacing: -0.02em;
+  color: hsl(0 0% 35%); background: hsl(0 0% 93%);
+  overflow: hidden; padding: 0 2px;
+}
+
+.caltile__sym {
+  font-size: var(--text-micro); font-weight: 600; color: var(--text-soft);
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.caltile:hover .caltile__sym { color: var(--text-solid); }
+.caltile__note {
+  font-size: 10px; color: var(--text-subtle); font-variant-numeric: tabular-nums;
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* Reuses the app's shimmer rather than inventing a second loading idiom. */
+.caltile--skeleton { height: 62px; }
+
+/* Five columns stop being columns well before the phone: at 1000px each is
+   about 150px, which is three tiles across, and below that the week reads
+   better as a list of days. */
+@media (max-width: 1000px) {
+  .calweek { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 620px) {
+  .calweek { grid-template-columns: minmax(0, 1fr); }
+  .calnav { margin-left: 0; width: 100%; }
+  .calfield__input { max-width: none; }
+}
+
+@media print {
+  .calbar, .calday__more { display: none !important; }
+  .calweek { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .calday { break-inside: avoid; }
+}
+
+/* ==========================================================================
+   The Financials tab
+   ========================================================================== */
+
+/* ---------- the statement strip -------------------------------------------
+   Income / Balance sheet / Cash flow, as a segmented control rather than a
+   second row of underlined tabs. The strip above it is the report's thirteen
+   destinations; this one switches which of three statements is on the page,
+   and giving them the same styling would make the page look as though it had
+   two navigations of equal weight.
+   ------------------------------------------------------------------------- */
+.subtabs {
+  display: inline-flex; gap: 2px; margin-bottom: var(--x3);
+  padding: 3px; border-radius: var(--r-pill);
+  background: var(--surface-1); border: 1px solid var(--border-soft);
+  /* `inline-flex` is not enough on its own: the Calendar puts the strip
+     straight into `.shell`, which is a grid, and a grid item stretches to
+     its column whatever its own display is. */
+  justify-self: start; align-self: start;
+}
+.subtab {
+  padding: 7px var(--x2); border-radius: var(--r-pill);
+  font-size: var(--text-xs); font-weight: 600; color: var(--text-softer);
+  background: none; white-space: nowrap; cursor: pointer;
+}
+.subtab:hover { color: var(--text-strong); }
+.subtab.is-active {
+  background: var(--surface-3); color: var(--text-solid);
+  box-shadow: 0 1px 2px hsla(0 0% 0% / 12%);
+}
+
+@media (max-width: 420px) {
+  .subtabs { display: flex; width: 100%; }
+  .subtab { flex: 1; padding-left: var(--x1); padding-right: var(--x1); text-align: center; }
+}
+
+/* On paper the strip is not a control, so it prints as what the reader chose:
+   the current statement's name, with the two they did not pick removed. */
+@media print {
+  .subtabs { border: 0; padding: 0; background: none; }
+  .subtab { padding-left: 0; font-size: var(--text-base); font-weight: 700; }
+  .subtab:not(.is-active) { display: none; }
+  .subtab.is-active { background: none; box-shadow: none; }
+}
+
+/* `.omore` is a link out of a card and prints an arrow after itself. The
+   statement tables reuse its type for a control that stays on the page, so
+   the arrow comes off — it would be pointing at nothing. */
+.omore--plain::after { content: none; }
+
+/* One line item per row, one fiscal year per column. The label column is
+   fixed and the year columns take what is left, so ten years of a wide
+   statement scroll inside `.tbl-wrap` rather than crushing "Selling, general
+   & admin" into three lines. */
+.fintbl { min-width: 100%; }
+.fintbl__line { min-width: 210px; white-space: nowrap; }
+.fintbl th.num, .fintbl td.num { min-width: 92px; }
+
+/* Subtotals — revenue, gross profit, operating income, net income and their
+   equivalents on the other two statements. Weight alone, no rule: a reader
+   running down the page for "what was operating income" finds these without
+   the table turning into five separate blocks. */
+.fintbl__strong td { font-weight: 600; color: var(--text-solid); }
+
+/* The band that opens the calculated rows. Nothing under it is a filed line,
+   and a table that mixes the two without saying so invites a reader to quote
+   a margin as though the company reported it. */
+.fintbl__group td {
+  padding: var(--x1_5) var(--x1_5) 6px;
+  font-size: var(--text-micro); font-weight: 600;
+  text-transform: uppercase; letter-spacing: .05em;
+  color: var(--text-subtle); background: var(--surface-2);
+}
+.fintbl tbody tr.fintbl__group:hover { background: var(--surface-2); }
+
+/* Negative figures on a statement are ordinary — capital expenditure and
+   dividends are always negative — so they are marked but not alarmed:
+   the muted red says "money out", where `.neg` elsewhere says "bad". */
+.fintbl td.neg { color: var(--text-soft); }
+.fintbl td.pos { color: inherit; }
+
+/* ==========================================================================
+   The Statistics & Metrics tab
+   ========================================================================== */
+
+/* The filter bar, above the grid rather than inside a card of its own: it
+   controls every card below it, and a control that looks like one more card
+   reads as belonging to that card. */
+.statbar {
+  display: flex; align-items: center; gap: var(--x2);
+  flex-wrap: wrap; margin-bottom: var(--x3);
+}
+.statbar__search { position: relative; flex: 1 1 320px; max-width: 520px; }
+.statbar__input {
+  width: 100%; padding: 9px var(--x1_5);
+  background: var(--surface-1); border: 1px solid var(--border-soft);
+  border-radius: var(--r-sm); color: var(--text-solid); font-size: var(--text-xs);
+}
+.statbar__input::placeholder { color: var(--text-subtle); }
+.statbar__input:focus { outline: none; border-color: var(--border-strong); }
+
+.statbar__toggle {
+  display: inline-flex; align-items: center; gap: var(--x1);
+  font-size: var(--text-xs); color: var(--text-soft); cursor: pointer;
+}
+.statbar__toggle input { accent-color: var(--brand-01); cursor: pointer; }
+
+/* Pushed to the far end so it reads as a result of the two controls rather
+   than as a third one. */
+.statbar__count {
+  margin-left: auto; font-size: var(--text-tiny); color: var(--text-subtle);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Fourteen cards of label/value rows, three across. The rows are tighter than
+   the same component on the Overview because this page is scanned for one of
+   them, and a dashboard's row height would put the last card four screens
+   down. Scoped to this grid so the Overview keeps its own spacing. */
+.ovw--dense .ostat { padding: 6px 0; }
+.ovw--dense .ostat__k { padding-right: var(--x1); }
+/* The base component gives the qualifier its own line, which is right for
+   "better than 627 of 930" under a figure on the Overview. Here the qualifier
+   is the period — "TTM", "current" — on every one of 146 rows, and a line
+   each doubles the height of the page. `auto` lets it sit beside the figure
+   and still wrap onto its own line when it is one of the long ones. */
+.ovw--dense .ostat__note { flex-basis: auto; }
+
+@media (max-width: 560px) {
+  .statbar__count { margin-left: 0; }
+}
+
+/* ==========================================================================
+   The Analysts Forecast tab
+   ========================================================================== */
+
+/* The ratings mix. Same three-column shape as the grade spread on the Ratings
+   tab, and deliberately so — both answer "how much do the parts agree". */
+.fxmix { display: grid; gap: var(--x1_5); }
+.fxmix__row {
+  display: grid; grid-template-columns: 76px minmax(0, 1fr) 28px;
+  align-items: center; gap: var(--x1_5); font-size: var(--text-xs);
+}
+.fxmix__k { color: var(--text-softer); }
+.fxmix__row .gradebar { display: block; margin-top: 0; }
+.fxmix__row .gradebar__fill { display: block; }
+.fxmix__n {
+  text-align: right; font-weight: 600; font-variant-numeric: tabular-nums;
+}
+
+/* Reported / expected / surprise, one block per measure. Three figures on one
+   line so the comparison is horizontal, which is the direction it is read. */
+.fxbeats { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--x3); }
+.fxbeat__figs { display: flex; gap: var(--x4); flex-wrap: wrap; }
+.fxbeat__figs b {
+  display: block; font-size: var(--text-lg); font-weight: 700;
+  font-variant-numeric: tabular-nums; line-height: 1.2;
+}
+.fxbeat__figs b.pos { color: var(--good); }
+.fxbeat__figs b.neg { color: var(--bad); }
+.fxbeat__figs i {
+  display: block; font-style: normal; margin-top: 2px;
+  font-size: var(--text-micro); color: var(--text-subtle);
+}
+
+/* ==========================================================================
+   The Dividends tab
+   ========================================================================== */
+
+/* The gauge is a fixed 168px drawing, so the note beside it takes the rest of
+   the card rather than being centred under a shape that is not centred. */
+.dvgauge { display: grid; justify-items: center; gap: var(--x2); text-align: center; }
+.dvgauge p { max-width: 34ch; }
+
+/* ==========================================================================
+   The Shariah Compliance tab
+   ========================================================================== */
+
+/* The standards list gains a second line here that it does not have on the
+   Overview, so the name stops being vertically centred on its own. */
+.ostd__sub {
+  display: block; font-style: normal; margin-top: 1px;
+  font-size: var(--text-micro); font-weight: 400; color: var(--text-subtle);
+}
+
+/* A ratio and the limit it is measured against, in one cell. The limit is the
+   half that makes the figure mean anything, so it travels with it rather than
+   sitting in a column header the eye has to go back to. */
+.shcell b { display: block; font-weight: 600; font-variant-numeric: tabular-nums; }
+.shcell i {
+  display: block; font-style: normal; margin-top: 1px;
+  font-size: var(--text-micro); color: var(--text-subtle);
+}
+.shcell.is-pass b { color: var(--good); }
+.shcell.is-fail b { color: var(--bad); }
+
+/* The excluded-activity vocabulary, shown in full rather than summarised: the
+   screen is a keyword match, and a reader cannot judge a keyword match
+   without seeing the keywords. */
+.shwords { display: flex; flex-wrap: wrap; gap: var(--x1); margin-top: var(--x1); }
+.shword {
+  padding: 3px var(--x1); border-radius: var(--r-pill);
+  background: var(--surface-2); border: 1px solid var(--border-subtle);
+  font-size: var(--text-micro); color: var(--text-softer);
+}
+.shword.is-hit {
+  background: var(--bad-subtle); border-color: transparent;
+  color: var(--bad); font-weight: 600;
+}
+
+/* The tests that are not run. Same shape as a `.check` row, because that is
+   what they are — checks whose state is permanently "not assessed". */
+.shgaps { display: grid; gap: var(--x2); margin: var(--x1) 0 var(--x3); }
+.shgap { display: flex; gap: var(--x1_5); align-items: flex-start; }
+.shgap .check__icon { width: 18px; height: 18px; flex: none; margin-top: 1px; }
+
+/* ==========================================================================
+   Investment Ideas
+   ========================================================================== */
+
+/* The page owns a title rather than borrowing the company head, because it is
+   not about a company. */
+.ideashead { margin: var(--x4) 0 var(--x3); }
+.ideashead h1 {
+  font-size: var(--text-hero); font-weight: 700; letter-spacing: -0.02em;
+  margin-bottom: var(--x1);
+}
+.ideashead p { font-size: var(--text-sm); color: var(--text-soft); max-width: 68ch; line-height: 1.6; }
+.ideashead .notice { margin-top: var(--x2); }
+
+/* A section heading over a band of idea cards. Sits on the page rather than
+   in a card, so the bands read as one list broken up rather than as a set of
+   nested boxes. */
+.ideagroup {
+  margin: var(--x4) 0 var(--x2);
+  font-size: var(--text-micro); font-weight: 600;
+  text-transform: uppercase; letter-spacing: .08em;
+  color: var(--text-softer);
+}
+.ideagroup:first-of-type { margin-top: var(--x3); }
+/* Between two bands the section heading supplies the separation, so the grid
+   does not need its own bottom gap as well. */
+.ovw--tight { margin-bottom: 0; }
+
+/* The way back up from one idea. `.omore` points forward by default. */
+.omore--back::after { content: none; }
+/* A left arrow: the escape had lost its backslash. */
+.omore--back::before { content: "\2190"; margin-right: 6px; }
+.omore--back { margin-bottom: var(--x1_5); }
+
+.idea__thesis {
+  font-size: var(--text-xs); color: var(--text-soft);
+  line-height: 1.6; margin-bottom: var(--x1);
+}
+
+/* Every rule, shown in full on the card. The whole claim of a screen is what
+   it tests, so hiding the rules behind the run button would leave the reader
+   nothing to judge before spending the requests. */
+.idearules { display: grid; gap: 6px; margin-top: var(--x0_5); }
+.idearules li {
+  display: flex; align-items: flex-start; gap: var(--x1);
+  font-size: var(--text-xs); color: var(--text-soft); line-height: 1.45;
+}
+.idearules__tick { width: 14px; height: 14px; flex: none; margin-top: 2px; fill: var(--good); }
+
+.idea__universe {
+  margin-top: var(--x2); font-size: var(--text-micro);
+  color: var(--text-subtle); line-height: 1.5;
+}
+/* Pushed to the bottom edge so a row of cards with different rule counts
+   still lines its buttons up. */
+.idea__run { margin-top: auto; align-self: flex-start; }
+
+/* A result row: ticker, name, industry, stacked inside the first cell so the
+   table keeps one row per company however long the name runs. */
+.idearow { display: block; text-align: left; max-width: 34ch; }
+.idearow b { font-size: var(--text-xs); font-weight: 700; }
+.idearow:hover b { color: var(--brand-01); }
+.idearow__n {
+  display: block; font-size: var(--text-xs); color: var(--text-soft);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.idearow__s { display: block; font-size: var(--text-micro); color: var(--text-subtle); }
+
+/* The score, with the count of ratios behind it. The count is not decoration:
+   a 4-ratio score and a 22-ratio score are not the same measurement. */
+.ideascore { display: inline-flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+.ideascore i {
+  font-style: normal; font-size: var(--text-micro); color: var(--text-subtle);
+}
+
+/* How many companies each rule let through. Same three-column bar as the
+   grade spread and the ratings mix. */
+.idearesult { display: grid; gap: var(--x1_5); }
+.idearesult__row {
+  display: grid; grid-template-columns: minmax(0, 1fr) 180px 56px;
+  align-items: center; gap: var(--x2); font-size: var(--text-xs);
+}
+.idearesult__row .gradebar { display: block; margin-top: 0; }
+.idearesult__row .gradebar__fill { display: block; }
+.idearesult__k { color: var(--text-soft); }
+.idearesult__n {
+  text-align: right; font-variant-numeric: tabular-nums; color: var(--text-softer);
+}
+
+@media (max-width: 640px) {
+  .idearesult__row { grid-template-columns: minmax(0, 1fr) auto; }
+  .idearesult__row .gradebar { grid-column: 1 / -1; }
+}
+
+/* ==========================================================================
+   The News tab
+
+   Two streams of other people's text. The only styling decision with any
+   weight in it is `.nwsrc.is-own`, which marks a company release so it cannot
+   be mistaken for reporting at a glance — everything else here is a list.
+   ========================================================================== */
+
+/* Who is covering it. A count per masthead, densest first. */
+.nwpubs { display: grid; gap: 1px; background: var(--border-soft);
+  border: 1px solid var(--border-soft); border-radius: var(--r-1); overflow: hidden; }
+.nwpub {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--x1);
+  background: var(--surface-1); padding: var(--x1) var(--x1_5); font-size: var(--text-xs);
+}
+.nwpub__n { color: var(--text-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nwpub__c {
+  flex: none; font-variant-numeric: tabular-nums; font-weight: 600;
+  color: var(--text-softer); font-size: var(--text-tiny);
+}
+
+.nwlist { display: grid; gap: 1px; background: var(--border-soft); margin-top: var(--x2); }
+
+/* Thumbnail beside the text, and the thumbnail is optional — `thumb()` removes
+   the element on a 404, so the row is defined by the text column alone and a
+   missing image closes up rather than leaving a hole. */
+.nwitem {
+  display: flex; gap: var(--x2); align-items: flex-start;
+  background: var(--surface-1); padding: var(--x2);
+}
+.nwitem__i {
+  width: 108px; height: 72px; flex: none; object-fit: cover;
+  border-radius: var(--r-sm); background: var(--surface-3);
+}
+.nwitem__b { min-width: 0; flex: 1; }
+.nwitem__m { display: flex; align-items: center; gap: var(--x1); margin-bottom: var(--x0_5); }
+
+.nwsrc {
+  font-size: var(--text-micro); font-weight: 600; letter-spacing: .04em;
+  text-transform: uppercase; color: var(--text-softer);
+  background: var(--surface-3); border-radius: var(--r-pill); padding: 3px var(--x1);
+}
+/* The company's own words. Gold rather than a neutral chip, because the whole
+   point of splitting the two feeds is that this distinction survives a skim. */
+.nwsrc.is-own { background: var(--brand-01-softer); color: var(--brand-01); }
+
+.nwitem__d { font-size: var(--text-micro); color: var(--text-subtle); }
+.nwitem__t {
+  display: block; font-size: var(--text-sm); font-weight: 600; line-height: 1.4;
+  color: var(--text-strong);
+}
+a.nwitem__t:hover { color: var(--brand-01); }
+.nwitem__x {
+  margin-top: var(--x0_5); font-size: var(--text-xs); line-height: 1.55;
+  color: var(--text-softer);
+}
+.nwmore { margin-top: var(--x2); }
+
+@media (max-width: 640px) {
+  .nwitem { gap: var(--x1_5); padding: var(--x1_5); }
+  .nwitem__i { width: 72px; height: 54px; }
+}
+
+/* ==========================================================================
+   The Research tab
+
+   A research report rather than a dashboard, so this section runs against the
+   grain of the rest of the stylesheet in one specific way: it sets a reading
+   measure and a paragraph rhythm. Every other tab is figures in cards, where
+   a 34em line would waste the width; this one is prose, where a 90em line is
+   unreadable.
+   ========================================================================== */
+
+/* The identity strip: mark, name, and the star rating on the right. */
+.rsrhead {
+  display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between;
+  gap: var(--x2); padding-bottom: var(--x2); border-bottom: 1px solid var(--border-soft);
+}
+.rsrhead__id { display: flex; align-items: center; gap: var(--x1_5); min-width: 0; }
+.rsrhead__logo {
+  width: 44px; height: 44px; flex: none; border-radius: var(--r-1);
+  background: var(--surface-3); object-fit: contain;
+}
+.rsrhead__n { font-size: var(--text-xl); font-weight: 600; line-height: 1.2; }
+.rsrhead__s { font-size: var(--text-tiny); color: var(--text-softer); margin-top: 2px; }
+.rsrhead__r { text-align: right; }
+
+/* The quant rating badge: verdict word, letter and score in one chip.
+
+   Three tones, matching `verdictTone` in grading.js, which deliberately
+   collapses the five verdict words into three colours — colouring "Sell" and
+   "Strong sell" differently would imply a precision the mean of five factor
+   grades does not have. */
+.qbadge {
+  display: inline-flex; align-items: center; gap: var(--x1);
+  border-radius: var(--r-pill); padding: 5px var(--x1_5);
+  background: var(--surface-3); border: 1px solid var(--border-soft);
+}
+.qbadge__w { font-size: var(--text-sm); font-weight: 700; letter-spacing: -.01em; }
+.qbadge__s {
+  display: inline-flex; align-items: baseline; gap: 5px;
+  padding-left: var(--x1); border-left: 1px solid var(--border-strong);
+}
+.qbadge__s i { font-style: normal; font-size: var(--text-tiny); font-weight: 700; }
+.qbadge__s em {
+  font-style: normal; font-size: var(--text-micro); color: var(--text-softer);
+  font-variant-numeric: tabular-nums;
+}
+/* Text colours come from the *grade* tokens, not the status ones, and the
+   difference matters in the light theme only. `--good` / `--neutral` / `--bad`
+   are tuned to sit on the page background; these sit on a 12% tint of
+   themselves, which is a much narrower contrast budget. The grade ladder is
+   already measured for that case — the light theme darkens it hard for
+   exactly this reason — and in the dark theme the two sets resolve to the
+   same hues, so this is a no-op there.
+
+   Measured before the swap: the verdict word scored 1.64:1 in light against
+   a 3.0 floor for 21px bold. It is the largest element on the page. */
+.qbadge--good { background: var(--good-subtle); border-color: transparent; }
+.qbadge--good .qbadge__w, .qbadge--good .qbadge__s i { color: var(--grade-strong); }
+.qbadge--warn { background: var(--neutral-subtle); border-color: transparent; }
+.qbadge--warn .qbadge__w, .qbadge--warn .qbadge__s i { color: var(--grade-mid); }
+.qbadge--bad  { background: var(--bad-subtle); border-color: transparent; }
+.qbadge--bad .qbadge__w, .qbadge--bad .qbadge__s i { color: var(--grade-poor); }
+.qbadge--muted .qbadge__w { color: var(--text-softer); }
+.qbadge--lg { padding: var(--x1) var(--x2); }
+.qbadge--lg .qbadge__w { font-size: var(--text-xl); }
+.qbadge--lg .qbadge__s i { font-size: var(--text-sm); }
+
+/* The badge beside the letter pill, at the head of the rating panel. */
+.qhero { display: flex; align-items: center; gap: var(--x1_5); flex-wrap: wrap; margin-bottom: var(--x1_5); }
+
+/* One factor as a filled 0-5 track. The track is always the full width, so
+   the empty part of the bar carries as much information as the filled part —
+   which is the whole reason for drawing it rather than printing the number. */
+.qfactors { display: grid; gap: var(--x1); margin-bottom: var(--x1_5); }
+.qbar {
+  display: grid; grid-template-columns: 140px minmax(0, 1fr) 40px;
+  align-items: center; gap: var(--x1_5);
+}
+.qbar__k { font-size: var(--text-tiny); color: var(--text-soft); }
+.qbar__t {
+  display: block; height: 7px; border-radius: var(--r-pill);
+  background: var(--surface-3); overflow: hidden;
+}
+.qbar__f { display: block; height: 100%; border-radius: var(--r-pill); }
+.qbar__f.is-strong { background: var(--grade-strong); }
+.qbar__f.is-good   { background: var(--grade-good); }
+.qbar__f.is-mid    { background: var(--grade-mid); }
+.qbar__f.is-weak   { background: var(--grade-weak); }
+.qbar__f.is-poor   { background: var(--grade-poor); }
+.qbar__f.is-na     { background: var(--grade-na); }
+.qbar__v {
+  font-size: var(--text-tiny); text-align: right;
+  font-variant-numeric: tabular-nums; color: var(--text-softer);
+}
+
+/* The valuation verdict, which is a word rather than a rating. Sized like the
+   Ratings tab's verdict so the two read as the same kind of statement. */
+.rzone { font-size: var(--text-xl); font-weight: 600; margin: var(--x1) 0; }
+.rzone.is-good    { color: var(--grade-strong); }
+.rzone.is-neutral { color: var(--grade-mid); }
+.rzone.is-bad     { color: var(--grade-poor); }
+.rzone.is-muted   { color: var(--text-softer); }
+
+@media (max-width: 560px) {
+  .qbar { grid-template-columns: 100px minmax(0, 1fr) 36px; gap: var(--x1); }
+}
+
+/* The eight-cell band along the top of every page of the source reports.
+   Four columns rather than `auto-fit`, because eight cells divide evenly into
+   four and two but not into the five or six an auto-fit track count lands on
+   at most widths — and a short last row leaves the 1px gap background showing
+   as a grey slab where the missing cells would be. */
+.rsrband {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 1px; background: var(--border-soft); margin: var(--x2) 0;
+  border: 1px solid var(--border-soft); border-radius: var(--r-1); overflow: hidden;
+}
+@media (max-width: 860px) { .rsrband { grid-template-columns: repeat(2, 1fr); } }
+.rsrband__c { background: var(--surface-1); padding: var(--x1_5); }
+.rsrband__k {
+  font-size: var(--text-micro); text-transform: uppercase; letter-spacing: .05em;
+  color: var(--text-softer);
+}
+.rsrband__v {
+  font-size: var(--text-lg); font-weight: 600; margin-top: 3px;
+  font-variant-numeric: tabular-nums;
+}
+.rsrband__n { font-size: var(--text-micro); color: var(--text-subtle); margin-top: 1px; }
+
+/* Star rating, composite grade and style box, side by side. The three columns
+   are the card's argument: two ratings that answer different questions, and
+   the box that places the company between them. */
+/* Two columns, not three, and unequal: the quant rating panel carries five
+   factor bars and needs the room, the valuation panel carries a word and a
+   nine-box grid. `auto-fit` would give them equal tracks and squeeze the
+   bars into an unreadable width. */
+.rsrsplit {
+  display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: var(--x2); margin-bottom: var(--x2);
+}
+@media (max-width: 860px) { .rsrsplit { grid-template-columns: 1fr; } }
+.rsrsplit__c {
+  background: var(--surface-1); border: 1px solid var(--border-soft);
+  border-radius: var(--r-1); padding: var(--x1_5);
+}
+.rsrsplit__c .osub { margin-top: 0; }
+
+/* The nine-box style grid. */
+.rsbox { display: flex; align-items: center; gap: var(--x1_5); }
+.rsbox__g {
+  display: grid; grid-template-columns: repeat(3, 18px); grid-template-rows: repeat(3, 18px);
+  gap: 2px; flex: none;
+}
+.rsbox__c { display: block; background: var(--surface-3); border-radius: 2px; }
+.rsbox__c.is-on { background: var(--brand-01); }
+.rsbox__l { display: grid; gap: 2px; min-width: 0; }
+
+/* The five prices that bound the star bands, laid out in price order so the
+   reader's own position on the line is obvious. */
+.rsrpf {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1px; background: var(--border-soft); margin-top: var(--x2);
+  border: 1px solid var(--border-soft); border-radius: var(--r-1); overflow: hidden;
+}
+.rsrpf__c { background: var(--surface-1); padding: var(--x1_5); text-align: center; }
+.rsrpf__v { font-size: var(--text-base); font-weight: 600; font-variant-numeric: tabular-nums; }
+.rsrpf__k { font-size: var(--text-micro); color: var(--text-softer); margin-top: 2px; }
+.rsrpf__c.is-good .rsrpf__v { color: var(--good); }
+.rsrpf__c.is-bad .rsrpf__v  { color: var(--bad); }
+.rsrpf__c.is-self { background: var(--brand-01-subtle); }
+.rsrpf__c.is-self .rsrpf__v { color: var(--brand-01); }
+/* The estimate the other four cells are measured from. Weighted rather than
+   coloured: it is the anchor, not a verdict. */
+.rsrpf__c.is-anchor { background: var(--surface-2); }
+.rsrpf__c.is-anchor .rsrpf__v { font-size: var(--text-lg); }
+
+/* The generated byline. Deliberately plain and deliberately present on every
+   section that carries prose — a reader who lands mid-report should not have
+   to scroll to the foot to find out nobody wrote this. */
+.rsrby {
+  font-size: var(--text-micro); color: var(--text-subtle);
+  margin: calc(var(--x1) * -1) 0 var(--x2); letter-spacing: .01em;
+}
+.rsrby b { color: var(--text-softer); font-weight: 600; }
+
+/* Report prose. The source reports set about 72 characters in their two-column
+   layout; this is one column, so the measure is capped rather than justified. */
+.rsrp {
+  font-size: var(--text-sm); line-height: 1.68; color: var(--text-soft);
+  max-width: 76ch; margin-bottom: var(--x1_5);
+}
+.rsrp:last-child { margin-bottom: 0; }
+
+.rsrnote__h {
+  font-size: var(--text-lg); font-weight: 600; line-height: 1.35;
+  color: var(--text-strong); max-width: 60ch; margin-bottom: var(--x1_5);
+}
+.rsrwhy { margin-bottom: var(--x1_5); }
+.rsrwhy__k { font-size: var(--text-sm); font-weight: 600; color: var(--text-strong); }
+.rsrnote__b {
+  font-size: var(--text-sm); line-height: 1.68; color: var(--text-soft);
+  max-width: 76ch; border-top: 1px solid var(--border-soft); padding-top: var(--x1_5);
+}
+.rsrnote__b b { color: var(--text-strong); }
+
+/* The bullet the source reports use is a filled square. */
+.rsrbul { display: grid; gap: var(--x1); margin-top: var(--x1); max-width: 76ch; }
+.rsrbul li {
+  position: relative; padding-left: var(--x2);
+  font-size: var(--text-xs); line-height: 1.6; color: var(--text-soft);
+}
+.rsrbul li::before {
+  content: ""; position: absolute; left: 0; top: .55em;
+  width: 6px; height: 6px; border-radius: 1px; background: var(--brand-01);
+}
+
+/* Bulls / bears, side by side and colour-coded on the marker only — a green
+   panel and a red panel would read as a verdict on the company. */
+.rsrbb { display: grid; grid-template-columns: 1fr 1fr; gap: var(--x2); }
+.rsrside {
+  background: var(--surface-1); border: 1px solid var(--border-soft);
+  border-left: 3px solid var(--border-strong);
+  border-radius: var(--r-1); padding: var(--x1_5);
+}
+.rsrside.is-bull { border-left-color: var(--good); }
+.rsrside.is-bear { border-left-color: var(--bad); }
+.rsrside__t { font-size: var(--text-sm); font-weight: 600; color: var(--text-strong); }
+.rsrside.is-bull .rsrbul li::before { background: var(--good); }
+.rsrside.is-bear .rsrbul li::before { background: var(--bad); }
+
+/* The company's own row in a table of peers, and the selected uncertainty row
+   in the margin-of-safety table. */
+.rsrself { color: var(--brand-01); font-weight: 600; }
+
+/* A driver's contribution to a rating: three states plus not-measured. The
+   scale runs green to red, and each caller maps its own points onto it — the
+   risk table sends "wide" to red, the capital table sends "weak" there. */
+.rsrdot {
+  display: inline-block; font-size: var(--text-micro); font-weight: 600;
+  border-radius: var(--r-pill); padding: 3px var(--x1); white-space: nowrap;
+}
+.rsrdot.is-lo  { background: var(--good-subtle); color: var(--good); }
+.rsrdot.is-mid { background: var(--neutral-subtle); color: var(--neutral); }
+.rsrdot.is-hi  { background: var(--bad-subtle); color: var(--bad); }
+.rsrdot.is-na  { background: var(--surface-3); color: var(--text-subtle); }
+
+@media (max-width: 720px) {
+  .rsrbb { grid-template-columns: 1fr; }
+  .rsrhead__r { text-align: left; }
+}
+
+/* Printing a research report is a real thing to want to do with one, so the
+   band, the prose measure and the two-up panels all survive it. */
+@media print {
+  .rsrband, .rsrpf, .rsrsplit__c, .rsrside { break-inside: avoid; }
+  .rsrp, .rsrnote__b { max-width: none; }
+}
+
+/* The developer's handoff block at the foot of the Research tab: how the
+   narrative is wired and a copy of the exact prompt. Set apart from the
+   methodology above it, because it is addressed to a different reader. */
+.rsrdev {
+  margin-top: var(--x3); padding-top: var(--x2);
+  border-top: 1px dashed var(--border-strong);
+}
+.rsrdev .osub { margin-top: 0; }
+.rsrdev p { max-width: 76ch; }
+.rsrdev__row { display: flex; align-items: center; gap: var(--x1_5); flex-wrap: wrap; margin-top: var(--x1_5); }
+
+/* ==========================================================================
+   The main navigation — seven menus down the left rail
+
+   Each rail item opens a flyout to its right on hover. The panels are
+   `position: fixed` and placed by `buildRailNav` against the trigger's
+   measured rect: the rail is `overflow-y: auto`, which makes CSS compute
+   `overflow-x` to `auto` as well, and an absolutely positioned flyout inside
+   it would be clipped at the rail's right edge.
+   ========================================================================== */
+
+.railgroup { position: relative; }
+
+/* The rail item. Same skin as `.sidenav__item`, plus room for the caret. */
+.railtop { width: 100%; justify-content: flex-start; }
+.railtop__l { flex: 1; min-width: 0; text-align: left; }
+.railtop__c {
+  width: 15px; height: 15px; flex: none; opacity: .45;
+  transition: transform .14s ease, opacity .14s ease;
+}
+.railtop:hover .railtop__c,
+.railgroup.is-open .railtop__c { opacity: .9; transform: translateX(2px); }
+/* An open menu keeps its item lit, so the rail says which panel is on screen. */
+.railgroup.is-open .railtop { background: rgba(255, 255, 255, .10); color: #fff; }
+
+/* The flyout. Placed in viewport coordinates by JS; everything positional
+   here is a starting point it overwrites. */
+.railmenu {
+  position: fixed; top: 0; left: 0; z-index: var(--z-popover);
+  min-width: 240px; max-width: min(520px, 60vw);
+  margin-left: var(--x1);
+  padding: var(--x2);
+  background: var(--surface-1);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-1);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, .35);
+}
+/* The bridge. A fixed panel offset from the rail leaves a gap the pointer has
+   to cross, and a gap with nothing in it drops the hover. This pads the panel's
+   own hit area back over that margin without moving what is drawn. */
+.railmenu::before {
+  content: ""; position: absolute;
+  top: 0; bottom: 0; right: 100%; width: var(--x2);
+}
+/* Menus of more than six items run two-up rather than the height of a laptop
+   screen — Sectors is eleven and Shariah eight. */
+.railmenu--two .railmenu__list {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0 var(--x1_5);
+}
+
+.railmenu__t {
+  font-size: var(--text-sm); font-weight: 600; color: var(--text-strong);
+}
+.railmenu__b {
+  font-size: var(--text-micro); color: var(--text-softer);
+  margin: 2px 0 var(--x1_5); padding-bottom: var(--x1_5);
+  border-bottom: 1px solid var(--border-soft);
+  max-width: 46ch;
+}
+
+.railmenu__list { display: block; }
+.railmenu__list li { display: block; }
+
+.railmenu__i {
+  display: flex; align-items: baseline; justify-content: space-between; gap: var(--x1);
+  width: 100%; text-align: left;
+  padding: 7px var(--x1); border-radius: var(--r-sm);
+  font-size: var(--text-xs); color: var(--text-soft);
+  white-space: nowrap;
+}
+.railmenu__i:hover { background: var(--surface-3); color: var(--text-strong); }
+.railmenu__i.is-active { color: var(--brand-01); font-weight: 600; }
+.railmenu__i.is-off { color: var(--text-subtle); cursor: default; }
+.railmenu__i.is-off:hover { background: none; color: var(--text-subtle); }
+
+/* Marks a destination that leaves this page for the company report. */
+.railmenu__hint {
+  font-style: normal; font-size: var(--text-micro); color: var(--text-subtle);
+  flex: none;
+}
+
+/* The shortcut group under the menus: same items, quieter. */
+.sidenav__rule {
+  height: 1px; background: rgba(255, 255, 255, .10);
+  margin: calc(var(--x2) * -1) var(--x2) calc(var(--x2) * -1);
+}
+.sidenav__nav--minor .sidenav__item { font-size: var(--text-xs); color: #8b8b93; }
+.sidenav__nav--minor .sidenav__item:hover { color: #fff; }
+
+/* The rail gets its own scrollbar only when it needs one, and the gap between
+   the two groups shrinks so eleven items still fit a laptop. */
+.sidenav { gap: var(--x2_5, 20px); }
+
+/* Below 900px the rail itself is hidden (see the layout rules near the top),
+   which would leave the app with no navigation at all now that the menus live
+   in it. So the rail comes back as a horizontal strip of the seven pages.
+
+   No flyouts here, and that is not a compromise: there is no hover on a touch
+   screen, tapping a page was always going to be the way in, and every page
+   repeats its own sections in a strip across the top. The brand and the
+   shortcut group drop out because neither survives the width. */
+@media (max-width: 900px) {
+  .sidenav {
+    display: flex; flex-direction: row; align-items: center;
+    position: static; height: auto;
+    overflow-x: auto; overflow-y: hidden;
+    gap: var(--x1); padding: var(--x1) var(--x2);
+  }
+  .sidenav__brand,
+  .sidenav__rule,
+  .sidenav__nav--minor { display: none; }
+
+  .sidenav__nav { display: flex; flex-direction: row; gap: 2px; }
+  .railgroup { flex: none; }
+  .railtop { white-space: nowrap; padding: var(--x1) var(--x1_5); }
+  .railtop .sidenav__icon,
+  .railtop__c { display: none; }
+
+  /* Belt and braces: the JS still opens these on focus, and a fixed panel over
+     a 375px screen is not a menu, it is a modal nobody asked for. */
+  .railmenu { display: none !important; }
+}
+
+/* ==========================================================================
+   The page head every nav page shares
+   ========================================================================== */
+
+.pagehead {
+  padding: var(--x3) 0 var(--x2);
+}
+.pagehead__t { font-size: var(--text-hero); font-weight: 600; line-height: 1.15; }
+.pagehead__b {
+  font-size: var(--text-sm); color: var(--text-softer);
+  margin-top: var(--x1); max-width: 70ch;
+}
+.pagehead .subtabs { margin-top: var(--x2); }
+
+/* The section strip on a nav page can carry eleven sectors, so unlike the
+   report's own strips it wraps instead of scrolling. */
+.subtabs--wrap { flex-wrap: wrap; height: auto; }
+
+/* ==========================================================================
+   Markets Data
+   ========================================================================== */
+
+/* A ticker that opens its report. Reads as a link, is a button, because it
+   navigates within the app rather than to a URL. */
+.mkticker {
+  font-weight: 600; font-size: var(--text-xs); color: var(--text-strong);
+  text-align: left;
+}
+.mkticker:hover { color: var(--brand-01); text-decoration: underline; }
+/* The variant that carries a logo: the tile needs the button to be a flex row
+   rather than a bare text node, and only the label should underline. */
+.mkticker--logo { display: inline-flex; align-items: center; gap: 5px; }
+.mkticker--logo:hover { text-decoration: none; }
+.mkticker--logo:hover span { text-decoration: underline; }
+
+.mkname {
+  display: block; max-width: 34ch;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  color: var(--text-soft);
+}
+
+/* The compact mover list on the overview. */
+.mklist { display: grid; gap: 1px; background: var(--border-soft); margin-top: var(--x1); }
+.mkrow {
+  display: flex; align-items: center; gap: var(--x1_5);
+  background: var(--surface-1); padding: var(--x1) var(--x1_5);
+}
+.mkrow__logo {
+  width: 26px; height: 26px; flex: none; border-radius: var(--r-sm);
+  object-fit: contain; background: var(--surface-3);
+}
+.mkrow__logo--fb {
+  display: flex; align-items: center; justify-content: center;
+  font-size: var(--text-tiny); font-weight: 700; color: var(--text-softer);
+}
+.mkrow__b { min-width: 0; flex: 1; display: flex; flex-direction: column; align-items: flex-start; }
+.mkrow__s { font-size: var(--text-xs); font-weight: 700; color: var(--text-strong); }
+.mkrow__s:hover { color: var(--brand-01); }
+.mkrow__n {
+  font-size: var(--text-micro); color: var(--text-subtle);
+  max-width: 22ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.mkrow__v {
+  flex: none; font-size: var(--text-xs); font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Diverging bars for sector and industry performance. Signed values need a
+   centre line: a sector that fell and one that rose must not both grow
+   rightwards from the same edge. */
+.mkbars { display: grid; gap: var(--x1); }
+.mkbars__row {
+  display: grid; grid-template-columns: 190px minmax(0, 1fr) 64px;
+  align-items: center; gap: var(--x1_5);
+}
+.mkbars__k {
+  font-size: var(--text-xs); color: var(--text-soft); text-align: left;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.mkbars__k--link:hover { color: var(--brand-01); text-decoration: underline; }
+.mkbars__track {
+  position: relative; display: block; height: 14px;
+  background: var(--surface-3); border-radius: var(--r-sm);
+}
+/* The centre line the bars diverge from. */
+.mkbars__track::before {
+  content: ""; position: absolute; left: 50%; top: 0; bottom: 0;
+  width: 1px; background: var(--border-strong);
+}
+.mkbars__fill {
+  position: absolute; top: 2px; bottom: 2px; display: block;
+  border-radius: 2px;
+}
+.mkbars__fill.is-up { background: var(--good); }
+.mkbars__fill.is-down { background: var(--bad); }
+.mkbars__v {
+  text-align: right; font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 640px) {
+  .mkbars__row { grid-template-columns: 120px minmax(0, 1fr) 56px; gap: var(--x1); }
+}
+
+/* ==========================================================================
+   Sector pages
+   ========================================================================== */
+
+/* The score histogram: the shape a company's composite is placed within. */
+.sechist {
+  display: flex; align-items: flex-end; gap: 3px;
+  height: 132px; margin-top: var(--x1);
+  padding-bottom: 18px; position: relative;
+}
+.sechist__col {
+  flex: 1; height: 100%; display: flex; flex-direction: column;
+  justify-content: flex-end; position: relative; min-width: 0;
+}
+.sechist__bar {
+  display: block; width: 100%; border-radius: 2px 2px 0 0;
+  background: var(--brand-01); opacity: .8;
+}
+.sechist__col:hover .sechist__bar { opacity: 1; }
+.sechist__k {
+  position: absolute; bottom: -18px; left: 0;
+  font-size: var(--text-micro); color: var(--text-subtle);
+}
+
+/* ==========================================================================
+   The Research menu's destination list
+   ========================================================================== */
+
+.rhlinks { display: grid; gap: 1px; background: var(--border-soft); margin-top: var(--x1_5); }
+.rhlink {
+  display: block; text-align: left; width: 100%;
+  background: var(--surface-1); padding: var(--x1_5);
+}
+.rhlink:hover { background: var(--surface-3); }
+.rhlink b { display: block; font-size: var(--text-sm); color: var(--text-strong); }
+.rhlink:hover b { color: var(--brand-01); }
+.rhlink span {
+  display: block; margin-top: 2px;
+  font-size: var(--text-xs); color: var(--text-softer); max-width: 80ch;
+}
+
+/* ---------- the sector breakdown index ------------------------------------ */
+
+/* The median composite, drawn as well as printed: eleven sectors inside a
+   point and a half of each other are hard to rank from decimals alone. */
+.secmed { display: inline-flex; align-items: center; gap: var(--x1); justify-content: flex-end; }
+.secmed__b {
+  display: block; height: 6px; width: 0; min-width: 2px;
+  background: var(--brand-01); border-radius: var(--r-pill);
+  flex: 0 0 auto; max-width: 74px;
+}
+.secmed b { font-variant-numeric: tabular-nums; }
+
+/* Sectors ranked by that median, down the side of the index. */
+  display: flex; align-items: center; gap: var(--x1_5); width: 100%; text-align: left;
+  background: var(--surface-1); padding: var(--x1) var(--x1_5); font-size: var(--text-xs);
+}
+  flex: none; width: 18px; color: var(--text-subtle);
+  font-variant-numeric: tabular-nums; font-size: var(--text-micro);
+}
+  flex: 1; min-width: 0; color: var(--text-soft);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* ---------- the top-50 company table -------------------------------------- */
+
+/* Logo, ticker and name in one cell, so the fifty rows stay one line each and
+   the grade columns keep the width they need. */
+.seccell { display: inline-flex; align-items: center; gap: var(--x1); min-width: 0; }
+.seccell__b { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; }
+.seccell__n {
+  font-size: var(--text-micro); color: var(--text-subtle);
+  max-width: 26ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+/* Six grade pills across a fifty-row table: shrink them so the table does not
+   need a scrollbar of its own on a laptop. */
+#sec-top .grade { padding: 2px 5px; }
+#sec-top .grade i { display: none; }
+
+/* The detailed sector breakdown: twelve columns, so it tightens up and scrolls
+   inside its own wrapper rather than pushing the page sideways. */
+.secbd { font-size: var(--text-tiny); }
+.secbd th, .secbd td { padding: var(--x1) var(--x1_5); white-space: nowrap; }
+.secbd td.num, .secbd th.num { font-variant-numeric: tabular-nums; }
+.secbd .secmed__b { max-width: 46px; }
+
+/* Industry weight inside a sector: bar plus figure, same shape as the median
+   composite cell on the breakdown. */
+.secw { display: inline-flex; align-items: center; gap: var(--x1); justify-content: flex-end; }
+.secw__b {
+  display: block; height: 6px; width: 0; min-width: 2px; max-width: 74px;
+  background: var(--brand-01); border-radius: var(--r-pill); flex: 0 0 auto;
+}
+.secw b { font-variant-numeric: tabular-nums; }
+
+/* The window selector on the sector-vs-market chart sits in the card head, so
+   it needs to not inherit the head's spacing. */
+.ocard__head .rangesel { margin: 0; }
+
+/* ==========================================================================
+   Price-chart pings — when somebody bought or sold
+
+   The legend is also the control: each chip toggles its markers. The glyphs
+   repeat the chart's own shapes, and the shape carries meaning — a triangle
+   is an exact date from a Form 4, a diamond is a quarter end from a 13F.
+   ========================================================================== */
+
+.pings {
+  display: flex; align-items: center; flex-wrap: wrap;
+  gap: var(--x1) var(--x1_5); margin-top: var(--x1_5);
+}
+
+.ping {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 4px var(--x1); border-radius: var(--r-pill);
+  font-size: var(--text-tiny); color: var(--text-softer);
+  border: 1px solid var(--border-soft);
+  transition: color .12s ease, border-color .12s ease, opacity .12s ease;
+}
+.ping:hover { color: var(--text-strong); border-color: var(--border-strong); }
+/* Off is the dimmed state, not the hidden one: a reader has to be able to see
+   what they turned off in order to turn it back on. */
+.ping:not(.is-on) { opacity: .45; }
+.ping.is-on { color: var(--text-soft); border-color: var(--border-strong); }
+
+.ping--load {
+  border-style: dashed; color: var(--brand-01); border-color: var(--brand-01-soft);
+}
+.ping--load:hover { border-color: var(--brand-01); }
+.ping--load:disabled { opacity: .5; }
+
+/* The glyphs. Triangles are drawn with borders, the diamond as a rotated
+   square outline — hollow, because a 13F is a weaker claim about timing than
+   a Form 4 and the fill should say so. */
+.ping__g { display: block; width: 9px; height: 9px; flex: none; }
+.ping__g--insiderBuy {
+  width: 0; height: 0;
+  border-left: 5px solid transparent; border-right: 5px solid transparent;
+  border-bottom: 8px solid var(--good);
+}
+.ping__g--insiderSell {
+  width: 0; height: 0;
+  border-left: 5px solid transparent; border-right: 5px solid transparent;
+  border-top: 8px solid var(--bad);
+}
+.ping__g--fundBuy,
+.ping__g--fundSell {
+  width: 8px; height: 8px; transform: rotate(45deg);
+  border: 1.6px solid var(--good); background: none;
+}
+.ping__g--fundSell { border-color: var(--bad); }
+
+.ping__note { font-size: var(--text-micro); color: var(--text-subtle); }
+
+/* Markers sit above the hover hit-rect, so they need to take the pointer. */
+.chart__markers { pointer-events: all; }
+
+/* The Overview's price card is two-thirds width beside the key statistics, so
+   its ping legend wraps tighter and drops the count parentheses' breathing
+   room rather than pushing the card taller. */
+.pings--compact { gap: 6px; margin-top: var(--x1); }
+.pings--compact .ping { padding: 3px 7px; font-size: var(--text-micro); }
+
+/* ---------- Earnings: the written summaries ------------------------------- */
+
+.ernsums {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--x1_5); margin-top: var(--x1_5);
+}
+.ernsum {
+  display: block; text-align: left; width: 100%;
+  background: var(--surface-1); border: 1px solid var(--border-soft);
+  border-radius: var(--r-1); padding: var(--x1_5);
+  transition: border-color .12s ease;
+}
+.ernsum:hover { border-color: var(--border-strong); }
+.ernsum__h { display: flex; align-items: baseline; gap: var(--x1); }
+.ernsum__h b { font-size: var(--text-sm); color: var(--text-strong); }
+.ernsum:hover .ernsum__h b { color: var(--brand-01); }
+.ernsum__q { font-size: var(--text-micro); color: var(--text-softer); }
+.ernsum__t {
+  margin-top: var(--x1); font-size: var(--text-xs); line-height: 1.5;
+  color: var(--text-soft);
+}
+.ernsum__by {
+  display: block; margin-top: var(--x1);
+  font-size: var(--text-micro); color: var(--text-subtle);
+}
+
+/* The two surprise tables sit in the bull/bear split, which was built for
+   bullet lists — a table inside it needs its own scroll rather than the
+   panel's padding pushing it wide. */
+.rsrside .tbl-wrap { margin-top: var(--x1); }
+.rsrside .tbl { font-size: var(--text-micro); }
+.rsrside .tbl th, .rsrside .tbl td { padding: 5px var(--x1); }
+
+/* ==========================================================================
+   Home
+
+   Ten tiles on the same twelve-column grid every card page uses, so a tile
+   that grows a row cannot push a neighbour out of alignment. Two shapes are
+   new: the hero across the top of the spotlight, and the small evidence
+   lists — news, ideas, standards, method — that fill the narrow columns
+   underneath it.
+   ========================================================================== */
+
+/* The grid gained a half-width column for the two tiles that are neither a
+   quarter nor two thirds. */
+.ovw__c6 { grid-column: span 6; }
+
+/* ---- 1. the spotlight ---------------------------------------------------- */
+
+.homehero {
+  display: flex; align-items: center; gap: var(--x2); flex-wrap: wrap;
+}
+.homehero__logo {
+  width: 44px; height: 44px; flex: none; border-radius: var(--r-sm);
+  object-fit: contain; background: var(--surface-2);
+  border: 1px solid var(--border-soft); padding: 4px;
+}
+.homehero__logo--fb {
+  display: flex; align-items: center; justify-content: center; padding: 0;
+  font-size: var(--text-lg); font-weight: 700; color: var(--text-softer);
+}
+.homehero__id { flex: 1; min-width: 160px; }
+.homehero__n {
+  font-size: var(--text-xl); font-weight: 700; letter-spacing: -0.02em;
+  line-height: 1.15; color: var(--text-solid);
+}
+.homehero__s { font-size: var(--text-tiny); color: var(--text-softer); margin-top: 2px; }
+.homehero__p { text-align: right; flex: none; }
+.homehero__p b {
+  display: block; font-size: var(--text-mega); font-weight: 700;
+  letter-spacing: -0.02em; font-variant-numeric: tabular-nums;
+}
+.homehero__p span { font-size: var(--text-xs); font-weight: 600; }
+.homehero__v { font-size: var(--text-sm); color: var(--text-soft); margin-top: var(--x1_5); }
+
+/* The verdict word and its grade as one block, so the two never wrap apart. */
+.homeverd {
+  flex: none; display: flex; flex-direction: column; align-items: flex-end;
+  padding: var(--x1) var(--x1_5); border-radius: var(--r-sm);
+  background: var(--surface-3); border: 1px solid var(--border-soft);
+}
+.homeverd b { font-size: var(--text-lg); font-weight: 700; line-height: 1.1; }
+.homeverd i {
+  font-style: normal; font-size: var(--text-micro); color: var(--text-softer);
+  font-variant-numeric: tabular-nums; margin-top: 2px;
+}
+.homeverd.is-good b  { color: var(--grade-strong); }
+.homeverd.is-warn b  { color: var(--grade-mid); }
+.homeverd.is-bad b   { color: var(--grade-poor); }
+.homeverd.is-muted b { color: var(--text-softer); }
+
+/* Five factors, five rows. A grid rather than flex, so every bar starts at
+   the same x whatever the longest label is. */
+.homefacs { display: grid; gap: 6px; margin-top: var(--x2); }
+.homefac {
+  display: grid; grid-template-columns: 116px minmax(0, 1fr) 30px;
+  align-items: center; gap: var(--x1_5);
+  padding: 3px 0; text-align: left; border-radius: var(--r-sm);
+}
+.homefac:hover .homefac__k { color: var(--brand-01); }
+.homefac__k {
+  font-size: var(--text-xs); color: var(--text-soft);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.homefac__t {
+  display: block; height: 8px; border-radius: 4px;
+  background: var(--surface-3); overflow: hidden;
+}
+.homefac__f { display: block; height: 100%; border-radius: 4px; background: var(--text-subtle); }
+.homefac__f.is-strong { background: var(--grade-strong); }
+.homefac__f.is-good   { background: var(--grade-good); }
+.homefac__f.is-mid    { background: var(--grade-mid); }
+.homefac__f.is-weak   { background: var(--grade-weak); }
+.homefac__f.is-poor   { background: var(--grade-poor); }
+.homefac__v {
+  text-align: right; font-size: var(--text-xs); font-weight: 600;
+  font-variant-numeric: tabular-nums; color: var(--text-strong);
+}
+
+.homebtns {
+  display: flex; flex-wrap: wrap; gap: var(--x1);
+  margin-top: var(--x2); padding-top: var(--x2);
+  border-top: 1px solid var(--border-soft);
+}
+
+/* ---- 2. the ratings ------------------------------------------------------ */
+
+.homerate {
+  display: flex; align-items: center; flex-wrap: wrap; gap: var(--x1);
+  padding: var(--x1_5) 0; border-bottom: 1px solid var(--border-soft);
+}
+.homerate__k {
+  flex-basis: 100%;
+  font-size: var(--text-micro); font-weight: 600; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--text-softer);
+}
+.homerate__n { font-size: var(--text-micro); color: var(--text-subtle); }
+/* The zone word borrows the Research tab's scale, so the two pages cannot
+   colour the same verdict differently. */
+.homerate .rzone { margin: 0; font-size: var(--text-lg); }
+
+/* `hidden` has to be restated here. The attribute's own `display: none` is a
+   UA rule, and `.ovw > .card { display: flex }` outranks it — so a card that
+   hid itself (the analyst note, on a company with no narrative) still claimed
+   its row. */
+.ovw > .card[hidden] { display: none; }
+
+/* ---- 3. the written note ------------------------------------------------- */
+
+.homenote__h {
+  font-size: var(--text-mega); font-weight: 700; letter-spacing: -0.02em;
+  line-height: 1.25; margin-top: var(--x1_5); max-width: 44ch;
+}
+.homenote__w {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--x2); margin-top: var(--x2);
+}
+.homenote__w p { font-size: var(--text-sm); color: var(--text-soft); }
+.homenote__b {
+  margin-top: var(--x2); padding-left: var(--x2);
+  border-left: 2px solid var(--brand-01);
+  font-size: var(--text-sm); color: var(--text-strong); max-width: 88ch;
+}
+.homenote__f {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: var(--x1);
+  margin-top: var(--x2); padding-top: var(--x1_5);
+  border-top: 1px solid var(--border-soft);
+}
+
+/* ---- 4. the live row ----------------------------------------------------- */
+
+/* Eleven sector names in a quarter-width column: the label track has to give
+   up 70px to leave the bar something to draw in. */
+.mkbars--tight .mkbars__row { grid-template-columns: 118px minmax(0, 1fr) 52px; gap: var(--x1); }
+.mkbars--tight .mkbars__k,
+.mkbars--tight .mkbars__v { font-size: var(--text-micro); }
+
+.homenews { display: grid; gap: 1px; background: var(--border-soft); margin-top: var(--x1); }
+.homenew {
+  display: block; background: var(--surface-1); padding: var(--x1_5);
+  text-decoration: none; color: inherit;
+}
+.homenew:hover { background: var(--surface-2); }
+.homenew__t {
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: var(--text-xs); font-weight: 600;
+  color: var(--text-strong); line-height: 1.35;
+}
+.homenew:hover .homenew__t { color: var(--brand-01); }
+.homenew__m {
+  display: block; font-size: var(--text-micro); color: var(--text-subtle);
+  margin-top: 3px;
+}
+
+/* ---- 5. the screens ------------------------------------------------------ */
+
+.homeideas { display: grid; gap: var(--x1); margin-top: var(--x1); }
+.homeidea {
+  display: block; text-align: left; padding: var(--x1_5);
+  border: 1px solid var(--border-soft); border-radius: var(--r-sm);
+  background: var(--surface-1);
+}
+.homeidea:hover { border-color: var(--brand-01); background: var(--surface-2); }
+.homeidea__h { display: flex; align-items: center; gap: var(--x1); flex-wrap: wrap; }
+.homeidea__h b { font-size: var(--text-sm); font-weight: 700; color: var(--text-strong); }
+.homeidea__t {
+  display: block; font-size: var(--text-tiny); color: var(--text-soft);
+  margin-top: 3px; line-height: 1.45;
+}
+.homeidea__r {
+  display: block; font-size: var(--text-micro); color: var(--text-subtle);
+  margin-top: var(--x1);
+}
+
+/* ---- 6. earnings --------------------------------------------------------- */
+
+.homequote__k {
+  font-size: var(--text-micro); font-weight: 600; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--text-softer); margin-top: var(--x2);
+}
+.homequote {
+  font-size: var(--text-base); line-height: 1.45; color: var(--text-strong);
+  margin-top: var(--x1); padding-left: var(--x1_5);
+  border-left: 2px solid var(--border-strong);
+}
+.homequote__by {
+  display: block; font-size: var(--text-micro); color: var(--text-subtle);
+  margin-top: 6px; padding-left: var(--x1_5);
+}
+
+/* ---- 7. compliance ------------------------------------------------------- */
+
+.homestds { display: grid; gap: 1px; background: var(--border-soft); margin-top: var(--x1); }
+.homestd {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--surface-1); padding: var(--x1) var(--x1_5);
+  font-size: var(--text-xs);
+}
+.homestd i { font-style: normal; color: var(--text-soft); }
+.homestd b { font-weight: 700; font-size: var(--text-tiny); }
+.homestd.is-pass b { color: var(--good); }
+.homestd.is-fail b { color: var(--bad); }
+.homestd.is-na   b { color: var(--text-subtle); }
+
+/* ---- 8. the method ------------------------------------------------------- */
+
+.homemeth {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--x2); margin-top: var(--x1);
+}
+.homemeth__i b {
+  display: block; font-size: var(--text-xs); font-weight: 700;
+  color: var(--text-strong); margin-bottom: 4px;
+}
+.homemeth__i span {
+  display: block; font-size: var(--text-tiny); color: var(--text-soft);
+  line-height: 1.5;
+}
+
+/* A quarter-width tile is as tall as whatever shares its row, so a trailing
+   action floats mid-card with a hole under it. Pinning it to the bottom makes
+   the slack read as layout rather than as something missing. */
+#home-verdict > .btn,
+#home-shariah > .btn { margin-top: auto; }
+
+/* ---- the wordmark, now a way home ---------------------------------------- */
+
+.sidenav__brand { width: 100%; text-align: left; }
+.sidenav__brand:hover { opacity: 0.85; }
+
+/* ---- narrow -------------------------------------------------------------- */
+
+@media (max-width: 1100px) {
+  .ovw__c6 { grid-column: span 12; }
+}
+@media (max-width: 900px) {
+  .homehero__p { text-align: left; }
+  .homefac { grid-template-columns: 104px minmax(0, 1fr) 28px; }
+}
+/* Below this the label track cannot hold "Financial Health" and the bar at
+   once, and shrinking the track only ellipsises the label. So the row breaks
+   in two: name and score on the first line, the bar across the second. */
+@media (max-width: 560px) {
+  .homefacs { gap: var(--x1_5); }
+  .homefac { grid-template-columns: minmax(0, 1fr) auto; gap: 4px var(--x1); }
+  .homefac__k { white-space: normal; }
+  .homefac__t { grid-column: 1 / -1; }
+}
+
+/* ==========================================================================
+   RESEARCH FEED AND ARTICLE PAGE
+
+   The editorial half of the product. Two surfaces — the filtered feed at
+   `?view=research&sub=latest` and one article at `&sub=article` — plus the
+   badges and the ticker link, which are reused by both and are meant to be
+   reused by company surfaces too.
+
+   Everything here is built from the existing tokens and, wherever the shape
+   already existed, from the existing components: article tables route through
+   `.tbl`, the bull/bear block through `.rrgrid`, factor letters through
+   `.grade`, the sort control through `.rangesel`. The only genuinely new
+   primitives are the two rating chips and the filter pill.
+   ========================================================================== */
+
+/* ---- the ticker link ----------------------------------------------------- */
+
+/* Every ticker printed in the feed is a route into that company's report. It
+   is a button rather than an anchor because it sits inside the card's own
+   anchor, and a link inside a link is invalid HTML that browsers resolve
+   differently from each other. */
+.tkr {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: none; cursor: pointer; padding: 0;
+  font-size: var(--text-tiny); color: var(--text-soft);
+}
+.tkr b {
+  font-weight: 700; font-size: var(--text-xs); color: var(--text-strong);
+  letter-spacing: .01em;
+}
+.tkr:hover b, .tkr:hover span { color: var(--brand-01); }
+.tkr:hover b { text-decoration: underline; }
+
+/* ---- the two rating chips ------------------------------------------------ */
+
+/* Named `qchip` / `schip` and not `qbadge`: `.qbadge` is the Research tab's
+   large rating block and shares none of this geometry. */
+.qchip, .schip {
+  display: inline-flex; align-items: baseline; gap: 6px;
+  padding: 3px var(--x1); border-radius: var(--r-sm);
+  font-size: var(--text-micro); line-height: 1.4; white-space: nowrap;
+  background: var(--surface-3); color: var(--text-soft);
+}
+.qchip i, .schip i {
+  font-style: normal; font-weight: 600; letter-spacing: .04em;
+  text-transform: uppercase; font-size: 10px; color: var(--text-subtle);
+}
+.qchip b, .schip b { font-weight: 700; font-size: var(--text-tiny); }
+.qchip b { font-variant-numeric: tabular-nums; }
+.qchip span, .schip span { color: var(--text-softer); }
+
+/* Text colour comes from the *grade* ladder rather than the status one, for
+   the same reason the Research tab's badge does: these sit on a 12% tint of
+   themselves, which is a much narrower contrast budget than the page
+   background, and the grade ladder is the set already measured for that. */
+.qchip.is-good, .schip.is-good        { background: var(--good-subtle); }
+.qchip.is-good b, .schip.is-good b    { color: var(--grade-strong); }
+.qchip.is-warn, .schip.is-neutral     { background: var(--neutral-subtle); }
+.qchip.is-warn b, .schip.is-neutral b { color: var(--grade-mid); }
+.qchip.is-bad, .schip.is-bad          { background: var(--bad-subtle); }
+.qchip.is-bad b, .schip.is-bad b      { color: var(--grade-poor); }
+.qchip.is-muted b, .schip.is-muted b  { color: var(--text-softer); }
+
+/* ---- the feed ------------------------------------------------------------ */
+
+.rfcard { padding-bottom: var(--x1_5); }
+
+.rfhead { margin-bottom: var(--x2); }
+.rfhead__t { font-size: var(--text-xl); font-weight: 600; letter-spacing: -0.01em; }
+.rfhead__b {
+  margin-top: 6px; max-width: 62ch;
+  font-size: var(--text-xs); color: var(--text-softer); line-height: 1.55;
+}
+
+/* Pills scroll sideways rather than wrapping to four rows on a laptop. The
+   scrollbar is hidden but the overflow is real, so a trackpad swipe and a
+   keyboard tab both still reach the far end. */
+.fpills {
+  display: flex; gap: var(--x1); align-items: center;
+  overflow-x: auto; scrollbar-width: none;
+  padding-bottom: var(--x1); margin-bottom: var(--x1);
+}
+.fpills::-webkit-scrollbar { display: none; }
+.fpills--sub, .fpills--topic { padding-top: var(--x1); border-top: 1px solid var(--border-subtle); }
+.fpills--topic { margin-bottom: 0; }
+
+.fpill {
+  display: inline-flex; align-items: center; gap: 6px; flex: none;
+  padding: 6px var(--x1_5); border-radius: var(--r-pill);
+  border: 1px solid var(--border-soft); background: none; cursor: pointer;
+  font-size: var(--text-tiny); font-weight: 600; color: var(--text-softer);
+  white-space: nowrap;
+}
+.fpill:hover { color: var(--text-strong); border-color: var(--border-strong); }
+.fpill.is-active {
+  background: var(--brand-01-softer); border-color: var(--brand-01-soft);
+  color: var(--brand-01);
+}
+.fpill__n {
+  font-style: normal; font-weight: 500; font-size: 10px;
+  color: var(--text-subtle); font-variant-numeric: tabular-nums;
+}
+.fpill.is-active .fpill__n { color: var(--brand-01); opacity: .7; }
+
+.fpills--sub .fpill { font-weight: 500; }
+.fpill--more { margin-left: auto; }
+.fpill__c { width: 13px; height: 13px; transition: transform .15s ease; }
+.fpill--more.is-open .fpill__c { transform: rotate(180deg); }
+
+/* ---- the extra-filters drawer -------------------------------------------- */
+
+.fmore {
+  border-top: 1px solid var(--border-soft);
+  margin-top: var(--x1_5); padding-top: var(--x2);
+  display: grid; gap: var(--x2);
+}
+/* An author `display` beats the user agent's `[hidden] { display: none }`, so
+   the drawer has to opt back out itself. Without this the panel is permanently
+   open and the toggle silently does nothing. */
+.fmore[hidden] { display: none; }
+.fmore__h {
+  font-size: var(--text-micro); font-weight: 600; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--text-subtle); margin-bottom: var(--x1);
+}
+.fmore__row {
+  display: grid; gap: var(--x1_5);
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+.fmore__n {
+  margin-top: var(--x1); font-size: var(--text-micro);
+  color: var(--text-subtle); line-height: 1.5;
+}
+
+.fsel { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.fsel__l { font-size: var(--text-micro); color: var(--text-softer); font-weight: 500; }
+.fsel__i {
+  width: 100%; padding: 7px var(--x1); border-radius: var(--r-sm);
+  border: 1px solid var(--border-soft); background: var(--surface-2);
+  color: var(--text-strong); font-size: var(--text-tiny); font-family: inherit;
+}
+.fsel__i:hover { border-color: var(--border-strong); }
+
+/* ---- active filter chips ------------------------------------------------- */
+
+.fchips {
+  display: flex; flex-wrap: wrap; gap: var(--x1);
+  border-top: 1px solid var(--border-subtle);
+  margin-top: var(--x1_5); padding-top: var(--x1_5);
+}
+.fchip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px var(--x1); border-radius: var(--r-sm);
+  background: var(--surface-3); border: 0; cursor: pointer;
+  font-size: var(--text-micro); font-weight: 600; color: var(--text-soft);
+}
+.fchip i { font-style: normal; font-size: var(--text-sm); line-height: 1; color: var(--text-subtle); }
+.fchip:hover { color: var(--text-solid); }
+.fchip:hover i { color: var(--bad); }
+.fchip--clear { background: none; color: var(--text-subtle); text-decoration: underline; }
+
+/* ---- the results bar ----------------------------------------------------- */
+
+.rfbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--x2); flex-wrap: wrap; margin-bottom: var(--x2);
+}
+.rfbar__n { font-size: var(--text-xs); color: var(--text-softer); }
+.rfbar__n b { color: var(--text-strong); font-variant-numeric: tabular-nums; }
+
+/* ---- the article cards --------------------------------------------------- */
+
+/* A list, not a grid of tiles. Financial reading is a vertical scan of
+   headlines, and a three-across card grid makes the eye travel sideways for
+   every row. Rules between rather than boxes around: twelve bordered cards in
+   a column is eleven more borders than the page needs. */
+.afeed { display: flex; flex-direction: column; }
+.acard {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: var(--x2) 0; border-bottom: 1px solid var(--border-subtle);
+}
+.acard:first-child { padding-top: 0; }
+.acard:last-child { border-bottom: 0; padding-bottom: 0; }
+
+.acard__tickers { display: flex; flex-wrap: wrap; gap: var(--x1_5); align-items: baseline; }
+.acard__more { font-size: var(--text-micro); color: var(--text-subtle); }
+
+.acard__title {
+  font-size: var(--text-lg); font-weight: 600; line-height: 1.35;
+  color: var(--text-solid); letter-spacing: -0.01em;
+  text-decoration: none; max-width: 68ch;
+}
+.acard__title:hover { color: var(--brand-01); }
+
+.acard__sum {
+  font-size: var(--text-xs); color: var(--text-softer);
+  line-height: 1.6; max-width: 78ch;
+}
+
+.acard__meta {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  font-size: var(--text-micro); color: var(--text-subtle);
+}
+.acard__type { color: var(--text-softer); font-weight: 600; }
+.acard__dot { color: var(--text-subtle); }
+.acard__badges { display: flex; flex-wrap: wrap; gap: var(--x1); margin-top: 2px; }
+
+/* ---- the compact row, for Related and for company surfaces --------------- */
+
+.arows { display: flex; flex-direction: column; }
+.arow {
+  display: flex; flex-direction: column; gap: 3px; text-decoration: none;
+  padding: var(--x1_5) 0; border-bottom: 1px solid var(--border-subtle);
+}
+.arow:last-child { border-bottom: 0; }
+.arow__t {
+  font-size: var(--text-xs); font-weight: 600; color: var(--text-strong); line-height: 1.4;
+}
+.arow:hover .arow__t { color: var(--brand-01); }
+.arow__m {
+  display: flex; gap: 6px; align-items: center;
+  font-size: var(--text-micro); color: var(--text-subtle);
+}
+
+/* ---- empty state and pagination ------------------------------------------ */
+
+.fempty { padding: var(--x5) 0; text-align: center; }
+.fempty__t { font-size: var(--text-base); font-weight: 600; color: var(--text-strong); }
+.fempty__b {
+  margin-top: 6px; font-size: var(--text-xs); color: var(--text-softer);
+  max-width: 46ch; margin-inline: auto;
+}
+.fempty__a { display: flex; gap: var(--x1); justify-content: center; margin-top: var(--x2); flex-wrap: wrap; }
+
+.fpager {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--x2);
+  border-top: 1px solid var(--border-soft); margin-top: var(--x2); padding-top: var(--x2);
+}
+.fpager__n { font-size: var(--text-tiny); color: var(--text-softer); font-variant-numeric: tabular-nums; }
+.fpager .btn[disabled] { opacity: .4; cursor: not-allowed; }
+
+/* ==========================================================================
+   The article page
+   ========================================================================== */
+
+.apcrumbs {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  margin-bottom: var(--x2); font-size: var(--text-micro);
+}
+.apcrumb {
+  background: none; padding: 0; cursor: pointer;
+  color: var(--text-softer); font-size: var(--text-micro); font-weight: 600;
+}
+.apcrumb:hover { color: var(--brand-01); text-decoration: underline; }
+.apcrumbs__s { color: var(--text-subtle); }
+
+.aphead__tickers { display: flex; flex-wrap: wrap; gap: var(--x2); margin-bottom: var(--x1_5); }
+.aphead__t {
+  font-size: var(--text-hero); font-weight: 600; line-height: 1.2;
+  letter-spacing: -0.02em; max-width: 30ch;
+}
+.aphead__s {
+  margin-top: var(--x1_5); max-width: 70ch;
+  font-size: var(--text-base); color: var(--text-soft); line-height: 1.55;
+}
+.aphead__meta {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  margin-top: var(--x2); font-size: var(--text-micro); color: var(--text-subtle);
+}
+.aphead__by { color: var(--text-soft); font-weight: 600; }
+.aphead__badges { display: flex; flex-wrap: wrap; gap: var(--x1); margin-top: var(--x1_5); }
+.aphead__badges:empty { display: none; }
+
+/* One measure for the prose, and it is the reason the article body has its own
+   column rather than running the full twelve. Anything past about 75
+   characters costs the reader the start of the next line. */
+.appara {
+  font-size: var(--text-sm); line-height: 1.7; color: var(--text-soft);
+  max-width: 72ch; margin-bottom: var(--x2);
+}
+.aph2 {
+  font-size: var(--text-lg); font-weight: 600; letter-spacing: -0.01em;
+  color: var(--text-solid); margin: var(--x3) 0 var(--x1_5);
+}
+.apbody > *:first-child { margin-top: 0; }
+
+.apblock__t {
+  font-size: var(--text-micro); font-weight: 600; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--text-subtle); margin-bottom: var(--x1);
+}
+
+.apmetrics, .aptable, .apbb, .apquant, .apnote { margin: var(--x3) 0; }
+.apnote { max-width: 72ch; }
+.apnote .notice { margin: 0; }
+
+.apquote {
+  margin: var(--x3) 0; padding-left: var(--x2); max-width: 68ch;
+  border-left: 2px solid var(--brand-01-soft);
+}
+.apquote p { font-size: var(--text-base); line-height: 1.6; color: var(--text-strong); }
+.apquote cite {
+  display: block; margin-top: var(--x1); font-style: normal;
+  font-size: var(--text-micro); color: var(--text-subtle);
+}
+
+.apquant__hero { display: flex; align-items: baseline; gap: var(--x1); margin-bottom: var(--x1_5); }
+.apquant__of { font-size: var(--text-micro); color: var(--text-subtle); }
+.apquant__f {
+  display: grid; gap: var(--x1);
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+.apquant__fi {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--x1);
+  padding: 6px var(--x1); border-radius: var(--r-sm); background: var(--surface-2);
+  font-size: var(--text-tiny); color: var(--text-soft);
+}
+
+/* ---- the side column ----------------------------------------------------- */
+
+/* Not a `.card` itself — a stack of them. `.ovw > .card` does not apply, so
+   the gap is set here. */
+/* `align-self: start` because a grid item stretches to its row by default, and
+   this row is as tall as the article body — which left the side column's last
+   card floating above several hundred pixels of nothing. */
+.apside { display: flex; flex-direction: column; gap: var(--x3); align-self: start; }
+.apside > .card { margin-bottom: 0; }
+
+.aprate { padding: var(--x1_5) 0; border-bottom: 1px solid var(--border-subtle); }
+.aprate:last-of-type { border-bottom: 0; }
+.aprate__k {
+  font-size: var(--text-micro); font-weight: 600; letter-spacing: .04em;
+  text-transform: uppercase; color: var(--text-subtle); margin-bottom: var(--x1);
+}
+.aprate__b {
+  margin-top: var(--x1); font-size: var(--text-micro);
+  color: var(--text-softer); line-height: 1.55;
+}
+
+.apsubs { display: flex; flex-direction: column; gap: var(--x1); margin-bottom: var(--x1_5); }
+.apsub {
+  display: grid; grid-template-columns: 60px minmax(0, 1fr); gap: 2px var(--x1);
+  padding: var(--x1); border-radius: var(--r-sm); background: var(--surface-2);
+  cursor: pointer; text-align: left;
+}
+.apsub:hover { background: var(--surface-3); }
+.apsub b { font-size: var(--text-xs); font-weight: 700; color: var(--text-strong); }
+.apsub span { font-size: var(--text-xs); color: var(--text-soft); }
+.apsub i {
+  grid-column: 2; font-style: normal; font-size: var(--text-micro); color: var(--text-subtle);
+}
+.apsub:hover b { color: var(--brand-01); }
+
+.aptopics { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: var(--x1_5); }
+.aptopic {
+  padding: 4px var(--x1); border-radius: var(--r-pill);
+  border: 1px solid var(--border-soft); background: none; cursor: pointer;
+  font-size: var(--text-micro); font-weight: 500; color: var(--text-softer);
+}
+.aptopic:hover { color: var(--brand-01); border-color: var(--brand-01-soft); }
+
+/* ---- narrow -------------------------------------------------------------- */
+
+@media (max-width: 1180px) {
+  /* The article's side column follows the body rather than sitting beside a
+     half-width one: at span 6 the ratings card and the related list would each
+     be half a column wide and twice as tall. */
+  .apside { grid-column: span 12; flex-direction: row; flex-wrap: wrap; align-items: flex-start; }
+  .apside > .card { flex: 1 1 260px; }
+}
+
+@media (max-width: 720px) {
+  .acard__title { font-size: var(--text-base); }
+  .aphead__t { font-size: var(--text-mega); }
+  .aphead__s { font-size: var(--text-sm); }
+  .apside { flex-direction: column; }
+  .rfbar { align-items: flex-start; }
+}
+
+@media (max-width: 560px) {
+  .fmore__row { grid-template-columns: minmax(0, 1fr); }
+  .fpager { flex-wrap: wrap; gap: var(--x1); }
+  .fpager__n { order: -1; width: 100%; text-align: center; }
+}
+
+/* On paper a filter is not a control and a pill row is noise. The article
+   keeps its head, its body and its tables. */
+@media print {
+  .rfcard, .fpager, .fchips, .fmore, .aptopics, .apcrumbs { display: none !important; }
+  .acard { break-inside: avoid; }
+}
+
+/* ==========================================================================
+   INVESTMENT IDEAS — the portfolio directory and the screener
+
+   Two surfaces: `?view=ideas`, a directory of twenty-three portfolios to scan,
+   and `?view=ideas&idea=…`, one portfolio as an adjustable screener above its
+   results.
+
+   The results underneath are the existing `.ovw` card grid rendered by
+   `ideas.js` and are not restyled here — a screen's output should look the
+   same whichever menu opened it.
+   ========================================================================== */
+
+/* ---- the directory ------------------------------------------------------- */
+
+.pfhead {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: var(--x3); flex-wrap: wrap;
+}
+.pfhead__t { font-size: var(--text-xl); font-weight: 600; letter-spacing: -0.01em; }
+.pfhead__b {
+  margin-top: 6px; max-width: 64ch;
+  font-size: var(--text-xs); color: var(--text-softer); line-height: 1.55;
+}
+
+.pfsearch { flex: 0 1 260px; }
+.pfsearch__i {
+  width: 100%; padding: 8px var(--x1_5); border-radius: var(--r-pill);
+  border: 1px solid var(--border-soft); background: var(--surface-2);
+  color: var(--text-strong); font-size: var(--text-xs); font-family: inherit;
+}
+.pfsearch__i:hover { border-color: var(--border-strong); }
+
+/* A section rule, not a card heading: the tiles below carry the weight and a
+   boxed heading above them would compete. */
+.pfgroup {
+  display: flex; align-items: baseline; gap: var(--x1);
+  margin: var(--x2) 0 calc(var(--x3) * -0.5);
+  padding-bottom: var(--x1); border-bottom: 1px solid var(--border-soft);
+  font-size: var(--text-micro); font-weight: 600;
+  letter-spacing: .06em; text-transform: uppercase; color: var(--text-softer);
+}
+.pfgroup i {
+  font-style: normal; font-weight: 500; color: var(--text-subtle);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The whole tile is the control. A button rather than a div, so the keyboard
+   reaches it and the browser gives it a focus ring for free. */
+.pftile {
+  display: flex; flex-direction: column; gap: var(--x1);
+  padding: var(--x2); border-radius: var(--r-1);
+  border: 1px solid var(--border-soft); background: var(--surface-1);
+  text-align: left; cursor: pointer;
+}
+.pftile:hover { border-color: var(--border-strong); background: var(--surface-2); }
+.pftile__top { display: flex; align-items: center; gap: var(--x1); }
+.pftile__t {
+  font-size: var(--text-sm); font-weight: 600; line-height: 1.35;
+  color: var(--text-solid); letter-spacing: -0.01em;
+}
+.pftile:hover .pftile__t { color: var(--brand-01); }
+.pftile__s {
+  font-size: var(--text-tiny); color: var(--text-softer); line-height: 1.55;
+  /* Three lines, then clipped. The theses run to a paragraph and the tile is
+     a way in, not the reading. */
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.pftile__m {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 5px;
+  margin-top: auto; padding-top: var(--x1);
+  font-size: var(--text-micro); color: var(--text-subtle);
+}
+
+/* ---- the portfolio head -------------------------------------------------- */
+
+.pftop__row {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: var(--x3); flex-wrap: wrap; margin-top: var(--x1);
+}
+.pftop__t {
+  font-size: var(--text-hero); font-weight: 600; line-height: 1.2;
+  letter-spacing: -0.02em; max-width: 22ch;
+}
+.pftop__tags { display: flex; flex-wrap: wrap; align-items: center; gap: var(--x1); margin-top: var(--x1); }
+.pftop__thesis {
+  margin-top: var(--x2); max-width: 76ch;
+  font-size: var(--text-sm); color: var(--text-soft); line-height: 1.65;
+}
+
+.pfswitch { display: flex; flex-direction: column; gap: 5px; flex: 0 1 280px; }
+.pfswitch__l {
+  font-size: var(--text-micro); font-weight: 600; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--text-subtle);
+}
+.pfswitch__i {
+  width: 100%; padding: 8px var(--x1_5); border-radius: var(--r-sm);
+  border: 1px solid var(--border-strong); background: var(--surface-2);
+  color: var(--text-strong); font-size: var(--text-xs); font-weight: 600;
+  font-family: inherit; cursor: pointer;
+}
+.pfswitch__i:hover { border-color: var(--brand-01-soft); color: var(--brand-01); }
+
+/* ---- the filter panel ---------------------------------------------------- */
+
+.pfuniverse { padding-bottom: var(--x2); border-bottom: 1px solid var(--border-soft); }
+.pfuniverse__row {
+  display: grid; gap: var(--x1_5);
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.pffield { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.pffield__l { font-size: var(--text-micro); color: var(--text-softer); font-weight: 500; }
+.pffield__n {
+  margin-top: var(--x1_5); font-size: var(--text-micro);
+  color: var(--text-subtle); line-height: 1.5; max-width: 80ch;
+}
+
+/* Shared by every control in the panel, so a select and a number box line up
+   on the same baseline however they are combined. */
+.pfsel, .pfnum {
+  padding: 7px var(--x1); border-radius: var(--r-sm);
+  border: 1px solid var(--border-soft); background: var(--surface-2);
+  color: var(--text-strong); font-size: var(--text-tiny); font-family: inherit;
+  min-width: 0;
+}
+.pfsel:hover, .pfnum:hover { border-color: var(--border-strong); }
+.pfnum { width: 100%; font-variant-numeric: tabular-nums; text-align: right; }
+
+/* The number and its unit read as one control, which is the whole point: a
+   box showing 10 for a value stored as 0.10 has to say "%" or it is a lie. */
+.pfinput {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--surface-2); border: 1px solid var(--border-soft);
+  border-radius: var(--r-sm); padding-right: var(--x1); min-width: 0;
+}
+.pfinput:focus-within { border-color: var(--border-strong); }
+.pfinput .pfnum { border: 0; background: none; padding-right: 2px; }
+.pfinput > i {
+  font-style: normal; font-size: var(--text-micro); color: var(--text-subtle);
+  white-space: nowrap; flex: none;
+}
+.pfinput__and { font-size: var(--text-micro); color: var(--text-subtle); flex: none; }
+
+.pfrules { padding-top: var(--x2); }
+.pffilters { display: flex; flex-direction: column; gap: var(--x1); margin: var(--x1_5) 0; }
+
+/* Metric, comparison, value, remove. Fixed tracks rather than auto, so twelve
+   stacked filters align down the page instead of each sizing to its own
+   longest word. */
+.pffilter {
+  display: grid; align-items: center; gap: var(--x1);
+  grid-template-columns: minmax(0, 1.6fr) 110px minmax(140px, 1fr) 28px;
+}
+.pffilter--fixed { grid-template-columns: minmax(0, 1fr) auto; }
+.pffilter__fixed {
+  font-size: var(--text-tiny); color: var(--text-soft);
+  padding: 7px var(--x1); background: var(--surface-2);
+  border-radius: var(--r-sm); border: 1px dashed var(--border-soft);
+}
+.pffilter__note { font-style: normal; font-size: var(--text-micro); color: var(--text-subtle); }
+
+.pffilter__x {
+  width: 28px; height: 28px; border-radius: var(--r-sm);
+  background: none; border: 1px solid transparent; cursor: pointer;
+  font-size: var(--text-base); line-height: 1; color: var(--text-subtle);
+}
+.pffilter__x:hover { color: var(--bad); border-color: var(--border-soft); }
+
+.pfadd { margin-top: var(--x1_5); }
+.pfsel--add {
+  font-weight: 600; color: var(--text-soft);
+  border-style: dashed; background: none;
+}
+.pfsel--add:hover { color: var(--brand-01); border-color: var(--brand-01-soft); }
+
+.pfrun {
+  display: flex; align-items: center; gap: var(--x1); flex-wrap: wrap;
+  border-top: 1px solid var(--border-soft);
+  margin-top: var(--x2); padding-top: var(--x2);
+}
+.pfrun__cost {
+  flex: 1 1 320px; font-size: var(--text-micro);
+  color: var(--text-subtle); line-height: 1.5;
+}
+.pfrun .btn[disabled] { opacity: .45; cursor: not-allowed; }
+
+/* The results are their own grid under the panel's. */
+.pfresults { margin-top: var(--x3); }
+
+/* ---- narrow -------------------------------------------------------------- */
+
+@media (max-width: 1180px) {
+  .pftile { grid-column: span 6; }
+}
+
+@media (max-width: 820px) {
+  .pftile { grid-column: span 12; }
+  .pftile__s { -webkit-line-clamp: 2; }
+}
+
+@media (max-width: 720px) {
+  .pftop__t { font-size: var(--text-mega); }
+  .pfswitch { flex: 1 1 100%; }
+  .pfhead__b { max-width: none; }
+  .pfsearch { flex: 1 1 100%; }
+
+  /* The four-track filter row cannot hold a metric name and a number side by
+     side at this width. Metric across the top, then comparison and value on
+     one line with the remove button beside them. */
+  .pffilter {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 28px;
+    row-gap: 6px;
+  }
+  .pffilter .pfsel--metric { grid-column: 1 / -1; }
+}
+
+@media print {
+  .pfpanel, .pfsearch, .pfswitch { display: none !important; }
+  .pftile { break-inside: avoid; }
+}
+
+/* ---- Stocks -> All Stocks, the directory bar ----------------------------- */
+
+.asbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--x2); flex-wrap: wrap; margin: var(--x2) 0;
+}
+.asbar__f { display: flex; gap: var(--x1); flex-wrap: wrap; }
+
+@media (max-width: 640px) {
+  .asbar { align-items: flex-start; }
+  .asbar__f { width: 100%; }
+  .asbar__f .pfsel { flex: 1 1 140px; }
+}
+
+/* ==========================================================================
+   HEATMAP, THE MARKET PAGES AND SECTOR NEWS
+
+   Shared by Markets Data's equity page and the sector breakdown. The scale is
+   fixed rather than relative to the biggest mover on screen — see `heatTone`
+   in ui.js — so these nine classes are the whole of the colour vocabulary and
+   a tile never borrows intensity from its neighbours.
+   ========================================================================== */
+
+.heat {
+  display: grid; gap: 6px;
+  grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+}
+.heat__t {
+  display: flex; flex-direction: column; gap: 2px; min-width: 0;
+  padding: var(--x1_5) var(--x1); border-radius: var(--r-sm);
+  border: 1px solid var(--border-subtle); background: var(--surface-2);
+  text-align: left; cursor: default;
+}
+button.heat__t { cursor: pointer; }
+button.heat__t:hover { border-color: var(--border-strong); }
+.heat__k {
+  font-size: var(--text-micro); font-weight: 600; color: var(--text-strong);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.heat__v {
+  font-size: var(--text-sm); font-weight: 700;
+  font-variant-numeric: tabular-nums; color: var(--text-strong);
+}
+.heat__n { font-style: normal; font-size: 10px; color: var(--text-subtle); }
+
+/* Four steps either side of flat. The tint carries the magnitude and the text
+   stays on the theme's own foreground, so contrast does not drift with the
+   market. */
+.heat__t.is-flat    { background: var(--surface-3); }
+.heat__t.is-na      { background: var(--surface-2); opacity: .55; }
+.heat__t.is-up-1    { background: hsl(var(--t-green-100) / 10%); }
+.heat__t.is-up-2    { background: hsl(var(--t-green-100) / 20%); }
+.heat__t.is-up-3    { background: hsl(var(--t-green-100) / 32%); }
+.heat__t.is-up-4    { background: hsl(var(--t-green-100) / 46%); }
+.heat__t.is-down-1  { background: hsl(var(--t-red-100) / 10%); }
+.heat__t.is-down-2  { background: hsl(var(--t-red-100) / 20%); }
+.heat__t.is-down-3  { background: hsl(var(--t-red-100) / 32%); }
+.heat__t.is-down-4  { background: hsl(var(--t-red-100) / 46%); }
+
+.heatleg {
+  display: flex; align-items: center; gap: var(--x1_5); flex-wrap: wrap;
+  margin-top: var(--x1_5); font-size: var(--text-micro); color: var(--text-subtle);
+}
+.heatleg__i { display: inline-flex; align-items: center; gap: 5px; }
+.heatleg__s {
+  width: 14px; height: 12px; border-radius: 3px; display: inline-block;
+  border: 1px solid var(--border-subtle);
+}
+.heatleg__s.is-flat   { background: var(--surface-3); }
+.heatleg__s.is-up-2   { background: hsl(var(--t-green-100) / 20%); }
+.heatleg__s.is-up-4   { background: hsl(var(--t-green-100) / 46%); }
+.heatleg__s.is-down-2 { background: hsl(var(--t-red-100) / 20%); }
+.heatleg__s.is-down-4 { background: hsl(var(--t-red-100) / 46%); }
+.heatleg__n { margin-left: auto; font-style: italic; }
+
+/* ---- the index board ----------------------------------------------------- */
+
+.mkidx { display: flex; flex-direction: column; gap: 1px; }
+.mkidx b { font-size: var(--text-xs); font-weight: 600; color: var(--text-strong); }
+.mkidx i { font-style: normal; font-size: var(--text-micro); color: var(--text-subtle); }
+
+/* Where a price sits between two bounds. A track rather than "low – high",
+   because the useful reading is the position, not the endpoints — those are
+   on the tooltip. */
+.mkrange { display: flex; align-items: center; gap: var(--x1); justify-content: flex-end; }
+.mkrange__t {
+  position: relative; width: 64px; height: 4px; border-radius: var(--r-pill);
+  background: var(--surface-3); flex: none;
+}
+.mkrange__m {
+  position: absolute; top: -3px; width: 3px; height: 10px; border-radius: 2px;
+  background: var(--brand-01); transform: translateX(-50%);
+}
+.mkrange__v {
+  font-size: var(--text-micro); color: var(--text-softer);
+  font-variant-numeric: tabular-nums; min-width: 30px; text-align: right;
+}
+
+/* A fund symbol is not a link: there is no company report behind one. */
+.mkticker--plain { color: var(--text-strong); cursor: default; }
+.mkticker--plain:hover { color: var(--text-strong); text-decoration: none; }
+
+/* ---- the hub grid on Market Overview ------------------------------------- */
+
+.hubgrid {
+  display: grid; gap: var(--x1);
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+.hubtile {
+  display: flex; flex-direction: column; gap: 3px; text-align: left;
+  padding: var(--x1_5); border-radius: var(--r-sm);
+  border: 1px solid var(--border-soft); background: none; cursor: pointer;
+}
+.hubtile:hover { border-color: var(--border-strong); background: var(--surface-2); }
+.hubtile b { font-size: var(--text-xs); font-weight: 600; color: var(--text-strong); }
+.hubtile:hover b { color: var(--brand-01); }
+.hubtile span { font-size: var(--text-micro); color: var(--text-softer); line-height: 1.5; }
+
+/* ---- the economic calendar ----------------------------------------------- */
+
+.eclist { display: flex; flex-direction: column; }
+.ecrow {
+  display: grid; grid-template-columns: 62px minmax(0, 1fr); gap: var(--x1);
+  padding: var(--x1_5) 0; border-bottom: 1px solid var(--border-subtle);
+}
+.ecrow:last-child { border-bottom: 0; }
+.ecrow__d { display: flex; flex-direction: column; gap: 3px; }
+.ecrow__d b { font-size: var(--text-micro); color: var(--text-soft); font-variant-numeric: tabular-nums; }
+.ecrow__i {
+  font-style: normal; font-size: 10px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .04em; color: var(--text-subtle);
+}
+.ecrow__i.is-high { color: var(--bad); }
+.ecrow__i.is-medium { color: var(--neutral); }
+.ecrow__b { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.ecrow__e { font-size: var(--text-tiny); color: var(--text-strong); line-height: 1.4; }
+.ecrow__v { display: flex; flex-wrap: wrap; gap: var(--x1); font-size: var(--text-micro); color: var(--text-subtle); }
+.ecrow__v b { color: var(--text-soft); font-weight: 600; }
+
+/* ---- sector news --------------------------------------------------------- */
+
+/* Two columns at width, because a sector's coverage is a list to scan rather
+   than a feed to read — the headline is the whole of the row. */
+.secnews {
+  display: grid; gap: 0 var(--x3);
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+}
+.secnews__i {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: var(--x1_5) 0; border-bottom: 1px solid var(--border-subtle);
+}
+.secnews__m {
+  display: flex; align-items: center; gap: 6px;
+  font-size: var(--text-micro); color: var(--text-subtle);
+}
+.secnews__o { font-weight: 600; color: var(--text-softer); }
+.secnews__t {
+  font-size: var(--text-xs); font-weight: 600; line-height: 1.45;
+  color: var(--text-strong); text-decoration: none;
+}
+a.secnews__t:hover { color: var(--brand-01); text-decoration: underline; }
+.secnews__k { display: flex; flex-wrap: wrap; gap: var(--x1); }
+
+/* ---- narrow -------------------------------------------------------------- */
+
+@media (max-width: 900px) {
+  .heat { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+}
+
+@media (max-width: 640px) {
+  .heat { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .heatleg__n { margin-left: 0; width: 100%; }
+  .mkrange__t { width: 44px; }
+  .secnews { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ==========================================================================
+   THE DENSE MARKET TABLE
+
+   The pattern every serious market site converged on: column-set tabs above a
+   wide sortable table whose identity column stays put while the rest scrolls
+   sideways. Built from this product's own tokens rather than borrowed
+   styling — the geometry is the good idea, the palette is ours.
+   ========================================================================== */
+
+/* `min-width: 0` on both, and it is load-bearing rather than defensive. A flex
+   or grid item defaults to `min-width: auto`, which refuses to shrink below its
+   content — so a table of twelve `white-space: nowrap` columns pushes its card,
+   its grid track and finally the page wider than the viewport, and the whole
+   document scrolls sideways instead of the table. */
+.mtwrap { margin-top: var(--x1); min-width: 0; }
+
+/* ---- the column-set tabs ------------------------------------------------- */
+
+/* Scrolls rather than wraps: seven sets wrap to two rows on a laptop and the
+   table below then jumps every time you switch. */
+.mttabs {
+  display: flex; gap: 2px; align-items: center;
+  overflow-x: auto; scrollbar-width: none;
+  border-bottom: 1px solid var(--border-soft);
+  margin-bottom: var(--x1_5);
+}
+.mttabs::-webkit-scrollbar { display: none; }
+
+.mttab {
+  display: inline-flex; align-items: baseline; gap: 4px; flex: none;
+  padding: var(--x1) var(--x1_5); background: none; cursor: pointer;
+  font-size: var(--text-tiny); font-weight: 600; color: var(--text-softer);
+  white-space: nowrap; border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.mttab:hover { color: var(--text-strong); }
+.mttab.is-active { color: var(--text-solid); border-bottom-color: var(--brand-01); }
+/* The dot marks a tab that costs requests to fill. Small on purpose: it is a
+   footnote on the label, not a warning. */
+.mttab__c { font-style: normal; color: var(--brand-01); font-size: var(--text-base); line-height: 0; }
+
+/* ---- the consent bar ----------------------------------------------------- */
+
+.mtfill {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--x2); flex-wrap: wrap;
+  padding: var(--x1_5); margin-bottom: var(--x1_5);
+  border: 1px dashed var(--border-strong); border-radius: var(--r-sm);
+  background: var(--surface-2);
+}
+.mtfill__t { font-size: var(--text-xs); font-weight: 600; color: var(--text-strong); }
+.mtfill__b {
+  margin-top: 3px; font-size: var(--text-micro); color: var(--text-softer);
+  line-height: 1.5; max-width: 72ch;
+}
+.mtfill__a { display: flex; align-items: center; gap: var(--x1); }
+
+/* ---- the table ----------------------------------------------------------- */
+
+/* The horizontal scroller. `overflow-x: auto` here and nowhere else, so the
+   sticky column below has something to be sticky inside. */
+.mtscroll {
+  overflow-x: auto; min-width: 0; max-width: 100%;
+  border: 1px solid var(--border-subtle); border-radius: var(--r-sm);
+}
+
+.mt {
+  /* `max-content`, not `100%`: the table should take the width its columns
+     need and let `.mtscroll` scroll it. At `100%` the browser compresses
+     columns until they collide instead. */
+  width: max-content; min-width: 100%;
+  border-collapse: separate; border-spacing: 0;
+  font-size: var(--text-tiny);
+}
+.mt th, .mt td {
+  padding: 7px var(--x1_5); white-space: nowrap;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.mt tbody tr:last-child td { border-bottom: 0; }
+.mt tbody tr:hover td { background: var(--surface-2); }
+
+.mt thead th {
+  position: sticky; top: 0; z-index: 2;
+  background: var(--surface-1);
+  font-size: var(--text-micro); font-weight: 600; letter-spacing: .03em;
+  text-transform: uppercase; color: var(--text-subtle);
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.mt .num, .mt th.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* Every header sorts. The button fills the cell so the whole header is the
+   target, and `justify-content` follows the column's own alignment. */
+.mt__sort {
+  display: inline-flex; align-items: center; gap: 4px; width: 100%;
+  background: none; padding: 0; cursor: pointer;
+  font: inherit; letter-spacing: inherit; text-transform: inherit;
+  color: inherit;
+}
+.mt th.num .mt__sort { justify-content: flex-end; }
+.mt__sort:hover { color: var(--text-strong); }
+.mt th.is-sorted { color: var(--text-strong); }
+.mt__arrow { font-style: normal; font-size: 8px; color: var(--brand-01); }
+
+/* The identity column stays put while everything right of it scrolls. It needs
+   its own background or the scrolling cells show through underneath. */
+.mt__id {
+  position: sticky; left: 0; z-index: 1;
+  background: var(--surface-1);
+  border-right: 1px solid var(--border-soft);
+  min-width: 190px; max-width: 260px;
+}
+.mt thead th.mt__id { z-index: 3; }
+.mt tbody tr:hover td.mt__id { background: var(--surface-2); }
+
+.mtid { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.mtid__s {
+  background: none; padding: 0; cursor: pointer; text-align: left;
+  font-size: var(--text-xs); font-weight: 700; color: var(--text-strong);
+  letter-spacing: .01em;
+}
+.mtid__s:hover { color: var(--brand-01); text-decoration: underline; }
+.mtid__s--plain { cursor: default; }
+.mtid__s--plain:hover { color: var(--text-strong); text-decoration: none; }
+.mtid__n {
+  font-size: var(--text-micro); color: var(--text-subtle);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* ---- narrow -------------------------------------------------------------- */
+
+@media (max-width: 720px) {
+  /* A narrower identity column buys two more data columns before the scroll
+     starts, which matters more on a phone than the company name does. */
+  .mt__id { min-width: 124px; max-width: 150px; }
+  .mt th, .mt td { padding: 7px var(--x1); }
+  .mtfill { flex-direction: column; align-items: stretch; }
+  .mtfill__a { justify-content: flex-start; }
+}
+
+/* ==========================================================================
+   THE MARKET OVERVIEW HUB
+
+   One section per dataset, each a card with a heading, its content and the
+   way through to its own page. Three small components do most of it: the
+   quote tile, the compact two-column list, and the sparkline.
+   ========================================================================== */
+
+/* ---- the sparkline ------------------------------------------------------- */
+
+/* No axes, no labels, no numbers. It sits beside a level and a change that
+   already say both, so anything else on it would compete with them. */
+.spark { display: block; width: 100%; height: 36px; margin-top: var(--x1); }
+.spark__l.is-up   { stroke: var(--good); }
+.spark__l.is-down { stroke: var(--bad); }
+.spark__a { stroke: none; }
+.spark__a.is-up   { fill: hsl(var(--t-green-100) / 12%); }
+.spark__a.is-down { fill: hsl(var(--t-red-100) / 12%); }
+
+/* ---- quote tiles --------------------------------------------------------- */
+
+/* Six across at width, then three, then two. `auto-fit` alone gave five and a
+   lone sixth on a wide screen, which reads as a tile that failed rather than
+   as a row that wrapped. */
+.qtiles {
+  display: grid; gap: var(--x1_5);
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+@media (max-width: 1180px) { .qtiles { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.qtile {
+  display: flex; flex-direction: column; gap: 2px; min-width: 0;
+  padding: var(--x1_5); border-radius: var(--r-1);
+  border: 1px solid var(--border-soft); background: var(--surface-1);
+  text-align: left;
+}
+button.qtile { cursor: pointer; }
+button.qtile:hover { border-color: var(--border-strong); background: var(--surface-2); }
+.qtile__k {
+  font-size: var(--text-micro); font-weight: 600; color: var(--text-softer);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.qtile__v {
+  font-size: var(--text-lg); font-weight: 600; color: var(--text-solid);
+  font-variant-numeric: tabular-nums; letter-spacing: -0.01em;
+}
+.qtile__c { font-size: var(--text-tiny); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* ---- the compact section list -------------------------------------------- */
+
+/* Used by the fund, release and earnings sections: a label pair on the left
+   and one figure on the right. Deliberately not a table — five rows with two
+   columns each is a list, and a table head would be half its height. */
+.ovlist { display: flex; flex-direction: column; }
+.ovrow {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: var(--x1_5); padding: 7px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.ovrow:last-child { border-bottom: 0; }
+.ovrow__b { display: flex; align-items: baseline; gap: var(--x1); min-width: 0; }
+.ovrow__b b { font-size: var(--text-xs); font-weight: 700; color: var(--text-strong); flex: none; }
+.ovrow__b span {
+  font-size: var(--text-tiny); color: var(--text-softer);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.ovrow__v {
+  font-size: var(--text-tiny); font-variant-numeric: tabular-nums;
+  color: var(--text-soft); flex: none;
+}
+
+/* The section link sits on the card head, opposite the title. */
+.ocard__head .omore { margin: 0; }
+
+@media (max-width: 640px) {
+  .qtiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .qtile__v { font-size: var(--text-base); }
+}
+
+/* ==========================================================================
+   ASSET LOGOS
+
+   The vendor serves these from its own image host and has one for most
+   companies and funds, none for an index. A failed load swaps itself for the
+   first letter of the symbol — see `logo()` in ui.js — so a row keeps its
+   rhythm rather than showing a broken-image icon.
+
+   The fallback is deliberately quiet: a neutral square with a letter, not a
+   coloured avatar. A row of twelve bright generated squares reads as
+   decoration and competes with the numbers beside it.
+   ========================================================================== */
+
+.alogo {
+  width: 24px; height: 24px; flex: none;
+  border-radius: var(--r-sm); object-fit: contain;
+  background: var(--surface-2);
+}
+.alogo--sm { width: 20px; height: 20px; }
+/* Chip size: a ticker pill sets 12-13px text, so the tile matches the line
+   rather than the row. */
+.alogo--xs { width: 15px; height: 15px; border-radius: 3px; }
+
+.alogo--fb {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--surface-3); color: var(--text-subtle);
+  font-size: var(--text-micro); font-weight: 700; line-height: 1;
+}
+
+/* ---- the tile head ------------------------------------------------------- */
+
+.qtile__h { display: flex; align-items: center; gap: var(--x1); min-width: 0; }
+.qtile__id { display: flex; flex-direction: column; gap: 0; min-width: 0; }
+.qtile__s {
+  font-style: normal; font-size: 10px; color: var(--text-subtle);
+  letter-spacing: .02em;
+}
+
+/* A hairline between the tile strip and the section's other content, so a
+   card carrying both does not read as one run. */
+.ovrule {
+  height: 1px; background: var(--border-soft);
+  margin: var(--x2) 0;
+}
+
+@media (max-width: 640px) {
+  .alogo { width: 20px; height: 20px; }
+  .alogo--sm { width: 18px; height: 18px; }
 }

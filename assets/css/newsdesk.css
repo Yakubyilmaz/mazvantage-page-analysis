@@ -1,0 +1,220 @@
+/* Market News — the stream and the rail beside it.
+
+   The canvas's own skin: the hero, the topic strip and the coverage block come
+   from markethub.css, and this file is only the two things that page does not
+   already have — a story row, and a quote rail that follows the reader down the
+   stream. */
+
+.nw-title { font-size: clamp(30px, 3.4vw, 46px); font-weight: 700; letter-spacing: -.035em; line-height: 1.1; margin: 0; }
+.nw-page .mh-hero__meta { max-width: 92ch; }
+
+.nw-layout {
+  display: grid; grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 56px; align-items: start; padding: 30px 0 64px;
+}
+/* The home wire has no rail beside it any more; the newsroom still does. */
+.nw-layout--solo { grid-template-columns: minmax(0, 1fr); }
+.nw-stream { min-width: 0; }
+.nw-count { color: var(--mh-muted); font-size: 12px; margin: 0 0 6px; }
+
+/* One story: the publisher and the hour, the headline, two lines of the
+   vendor's summary, the symbols it was filed under, and the picture. */
+.nw-story {
+  display: grid; grid-template-columns: minmax(0, 1fr) 148px; gap: 24px;
+  align-items: start; padding: 22px 0; border-bottom: 1px solid var(--mh-border);
+}
+.nw-story:first-child { padding-top: 6px; }
+.nw-story__body { min-width: 0; display: grid; gap: 9px; }
+/* The line breaks between its parts, never inside them: a publisher split
+   over two lines reads as two publishers. */
+.nw-story__meta { display: flex; align-items: baseline; flex-wrap: wrap; gap: 3px 7px; color: var(--mh-muted); font-size: 12px; }
+.nw-story__src { font-weight: 600; color: var(--mh-fg); white-space: nowrap; }
+.nw-story__meta time { white-space: nowrap; }
+.nw-story__t {
+  display: block; font-size: 18px; font-weight: 650; line-height: 1.35;
+  color: var(--mh-fg); text-decoration: none; letter-spacing: -.01em;
+}
+a.nw-story__t:hover { color: var(--mh-blue); text-decoration: underline; text-underline-offset: 3px; }
+.nw-story__x {
+  margin: 0; color: var(--mh-muted); font-size: 14px; line-height: 1.6;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.nw-story__marks { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2px; }
+.nw-tick {
+  display: inline-flex; align-items: center; gap: 7px;
+  border: 1px solid var(--mh-border); border-radius: 50px; padding: 3px 12px 3px 4px;
+  background: var(--mh-bg); color: var(--mh-fg); font-size: 12px; line-height: 1.5;
+}
+.nw-tick:hover { background: var(--mh-hover); }
+.nw-tick .mh-mark { width: 22px; height: 22px; font-size: 8px; }
+.nw-tick__n { color: var(--mh-blue); font-weight: 600; }
+/* The change sits after the name, on the same tabular figures the rest of the
+   canvas uses, and only appears once the batch quote lands. */
+.nw-tick .mh-change { font-variant-numeric: tabular-nums; }
+.nf__card .nw-tick, .nf__brief .nw-tick { font-size: 11px; padding: 2px 10px 2px 3px; gap: 6px; }
+.nf__card .nw-tick .mh-mark, .nf__brief .nw-tick .mh-mark { width: 18px; height: 18px; font-size: 7px; }
+.nw-story__thumb {
+  width: 148px; aspect-ratio: 16 / 10; overflow: hidden;
+  border-radius: 10px; background: var(--mh-soft);
+}
+.nw-story__thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+/* The first story of the first page reads as the lead, the way a front page
+   leads: a bigger headline, a third line of summary, a bigger picture. */
+.nw-story--lead { grid-template-columns: minmax(0, 1fr) 260px; padding-bottom: 26px; }
+.nw-story--lead .nw-story__t { font-size: 25px; line-height: 1.25; letter-spacing: -.025em; }
+.nw-story--lead .nw-story__x { -webkit-line-clamp: 3; font-size: 15px; }
+.nw-story--lead .nw-story__thumb { width: 260px; }
+
+.nw-more {
+  width: 100%; margin-top: 26px; padding: 13px 18px;
+  border: 1px solid var(--mh-border); border-radius: 8px;
+  background: var(--mh-bg); color: var(--mh-fg); font-size: 13px; font-weight: 600;
+}
+.nw-more:hover { background: var(--mh-hover); }
+.nw-stream .mh-coverage { margin-top: 34px; }
+
+/* ==========================================================================
+   The featured block
+
+   One story given the room to be read — picture beside a headline that can be
+   read across a room, the vendor's summary, and the symbol it was filed under
+   with what that symbol did — then the next few as cards under it and the rest
+   as headlines down one side, behind a rule.
+
+   The front page takes three cards and four headlines; a news category takes
+   none and three. Same block, same classes, two shapes.
+   ========================================================================== */
+
+.nf { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 0 32px; align-items: start; }
+.nf--solo { grid-template-columns: minmax(0, 1fr); }
+.nf__main { min-width: 0; }
+
+.nf__lead { display: grid; grid-template-columns: minmax(0, 46%) minmax(0, 1fr); gap: 30px; align-items: start; }
+.nf__lead-thumb { border-radius: 12px; overflow: hidden; aspect-ratio: 16 / 11; background: var(--mh-soft); }
+.nf__lead-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.nf__lead-body { min-width: 0; display: grid; gap: 14px; align-content: start; padding-top: 4px; }
+.nf__lead-title {
+  display: block; font-size: 30px; font-weight: 700; line-height: 1.18; letter-spacing: -.03em;
+  color: var(--mh-fg); text-decoration: none;
+}
+a.nf__lead-title:hover { color: var(--mh-blue); }
+.nf__lead-text {
+  margin: 0; color: var(--mh-muted); font-size: 15px; line-height: 1.6;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+/* The cards under the lead: a square thumbnail and a headline, nothing else. */
+.nf__row {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 26px;
+  margin-top: 26px; padding-top: 24px; border-top: 1px solid var(--mh-border);
+}
+.nf__card { display: grid; grid-template-columns: 78px minmax(0, 1fr); gap: 14px; align-items: start; }
+.nf__card-thumb { width: 78px; aspect-ratio: 1; border-radius: 8px; overflow: hidden; background: var(--mh-soft); }
+.nf__card-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.nf__card-body { min-width: 0; display: grid; gap: 7px; }
+/* A story the publisher gave no picture takes the whole card rather than
+   squeezing itself into the column the picture would have had. */
+.nf__card:not(:has(.nf__card-thumb)) { grid-template-columns: minmax(0, 1fr); }
+.nf__lead:not(:has(.nf__lead-thumb)) { grid-template-columns: minmax(0, 1fr); }
+.nf__card .nw-story__meta { flex-wrap: wrap; gap: 3px 6px; font-size: 11px; }
+.nf__card-title {
+  display: block; font-size: 15px; font-weight: 650; line-height: 1.3; letter-spacing: -.01em;
+  color: var(--mh-fg); text-decoration: none;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+a.nf__card-title:hover { color: var(--mh-blue); }
+
+/* The headlines beside it, behind a rule: no pictures, so the eye reads down
+   them rather than across. */
+.nf__aside { display: grid; gap: 22px; padding-left: 32px; border-left: 1px solid var(--mh-border); min-width: 0; }
+.nf__brief { display: grid; gap: 8px; min-width: 0; }
+.nf__brief-title {
+  display: block; font-size: 17px; font-weight: 650; line-height: 1.3; letter-spacing: -.015em;
+  color: var(--mh-fg); text-decoration: none;
+}
+a.nf__brief-title:hover { color: var(--mh-blue); }
+
+
+/* The category's own block sits in a column that already shares the page with
+   a rail, so it is the same block at a smaller scale. */
+.nw-featured { padding-bottom: 26px; margin-bottom: 4px; border-bottom: 1px solid var(--mh-border); }
+.nw-featured .nf { grid-template-columns: minmax(0, 1fr) 265px; gap: 0 26px; }
+.nw-featured .nf__lead { grid-template-columns: minmax(0, 42%) minmax(0, 1fr); gap: 22px; }
+.nw-featured .nf__lead-title { font-size: 25px; }
+.nw-featured .nf__lead-text { -webkit-line-clamp: 2; font-size: 14px; }
+.nw-featured .nf__aside { padding-left: 26px; gap: 20px; }
+.nw-featured .nf__brief-title { font-size: 15px; }
+@media (max-width: 1400px) {
+  .nw-featured .nf { grid-template-columns: minmax(0, 1fr); }
+  .nw-featured .nf__aside { grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 22px 0 0; margin-top: 22px;
+    border-left: 0; border-top: 1px solid var(--mh-border); }
+}
+
+@media (max-width: 1100px) {
+  .nf { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .nf__aside { padding: 24px 0 0; margin-top: 24px; border-left: 0; border-top: 1px solid var(--mh-border);
+    grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 28px; }
+}
+@media (max-width: 760px) {
+  .nf__lead { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .nf__lead-title { font-size: 23px; }
+  .nf__lead-text { -webkit-line-clamp: 2; font-size: 14px; }
+  .nf__row { grid-template-columns: minmax(0, 1fr); gap: 18px; margin-top: 20px; padding-top: 18px; }
+  .nf__aside { grid-template-columns: minmax(0, 1fr); }
+  .nf__brief-title { font-size: 16px; }
+}
+
+/* The rail follows the reader down the stream, because what the market did is
+   context for every story in it, not just the first screen. */
+.nw-rail { position: sticky; top: 96px; display: grid; gap: 22px; min-width: 0; }
+.nw-rail__block { border: 1px solid var(--mh-border); border-radius: 12px; padding: 15px 18px 17px; }
+.nw-rail__h { margin: 0 0 6px; font-size: 13px; font-weight: 650; letter-spacing: -.01em; }
+.nw-rail__h button { display: inline-flex; align-items: center; gap: 4px; padding: 0; font: inherit; color: inherit; background: none; border: 0; }
+.nw-rail__h button:hover { color: var(--mh-blue); }
+
+/* Two feeds under one heading: the week's reports, and the week's ex-dates. */
+.nw-cal__tabs { display: flex; gap: 4px; margin: 4px 0 2px; }
+.nw-cal__tabs button {
+  border: 0; border-radius: 6px; padding: 5px 10px;
+  background: none; color: var(--mh-muted); font-size: 12px; line-height: 1.5;
+}
+.nw-cal__tabs button:hover { background: var(--mh-hover); color: var(--mh-fg); }
+.nw-cal__tabs button.is-active { background: var(--mh-hover); color: var(--mh-fg); font-weight: 600; }
+.nw-cal__d { color: var(--mh-muted); font-size: 12px; }
+.nw-cal__f { font-size: 12px; font-variant-numeric: tabular-nums; }
+.nw-cal__note { margin: 10px 0 0; color: var(--mh-muted); font-size: 10px; line-height: 1.6; }
+
+.nw-rail__rows { display: grid; }
+.nw-rail__row {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  width: 100%; padding: 10px 0; border-top: 1px solid var(--mh-border);
+  font-size: 13px; text-align: left; color: inherit; background: none;
+}
+.nw-rail__rows > .nw-rail__row:first-child { border-top: 0; }
+button.nw-rail__row:hover .nw-rail__id { color: var(--mh-blue); }
+.nw-rail__id { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.nw-rail__id > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nw-rail__id .mh-mark { width: 24px; height: 24px; font-size: 8px; }
+.nw-rail__v { display: flex; align-items: baseline; gap: 9px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.nw-rail__v .mh-change { font-size: 12px; }
+.nw-rail__note { margin: 0; color: var(--mh-muted); font-size: 11px; line-height: 1.6; }
+.nw-rail .mh-empty { min-height: 0; padding: 14px 0; }
+
+@media (max-width: 1040px) {
+  .nw-layout { grid-template-columns: minmax(0, 1fr); gap: 36px; padding-top: 24px; }
+  .nw-rail { position: static; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .nw-rail__note, .nw-rail .mh-see-all { grid-column: 1 / -1; }
+}
+@media (max-width: 700px) {
+  .nw-rail { grid-template-columns: minmax(0, 1fr); }
+  .nw-story { grid-template-columns: minmax(0, 1fr) 104px; gap: 16px; padding: 18px 0; }
+  .nw-story__thumb { width: 104px; }
+  .nw-story__t { font-size: 16px; }
+  .nw-story__x { font-size: 13px; -webkit-line-clamp: 2; }
+  /* The lead's picture goes above its headline rather than beside it: a 104px
+     thumbnail next to a 25px headline is neither a lead nor a picture. */
+  .nw-story--lead { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .nw-story--lead .nw-story__thumb { width: 100%; order: -1; }
+  .nw-story--lead .nw-story__t { font-size: 21px; }
+}

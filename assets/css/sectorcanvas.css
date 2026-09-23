@@ -1,0 +1,46 @@
+/* ==========================================================================
+   Maz Vantage — the sector and industry canvas
+
+   The group page's own parts: the summary grid, the consent bar under the
+   company table, and the grain switch over the breakdown. Everything else on
+   these pages is the market canvas's own — `mh-section`, `mi-table`, the
+   heading and the strip — so there is very little here on purpose.
+   ========================================================================== */
+
+/* A figure, what it is, and where it came from. Three lines, because the third
+   is what stops a number on this page being mistaken for a different one. */
+.gp-stats {
+  display: grid; gap: 14px 22px; margin: 6px 0 4px;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+.gp-stat { display: grid; gap: 3px; align-content: start; padding: 14px 16px; border: 1px solid var(--mh-border); border-radius: 12px; min-width: 0; }
+.gp-stat__k { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--mh-muted); }
+.gp-stat__v { font-size: 22px; font-weight: 650; letter-spacing: -.02em; line-height: 1.25; }
+.gp-stat__n { font-size: 11px; color: var(--mh-muted); }
+
+/* The bought table's bar: the same shape the indices board uses for its
+   performance columns, because it is the same bargain. */
+.gp-consent { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+
+.gp-horizons { margin-top: 18px; }
+.gp-hist { margin-top: 18px; }
+
+/* Sectors or industries, over one table. */
+.gp-grain { margin: -8px 0 18px; }
+.gp-idea__v { margin-left: 8px; font-variant-numeric: tabular-nums; }
+
+@media (max-width: 600px) {
+  .gp-stats { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .gp-stat { padding: 12px 14px; }
+  .gp-stat__v { font-size: 19px; }
+}
+
+/* Where the session actually happened, when there is no fund to chart. */
+.gp-movers__pair { display: grid; gap: 16px 26px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-top: 6px; }
+.gp-movers { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.gp-movers > .gp-stat__k { flex-basis: 100%; margin: 0; }
+
+/* The two bought blocks on an industry page: a line built from its members,
+   and the funds that hold them. Both are consent bar, then result. */
+.gp-index, .gp-exposure { display: grid; gap: 4px; margin-top: 18px; }
+.gp-index .rangesel, .gp-exposure .mi-table__scroll { margin-top: 10px; }
