@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — the Shariah compliance screen
+   Vanlior — the Shariah compliance screen
 
    Five published index methodologies, run against the balance sheet this
    report already has. The model lives here rather than inside a view because

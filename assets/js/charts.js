@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — SVG chart primitives
+   Vanlior — SVG chart primitives
 
    No chart library. Each function returns a detached <svg> sized by a fixed
    viewBox and stretched with width:100%, so charts stay crisp at any column

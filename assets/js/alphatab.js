@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — the Alpha Signal tab
+   Vanlior — the Alpha Signal tab
 
    `?symbol=NKE&tab=alpha-signal`. One company, full depth: every provider,
    every signal, and the evidence behind each.

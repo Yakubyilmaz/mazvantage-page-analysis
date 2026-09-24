@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — hand-captured disclosures
+   Vanlior — hand-captured disclosures
 
    Six of the eleven Alpha Signal categories have gaps no FMP endpoint fills.
    Where a primary source publishes the fact for free, it is read by hand into

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — Beat the Market
+   Vanlior — Beat the Market
 
    One rule, applied twice: measure what the market returned over three years,
    then list everything that returned more. Stocks on Market Data → Stocks,

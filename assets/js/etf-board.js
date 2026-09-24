@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — the ETF tables board
+   Vanlior — the ETF tables board
 
    The component that draws the catalogue in `etf-tables.js`: a category rail,
    a search box that reads the whole catalogue at once, and one sortable table

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — Financial Modeling Prep connector
+   Vanlior — Financial Modeling Prep connector
 
    One place that knows how to talk to FMP. Everything else in the app
    consumes the normalised `Dataset` produced by `loadDataset()` and never
@@ -316,7 +316,9 @@ export async function fetchCalendar(kind, from, to) {
   const hit = cache.get(ck);
   if (hit && Date.now() - hit.at < CACHE_TTL) return hit.result;
 
-  const r = await request(path, { from, to });
+  // The earnings calendar gives the report time — before the open or after
+  // the close — plus the fiscal period only when asked for it.
+  const r = await request(path, kind === 'earnings' ? { from, to, includeReportTimes: 'true' } : { from, to });
   const result = r.status === 'ok' ? ok(Array.isArray(r.data) ? r.data : []) : r;
   if (result.status !== 'error') cache.set(ck, { at: Date.now(), result });
   return result;

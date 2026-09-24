@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Maz Vantage — sector distribution builder.
+Vanlior — sector distribution builder.
 
 Writes assets/data/sector-stats.json: for every sector, for every ratio the
 report grades on, the distribution of that ratio across the sector, stored as

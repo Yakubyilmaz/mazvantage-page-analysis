@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — the research article store
+   Vanlior — the research article store
 
    One seam between the Research feed and wherever articles come from. Today
    that is a JSON file of sample editorial fixtures; tomorrow it is a CMS or a
@@ -183,7 +183,7 @@ function normalise(raw, index) {
     standardsPassed: raw.standardsPassed ?? null,
     standardsOf: raw.standardsOf ?? null,
 
-    author: raw.author || 'Vantace Research',
+    author: raw.author || 'Vanlior Research',
     sourceType: raw.sourceType || 'sample',
     readingMinutes: raw.readingMinutes || estimateReading(raw),
     views: raw.views ?? 0,

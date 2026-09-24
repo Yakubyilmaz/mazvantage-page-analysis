@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — the Dividends tab
+   Vanlior — the Dividends tab
 
    Four questions, in the order they matter:
 
@@ -27,6 +27,7 @@
 import { el, isNum, money, num, pct, dec, mult, price, trim, fmtDate, yearOf, yoy, signClass } from './util.js';
 import { card, notice, feedGate, cmpBars, statLine, ohead, table, curSymbol, perfCagr } from './ui.js';
 import { columnChart, lineChart, multiLineChart, gauge } from './charts.js';
+import { dividendScoresPanel } from './dividendscores.js';
 
 /* ==========================================================================
    The tab
@@ -58,6 +59,11 @@ export function renderDividendsTab(a, nav = {}) {
   // as though it included them.
   const PANELS = [
     { key: 'dividend', label: 'Dividend', build: dividendPanel },
+    // The scored view of the same subject, from the dividend module. Its own
+    // panel rather than a strip of cards among the figures above: those cards
+    // report what the dividend *is*, and these rank it against the sector's
+    // other payers, which is a different question with a different universe.
+    { key: 'scores', label: 'Scores', build: dividendScoresPanel },
     { key: 'shareholder', label: 'Shareholder returns', build: shareholderPanel },
   ];
 

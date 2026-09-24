@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — the research narrative
+   Vanlior — the research narrative
 
    The long-form prose on the Research tab: where it comes from, and the seam
    a developer wires a live language model into.
@@ -400,7 +400,7 @@ export function buildBrief(a, ratings) {
    The prompt
    ========================================================================== */
 
-const SYSTEM = `You are an equity research analyst writing for Maz Vantage, a stock research \
+const SYSTEM = `You are an equity research analyst writing for Vanlior, a stock research \
 platform. You write in the register of a Morningstar equity analyst report: measured, \
 declarative, first person plural ("we assign", "we expect", "in our view"), specific, and \
 willing to state an unwelcome conclusion plainly.

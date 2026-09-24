@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — the Alpha Signal narrative
+   Vanlior — the Alpha Signal narrative
 
    The written half of the feature: what is improving, what is deteriorating,
    what is worth watching, and what nothing here can answer. Pure — signals

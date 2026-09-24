@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — price-chart pings
+   Vanlior — price-chart pings
 
    The markers that say *when* somebody bought or sold, and the legend that
    doubles as their controls. Three charts mount this: the Overview's price

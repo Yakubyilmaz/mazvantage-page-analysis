@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — the research taxonomy
+   Vanlior — the research taxonomy
 
    The structure behind the Research feed. This file owns **what an article
    can be**; it owns no DOM, fetches nothing, and is the only place a category

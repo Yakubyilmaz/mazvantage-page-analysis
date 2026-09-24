@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — the News tab
+   Vanlior — the News tab
 
    Two streams, deliberately not merged: what other people wrote about the
    company, and what the company said about itself. Every other surface in
@@ -59,13 +59,13 @@ export function renderNewsTab(a, nav = {}) {
 }
 
 /**
- * Vantace research on this company, under the streams.
+ * Vanlior research on this company, under the streams.
  *
  * News and research answer different questions — what happened, and what it
  * means for the numbers — and this is the hand-off between them.
  *
  * **It is per company, not per headline.** The obvious version of this feature
- * is a "Read Vantace analysis" button on the individual story it analyses, and
+ * is a "Read Vanlior analysis" button on the individual story it analyses, and
  * that needs an article to record which news item it was written from. Nothing
  * in the store does yet, and matching a headline to an article by ticker and
  * date would attach an article to a story it may have nothing to do with.

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — application shell
+   Vanlior — application shell
 
    Owns routing (?symbol=), the chrome around the report, the settings
    dialog, and the fetch → analyse → render pipeline.
@@ -19,6 +19,7 @@ import {
 } from './sections.js';
 import { renderOverviewHead, renderOverviewTab } from './overview.js';
 import { marketRail } from './marketrail.js';
+import { siteFooter } from './footer.js';
 import { renderFinancialsTab } from './financials.js';
 import { renderStatisticsTab } from './statistics.js';
 import { renderAlphaDesk } from './alphadesk.js';
@@ -44,6 +45,7 @@ import { renderResearchHubPage } from './researchhub.js';
 import { RESEARCH_PARAMS, queryToParams } from './taxonomy.js';
 import { renderEarningsPage } from './earningsdesk.js';
 import { renderHomePage } from './home.js';
+import { renderPricingPage, PRICING_ITEM } from './subscribe.js';
 
 /* ---------- constants ----------------------------------------------------- */
 
@@ -62,9 +64,8 @@ const THEME_KEY = 'mazvantage.theme';
  * look for it.
  */
 const SIDE_NAV = [
-  { label: 'Maz Picks', icon: 'trending', view: 'quant', sub: 'screener' },
+  { label: 'Vanlior Picks', icon: 'trending', view: 'quant', sub: 'screener' },
   { label: 'Calendar', icon: 'calendar', view: 'calendar' },
-  { label: 'Analysis reports', icon: 'file' },
 ];
 /* Home leads the rail rather than sitting in the shortcuts below it: it is the
    market's front page, not a shortcut to one part of the product. */
@@ -232,9 +233,18 @@ function buildTopbar(onSearch) {
   const gearBtn = el('button', { class: 'icon-btn', title: 'Settings', 'aria-label': 'Settings' }, [iconSvg('gear')]);
   gearBtn.addEventListener('click', () => openSettings());
 
+  /* The only way into Pricing from the chrome. It is text rather than an icon
+     because it is the one item in this bar that is a page, and it sits before
+     the icons so it reads as a destination rather than as a third control. */
+  const planBtn = el('button', {
+    class: 'utilbar__plans', text: 'Plans',
+    title: 'Plans and pricing', onclick: () => goView('pricing'),
+  });
+
   return el('div', { class: 'utilbar' }, [
     el('div', { class: 'ticker-search' }, [iconSvg('search'), input]),
     el('div', { class: 'utilbar__spacer' }),
+    planBtn,
     themeBtn,
     gearBtn,
   ]);
@@ -289,8 +299,8 @@ function buildSideNav(current = null, nav = {}) {
       type: 'button', class: 'sidenav__brand', title: 'Home',
       onclick: () => goView('home'),
     }, [
-      el('img', { class: 'sidenav__mark', src: 'assets/img/logo-mark.svg', alt: '' }),
-      el('img', { class: 'sidenav__word', src: 'assets/img/logo-word.svg', alt: 'Vantage' }),
+      el('img', { class: 'sidenav__mark', src: 'assets/img/vanlior-mark-white.svg', alt: '' }),
+      el('span', { class: 'sidenav__word', text: 'Vanlior' }),
     ]),
     menus,
     el('div', { class: 'sidenav__rule' }),
@@ -471,18 +481,6 @@ function buildTabs(active, onSelect) {
   return { node: el('div', { class: 'tabs mh-page' }, [el('div', { class: 'tabs__strip' }, buttons)]), mark };
 }
 
-function logoMark() {
-  const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  s.setAttribute('viewBox', '0 0 32 32');
-  s.setAttribute('class', 'logo__mark');
-  s.innerHTML = `
-    <defs><linearGradient id="mv-g" x1="0" y1="1" x2="0" y2="0">
-      <stop offset="0%" stop-color="var(--brand-02)"/><stop offset="100%" stop-color="var(--brand-01)"/>
-    </linearGradient></defs>
-    <path d="M4 26V6h4.6L16 18.4 23.4 6H28v20h-4.4V13.6L17.4 24h-2.8L8.4 13.6V26H4Z" fill="url(#mv-g)"/>`;
-  return s;
-}
-
 /* ---------- left rail ----------------------------------------------------- */
 
 /* ---------- report header ------------------------------------------------- */
@@ -536,27 +534,6 @@ function statCell(label, value, extra = []) {
   ]);
 }
 
-/* ---------- footer -------------------------------------------------------- */
-
-function buildFooter() {
-  const col = (title, items) => el('div', {}, [
-    el('h4', { text: title }),
-    el('ul', {}, items.map((i) => el('li', { text: i }))),
-  ]);
-  return el('footer', { class: 'foot' }, [
-    el('div', { class: 'foot__cols' }, [
-      col('Coverage', ['US: NYSE & NASDAQ', 'Europe', 'Asia-Pacific', 'Any FMP-listed ticker']),
-      col('The five factors', ['Valuation', 'Growth', 'Profitability', 'Financial Health', 'Momentum']),
-      col('Report', ['Vantage Flake', 'Sector-relative grades', 'Rewards & risks', 'Data status']),
-      col('Data', ['Financial Modeling Prep', 'Trailing twelve month basis', 'Sector distributions in assets/data']),
-    ]),
-    el('p', { class: 'foot__legal' },
-      ['Maz Vantage is a research tool, not financial advice. Every figure is generated from Financial Modeling Prep data '
-        + 'and the analysis model in this repository, without considering your objectives, financial situation or needs. '
-        + 'Verify anything you intend to act on against primary filings. © ' + new Date().getFullYear() + ' Maz Vantage.']),
-  ]);
-}
-
 /* ==========================================================================
    Snapshot capture
 
@@ -583,7 +560,7 @@ function saveSnapshot() {
     symbol: ds.symbol,
     capturedAt: new Date().toISOString().slice(0, 10),
     note: `Captured from Financial Modeling Prep on ${new Date().toISOString().slice(0, 10)} `
-      + `by Maz Vantage. ${live} feed${live === 1 ? '' : 's'} came back live; feeds absent here `
+      + `by Vanlior. ${live} feed${live === 1 ? '' : 's'} came back live; feeds absent here `
       + 'were gated by the plan or returned nothing, and degrade to "not assessed" in the report.',
     extras: {
       peerRatios: extras?.peerRatios || {},
@@ -795,7 +772,7 @@ function go(symbol) {
  */
 // `ideas` is no longer listed here: it is a rail menu now, so `NAV_VIEWS`
 // already carries it and a second copy could only ever disagree.
-const VIEWS = new Set(['home', 'calendar', ...NAV_VIEWS]);
+const VIEWS = new Set(['home', 'calendar', 'pricing', ...NAV_VIEWS]);
 
 /**
  * Query parameters that belong to a view rather than to the report.
@@ -805,7 +782,7 @@ const VIEWS = new Set(['home', 'calendar', ...NAV_VIEWS]);
  * imported rather than repeated, because a filter added to the taxonomy and
  * forgotten here would survive a navigation and quietly filter the next page.
  */
-const VIEW_PARAMS = ['kind', 'week', 'country', 'collection', 'board', 'table', 'bench', 'sample', 'screen', 'days', 'sub', 'industry', ...IDEA_PARAMS, ...RESEARCH_PARAMS];
+const VIEW_PARAMS = ['kind', 'week', 'day', 'country', 'collection', 'board', 'table', 'bench', 'sample', 'screen', 'days', 'sub', 'industry', 'billing', ...IDEA_PARAMS, ...RESEARCH_PARAMS];
 
 /** The ten nav pages and the renderer each one dispatches to. */
 const NAV_PAGES = {
@@ -823,7 +800,15 @@ const NAV_PAGES = {
   quant:    renderQuantPage,
   alpha:    renderAlphaDesk,
   shariah:  renderShariahDesk,
+  /* Off the rail, unlike the twelve above it: a plan is not a research
+     destination, so Pricing is reached from the utility bar and the footer.
+     It is in this map because it wants the same chrome, the same footer and
+     the same `(view, sub)` boot as any other page. */
+  pricing:  renderPricingPage,
 };
+
+/** Titles for pages that route like a menu but are not one in `nav.js`. */
+const OFF_RAIL_TITLES = { pricing: 'Plans & pricing' };
 
 function viewFromUrl() {
   const v = (new URLSearchParams(location.search).get('view') || '').toLowerCase();
@@ -946,7 +931,7 @@ async function loadExtras(ds, facts) {
  * Mounted once and left alone. Unlike the report and unlike an idea, the page
  * owns its own fetching — a week is a request and the reader pages through
  * them — so re-booting the app on every arrow would tear down the filters
- * they had set to get there. It keeps `?view=calendar&kind=&week=` in step
+ * they had set to get there. It keeps `?view=calendar&kind=&week=&day=` in step
  * with `replaceState` instead, which is enough to make the link shareable.
  */
 /**
@@ -964,8 +949,9 @@ const BOOT_PAGES = { ...NAV_PAGES, home: renderHomePage };
 
 function bootNavPage(app, view) {
   const sub = view === 'home' ? null : subFromUrl(view);
-  const label = view === 'home' ? 'Home' : (labelFor(view, sub) || NAV_BY_VIEW[view]?.label || view);
-  document.title = `${label} — Maz Vantage`;
+  const label = view === 'home' ? 'Home'
+    : (OFF_RAIL_TITLES[view] || labelFor(view, sub) || NAV_BY_VIEW[view]?.label || view);
+  document.title = `${label} — Vanlior`;
 
   const nav = {
     goView: (v, arg, params) => goView(v, arg, params),
@@ -1034,9 +1020,14 @@ function chrome(current, nav, body) {
   const market = marketRail(navFor(nav));
   market.classList.add('mh-page');
 
+  /* The footer closes the content column rather than spanning all three: the
+     rails either side are sticky, and a full-width footer would pull them off
+     screen as it scrolled in. */
+  const footer = siteFooter(navFor(nav), { more: [HOME_ITEM, ...SIDE_NAV, PRICING_ITEM], openSettings });
+
   return el('div', { class: 'layout has-rail' }, [
     rail,
-    el('div', { class: 'content' }, [buildTopbar(go), body]),
+    el('div', { class: 'content' }, [buildTopbar(go), body, footer]),
     market,
   ]);
 }
@@ -1055,11 +1046,11 @@ function navFor(nav = {}) {
 }
 
 function bootCalendar(app) {
-  document.title = 'Calendar — Maz Vantage';
+  document.title = 'Calendar — Vanlior';
 
-  const nav = { openSymbol: (sym) => go(sym) };
+  const nav = navFor({ openSymbol: (sym) => go(sym) });
 
-  app.replaceChildren(chrome({ view: 'calendar' }, navFor(nav), renderCalendarPage(nav)));
+  app.replaceChildren(chrome({ view: 'calendar' }, nav, renderCalendarPage(nav)));
   window.scrollTo({ top: 0, behavior: 'instant' });
 }
 
@@ -1116,7 +1107,7 @@ async function render(force) {
   }
 
   const symbol = symbolFromUrl();
-  document.title = `${symbol} — Maz Vantage Stock Analysis`;
+  document.title = `${symbol} — Vanlior Stock Analysis`;
 
   app.replaceChildren(skeleton(symbol));
 
@@ -1217,7 +1208,6 @@ async function render(force) {
         renderOwnership(a),
         renderCompetitors(a),
         renderDataStatus(a),
-        buildFooter(),
       ]);
       return el('div', { class: `shell ${CANVAS}` }, [buildPageFlake(a), main]);
     };

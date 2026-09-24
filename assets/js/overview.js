@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — the stock page
+   Vanlior — the stock page
 
    The company's front page, rebuilt on the market canvas against
    TradingView's symbol page (https://www.tradingview.com/symbols/NASDAQ-NVDA/)
@@ -166,7 +166,7 @@ export function renderOverviewHead(a, nav = {}) {
         type: 'button', class: 'sp-head__score',
         'aria-label': 'Open the Analysis tab', onclick: () => nav.openAnalysis?.(),
       }, [
-        el('span', { class: 'sp-head__scorek', text: 'Maz score' }),
+        el('span', { class: 'sp-head__scorek', text: 'Vanlior score' }),
         gradePill(overall.score, letterFor(overall.score), { size: 'lg' }),
         el('span', { class: `sp-head__verdict is-${verdictTone(overall.score)}`,
           text: verdictWord(overall.score) || 'Not rated' }),
@@ -447,7 +447,7 @@ function analystSection(a, nav) {
       { tone: isNum(m.targetUpside) ? (m.targetUpside >= 0 ? 'up' : 'down') : null }),
     stat('Cost of equity (CAPM)', pct(m.costOfEquity, { dp: 1 })),
   ])], () => nav.goSymbolTab?.('Ratings', a.facts.symbol),
-  'FMP’s analyst consensus and price target. This is the sell side’s view, not the Maz score above it.');
+  'FMP’s analyst consensus and price target. This is the sell side’s view, not the Vanlior score above it.');
 }
 
 /* ---- the company itself --------------------------------------------------- */
@@ -495,7 +495,7 @@ function researchSlot(a, nav) {
   const slot = el('div', { class: 'sp-block', hidden: true });
   const fill = () => {
     const card = relatedResearchCard(articlesForTicker(sym, 4), nav, {
-      title: `Vantace research on ${a.facts?.name || sym}`, cls: 'ocard',
+      title: `Vanlior research on ${a.facts?.name || sym}`, cls: 'ocard',
     });
     if (!card) return;
     slot.replaceChildren(card);

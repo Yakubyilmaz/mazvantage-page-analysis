@@ -1,4 +1,4 @@
-# Maz Vantage — Stock Analysis
+# Vanlior — Stock Analysis
 
 A full stock research report in one page. Five factors — **Valuation, Growth,
 Profitability, Financial Health, Momentum** — each graded 0-5 from the ground
@@ -13,7 +13,7 @@ research report in the shape the big houses publish: a rating band, a
 price-against-fair-value chart, an analyst note, then moat, fair value, risk,
 capital allocation and the financials.
 
-It leads with the **Maz Vantage quant rating** — the report's own composite,
+It leads with the **Vanlior quant rating** — the report's own composite,
 a verdict word, a letter and a score out of five over every ratio that could be
 ranked against the sector. Beside it sits a separate **valuation zone**: the
 price against the median of thirteen fair-value models, banded by an
@@ -690,7 +690,7 @@ assets/js/factors.js        the factor/subtopic/ratio tree and its explanations
 assets/js/valuation-models.js  13 fair-value models: 6 multiples, 6 DCF, 1 vendor
 assets/js/gradeview.js      renders a graded factor: score header, ratio tables
 assets/js/charts.js         SVG primitives: line, column, forecast, range, gauge, donut
-assets/js/snowflake.js      the Vantage Flake radar
+assets/js/snowflake.js      the Vanlior Flake radar
 assets/js/sections.js       the narrative sections — overview, dividend, ownership
 assets/js/research.js       the Research tab: the quant rating, the valuation zone, the report
 assets/js/narrative.js      the long-form prose: the brief, the prompt, the live-model seam
@@ -715,7 +715,12 @@ assets/js/marketfutures.js  what it knows about futures contracts
 assets/js/marketpages.js    US equities, ETFs and the economy
 assets/js/markettable.js    the dense market table: column-set tabs, sticky
                             symbol column, every header sorts
-assets/js/newsroom.js       Market News: the stream, its six categories and the quote rail
+assets/js/newsroom.js       Market News: the stream and its six categories
+assets/js/marketrail.js     the market rail beside every page: the market summary,
+                            the watchlist, the movers and the week's reports;
+                            hides to a slim strip and remembers that it was hidden
+assets/js/footer.js         the black footer on every page: every menu as a column
+                            of links, read from nav.js, and the data disclaimer
 assets/js/screens.js        Stock Screener — the directory and the screens over it
 assets/js/quant.js          the Quant desk: eight rankings in one table, and the rating explained
 assets/js/etfscreener.js    the ETF Screener page (?view=etfs)
@@ -732,10 +737,18 @@ assets/js/portfolios.js     the portfolio directory, and one portfolio as a scre
 assets/js/researchhub.js    the Research menu: routes the feed, an article and Strategy
 assets/js/taxonomy.js       the research taxonomy: categories, article types, the query
 assets/js/articles.js       the article store and the company directory behind it
-assets/js/feed.js           the research feed, the article card, the pills, the badges
+assets/js/feed.js           the research feed on the canvas: hero, section strip, pills,
+                            filter drawer, featured lead and card grid; the shared badges
 assets/js/articlepage.js    one article: typed body blocks, ratings, related, topics
 assets/js/earnings.js       the Earnings menu: transcript library, beat/miss scorecard
 assets/js/pings.js          price-chart markers: insider Form 4s and 13F position changes
+assets/js/calendar.js       the Calendar, on TradingView's: economic, earnings, dividends,
+                            IPOs and splits; a week of day cards, one table per day
+assets/js/dividend-model.js the dividend module's inputs: the payment record with specials
+                            split out, the TTM sums, and the two forward workarounds
+assets/js/dividend-lines.js the 64 lines of MAZ_DIVIDEND_SPEC_FULL.md, as data
+assets/js/dividend-score.js the four composites: percentile per line, weighted, re-ranked
+assets/js/dividendscores.js the Scores panel on the Dividends tab
 assets/js/home.js           the landing page: the market banner, the wire, and a section per market
 assets/data/research.json   pre-generated narratives, keyed by symbol (AAPL only)
 assets/data/articles.json   SAMPLE research articles — 30 fixtures, nothing live
@@ -755,14 +768,21 @@ assets/js/alphaview.js      components both Alpha surfaces share: score block,
 assets/js/alphatab.js       the Alpha Signal tab on a company report
 assets/js/alphadesk.js      the Alpha Signal desk at ?view=alpha — the capped
                             scan, the method, the limits
+assets/js/subscribe.js      plans and pricing at ?view=pricing: the four tiers, the
+                            matrix, the checkout seam and the Offer JSON-LD
 assets/js/ui.js             shared building blocks: cards, blocks, tables, notices
 assets/js/util.js           formatting and DOM helpers
 assets/data/AAPL.json       bundled snapshot, so the app works with no key
 assets/data/sector-stats.json  sector percentile table (seeded; rebuild it)
-assets/img/                 brand marks
+assets/data/dividend-stats.json  dividend-PAYER percentile table (seeded; payers only)
+assets/img/                 the VL monogram: white for the black rail and footer,
+                            black for light backgrounds, and the favicon tile
 HANDOVER.md                 integration guide for a developer taking this on
 tools/build_sector_stats.py generates that table from FMP
 tools/make_seed_stats.py    generates the modelled fallback shipped here
+tools/test_calendar.mjs     the Calendar's dates, markets, merging and time zones
+tools/make_dividend_seed.py generates the modelled dividend-payer distributions
+tools/test_dividends.mjs    the dividend module: weights, the payer universe, NM rules
 ```
 
 The layering matters: `fmp.js` is the only file that knows a URL, `model.js`
@@ -842,6 +862,53 @@ lets you pick the cap.
 
 ---
 
+## Plans and pricing
+
+`?view=pricing`, reached from **Plans** in the utility bar and from the footer
+rather than from the rail — the rail is research destinations and a plan is not
+one. Four tiers: **Reader** (free), **Investor** ($29/mo), **Analyst**
+($79/mo, the recommended one) and **Desk** (a licence, from $2,400/yr).
+
+The structure falls out of the quota arithmetic above. A reader who brings
+their own FMP key costs this product **nothing** to serve and is already paying
+more for the data than a subscription could charge, so that tier is free with
+no expiry and no card, and it is not feature-crippled — every grade, every fair
+value and every screen is the same code a paid plan runs. What a paid plan
+sells is therefore the **data licence**, so nobody needs a second subscription,
+plus the two things a licence cannot buy: a server that writes yesterday's
+scores down, and metered model tokens for the long-form narrative.
+
+That second one is why the Analyst tier exists at all. Three tabs in this
+product refuse to render today — Quant **Rating Changes**, **Rating Upgrades
+and Downgrades**, and Shariah **Compliance Changes** — because a change is the
+difference between today's verdict and a previous one and nothing is stored
+between sessions. They are the tier's headline feature rather than a roadmap
+note, and the page says so in the same words those tabs do.
+
+The value metric is a **person**, not a seat (nothing here is collaborative)
+and not a report (a meter running while somebody reads taxes the one behaviour
+this product wants). The two genuinely expensive *actions* are the tier
+boundaries instead: the Alpha Signal market scan and the written narrative,
+both of which already print their cost before they run.
+
+**Nothing on the page takes a payment**, because there is no server behind this
+build to take one. Rather than render a Subscribe button that quietly does
+nothing, the paid CTAs open a panel naming the four missing pieces — a
+processor, an account, a data proxy, and the nightly job — which is the rule
+the Rating Changes and Compliance Changes tabs already follow. `CHECKOUT.href`
+in [assets/js/subscribe.js](assets/js/subscribe.js) is the one edit that turns
+the page live.
+
+The prices are text in the DOM and are also emitted as `Product`/`Offer`
+JSON-LD, written on every billing-toggle repaint and removed when the page is
+disposed, so an assistant asked what this costs can answer without guessing.
+There is deliberately no `aggregateRating`, no testimonial and no "most
+popular" badge: there are no customers yet, and all three would be fabricated.
+The middle tier is marked *Recommended*, which is this product's own judgement,
+rather than *Most popular*, which would be a claim about other people.
+
+---
+
 ## Known limits
 
 - **The Alpha Signal weights are unvalidated, and there is no backtest.** They
@@ -906,11 +973,9 @@ lets you pick the cap.
   room to be read, its picture beside a headline and the summary, three
   headlines behind a rule — and the rest run under it as rows (publisher, hour,
   headline, the vendor's two-line summary, the symbols the story was filed
-  under, and the publisher's picture). Beside them is a
-  sticky rail beside it carrying the local index board, the session's gainers,
-  losers and most active, and a stocks calendar — the week's reports, with the
-  week's ex-dividend dates behind a toggle that fetches them only when it is
-  clicked. A
+  under, and the publisher's picture). The page has no rail of its own: the
+  market summary, the movers and the week's reports are in the market rail
+  beside every page. A
   category is one of three things and each says which: a **wire, unfiltered**
   (Latest, Stocks), the **vendor's own symbol tag or a name match** (ETFs,
   Indices, Futures — the same matchers the market boards use), or a **keyword

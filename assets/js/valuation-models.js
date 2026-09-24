@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — intrinsic value models
+   Vanlior — intrinsic value models
 
    Every way the report can put a fair value on a share. The Valuation section
    offers these in a picker; whichever is chosen drives the fair-value chart,

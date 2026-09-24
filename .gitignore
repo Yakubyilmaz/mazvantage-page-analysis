@@ -4,4 +4,6 @@ __pycache__/
 
 # assistant/editor local state
 .claude/
+.agents/
+skills-lock.json
 .vscode/*.local.json

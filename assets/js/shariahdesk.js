@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — the Shariah desk
+   Vanlior — the Shariah desk
 
    `?view=shariah`. One canvas, four tabs:
 
@@ -176,7 +176,7 @@ export function renderShariahDesk(sub, nav = {}) {
     function draw() {
       const item = shariahScreen(screen);
       const idea = IDEA_BY_ID[item.id] || null;
-      document.title = `${item.label} — Maz Vantage`;
+      document.title = `${item.label} — Vanlior`;
 
       for (const chip of chips) {
         const active = chip.dataset.screen === screen;

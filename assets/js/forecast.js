@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — the Analysts Forecast tab
+   Vanlior — the Analysts Forecast tab
 
    What the sell side expects, and what the company did against what they
    expected last time.
@@ -163,7 +163,7 @@ function ratingCard(a) {
     ohead('Vendor rating', r.rating
       ? el('span', { class: 'vpill vpill--score', text: r.rating }) : null,
       'Financial Modeling Prep’s own scorecard, one to five per test, scored against fixed '
-      + 'thresholds rather than against a sector. It is not the Maz Vantage grade and the two '
+      + 'thresholds rather than against a sector. It is not the Vanlior grade and the two '
       + 'will disagree — the Ratings tab is where this report answers for itself.'),
 
     el('div', { class: 'scorebars' }, r.scores.map((sc) => el('div', {

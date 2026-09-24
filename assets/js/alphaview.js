@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — Alpha Signal components
+   Vanlior — Alpha Signal components
 
    The pieces both surfaces are built from: the score block, the category
    card, the evidence drawer, and the four badges that keep a fact, a

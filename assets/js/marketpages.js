@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — the four asset-class pages under Markets Data
+   Vanlior — the four asset-class pages under Markets Data
 
      ?view=markets&sub=indices   the US index board
      ?view=markets&sub=stocks    the US equity market on one screen

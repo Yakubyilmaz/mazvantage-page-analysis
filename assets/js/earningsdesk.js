@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — the Earnings desk
+   Vanlior — the Earnings desk
 
    `?view=earnings`. One canvas, three tabs:
 
@@ -24,8 +24,9 @@
    ---------------------------------------------------------------------------
 
    The calendar carries a symbol and nothing else about the company — no name,
-   no sector, no size, and no report time. Joining it against one
-   `company-screener` call supplies all three and filters to real US listings
+   no sector and no size. (It does carry a report time where the vendor has
+   one; the Calendar page shows it and this table does not yet.) Joining it
+   against one `company-screener` call supplies all three and filters to real US listings
    in the same pass, because the calendar returns Toronto, the venture board
    and the OTC sheets alongside them. A row whose symbol the screener does not
    return is dropped, and the count says how many that was.
@@ -295,7 +296,7 @@ export function earningsScreener(nav = {}) {
     /* The bar named the page after the first menu item before this rendered,
        and all six screens share one slug — so the desk names the open screen
        itself, the same way the Quant and Shariah desks do. */
-    document.title = `${screen.label} earnings — Maz Vantage`;
+    document.title = `${screen.label} earnings — Vanlior`;
     for (const chip of chips) {
       const active = chip.dataset.screen === screen.id;
       chip.classList.toggle('is-active', active);
@@ -715,7 +716,7 @@ const INSIGHT_PAGE = 6;
 function insightsTab(nav) {
   const host = el('section', { class: 'ed-ins', 'aria-label': 'Earnings insights' });
   const rail = el('div', { class: 'qd-rail', role: 'tablist', 'aria-label': 'Insight types' });
-  const feed = el('div', { class: 'afeed' });
+  const feed = el('div', { class: 'rs-grid' });
   const foot = el('div', { class: 'ed-ins__foot' });
 
   const types = CATEGORY_BY_KEY.earnings?.types || [];
@@ -968,7 +969,7 @@ function methodTab(nav) {
 
     panel('Where each column comes from', [
       grid(['Column', 'Source'], [
-        ['Date', 'The calendar’s own date for the report. It carries no session time, so a row does not say whether the call was before the open or after the close.'],
+        ['Date', 'The calendar’s own date for the report. The session — before the open or after the close — is on the Calendar page, where the vendor gives one; this table does not show it yet.'],
         ['EPS estimate and actual', 'The vendor’s consensus and the reported figure, both as filed on the calendar row.'],
         ['EPS surprise', 'Actual minus estimate, over the size of the estimate. Left empty where consensus was within half a cent of zero.'],
         ['Revenue and revenue surprise', 'The same pair on the top line, where the vendor carries both.'],
@@ -978,7 +979,7 @@ function methodTab(nav) {
 
     panel('What is not here', [
       grid(['Missing', 'Why'], [
-        ['Report time (before open or after close)', 'The calendar feed returns no session time, so the page does not guess one.'],
+        ['Report time (before open or after close)', 'Not in this table yet. The calendar carries it where the vendor has one, and the Calendar page shows it.'],
         ['Guidance', 'Forward guidance is given on the call and in the release, not on this feed. The Analysts Forecast tab on a company report carries the estimates that follow it.'],
         ['Price reaction', 'Matching a surprise to the next session’s move needs a quote per company per date. That is a request each, and the causal claim it invites would not survive the arithmetic.'],
       ]),

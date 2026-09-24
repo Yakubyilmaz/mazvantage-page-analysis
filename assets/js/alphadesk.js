@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — the Alpha Signal desk
+   Vanlior — the Alpha Signal desk
 
    `?view=alpha`. The market-wide half of the feature: a capped scan over a
    screened universe, ranked by the Alpha Signal, with every row's coverage
@@ -100,7 +100,7 @@ export function renderAlphaDesk(sub, nav = {}) {
 
   page.append(
     el('header', { class: 'mh-hero' }, [
-      el('div', { class: 'mh-eyebrow', text: 'MAZ ALPHA SIGNAL' }),
+      el('div', { class: 'mh-eyebrow', text: 'VANLIOR ALPHA SIGNAL' }),
       el('h1', { class: 'qd-title', text: 'Alpha Signal' }),
       el('p', { class: 'qd-strap', text: 'Companies where something measurable has recently '
         + 'changed, and where fewer people than usual are looking. Eleven categories of dated, '

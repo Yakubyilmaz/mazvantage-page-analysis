@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — the ETF Screener page
+   Vanlior — the ETF Screener page
 
    `?view=etfs`. Its own rail menu, beneath Stock Screener, because a fund and
    a company are not the same object and the one screener that served both was
@@ -118,7 +118,7 @@ export function renderEtfScreenerPage(sub, nav = {}) {
     const selected = etfCollection(collection);
     // Same reason the Quant desk names its own screen: every collection on
     // this menu shares the slug `screener`, so the bar cannot tell them apart.
-    document.title = `${selected.title} — Maz Vantage`;
+    document.title = `${selected.title} — Vanlior`;
     for (const chip of chips.querySelectorAll('[data-collection]')) {
       const active = chip.dataset.collection === collection;
       chip.classList.toggle('is-active', active);

@@ -860,25 +860,9 @@ await test('Market News is one stream in six categories, each saying where it ca
   assert(tick,'no story carried the symbol it was filed under');
   tick.click();
   assert.equal(visits.pop()[0],'symbol');
-  // The rail is what the market did, beside what was written about it.
-  const rail=page.querySelectorAll('.nw-rail__h').map(node=>node.textContent.replace('›','').trim());
-  assert.deepEqual(rail,['US market summary','Gainers','Losers','Most active','Stocks calendar']);
-  assert(page.querySelectorAll('.nw-rail__row').length>12);
-  const gainers=page.querySelectorAll('.nw-rail__block')[1];
-  assert(gainers.textContent.includes('+'),'the gainers block carries no change');
-  // The calendar block is the week's reports, with the ex-dates a click away
-  // and fetched only when that click happens.
-  const calendar=page.querySelector('.nw-cal');
-  assert.deepEqual(calendar.querySelectorAll('[data-cal]').map(node=>node.textContent),['Earnings','Dividends']);
-  assert.equal(calendar.querySelectorAll('.nw-rail__row').length,5);
-  const before=calls.filter(path=>path.includes('dividends-calendar')).length;
-  assert.equal(before,0,'the dividends feed was fetched before anyone asked for it');
-  calendar.querySelectorAll('[data-cal]')[1].click();
-  const due=Date.now()+5000;
-  while(!calls.some(path=>path.includes('dividends-calendar'))&&Date.now()<due)await new Promise(resolve=>setImmediate(resolve));
-  await new Promise(resolve=>setImmediate(resolve));
-  assert(calendar.querySelector('[data-cal="dividends"]').classList.contains('is-active'));
-  assert(calendar.textContent.includes('$'),'no ex-dividend amount reached the rail');
+  // No rail of its own: the market summary, the movers and the calendar are the
+  // market rail's, which sits beside this page like every other.
+  assert.equal(page.querySelector('.nw-rail'),null,'the news page carries its own rail again');
   // A category tab is a navigation, not a filter this page keeps to itself.
   page.querySelectorAll('.mh-navigation button')[2].click();
   assert.deepEqual(visits.pop(),['news','etfs']);

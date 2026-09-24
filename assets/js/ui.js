@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — shared UI building blocks
+   Vanlior — shared UI building blocks
 
    The primitives every section is assembled from: cards, blocks, notices,
    tables, comparison bars and the feed-gate message. Kept in their own module

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — the Alpha Signal score
+   Vanlior — the Alpha Signal score
 
    Signals in, one number out, and every step of the reduction inspectable.
    Pure: no DOM, no fetching, no vendor field names. `alpha-providers.js`

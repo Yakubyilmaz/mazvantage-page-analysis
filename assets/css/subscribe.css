@@ -1,0 +1,244 @@
+/* ==========================================================================
+   Vanlior — plans and pricing (`?view=pricing`)
+
+   Inside `.mh-page`, so the market canvas's own variables apply and the page
+   themes light and dark with everything else. It reuses `.mh-hero`,
+   `.mh-eyebrow`, `.qd-title` and `.qd-strap` from the desk pages rather than
+   restating them; what is here is the plan grid, the comparison matrix and
+   the reading panels, which nothing else in the product has.
+   ========================================================================== */
+
+.pr-page { padding-bottom: 72px; }
+
+/* The headline is two sentences and the second is the point, so it gets its
+   own line and the muted tone — a subhead inside the h1 rather than after it. */
+.pr-title { display: grid; gap: 4px; max-width: 24ch; }
+.pr-title__b { color: var(--mh-muted); }
+
+/* ---------- the billing toggle --------------------------------------------- */
+
+.pr-toggle {
+  display: inline-flex; gap: 4px; margin: 4px 0 30px; padding: 4px;
+  border: 1px solid var(--mh-border); border-radius: 10px; background: var(--mh-soft);
+}
+.pr-toggle__b {
+  display: flex; align-items: baseline; gap: 7px; padding: 9px 16px;
+  border-radius: 7px; font-size: 13px; font-weight: 600; color: var(--mh-muted);
+}
+.pr-toggle__b:hover { color: var(--mh-fg); }
+.pr-toggle__b.is-active { background: var(--mh-bg); color: var(--mh-fg); box-shadow: 0 1px 3px #0000001f; }
+.pr-toggle__n { font-size: 11px; font-weight: 500; font-style: normal; color: var(--mh-up); }
+
+/* ---------- the plan cards ------------------------------------------------- */
+
+/* Four columns on a wide screen, two at laptop width, one on a phone.
+   ---------------------------------------------------------------------------
+   Why the cards are a subgrid
+   ---------------------------------------------------------------------------
+   Equal card heights are not enough: the four heads are naturally different
+   heights — one price wraps, one note runs to two lines, one card carries the
+   Recommended flag — so four `flex` cards put their CTAs at four different
+   offsets, which is the one thing a plan grid must not do.
+
+   Each card therefore spans four rows of the parent grid and adopts them with
+   `subgrid`, so head, CTA, body and small print each size to the tallest of
+   the four and every card's CTA lands on the same line. A `min-height` on the
+   head would do the same with a magic number that a longer sentence or a
+   larger font silently breaks; this holds whatever the copy says.
+
+   At the two-column breakpoint the second pair takes implicit rows 5-8 and
+   aligns with each other, which is the correct behaviour — the pairs are on
+   different rows of the page and were never being compared side by side. */
+.pr-grid {
+  display: grid; gap: 16px; align-items: stretch;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: repeat(4, auto);
+}
+@media (max-width: 1240px) { .pr-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 680px) {
+  .pr-grid { grid-template-columns: minmax(0, 1fr); }
+  /* One card per row: nothing is beside anything, so the rows the head
+     reserves to align four CTAs are just empty screen. Give them back. */
+  .pr-card__flag:empty { display: none; }
+  .pr-card__alt:empty { display: none; }
+  .pr-card__alt { min-height: 0; }
+}
+
+.pr-card {
+  display: grid; grid-template-rows: subgrid; grid-row: span 4; row-gap: 0;
+  padding: 24px 22px 26px; border: 1px solid var(--mh-border);
+  border-radius: 14px; background: var(--mh-soft);
+}
+/* Subgrid is not everywhere. Without it the cards fall back to a flex column,
+   which still gives equal heights and a floored small-print line — only the
+   CTAs stop aligning, which is a degradation rather than a break. */
+@supports not (grid-template-rows: subgrid) {
+  .pr-card { display: flex; flex-direction: column; }
+}
+/* The recommended one is lifted by a ring and a fill rather than by scale: a
+   transformed card breaks the alignment that makes four lists comparable. */
+.pr-card.is-recommended {
+  border-color: var(--mh-blue); background: var(--mh-bg);
+  box-shadow: 0 0 0 1px var(--mh-blue), 0 14px 40px #0000002e;
+}
+.pr-card__flag {
+  margin: -6px 0 8px; min-height: 1.3em;
+  font-size: 10px; font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--mh-blue);
+}
+.pr-card__n { margin: 0; font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+.pr-card__price { display: flex; align-items: baseline; gap: 6px; margin: 12px 0 0; flex-wrap: wrap; }
+.pr-card__price strong { font-size: clamp(30px, 2.6vw, 38px); font-weight: 700; letter-spacing: -.04em; line-height: 1; }
+.pr-card__per { font-size: 13px; color: var(--mh-muted); }
+.pr-card__pre { font-size: 15px; font-weight: 600; color: var(--mh-muted); }
+.pr-card__note { margin: 10px 0 0; font-size: 12px; line-height: 1.55; color: var(--mh-muted); }
+/* Two reserved lines whether this plan has a second billing period or not.
+   Together with the always-rendered flag above, this is what puts the four
+   CTAs on one line — see the note in `planCard`. */
+.pr-card__alt { margin: 6px 0 0; min-height: 2.9em; font-size: 11px; line-height: 1.45; color: var(--mh-muted); }
+/* The four subgrid rows. The body is the one that grows; the rest size to
+   their content and are matched across the cards by the subgrid. */
+.pr-card__head { display: block; }
+.pr-card__body { flex: 1; align-self: start; }
+
+.pr-card__cta {
+  margin: 16px 0 0; padding: 12px 16px; width: 100%;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  border: 1px solid var(--mh-border); border-radius: 9px; background: var(--mh-bg);
+  font-size: 13px; font-weight: 600; color: var(--mh-fg);
+}
+.pr-card__cta:hover { background: var(--mh-hover); }
+.pr-card__cta--primary { background: var(--mh-blue); border-color: var(--mh-blue); color: #fff; }
+.pr-card__cta--primary:hover { background: var(--mh-blue); filter: brightness(1.08); }
+.pr-card__cta.is-done { color: var(--mh-up); border-color: var(--mh-up); }
+.pr-card__cta .mh-chevron { font-size: 15px; line-height: 1; }
+
+.pr-card__strap { margin: 18px 0 0; font-size: 13px; font-weight: 500; line-height: 1.6; }
+.pr-card__body > .pr-card__strap { margin-top: 18px; }
+.pr-card__why { margin: 10px 0 0; font-size: 12px; line-height: 1.65; color: var(--mh-muted); }
+
+.pr-list { margin: 16px 0 0; padding: 0; list-style: none; display: grid; gap: 9px; }
+.pr-list li { position: relative; padding-left: 19px; font-size: 12.5px; line-height: 1.55; }
+.pr-list li::before {
+  content: '✓'; position: absolute; left: 0; top: 0;
+  font-size: 11px; font-weight: 700; color: var(--mh-up);
+}
+/* The limits line closes the card, pinned to the bottom so it reads as the
+   card's own small print rather than as the last bullet. */
+.pr-card__limit {
+  margin: 18px 0 0; padding-top: 14px; border-top: 1px solid var(--mh-border);
+  font-size: 11px; line-height: 1.6; color: var(--mh-muted);
+}
+.pr-card > .pr-card__limit { margin-top: auto; align-self: end; }
+
+/* ---------- the reading panels --------------------------------------------- */
+
+.pr-panel {
+  margin-top: 26px; padding: 26px 26px 28px;
+  border: 1px solid var(--mh-border); border-radius: 14px; background: var(--mh-soft);
+}
+.pr-panel--wide { padding-left: 0; padding-right: 0; }
+.pr-panel--wide > .pr-panel__t, .pr-panel--wide > .pr-p { padding: 0 26px; }
+.pr-panel__t { margin: 0 0 14px; font-size: 20px; font-weight: 700; letter-spacing: -.02em; }
+.pr-p { margin: 0 0 18px; max-width: 88ch; font-size: 13.5px; line-height: 1.7; color: var(--mh-muted); }
+.pr-note { margin: 16px 0 0; max-width: 96ch; font-size: 12px; line-height: 1.7; color: var(--mh-muted); }
+
+.pr-warn {
+  margin: 0 0 16px; padding: 13px 15px; max-width: 96ch;
+  border-left: 3px solid var(--mh-blue); border-radius: 0 8px 8px 0;
+  background: var(--mh-hover); font-size: 13px; line-height: 1.65;
+}
+.pr-warn b { font-weight: 700; }
+
+.pr-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+.pr-btn {
+  display: inline-flex; align-items: center; gap: 6px; padding: 10px 15px;
+  border: 1px solid var(--mh-border); border-radius: 9px; background: var(--mh-bg);
+  font-size: 13px; font-weight: 500; color: var(--mh-fg);
+}
+.pr-btn:hover { background: var(--mh-hover); }
+.pr-btn--primary { background: var(--mh-blue); border-color: var(--mh-blue); color: #fff; }
+.pr-btn--primary:hover { background: var(--mh-blue); filter: brightness(1.08); }
+
+/* ---------- the comparison matrix ------------------------------------------ */
+
+.pr-mx__scroll { overflow-x: auto; }
+.pr-mx { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 720px; }
+.pr-mx thead th {
+  position: sticky; top: var(--utilbar-h, 58px); z-index: 2;
+  padding: 14px 14px 12px; text-align: center; vertical-align: bottom;
+  background: var(--mh-soft); border-bottom: 1px solid var(--mh-border);
+}
+.pr-mx thead th:first-child { text-align: left; padding-left: 26px; }
+.pr-mx__n { display: block; font-size: 13px; font-weight: 700; }
+.pr-mx__p { display: block; margin-top: 2px; font-size: 11px; font-weight: 500; color: var(--mh-muted); }
+
+.pr-mx__group th {
+  padding: 22px 26px 8px; text-align: left; font-size: 11px; font-weight: 700;
+  letter-spacing: .09em; text-transform: uppercase; color: var(--mh-muted);
+}
+.pr-mx__note {
+  display: block; margin-top: 6px; max-width: 80ch;
+  font-size: 11.5px; font-weight: 400; letter-spacing: 0; text-transform: none;
+  font-style: normal; line-height: 1.6;
+}
+.pr-mx tbody th[scope='row'] {
+  padding: 11px 14px 11px 26px; text-align: left; font-weight: 400;
+  border-top: 1px solid var(--mh-border);
+}
+.pr-mx tbody td {
+  padding: 11px 14px; text-align: center; border-top: 1px solid var(--mh-border);
+  border-left: 1px solid var(--mh-border);
+}
+/* The recommended column is tinted the whole way down, so a reader scanning
+   the matrix never loses which one the cards singled out. */
+.pr-mx tbody td:nth-child(4), .pr-mx thead th:nth-child(4) { background: var(--mh-hover); }
+
+.pr-tick { color: var(--mh-up); font-weight: 700; }
+.pr-dash { color: var(--mh-muted); opacity: .55; }
+.pr-cellt { font-size: 11.5px; line-height: 1.4; display: inline-block; }
+
+/* ---------- the cost panels ------------------------------------------------ */
+
+.pr-costs { display: grid; gap: 16px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 1000px) { .pr-costs { grid-template-columns: minmax(0, 1fr); } }
+.pr-cost { padding: 18px 18px 20px; border: 1px solid var(--mh-border); border-radius: 11px; background: var(--mh-bg); }
+.pr-cost__t { margin: 0 0 9px; font-size: 14px; font-weight: 700; letter-spacing: -.01em; }
+.pr-cost__b { margin: 0; font-size: 12.5px; line-height: 1.7; color: var(--mh-muted); }
+
+/* ---------- what no plan buys ---------------------------------------------- */
+
+.pr-nots { margin: 0; display: grid; gap: 14px; max-width: 100ch; }
+.pr-nots dt { font-size: 13px; font-weight: 700; }
+.pr-nots dd { margin: 5px 0 0; font-size: 12.5px; line-height: 1.7; color: var(--mh-muted); }
+
+/* ---------- the FAQ -------------------------------------------------------- */
+
+.pr-faq { display: grid; max-width: 104ch; border-top: 1px solid var(--mh-border); }
+.pr-faq__i { border-bottom: 1px solid var(--mh-border); }
+.pr-faq__i summary {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+  padding: 15px 2px; cursor: pointer; list-style: none;
+  font-size: 13.5px; font-weight: 600;
+}
+.pr-faq__i summary::-webkit-details-marker { display: none; }
+.pr-faq__i summary::after { content: '+'; font-size: 17px; font-weight: 400; color: var(--mh-muted); }
+.pr-faq__i[open] summary::after { content: '−'; }
+.pr-faq__i summary:hover { color: var(--mh-blue); }
+.pr-faq__i p { margin: 0 0 17px; padding-right: 36px; max-width: 92ch; font-size: 13px; line-height: 1.75; color: var(--mh-muted); }
+
+/* ---------- the checkout seam ---------------------------------------------- */
+
+.pr-checkout {
+  margin-top: 22px; padding: 24px 24px 26px;
+  border: 1px solid var(--mh-blue); border-radius: 14px; background: var(--mh-soft);
+}
+.pr-scroll { overflow-x: auto; }
+.pr-grid2 { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 520px; }
+.pr-grid2 th {
+  padding: 9px 12px; text-align: left; font-size: 11px; font-weight: 600;
+  letter-spacing: .07em; text-transform: uppercase; color: var(--mh-muted);
+  border-bottom: 1px solid var(--mh-border);
+}
+.pr-grid2 td { padding: 11px 12px; line-height: 1.65; border-bottom: 1px solid var(--mh-border); vertical-align: top; }
+.pr-grid2 td:first-child { font-weight: 600; white-space: nowrap; }

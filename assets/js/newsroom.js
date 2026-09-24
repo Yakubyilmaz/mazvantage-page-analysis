@@ -1,9 +1,10 @@
 /* ==========================================================================
-   Maz Vantage — Market News
+   Vanlior — Market News
 
    One stream, six categories, on the market canvas: a topic strip across the
-   top, the stories down the middle newest first, and a rail beside them
-   carrying what the market did while they were written.
+   top and the stories under it, newest first. What the market did while they
+   were written is in the market rail beside every page (`marketrail.js`), so
+   this page no longer carries a rail of its own.
 
    ---------------------------------------------------------------------------
    Where a category comes from, and why that matters
@@ -31,24 +32,16 @@
    ========================================================================== */
 
 import { el } from './util.js';
-import { fetchNewsFeed, fetchMarket, fetchCalendar, hasApiKey } from './fmp.js';
+import { fetchNewsFeed, hasApiKey } from './fmp.js';
 import {
-  loadEtfNews, loadIndexNews, loadFuturesNews, loadHubSection, countryOf,
-  normalizeHubQuote, isUSListing, quoteMap,
+  loadEtfNews, loadIndexNews, loadFuturesNews, normalizeHubQuote, quoteMap,
 } from './markethub-data.js';
-import {
-  storedCountry, emptyState, instrumentMark, arrow, storyRow, quoteBlock, featuredNews, paintQuotes,
-} from './markethub-ui.js';
+import { emptyState, storyRow, featuredNews, paintQuotes } from './markethub-ui.js';
 
 /** Stories shown before the reader asks for more. */
 const PAGE = 12;
 /** The latest few, given the room to be read, above the rest as headlines. */
 const FEATURED = 4;
-/** What the rail ranks. Five is what fits beside a screen of stories. */
-const RAIL = 5;
-/** How far ahead the calendar block looks. */
-const CALENDAR_DAYS = 7;
-const day = (offset) => new Date(Date.now() + offset * 86400000).toISOString().slice(0, 10);
 
 /* ==========================================================================
    The categories
@@ -185,7 +178,6 @@ async function stories(category) {
 
 export function renderNewsroomPage(sub, nav = {}) {
   const category = categoryOf(sub || 'latest');
-  const country = countryOf(storedCountry() === 'WORLD' ? 'US' : storedCountry());
   let disposed = false;
 
   const page = el('main', { class: 'mh-page nw-page', id: 'market-news' });
@@ -196,7 +188,6 @@ export function renderNewsroomPage(sub, nav = {}) {
       onclick: () => nav.goView?.('news', item.id),
     })));
   const stream = el('div', { class: 'nw-stream' }, [emptyState('loading', '', true)]);
-  const rail = el('aside', { class: 'nw-rail', 'aria-label': 'Market snapshot' });
 
   page.append(
     el('header', { class: 'mh-hero' }, [
@@ -207,7 +198,7 @@ export function renderNewsroomPage(sub, nav = {}) {
       ]),
     ]),
     strip,
-    el('div', { class: 'nw-layout' }, [stream, rail]),
+    el('div', { class: 'nw-layout' }, [stream]),
   );
 
   /* ---- the stream -------------------------------------------------------- */
@@ -268,113 +259,6 @@ export function renderNewsroomPage(sub, nav = {}) {
     ]);
   }
 
-  /* ---- the rail ---------------------------------------------------------- */
-
-  const movers = (result) => (Array.isArray(result.data) ? result.data : [])
-    .map((row) => normalizeHubQuote(row, { kind: 'stock' }))
-    .filter((row) => row.available).slice(0, RAIL);
-
-  /* ---- the calendar block -------------------------------------------------
-     Two feeds behind one heading, because a reader watching the week wants
-     both and the rail has room for one block. The dividends feed is fetched
-     the first time that tab is opened: a request for a list nobody looked at
-     is a request this page should not make. */
-  function calendarBlock(loaded) {
-    const rows = el('div', { class: 'nw-rail__rows' });
-    const cache = { earnings: loaded, dividends: null };
-    let kind = 'earnings';
-    const tabs = el('div', { class: 'nw-cal__tabs', role: 'group', 'aria-label': 'Calendar' },
-      [['earnings', 'Earnings'], ['dividends', 'Dividends']].map(([id, label]) => el('button', {
-        type: 'button', 'data-cal': id, class: id === kind ? 'is-active' : '',
-        'aria-pressed': String(id === kind), text: label, onclick: () => pick(id),
-      })));
-
-    const line = (row) => {
-      const when = String(row.date || '').slice(0, 10);
-      const figure = kind === 'earnings'
-        ? (Number.isFinite(Number(row.epsEstimated)) ? `${Number(row.epsEstimated).toFixed(2)} est` : '—')
-        : (Number.isFinite(Number(row.dividend)) ? `$${Number(row.dividend).toFixed(2)}` : '—');
-      return el('button', {
-        type: 'button', class: 'nw-rail__row', onclick: () => nav.goSymbol?.(row.symbol),
-        'aria-label': `${row.symbol}, ${kind === 'earnings' ? 'reports' : 'goes ex-dividend'} ${when}`,
-      }, [
-        el('span', { class: 'nw-rail__id' }, [instrumentMark({ symbol: row.symbol, kind: 'stock' }),
-          el('span', { text: row.symbol })]),
-        el('span', { class: 'nw-rail__v' }, [
-          el('span', { class: 'nw-cal__d', text: new Date(`${when}T12:00:00Z`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }) }),
-          el('span', { class: 'nw-cal__f', text: figure }),
-        ]),
-      ]);
-    };
-    /* One line per company, the nearest date first. The calendar feed carries
-       the same company on three exchanges; the rail has five rows and none of
-       them should be the Swiss line of a US report. */
-    const listed = (result) => {
-      const seen = new Set();
-      return (Array.isArray(result?.data) ? result.data : [])
-        .filter((row) => row.symbol && isUSListing(row) && row.date)
-        .filter((row) => !seen.has(row.symbol) && seen.add(row.symbol))
-        .sort((a, b) => String(a.date).localeCompare(String(b.date)))
-        .slice(0, RAIL);
-    };
-    function paint(result) {
-      const list = listed(result);
-      rows.replaceChildren(...(list.length ? list.map(line)
-        : [emptyState(result?.status || 'ok', `No ${kind === 'earnings' ? 'reports' : 'ex-dividend dates'} in the next ${CALENDAR_DAYS} days.`, true)]));
-    }
-    async function pick(id) {
-      kind = id;
-      for (const button of tabs.querySelectorAll('[data-cal]')) {
-        const active = button.dataset.cal === kind;
-        button.classList.toggle('is-active', active);
-        button.setAttribute('aria-pressed', String(active));
-      }
-      if (!cache[kind]) {
-        rows.replaceChildren(emptyState('loading', '', true));
-        cache[kind] = await fetchCalendar(kind, day(0), day(CALENDAR_DAYS));
-        if (disposed || !rows.isConnected) return;
-      }
-      paint(cache[kind]);
-    }
-    paint(cache.earnings);
-    return el('section', { class: 'nw-rail__block nw-cal' }, [
-      el('h2', { class: 'nw-rail__h' }, [el('button', {
-        type: 'button', onclick: () => nav.goView?.('calendar'),
-      }, ['Stocks calendar', arrow()])]),
-      tabs, rows,
-      el('p', { class: 'nw-cal__note', text: `US listings reporting or going ex-dividend in the next ${CALENDAR_DAYS} days, one line per company.` }),
-    ]);
-  }
-
-  async function drawRail() {
-    if (!hasApiKey()) {
-      rail.replaceChildren(el('section', { class: 'nw-rail__block' }, [
-        el('h2', { class: 'nw-rail__h', text: 'Market snapshot' }),
-        emptyState('skipped', 'Connect your FMP API key in Settings to load quotes beside the stream.', true),
-      ]));
-      return;
-    }
-    rail.replaceChildren(el('div', { class: 'nw-rail__block' }, [emptyState('loading', '', true)]));
-    const [indices, gainers, losers, active, earnings] = await Promise.all([
-      loadHubSection('indices', { country: country.code }),
-      fetchMarket('gainers'), fetchMarket('losers'), fetchMarket('active'),
-      fetchCalendar('earnings', day(0), day(CALENDAR_DAYS)),
-    ]);
-    if (disposed || !rail.isConnected) return;
-    const quotes = (indices.data?.quotes || []).filter((row) => row.available).slice(0, RAIL);
-    const open = (row) => nav.goSymbol?.(row.symbol);
-    rail.replaceChildren(
-      quoteBlock(`${country.short} market summary`, quotes,
-        { seeAll: () => nav.goView?.('markets', 'indices', { country: country.code }) }),
-      quoteBlock('Gainers', movers(gainers), { onPick: open, seeAll: () => nav.goView?.('markets', 'gainers') }),
-      quoteBlock('Losers', movers(losers), { onPick: open, seeAll: () => nav.goView?.('markets', 'losers') }),
-      quoteBlock('Most active', movers(active), { onPick: open, seeAll: () => nav.goView?.('markets', 'active') }),
-      calendarBlock(earnings),
-      el('p', { class: 'nw-rail__note', text: 'Quotes and calendars from FMP, and they may be delayed. The rail is what the market did, not what the stories say about it.' }),
-      el('button', { type: 'button', class: 'mh-see-all', onclick: () => nav.goView?.('markets', 'overview') }, ['Open Market Data', arrow()]),
-    );
-  }
-
   /* ---- load -------------------------------------------------------------- */
 
   if (!hasApiKey()) {
@@ -385,7 +269,6 @@ export function renderNewsroomPage(sub, nav = {}) {
       .then((result) => { if (!disposed) draw(result); })
       .catch((error) => { if (!disposed) stream.replaceChildren(emptyState('error', String(error?.message || error))); });
   }
-  drawRail();
 
   page.dispose = () => { disposed = true; };
   return page;

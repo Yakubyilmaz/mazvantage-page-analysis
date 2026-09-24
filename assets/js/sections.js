@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — report sections
+   Vanlior — report sections
 
    Each `renderX(a, ctx)` returns a detached element. `a` is the analysis
    object from model.js; `ctx` carries things fetched alongside the main
@@ -70,7 +70,7 @@ export function renderOverview(a) {
     el('div', { class: 'block' }, [
       el('div', { class: 'block__head' }, [
         el('div', {}, [
-          el('h3', { class: 'block__title', text: 'Vantage Flake Analysis' }),
+          el('h3', { class: 'block__title', text: 'Vanlior Flake Analysis' }),
           el('p', { class: 'block__desc', text: a.verdict }),
         ]),
       ]),

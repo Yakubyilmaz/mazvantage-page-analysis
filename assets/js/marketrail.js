@@ -1,10 +1,14 @@
 /* ==========================================================================
-   Maz Vantage — the market rail
+   Vanlior — the market rail
 
-   A sticky column down the right of every page: the reader's watchlist, the
-   day's movers, and what reports next. TradingView's watchlist panel is the
-   reference — the same idea that whatever page you are on, the market is
-   still beside you.
+   A sticky column down the right of every page: the local index board, the
+   reader's watchlist, the day's movers, and what reports next. TradingView's
+   watchlist panel is the reference — the same idea that whatever page you are
+   on, the market is still beside you.
+
+   Each section's title opens the page behind it; the caret beside the title
+   is what folds the section away. The button at the top right puts the whole
+   rail away to a slim strip and brings it back, and that choice is remembered.
 
    ---------------------------------------------------------------------------
    One node, kept across navigations
@@ -38,16 +42,43 @@
 
 import { el, isNum, ago } from './util.js';
 import { fetchMarket, fetchCalendar, fetchBatchQuotes, hasApiKey } from './fmp.js';
-import { normalizeHubQuote } from './markethub-data.js';
-import { emptyState, instrumentMark, priceText, signed, changeOf, arrow } from './markethub-ui.js';
+import { normalizeHubQuote, loadHubSection, countryOf } from './markethub-data.js';
+import { emptyState, instrumentMark, priceText, signed, changeOf, arrow, storedCountry } from './markethub-ui.js';
 
 /** Rows in a mover block, and symbols the watchlist starts with. */
 const ROWS = 6;
+/** Indices in the market summary — the country's first five benchmarks. */
+const SUMMARY_ROWS = 5;
 const CALENDAR_ROWS = 6;
 const WATCHLIST_KEY = 'mazvantage.watchlist';
 const WATCHLIST_SEED = ['AAPL', 'NVDA', 'MSFT', 'AMZN', 'GOOGL'];
 /** Sections the reader has collapsed, so the rail reopens as they left it. */
 const COLLAPSED_KEY = 'mazvantage.rail.collapsed';
+/** Whether the reader has put the whole rail away. Same prefix as every other
+    key, deliberately: renaming stored keys would wipe what readers saved. */
+const CLOSED_KEY = 'mazvantage.rail.closed';
+
+/* The two states of the hide/show control: a panel with its right-hand column
+   marked, and a chevron pointing the way the rail will move. */
+const PANEL_ICON = {
+  close: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M15 3v18"/><path d="m8 9 3 3-3 3"/>',
+  open: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M15 3v18"/><path d="m10 15-3-3 3-3"/>',
+};
+const panelIcon = (kind) => {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('class', 'mr__toggle-i');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.innerHTML = PANEL_ICON[kind];
+  return svg;
+};
+
+function readFlag(key) {
+  try { return localStorage.getItem(key) === '1'; } catch { return false; }
+}
+function writeFlag(key, on) {
+  try { localStorage.setItem(key, on ? '1' : '0'); } catch { /* not stored this session */ }
+}
 
 /* ---- what the reader is watching ----------------------------------------
    Their own list, so it is stored rather than derived. Every read is wrapped:
@@ -96,58 +127,78 @@ export function marketRail(nav = {}) {
   const root = el('aside', { class: 'mr', 'aria-label': 'Market rail' });
   const body = el('div', { class: 'mr__body' });
 
-  /* ---- a section, collapsible and remembered --------------------------- */
+  /* ---- a section, collapsible and remembered ---------------------------
+     Two controls in the bar, because a title is where a reader clicks to go
+     somewhere: the title opens the section's page, and the caret alone folds
+     the section. One button doing both made "Watchlist" a fold rather than a
+     way to the Watchlist page. */
   const collapsed = new Set(readList(COLLAPSED_KEY, []));
-  function section(id, title, seeAll) {
+  function section(id, title, open) {
     const slot = el('div', { class: 'mr__slot' }, [emptyState('loading', '', true)]);
-    const caret = el('span', { class: 'mr__caret', 'aria-hidden': 'true', text: '⌄' });
-    const head = el('button', {
+    const label = el('span', { class: 'mr__title', text: title });
+    const fold = el('button', {
       type: 'button', class: 'mr__head', 'aria-expanded': String(!collapsed.has(id)),
+      'aria-label': `Show or hide ${title}`,
       onclick: () => {
-        const open = collapsed.has(id);
-        if (open) collapsed.delete(id); else collapsed.add(id);
+        const opening = collapsed.has(id);
+        if (opening) collapsed.delete(id); else collapsed.add(id);
         writeList(COLLAPSED_KEY, [...collapsed]);
-        head.setAttribute('aria-expanded', String(open));
-        node.classList.toggle('is-collapsed', !open);
+        fold.setAttribute('aria-expanded', String(opening));
+        node.classList.toggle('is-collapsed', !opening);
       },
-    }, [caret, el('span', { class: 'mr__title', text: title })]);
+    }, [el('span', { class: 'mr__caret', 'aria-hidden': 'true', text: '⌄' })]);
     const node = el('section', {
       class: `mr__sec${collapsed.has(id) ? ' is-collapsed' : ''}`, 'data-section': id,
     }, [
-      el('div', { class: 'mr__bar' }, [head, seeAll
-        ? el('button', { type: 'button', class: 'mr__all', 'aria-label': `See all ${title}`, onclick: seeAll },
-          [arrow()]) : null].filter(Boolean)),
+      el('div', { class: 'mr__bar' }, [fold,
+        el('button', { type: 'button', class: 'mr__name', onclick: open }, [label]),
+        el('button', { type: 'button', class: 'mr__all', 'aria-label': `See all ${title}`, onclick: open }, [arrow()]),
+      ]),
       slot,
     ]);
     // NOT `node.slot`: `Element.prototype.slot` is the shadow-DOM slot name, a
     // DOMString, so assigning an element to it silently stores "[object
     // HTMLDivElement]" and every later `.replaceChildren` throws.
     node.rowsHost = slot;
+    node.setTitle = (text) => {
+      label.textContent = text;
+      fold.setAttribute('aria-label', `Show or hide ${text}`);
+      node.querySelector('.mr__all').setAttribute('aria-label', `See all ${text}`);
+    };
     return node;
   }
 
-  /** One quote as a rail row: mark, symbol, last and change. */
-  const quoteRow = (row) => el('button', {
-    type: 'button', class: 'mr__row', 'aria-label': `Open ${row.symbol}`,
-    onclick: () => openSymbol(row),
-  }, [
-    instrumentMark(row),
-    el('span', { class: 'mr__id' }, [
-      el('strong', { text: String(row.symbol || '').replace(/^\^/, '') }),
-      el('small', { text: row.shortName || row.name || '' }),
-    ]),
-    el('span', { class: 'mr__v' }, [priceText(row), signed(changeOf(row))]),
-  ]);
+  /** One quote as a rail row: mark, symbol, last and change. An index leads
+      with its name — "S&P 500" is what a reader looks for, not "GSPC". */
+  const quoteRow = (row, pick = openSymbol) => {
+    const symbol = String(row.symbol || '').replace(/^\^/, '');
+    const name = row.shortName || row.name || '';
+    const [main, sub] = row.kind === 'index' && name ? [name, symbol] : [symbol, name];
+    return el('button', {
+      type: 'button', class: 'mr__row', 'aria-label': `Open ${main}`,
+      onclick: () => pick(row),
+    }, [
+      instrumentMark(row),
+      el('span', { class: 'mr__id' }, [el('strong', { text: main }), el('small', { text: sub })]),
+      el('span', { class: 'mr__v' }, [priceText(row), signed(changeOf(row))]),
+    ]);
+  };
 
-  const fill = (sec, rows, status, message) => {
+  const fill = (sec, rows, status, message, pick) => {
     sec.rowsHost.replaceChildren(rows.length
-      ? el('div', { class: 'mr__rows' }, rows.map(quoteRow))
+      ? el('div', { class: 'mr__rows' }, rows.map((row) => quoteRow(row, pick)))
       : emptyState(status, message, true));
   };
 
   /* ---- the sections ---------------------------------------------------- */
 
-  const watch = section('watchlist', 'Watchlist', () => goView('markets', 'stocks'));
+  /* The market summary follows the country picked on the markets pages, read
+     when the rail loads; World has no index board of its own, so it reads as
+     the US. */
+  const summaryCountry = () => countryOf(storedCountry() === 'WORLD' ? 'US' : storedCountry());
+  const openIndices = () => goView('markets', 'indices', { country: summaryCountry().code });
+  const summary = section('summary', `${summaryCountry().short} market summary`, openIndices);
+  const watch = section('watchlist', 'Watchlist', () => goView('watchlist'));
   const gainers = section('gainers', 'Gainers', () => goView('markets', 'gainers'));
   const losers = section('losers', 'Losers', () => goView('markets', 'losers'));
   const active = section('active', 'Most active', () => goView('markets', 'active'));
@@ -198,6 +249,21 @@ export function marketRail(nav = {}) {
     return wrap;
   }
 
+  /* An index is not a company, so its row opens the country's index board
+     rather than a report. The board is the markets hub's own section and
+     shares its cache, so a reader who has been to Markets pays nothing here. */
+  async function loadSummary(refresh = false) {
+    const country = summaryCountry();
+    summary.setTitle(`${country.short} market summary`);
+    if (!hasApiKey()) {
+      summary.rowsHost.replaceChildren(emptyState('skipped', 'Connect FMP to see the market summary.', true));
+      return;
+    }
+    const res = await loadHubSection('indices', { country: country.code, refresh });
+    const rows = (res.data?.quotes || []).filter((row) => row.available).slice(0, SUMMARY_ROWS);
+    fill(summary, rows, res.status, res.message || 'No index quotes returned.', openIndices);
+  }
+
   async function loadMovers() {
     if (!hasApiKey()) {
       for (const sec of [gainers, losers, active]) {
@@ -241,12 +307,39 @@ export function marketRail(nav = {}) {
       : emptyState(res.status, 'No reports scheduled in the next week.', true));
   }
 
-  body.append(watch, gainers, losers, active, calendar);
+  body.append(summary, watch, gainers, losers, active, calendar);
+  body.id = 'market-rail-body';
+
+  /* ---- put away and brought back ----------------------------------------
+     Closing leaves a slim strip holding only this button, so the way back is
+     where the reader left it rather than somewhere else on the page. The
+     layout gives the strip its narrow column by itself (`:has(.mr.is-closed)`
+     in the stylesheet): the rail is a singleton and the layout is rebuilt on
+     every navigation, so a class on the rail is the one place the state can
+     live without every page having to ask for it. */
+  const toggle = el('button', { type: 'button', class: 'mr__toggle', 'aria-controls': body.id });
+  function setClosed(closed) {
+    root.classList.toggle('is-closed', closed);
+    toggle.setAttribute('aria-expanded', String(!closed));
+    const label = closed ? 'Show the market panel' : 'Hide the market panel';
+    toggle.setAttribute('aria-label', label);
+    toggle.title = label;
+    toggle.replaceChildren(panelIcon(closed ? 'open' : 'close'));
+  }
+  toggle.addEventListener('click', () => {
+    const closed = !root.classList.contains('is-closed');
+    writeFlag(CLOSED_KEY, closed);
+    setClosed(closed);
+    // A rail that started closed has not fetched anything yet.
+    if (!closed) load();
+  });
+
   root.append(
     el('div', { class: 'mr__top' }, [
       el('span', { class: 'mr__brand', text: 'Markets' }),
       el('button', { type: 'button', class: 'mr__refresh', 'aria-label': 'Refresh the rail',
         text: '↻', onclick: () => load(true) }),
+      toggle,
     ]),
     body,
   );
@@ -263,6 +356,7 @@ export function marketRail(nav = {}) {
     const guard = (sec, run) => run().catch((error) => {
       sec.rowsHost.replaceChildren(emptyState('error', String(error?.message || error), true));
     });
+    guard(summary, () => loadSummary(force));
     guard(watch, loadWatchlist);
     guard(gainers, loadMovers);
     guard(calendar, loadCalendar);
@@ -271,6 +365,10 @@ export function marketRail(nav = {}) {
   instance = root;
   root.setNav = (next) => { current = next || {}; };
   root.reload = () => load(true);
-  load();
+  /* Closed from a previous visit: stay closed, and fetch nothing until the
+     reader opens it — a panel nobody is looking at should not cost requests. */
+  const startClosed = readFlag(CLOSED_KEY);
+  setClosed(startClosed);
+  if (!startClosed) load();
   return root;
 }

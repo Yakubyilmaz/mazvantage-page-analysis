@@ -16,7 +16,7 @@ function quantBadge(value) {
   return el('strong',{
     class:`ms-screen-symbol sc-quant-badge sc-quant-badge--${band}`,
     text:valid?value.toFixed(2):'—',
-    title:valid?`${verdictWord(value)} · ${value.toFixed(2)} out of ${MAX_SCORE}`:'Maz Quant score unavailable',
+    title:valid?`${verdictWord(value)} · ${value.toFixed(2)} out of ${MAX_SCORE}`:'Vanlior Quant score unavailable',
   });
 }
 const numberText = value => finite(value) ? new Intl.NumberFormat('en', {maximumFractionDigits:2,notation:Math.abs(value)>=1e6?'compact':'standard'}).format(value) : '—';
@@ -72,7 +72,7 @@ export function renderDedicatedScreener(nav={},options={}) {
   ];
   if(selectedPreset.idea)sets[0]={...sets[0],columns:[
     plainColumn('presetRank','Rank',row=>row.presetRank),
-    {...plainColumn('quantScore','Maz Quant',row=>row.lite?.score),fmt:quantBadge},...sets[0].columns,
+    {...plainColumn('quantScore','Vanlior Quant',row=>row.lite?.score),fmt:quantBadge},...sets[0].columns,
   ]};
   let active=sets[0], rows=[], page=1, sort=selectedPreset.idea?'presetRank':selectedPreset.sort?.key||'marketCap',
     direction=selectedPreset.idea?1:selectedPreset.sort?.direction??-1, disposed=false, generation=0;
@@ -226,7 +226,7 @@ export function renderDedicatedScreener(nav={},options={}) {
   else (selectedPreset.idea?runScreenerPreset(selectedPreset,country,{onProgress:(done,total)=>{
     if(!disposed)resultCount.textContent=`Screening ${done} of ${total} companies`;
   }}).then(result=>{
-    coverage=`${result.tested||0} tested of ${result.universeSize||0} candidates · Maz Vantage model`;
+    coverage=`${result.tested||0} tested of ${result.universeSize||0} candidates · Vanlior model`;
     return {status:result.state==='empty'?'ok':result.state,message:result.message,data:result.rows};
   }):fetchScreener(screenerParams(country,kind,collection))).then(result=>{
     if(disposed)return;

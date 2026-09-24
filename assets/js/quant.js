@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — the Quant desk
+   Vanlior — the Quant desk
 
    `?view=quant`. One canvas, four tabs, and the rating at the centre of all
    of them:
@@ -134,7 +134,7 @@ export function renderQuantPage(sub, nav = {}) {
 
   page.append(
     el('header', { class: 'mh-hero' }, [
-      el('div', { class: 'mh-eyebrow', text: 'MAZ QUANT' }),
+      el('div', { class: 'mh-eyebrow', text: 'VANLIOR QUANT' }),
       el('h1', { class: 'qd-title', text: 'Quant ratings' }),
       el('p', { class: 'qd-strap', text: 'One number between 0 and 5, built from the bottom up: '
         + 'every ratio the data supports, ranked against the company’s own sector, rolled into '
@@ -263,7 +263,7 @@ export function renderQuantPage(sub, nav = {}) {
       /* The bar set the title from the menu item before this page rendered,
          and every screen here shares one menu slug — so the desk names the
          screen itself, or eight of them would all say "Top Quant Stocks". */
-      document.title = `${item.label} — Maz Vantage`;
+      document.title = `${item.label} — Vanlior`;
 
       live?.dispose?.();
       resources.delete(live);

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — Markets Data
+   Vanlior — Markets Data
 
    Ten sections off one page: the overview, four asset-class pages (indices,
    equities, funds, the economy), the three mover lists, and the sector and

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — the five factors
+   Vanlior — the five factors
 
    Two data structures and one walk over them.
 

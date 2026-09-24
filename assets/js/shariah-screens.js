@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — the Shariah screens
+   Vanlior — the Shariah screens
 
    Two balance-sheet ratios against market capitalisation, plus the activity
    keywords. AAOIFI's limits are the strictest of the five published sets, so

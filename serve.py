@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Maz Vantage — local server.
+Vanlior — local server.
 
     python serve.py            # http://localhost:8792
     python serve.py 9000       # pick a port
@@ -90,7 +90,7 @@ def main() -> int:
     try:
         with Server(("127.0.0.1", port), Handler) as httpd:
             url = f"http://localhost:{port}/"
-            print(f"Maz Vantage running at {url}")
+            print(f"Vanlior running at {url}")
             print("  ?symbol=MSFT to load another ticker · Ctrl+C to stop")
             if "--no-open" not in sys.argv:
                 webbrowser.open(url)

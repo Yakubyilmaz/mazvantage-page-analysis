@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — the main navigation
+   Vanlior — the main navigation
 
    Ten top-level pages down the left rail, each opening a flyout menu of
    sections on hover. This file owns two things and nothing else: **what the
@@ -201,7 +201,7 @@ export const NAV = [
     items: [
       { label: 'All Stocks', sub: 'screener', params: {country:'US',kind:'stocks',collection:'all'} },
       ...[
-        ['Top Quants by Maz','stocks-by-quant'],
+        ['Top Quants by Vanlior','stocks-by-quant'],
         ['Top Stocks by WallStreet','top-wallstreet-stocks'],
         ['Top Growth','top-growth-stocks'],
         ['Top Value','top-value-stocks'],
@@ -465,6 +465,25 @@ export function labelFor(view, sub) {
   return item?.label || menu.label;
 }
 
+/**
+ * Go to one menu item. Shared by the rail's flyouts and the page footer, so a
+ * link means the same place wherever it is printed.
+ *
+ * A cross-page item may name a section and carry state of its own — the ETF
+ * menu's last entry opens the Market Data ETFs page on its tables tab, which is
+ * a `(view, sub, params)` triple like any other destination rather than a bare
+ * page.
+ */
+export function openNavItem(nav, menu, item) {
+  if (item.symbolTab) nav.goSymbolTab?.(item.symbolTab);
+  else if (item.view) nav.goView?.(item.view, item.sub || null, item.params || null);
+  else if (item.params) nav.goView?.(menu.view, item.sub, item.params);
+  else nav.goView?.(menu.view, item.sub);
+}
+
+/** The items a menu lists: routable, built, and not a hidden destination. */
+export const menuItems = (menu) => menu.items.filter((i) => !i.hidden && i.built !== false);
+
 /* ==========================================================================
    The component
 
@@ -622,17 +641,7 @@ export function buildRailNav(current, nav = {}, icon = () => null) {
           type: 'button',
           class: `railmenu__i ${active ? 'is-active' : ''}`.trim(),
           'aria-current': active ? 'page' : null,
-          onclick: () => {
-            close();
-            // A cross-page item may name a section and carry state of its own
-            // — the ETF menu's last entry opens the Market Data ETFs page on
-            // its tables tab, which is a `(view, sub, params)` triple like any
-            // other destination rather than a bare page.
-            if (item.symbolTab) nav.goSymbolTab?.(item.symbolTab);
-            else if (item.view) nav.goView?.(item.view, item.sub || null, item.params || null);
-            else if(item.params)nav.goView?.(menu.view, item.sub,item.params);
-            else nav.goView?.(menu.view, item.sub);
-          },
+          onclick: () => { close(); openNavItem(nav, menu, item); },
         }, [
           el('span', { text: item.label }),
           item.symbolTab ? el('i', { class: 'railmenu__hint', text: 'on the report' }) : null,

@@ -305,20 +305,6 @@ export function featuredNews(stories, { nav = {}, below = 3, aside = 4, quotes =
   ].filter(Boolean));
 }
 
-/** A rail block of quotes: a heading that may lead somewhere, then the rows. */
-export function quoteBlock(title, rows, { onPick = null, seeAll = null, empty = null } = {}) {
-  return el('section', { class: 'nw-rail__block' }, [
-    el('h2', { class: 'nw-rail__h' }, [seeAll
-      ? el('button', { type: 'button', onclick: seeAll }, [title, arrow()]) : title]),
-    rows.length ? el('div', { class: 'nw-rail__rows' }, rows.map((row) => el(onPick ? 'button' : 'div', {
-      class: 'nw-rail__row', ...(onPick ? { type: 'button', onclick: () => onPick(row) } : {}),
-    }, [
-      el('span', { class: 'nw-rail__id' }, [instrumentMark(row), el('span', { text: row.shortName || row.symbol })]),
-      el('span', { class: 'nw-rail__v' }, [priceText(row), signed(changeOf(row))]),
-    ]))) : emptyState(empty?.status || 'unavailable', empty?.message || '', true),
-  ]);
-}
-
 export function createDialog(title, build, onClose) {
   const close = () => dialog.close();
   const dialog = el('dialog', { class: 'mh-dialog', 'aria-label': title }, [

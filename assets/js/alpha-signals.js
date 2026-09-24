@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — the Alpha Signal vocabulary
+   Vanlior — the Alpha Signal vocabulary
 
    One place that knows what a signal is, what a source is, and what the
    eleven categories are called. No DOM, no fetching, no arithmetic about a

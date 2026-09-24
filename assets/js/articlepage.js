@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — the research article page
+   Vanlior — the research article page
 
    `?view=research&sub=article&slug=…`. One article, its data blocks, and the
    routes out of it.
@@ -38,53 +38,60 @@
    ========================================================================== */
 
 import { el, fmtDate, ago } from './util.js';
-import { card, notice, ohead, table as uiTable, statLine } from './ui.js';
+import { notice, table as uiTable, statLine } from './ui.js';
 import { toneForLetter } from './grading.js';
 import {
   typePath, categoryLabel, typeLabel, themeLabel, sectorSlug, MAX_SCORE,
 } from './taxonomy.js';
 import {
-  loadArticles, articlesReady, articleBySlug, relatedArticles, SAMPLE_NOTICE,
+  loadArticles, articlesReady, articleBySlug, relatedArticles,
 } from './articles.js';
-import { tickerLink, quantBadge, shariahBadge, articleRow } from './feed.js';
+import {
+  tickerLink, quantBadge, shariahBadge, articleRow, researchStrip, sampleBanner,
+} from './feed.js';
 
 /* ==========================================================================
    The page
+
+   On the market canvas with the rest of Research: the section strip across
+   the top, the article in a reading column, and the routes out of it in a
+   side column that stays in view while the article scrolls.
    ========================================================================== */
 
 export function renderArticlePage(slug, nav = {}) {
-  const host = el('div', { class: 'ovw' });
+  const page = el('main', { class: 'mh-page ra-page', id: 'research-article' });
 
   const draw = () => {
     const a = articleBySlug(slug);
-    host.replaceChildren(...(a ? articleBody(a, nav) : notFound(slug, nav)));
-    if (a) document.title = `${a.seoTitle || a.title} — Vantace Research`;
+    page.replaceChildren(researchStrip(a ? a.primaryCategory : 'latest', nav),
+      ...(a ? articleBody(a, nav) : notFound(slug, nav)));
+    if (a) document.title = `${a.seoTitle || a.title} — Vanlior Research`;
   };
 
   if (articlesReady()) draw();
   else {
-    host.append(card('ap-loading', [
-      el('div', { class: 'sk sk--line', style: { width: '60%', height: '28px' } }),
-      el('div', { class: 'sk sk--line', style: { width: '40%' } }),
-      el('div', { class: 'sk sk--block', style: { marginTop: '16px' } }),
-    ], 'ocard ovw__c12'));
+    page.append(researchStrip('latest', nav), el('div', { class: 'ra-layout', 'aria-busy': 'true' }, [
+      el('div', { class: 'ra-main' }, [
+        el('span', { class: 'sk', style: { display: 'block', width: '30%', height: '14px', marginTop: '40px' } }),
+        el('span', { class: 'sk', style: { display: 'block', width: '80%', height: '34px', marginTop: '16px' } }),
+        el('span', { class: 'sk', style: { display: 'block', width: '60%', height: '16px', marginTop: '14px' } }),
+      ]),
+    ]));
     loadArticles().then(draw);
   }
-
-  return host;
+  return page;
 }
 
 function notFound(slug, nav) {
-  return [card('ap-404', [
-    ohead('Article not found'),
-    notice(`No article is filed under <code>${String(slug || '').replace(/[<>&]/g, '')}</code>. `
-      + 'It may have been renamed — slugs are permanent identities here, so this is more likely a '
-      + 'typo than a moved page.'),
+  return [el('div', { class: 'mh-empty ra-404', role: 'status' }, [
+    el('strong', { text: 'Article not found' }),
+    el('p', { text: `No article is filed under “${String(slug || '')}”. Slugs are permanent here, so this is `
+      + 'more likely a typo than a moved page.' }),
     el('button', {
-      type: 'button', class: 'btn btn--primary mt2', text: 'Back to Latest Research →',
+      type: 'button', class: 'rs-btn rs-btn--primary', text: 'Back to Latest research',
       onclick: () => nav.goQuery?.('research', 'latest', {}),
     }),
-  ], 'ocard ovw__c12')];
+  ])];
 }
 
 /* ==========================================================================
@@ -92,74 +99,65 @@ function notFound(slug, nav) {
    ========================================================================== */
 
 function articleBody(a, nav) {
-  return [
-    card('ap-head', [breadcrumb(a, nav), headerBlock(a, nav)], 'ocard ovw__c12 apcard'),
-    card('ap-body', bodyBlocks(a, nav), 'ocard ovw__c8 apbody'),
-    el('div', { class: 'ovw__c4 apside' }, [
-      ratingsCard(a, nav),
-      subjectCard(a, nav),
-      topicsCard(a, nav),
-      relatedCard(a, nav),
+  return [el('div', { class: 'ra-layout' }, [
+    el('article', { class: 'ra-main' }, [
+      breadcrumb(a, nav),
+      headerBlock(a, nav),
+      sampleBanner(),
+      el('div', { class: 'ra-body' }, bodyBlocks(a, nav)),
+    ]),
+    el('aside', { class: 'ra-side', 'aria-label': 'About this article' }, [
+      ratingsPanel(a, nav),
+      subjectPanel(a, nav),
+      topicsPanel(a, nav),
+      relatedPanel(a, nav),
     ].filter(Boolean)),
-    card('ap-disclosure', [notice(SAMPLE_NOTICE)], 'ocard ovw__c12 ovw--tight'),
-  ];
+  ])];
 }
 
 /**
- * Breadcrumb.
- *
- * Every crumb is a real filter rather than a decorative path: Research goes to
- * the unfiltered feed, the category goes to that category's feed, and the type
- * goes to the two-filter feed. A breadcrumb that does not navigate is a
- * heading with extra arrows.
+ * Breadcrumb. Every crumb is a real filter rather than a decorative path: a
+ * breadcrumb that does not navigate is a heading with extra arrows.
  */
 function breadcrumb(a, nav) {
   const crumb = (label, query) => el('button', {
-    type: 'button', class: 'apcrumb', text: label,
+    type: 'button', class: 'ra-crumb', text: label,
     onclick: () => nav.goQuery?.('research', 'latest', query),
   });
-
-  return el('nav', { class: 'apcrumbs', 'aria-label': 'Breadcrumb' }, [
+  const sep = () => el('span', { class: 'ra-crumbs__s', text: '›', 'aria-hidden': 'true' });
+  return el('nav', { class: 'ra-crumbs', 'aria-label': 'Breadcrumb' }, [
     crumb('Research', {}),
-    el('span', { class: 'apcrumbs__s', text: '/', 'aria-hidden': 'true' }),
+    sep(),
     crumb(categoryLabel(a.primaryCategory), { category: a.primaryCategory }),
-    a.articleType ? el('span', { class: 'apcrumbs__s', text: '/', 'aria-hidden': 'true' }) : null,
-    a.articleType
-      ? crumb(typeLabel(a.articleType), { category: a.primaryCategory, type: a.articleType })
-      : null,
+    a.articleType ? sep() : null,
+    a.articleType ? crumb(typeLabel(a.articleType), { category: a.primaryCategory, type: a.articleType }) : null,
   ]);
 }
 
 function headerBlock(a, nav) {
   const updated = a.updatedAt && a.updatedAt !== a.publishedAt;
-
-  return el('header', { class: 'aphead' }, [
-    a.tickers.length ? el('div', { class: 'aphead__tickers' },
-      a.tickers.map((t) => tickerLink(t, nav, { tab: a.stockTab, withName: true }))) : null,
-
-    el('h1', { class: 'aphead__t', text: a.title }),
-    a.subtitle ? el('p', { class: 'aphead__s', text: a.subtitle }) : null,
-
-    el('div', { class: 'aphead__meta' }, [
-      el('span', { class: 'aphead__by', text: a.author }),
-      el('span', { class: 'acard__dot', text: '·' }),
-      el('span', { class: 'pill pill--muted', text: typePath(a) }),
-      el('span', { class: 'acard__dot', text: '·' }),
-      el('time', {
-        datetime: a.publishedAt,
-        title: fmtDate(a.publishedAt),
-        text: `${fmtDate(a.publishedAt)} (${ago(a.publishedAt)})`,
-      }),
-      updated ? el('span', { class: 'acard__dot', text: '·' }) : null,
-      updated ? el('span', { text: `updated ${fmtDate(a.updatedAt)}` }) : null,
-      a.readingMinutes ? el('span', { class: 'acard__dot', text: '·' }) : null,
-      a.readingMinutes ? el('span', { text: `${a.readingMinutes} min read` }) : null,
+  const tags = [
+    ...a.tickers.map((t) => tickerLink(t, nav, { tab: a.stockTab, withName: true })),
+    quantBadge(a.quantRating, a.quantLetter),
+    shariahBadge(a.shariahStatus, { passed: a.standardsPassed, of: a.standardsOf }),
+  ].filter(Boolean);
+  return el('header', { class: 'ra-head' }, [
+    el('p', { class: 'rs-kicker', text: typePath(a) }),
+    el('h1', { class: 'ra-title', text: a.title }),
+    a.subtitle ? el('p', { class: 'ra-dek', text: a.subtitle }) : null,
+    el('div', { class: 'ra-by' }, [
+      el('span', { class: 'rs-by__av', 'aria-hidden': 'true' },
+        [el('img', { src: 'assets/img/vanlior-mark-white.svg', alt: '' })]),
+      el('span', { class: 'ra-by__who' }, [
+        el('b', { text: a.author }),
+        el('span', {}, [
+          el('time', { datetime: a.publishedAt, title: fmtDate(a.publishedAt), text: `${fmtDate(a.publishedAt)} · ${ago(a.publishedAt)}` }),
+          updated ? ` · updated ${fmtDate(a.updatedAt)}` : '',
+          a.readingMinutes ? ` · ${a.readingMinutes} min read` : '',
+        ]),
+      ]),
     ]),
-
-    el('div', { class: 'aphead__badges' }, [
-      quantBadge(a.quantRating, a.quantLetter),
-      shariahBadge(a.shariahStatus, { passed: a.standardsPassed, of: a.standardsOf }),
-    ].filter(Boolean)),
+    tags.length ? el('div', { class: 'ra-tags' }, tags) : null,
   ]);
 }
 
@@ -286,7 +284,7 @@ function bullBearBlock(b) {
  */
 function quantBlock(b) {
   return el('div', { class: 'apquant' }, [
-    el('p', { class: 'apblock__t', text: b.title || 'Vantace quant rating' }),
+    el('p', { class: 'apblock__t', text: b.title || 'Vanlior quant rating' }),
     el('div', { class: 'apquant__hero' }, [
       quantBadge(b.score, b.letter),
       el('span', { class: 'apquant__of', text: `of ${MAX_SCORE}` }),
@@ -304,117 +302,91 @@ function quantBlock(b) {
    The side column
    ========================================================================== */
 
-/**
- * The two ratings, restated with what each one is and is not.
- *
- * The single most common misreading of a page that carries both is that one is
- * evidence for the other. The card says so in one line rather than relying on
- * the reader having read the methodology page.
- */
-function ratingsCard(a, nav) {
-  if (typeof a.quantRating !== 'number' && !a.shariahStatus) return null;
-
-  return card('ap-ratings', [
-    ohead('The two ratings'),
-
-    typeof a.quantRating === 'number' ? el('div', { class: 'aprate' }, [
-      el('p', { class: 'aprate__k', text: 'Vantace quant composite' }),
-      quantBadge(a.quantRating, a.quantLetter),
-      el('p', { class: 'aprate__b', text: 'A sector-relative ranking of measurable ratios across '
-        + 'six factors. No fair value estimate enters it.' }),
-    ]) : null,
-
-    a.shariahStatus ? el('div', { class: 'aprate' }, [
-      el('p', { class: 'aprate__k', text: 'Shariah screen' }),
-      shariahBadge(a.shariahStatus, { passed: a.standardsPassed, of: a.standardsOf }),
-      el('p', { class: 'aprate__b', text: a.standardsPassed != null
-        ? `Passes ${a.standardsPassed} of ${a.standardsOf} published methodologies. A mechanical `
-          + 'screen, not a scholarly ruling.'
-        : 'A mechanical screen against published limits, not a scholarly ruling.' }),
-    ]) : null,
-
-    el('p', { class: 't-tiny subtle mt2', text: 'These answer different questions — whether the '
-      + 'company is permissible under the chosen methodology, and how its ratios rank against its '
-      + 'sector. Neither is evidence for the other.' }),
-
-    el('button', {
-      type: 'button', class: 'btn btn--ghost', text: 'How the quant rating is built →',
-      onclick: () => nav.goView?.('quant', 'ratings'),
-    }),
-  ], 'ocard');
+/** One block of the side column: a small heading over its contents. */
+function panel(title, children) {
+  return el('section', { class: 'ra-panel' }, [el('h2', { class: 'ra-panel__t', text: title }), ...children.filter(Boolean)]);
 }
 
-/** The companies the piece is about, and the tab on each that it is about. */
-function subjectCard(a, nav) {
+/**
+ * The two ratings, restated with what each one is and is not. The commonest
+ * misreading of a page carrying both is that one is evidence for the other.
+ */
+function ratingsPanel(a, nav) {
+  if (typeof a.quantRating !== 'number' && !a.shariahStatus) return null;
+  return panel('The two ratings', [
+    typeof a.quantRating === 'number' ? el('div', { class: 'ra-rate' }, [
+      el('p', { class: 'ra-rate__k', text: 'Vanlior quant composite' }),
+      quantBadge(a.quantRating, a.quantLetter),
+      el('p', { class: 'ra-note', text: 'A sector-relative ranking of measurable ratios across the '
+        + 'factors. No fair value estimate enters it.' }),
+    ]) : null,
+    a.shariahStatus ? el('div', { class: 'ra-rate' }, [
+      el('p', { class: 'ra-rate__k', text: 'Shariah screen' }),
+      shariahBadge(a.shariahStatus, { passed: a.standardsPassed, of: a.standardsOf }),
+      el('p', { class: 'ra-note', text: a.standardsPassed != null
+        ? `Passes ${a.standardsPassed} of ${a.standardsOf} published methodologies. A mechanical screen, `
+          + 'not a scholarly ruling.'
+        : 'A mechanical screen against published limits, not a scholarly ruling.' }),
+    ]) : null,
+    el('p', { class: 'ra-note', text: 'These answer different questions, and neither is evidence for the other.' }),
+    el('button', {
+      type: 'button', class: 'ra-link', text: 'How the quant rating is built ›',
+      onclick: () => nav.goView?.('quant', 'ratings'),
+    }),
+  ]);
+}
+
+/** The companies the piece is about, each opening the tab the piece is about. */
+function subjectPanel(a, nav) {
   if (!a.tickers.length) return null;
   const tabNote = a.stockTab ? ` — opens the ${a.stockTab} tab` : '';
-
-  return card('ap-subject', [
-    ohead(a.tickers.length === 1 ? 'The company' : 'Companies in this piece'),
-    el('div', { class: 'apsubs' }, a.companies.map((c) => el('button', {
-      type: 'button', class: 'apsub',
-      title: `Open the ${c.name} report${tabNote}`,
+  return panel(a.tickers.length === 1 ? 'The company' : 'Companies in this piece', [
+    el('div', { class: 'ra-subs' }, a.companies.map((c) => el('button', {
+      type: 'button', class: 'ra-sub', title: `Open the ${c.name} report${tabNote}`,
       onclick: () => nav.goSymbolTab?.(a.stockTab, c.ticker),
     }, [
       el('b', { text: c.ticker }),
       el('span', { text: c.name }),
       c.industry ? el('i', { text: c.industry }) : null,
     ]))),
-    el('p', { class: 't-tiny subtle', text: a.stockTab
-      ? `Each opens the ${a.stockTab} tab of that company's report.`
-      : 'Each opens that company\'s report.' }),
-  ], 'ocard');
+    el('p', { class: 'ra-note', text: a.stockTab
+      ? `Each opens the ${a.stockTab} tab of that company’s report.`
+      : 'Each opens that company’s report.' }),
+  ]);
 }
 
 /**
- * Sector, industry and theme — as links back into the filtered feed.
- *
- * This is the half of the internal-link graph that makes the taxonomy worth
- * having: an article about a semiconductor company is one click from every
- * other article about semiconductors, without anything having been tagged
- * "semiconductors" by hand — the industry came from the ticker.
+ * Sector, industry and theme, as links back into the filtered feed. Deduped by
+ * the printed label: an industry and a theme can share a name, and two
+ * identical chips pointing at two filters reads as a bug. The industry wins,
+ * because it came from the company data rather than a tag.
  */
-function topicsCard(a, nav) {
-  const link = (label, query) => el('button', {
-    type: 'button', class: 'aptopic', text: label,
-    onclick: () => nav.goQuery?.('research', 'latest', query),
-  });
-
-  // Deduped by the *printed label*, not by the filter. An industry and a theme
-  // can share a name — a semiconductor company carries the Semiconductors
-  // industry from its ticker and often the semiconductors theme from its
-  // editor — and two identical chips pointing at two different filters reads
-  // as a bug. The industry wins, because it came from the company data rather
-  // than from a tag.
+function topicsPanel(a, nav) {
   const seen = new Set();
   const once = (label, query) => {
     const k = label.toLowerCase();
     if (seen.has(k)) return null;
     seen.add(k);
-    return link(label, query);
+    return el('button', {
+      type: 'button', class: 'rs-pill', text: label,
+      onclick: () => nav.goQuery?.('research', 'latest', query),
+    });
   };
-
   const items = [
     ...a.sectors.map((s) => once(s, { sector: sectorSlug(s) })),
     ...a.industries.map((i) => once(i, { industry: i })),
     ...a.themes.map((t) => once(themeLabel(t), { theme: t })),
   ].filter(Boolean);
   if (!items.length) return null;
-
-  return card('ap-topics', [
-    ohead('More on these topics'),
-    el('div', { class: 'aptopics' }, items),
-    el('p', { class: 't-tiny subtle', text: 'Sector and industry come from the companies named '
-      + 'above rather than from a tag, so they cannot disagree with the company data.' }),
-  ], 'ocard');
+  return panel('More on these topics', [
+    el('div', { class: 'ra-topics' }, items),
+    el('p', { class: 'ra-note', text: 'Sector and industry come from the companies above rather than a tag, '
+      + 'so they cannot disagree with the company data.' }),
+  ]);
 }
 
-function relatedCard(a, nav) {
+function relatedPanel(a, nav) {
   const rel = relatedArticles(a, 5);
   if (!rel.length) return null;
-
-  return card('ap-related', [
-    ohead('Related research'),
-    el('div', { class: 'arows' }, rel.map((r) => articleRow(r, nav))),
-  ], 'ocard');
+  return panel('Related research', [el('div', { class: 'arows' }, rel.map((r) => articleRow(r, nav)))]);
 }

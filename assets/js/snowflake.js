@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — the Vantage Flake
+   Vanlior — the Vanlior Flake
 
    A five-axis radar where each spoke is one factor scored 0-5, continuously.
    The blob is a closed Catmull-Rom curve through the five score points, so a
@@ -99,7 +99,7 @@ export function snowflake(scores, {
     // default, which was cutting it to "PROFITABILIT".
     style: `width:${size}px;max-width:100%;height:auto;overflow:visible`,
     role: 'img',
-    'aria-label': `Vantage Flake: ${AXES.map((a, i) => `${a.label.toLowerCase()} ${values[i] == null ? 'not scored' : `${values[i].toFixed(2)} out of 5`}`).join(', ')}`,
+    'aria-label': `Vanlior Flake: ${AXES.map((a, i) => `${a.label.toLowerCase()} ${values[i] == null ? 'not scored' : `${values[i].toFixed(2)} out of 5`}`).join(', ')}`,
   });
 
   /* ---- rings, with the spokes masked out ---- */

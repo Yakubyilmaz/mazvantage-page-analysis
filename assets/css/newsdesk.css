@@ -1,19 +1,14 @@
-/* Market News — the stream and the rail beside it.
+/* Market News — the stream.
 
    The canvas's own skin: the hero, the topic strip and the coverage block come
-   from markethub.css, and this file is only the two things that page does not
-   already have — a story row, and a quote rail that follows the reader down the
-   stream. */
+   from markethub.css, and this file is only what that page does not already
+   have — the story row and the featured block. Quotes beside the stream are
+   the market rail's job (marketrail.css), on this page as on every other. */
 
 .nw-title { font-size: clamp(30px, 3.4vw, 46px); font-weight: 700; letter-spacing: -.035em; line-height: 1.1; margin: 0; }
 .nw-page .mh-hero__meta { max-width: 92ch; }
 
-.nw-layout {
-  display: grid; grid-template-columns: minmax(0, 1fr) 320px;
-  gap: 56px; align-items: start; padding: 30px 0 64px;
-}
-/* The home wire has no rail beside it any more; the newsroom still does. */
-.nw-layout--solo { grid-template-columns: minmax(0, 1fr); }
+.nw-layout { display: grid; grid-template-columns: minmax(0, 1fr); padding: 30px 0 64px; }
 .nw-stream { min-width: 0; }
 .nw-count { color: var(--mh-muted); font-size: 12px; margin: 0 0 6px; }
 
@@ -165,49 +160,10 @@ a.nf__brief-title:hover { color: var(--mh-blue); }
   .nf__brief-title { font-size: 16px; }
 }
 
-/* The rail follows the reader down the stream, because what the market did is
-   context for every story in it, not just the first screen. */
-.nw-rail { position: sticky; top: 96px; display: grid; gap: 22px; min-width: 0; }
-.nw-rail__block { border: 1px solid var(--mh-border); border-radius: 12px; padding: 15px 18px 17px; }
-.nw-rail__h { margin: 0 0 6px; font-size: 13px; font-weight: 650; letter-spacing: -.01em; }
-.nw-rail__h button { display: inline-flex; align-items: center; gap: 4px; padding: 0; font: inherit; color: inherit; background: none; border: 0; }
-.nw-rail__h button:hover { color: var(--mh-blue); }
-
-/* Two feeds under one heading: the week's reports, and the week's ex-dates. */
-.nw-cal__tabs { display: flex; gap: 4px; margin: 4px 0 2px; }
-.nw-cal__tabs button {
-  border: 0; border-radius: 6px; padding: 5px 10px;
-  background: none; color: var(--mh-muted); font-size: 12px; line-height: 1.5;
-}
-.nw-cal__tabs button:hover { background: var(--mh-hover); color: var(--mh-fg); }
-.nw-cal__tabs button.is-active { background: var(--mh-hover); color: var(--mh-fg); font-weight: 600; }
-.nw-cal__d { color: var(--mh-muted); font-size: 12px; }
-.nw-cal__f { font-size: 12px; font-variant-numeric: tabular-nums; }
-.nw-cal__note { margin: 10px 0 0; color: var(--mh-muted); font-size: 10px; line-height: 1.6; }
-
-.nw-rail__rows { display: grid; }
-.nw-rail__row {
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  width: 100%; padding: 10px 0; border-top: 1px solid var(--mh-border);
-  font-size: 13px; text-align: left; color: inherit; background: none;
-}
-.nw-rail__rows > .nw-rail__row:first-child { border-top: 0; }
-button.nw-rail__row:hover .nw-rail__id { color: var(--mh-blue); }
-.nw-rail__id { display: flex; align-items: center; gap: 9px; min-width: 0; }
-.nw-rail__id > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.nw-rail__id .mh-mark { width: 24px; height: 24px; font-size: 8px; }
-.nw-rail__v { display: flex; align-items: baseline; gap: 9px; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.nw-rail__v .mh-change { font-size: 12px; }
-.nw-rail__note { margin: 0; color: var(--mh-muted); font-size: 11px; line-height: 1.6; }
-.nw-rail .mh-empty { min-height: 0; padding: 14px 0; }
-
 @media (max-width: 1040px) {
-  .nw-layout { grid-template-columns: minmax(0, 1fr); gap: 36px; padding-top: 24px; }
-  .nw-rail { position: static; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .nw-rail__note, .nw-rail .mh-see-all { grid-column: 1 / -1; }
+  .nw-layout { padding-top: 24px; }
 }
 @media (max-width: 700px) {
-  .nw-rail { grid-template-columns: minmax(0, 1fr); }
   .nw-story { grid-template-columns: minmax(0, 1fr) 104px; gap: 16px; padding: 18px 0; }
   .nw-story__thumb { width: 104px; }
   .nw-story__t { font-size: 16px; }

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — the Sectors block
+   Vanlior — the Sectors block
 
    Two panels side by side: a selectable table of sectors, and a treemap of
    whatever is selected. On the market canvas, so the tokens are the market
@@ -58,10 +58,14 @@
    the table beside it however many sectors that table is listing. */
 .sb-panel--map { align-content: stretch; }
 .sb-mapwrap { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: 10px; height: 100%; }
-.sb-map__head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+/* Wraps rather than squeezing. The map panel can be 350px wide, and with a
+   button in the head the note between would otherwise shrink to a column one
+   word wide; given a basis it drops to its own line instead, and the buttons
+   keep the right-hand end of whichever line they land on. */
+.sb-map__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
 .sb-map__head strong { font-size: 13px; font-weight: 650; color: var(--mh-fg); }
-.sb-map__by { flex: 1; min-width: 0; font-size: 11px; color: var(--mh-muted); }
-.sb-map__acts { display: flex; align-items: baseline; gap: 4px; }
+.sb-map__by { flex: 1 1 180px; min-width: 0; font-size: 11px; color: var(--mh-muted); }
+.sb-map__acts { display: flex; align-items: baseline; gap: 4px; margin-left: auto; }
 .sb-back { padding: 2px 6px; border-radius: 6px; font-size: 12px; color: var(--mh-blue); background: transparent; white-space: nowrap; }
 .sb-back:hover { background: var(--mh-hover); }
 

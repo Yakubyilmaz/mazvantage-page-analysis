@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — the Statistics & Metrics tab
+   Vanlior — the Statistics & Metrics tab
 
    The reference sheet. Every current figure the report holds, grouped by
    subject, each one saying what period it covers — and a filter box, because

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — Watchlists
+   Vanlior — Watchlists
 
    A reader's own list of companies, in the same dense table the Quotes
    screener uses, with the same column sets: Overview through Cash flow. The
@@ -22,7 +22,7 @@
    it will cost and waits to be asked.
 
    ---------------------------------------------------------------------------
-   The Maz Quant column
+   The Vanlior Quant column
    ---------------------------------------------------------------------------
 
    This report's own composite, on the reduced set the screens use: a handful
@@ -86,7 +86,7 @@ function writeStore(store) {
   return store;
 }
 
-/* ---------- the Maz Quant column ------------------------------------------
+/* ---------- the Vanlior Quant column ------------------------------------------
 
    `get` returns the number so the column sorts like any other; `fmt` draws the
    pill. A row whose bags are not loaded yet returns null, which the table
@@ -120,7 +120,7 @@ function columnSets(stats) {
       { key: 'volume', label: 'Volume', num: true, get: (r) => r.volume, fmt: (v) => fmtNum(v) },
       { key: 'turnover', label: 'Traded value', num: true,
         get: (r) => (isNum(r.volume) && isNum(r.price) ? r.volume * r.price : null), fmt: fmtMoney },
-      { key: 'quant', label: 'Maz Quant', num: true,
+      { key: 'quant', label: 'Vanlior Quant', num: true,
         get: (r) => quantScore(r, stats),
         fmt: (v) => (isNum(v) ? gradePill(v, letterFor(v)) : na()) },
       { key: 'sector', label: 'Sector', get: (r) => r.bags?.profile?.sector, fmt: (v) => v || na() },
@@ -531,7 +531,7 @@ export function renderWatchlistPage(sub, nav = {}) {
     }
     tabHost.replaceChildren(tabs(sets));
     tableHost.replaceChildren(
-      el('p', { class: 'mh-section-description', text: 'Your own list, in the screener’s table. Overview is one request for the whole list; every other tab is per company and says so before it loads. Maz Quant is this report’s composite on the reduced set — a handful of ratios per factor against the company’s own sector distribution, not the full report grade.' }),
+      el('p', { class: 'mh-section-description', text: 'Your own list, in the screener’s table. Overview is one request for the whole list; every other tab is per company and says so before it loads. Vanlior Quant is this report’s composite on the reduced set — a handful of ratios per factor against the company’s own sector distribution, not the full report grade.' }),
       marketTable({ rows, sets, state, showTabs: false, identity,
         emptyText: 'Nothing in this list matches that.' }),
       purificationBlock(list, rows, () => writeStore(store), (symbol) => nav.goSymbol?.(symbol),

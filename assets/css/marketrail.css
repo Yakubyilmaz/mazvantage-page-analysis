@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — the market rail
+   Vanlior — the market rail
 
    The sticky column down the right of every page. On the market canvas, so
    it carries `.mh-page`'s tokens and follows the theme with everything else.
@@ -63,21 +63,56 @@
 .mr__refresh {
   width: 26px; height: 26px; border-radius: 6px; flex: none;
   color: var(--mh-muted); font-size: 14px; line-height: 1; background: transparent;
+  /* Pushes itself and the hide button to the right edge together. */
+  margin-left: auto;
 }
 .mr__refresh:hover { background: var(--mh-hover); color: var(--mh-fg); }
+
+/* ---- hiding the rail ----------------------------------------------------- */
+
+.mr__toggle {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; margin-left: -6px; border-radius: 6px; flex: none;
+  color: var(--mh-muted); background: transparent;
+}
+.mr__toggle:hover { background: var(--mh-hover); color: var(--mh-fg); }
+.mr__toggle:focus-visible { outline: 2px solid var(--mh-blue); outline-offset: 1px; }
+.mr__toggle-i {
+  width: 18px; height: 18px;
+  fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+}
+
+/* Closed, the rail is a strip holding only its button. The layout narrows its
+   own column to match by looking at the rail — the rail is kept across
+   navigations and the layout is not, so the state lives on the rail. Scoped to
+   the widths where the rail shows at all: below 1280px it is hidden, and a
+   44px column for a hidden rail would be an empty stripe down the page. */
+.mr.is-closed .mr__body,
+.mr.is-closed .mr__brand,
+.mr.is-closed .mr__refresh { display: none; }
+.mr.is-closed .mr__top { justify-content: center; padding: 0; }
+.mr.is-closed .mr__toggle { margin-left: 0; }
+@media (min-width: 1281px) {
+  .layout.has-rail:has(> .mr.is-closed) {
+    grid-template-columns: var(--sidenav-w) minmax(0, 1fr) var(--rail-closed-w, 44px);
+  }
+}
 
 .mr__body { display: grid; }
 
 /* ---- a section ----------------------------------------------------------- */
 
 .mr__sec { border-bottom: 1px solid var(--mh-border); padding-bottom: 8px; }
-.mr__bar { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 0 8px 0 6px; }
+.mr__bar { display: flex; align-items: center; gap: 2px; padding: 0 8px 0 6px; }
 
+/* The caret folds the section; the title beside it is a link to its page. */
 .mr__head {
-  display: flex; align-items: center; gap: 4px; flex: 1; min-width: 0;
-  padding: 11px 4px; background: transparent; text-align: left;
+  display: flex; align-items: center; justify-content: center; flex: none;
+  width: 22px; padding: 11px 0; background: transparent; border-radius: 5px;
 }
-.mr__head:hover .mr__title { color: var(--mh-fg); }
+.mr__head:hover .mr__caret { color: var(--mh-fg); }
+.mr__name { flex: 1; min-width: 0; padding: 11px 2px; background: transparent; text-align: left; }
+.mr__name:hover .mr__title { color: var(--mh-blue); }
 .mr__title { font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--mh-muted); }
 .mr__caret { font-size: 13px; line-height: 1; color: var(--mh-muted); transition: transform .15s; }
 .mr__sec.is-collapsed .mr__caret { transform: rotate(-90deg); }
@@ -146,4 +181,11 @@
 @media (max-width: 1280px) {
   .layout.has-rail { grid-template-columns: var(--sidenav-w) minmax(0, 1fr); }
   .mr { display: none; }
+}
+/* And below 900px the sidenav becomes a strip across the top (app.css), so
+   the layout is one column. This has to be restated here: `.layout.has-rail`
+   outranks app.css's `.layout`, and without it a phone kept a 224px column for
+   a strip that no longer needs one, leaving the page about 150px to live in. */
+@media (max-width: 900px) {
+  .layout.has-rail { grid-template-columns: minmax(0, 1fr); }
 }

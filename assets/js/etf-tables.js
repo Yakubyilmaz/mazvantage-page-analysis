@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — the curated ETF tables
+   Vanlior — the curated ETF tables
 
    Seventeen boards of named funds, each one a question about the market that a
    list of funds answers: what the indices did, what the sectors did, what the

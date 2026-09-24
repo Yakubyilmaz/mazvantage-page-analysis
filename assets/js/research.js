@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — the Research tab
+   Vanlior — the Research tab
 
    An equity research report in the Morningstar house shape: a rating band
    across the top, a price-against-fair-value chart, an analyst note, then
@@ -12,7 +12,7 @@
    ---------------------------------------------------------------------------
 
    Morningstar leads with stars, which are that analyst's price against that
-   analyst's fair value. This report leads with the **Maz Vantage quant
+   analyst's fair value. This report leads with the **Vanlior quant
    rating** — the composite `gradeAll` already computes for every other tab.
    Seventy-odd ratios, each ranked as a percentile against the company's own
    sector, averaged within a factor and then across five factors, printed as a
@@ -1215,7 +1215,7 @@ function ratingBandCard(a, r) {
       el('div', { class: 'rsrhead__r' }, [
         quantBadge(r.quant, { size: 'lg' }),
         el('p', { class: 't-tiny subtle', text: r.quant.verdict
-          ? `Maz Vantage Quant Rating · ${fmtDate(a.ds.asOf)}`
+          ? `Vanlior Quant Rating · ${fmtDate(a.ds.asOf)}`
           : 'Not rated' }),
       ]),
     ]),
@@ -1483,7 +1483,7 @@ function byline(a, nar) {
   }
 
   return el('p', { class: 'rsrby' }, [
-    el('b', { text: 'Maz Vantage model' }),
+    el('b', { text: 'Vanlior model' }),
     el('span', { text: ` · assembled ${fmtDate(a.ds.asOf)} from ` }),
     el('span', { text: src }),
     el('span', { text: ' · no narrative model for this company · no analyst opinion' }),
@@ -1892,7 +1892,7 @@ function methodologyCard(a, r, nar) {
       ['The headline rating',
         'A star rating: the analyst’s price against the analyst’s own fair value, with a margin '
         + 'of safety that widens as their uncertainty rating rises.',
-        `The Maz Vantage quant rating. ${r.quant.graded} ratios ranked as percentiles against the `
+        `The Vanlior quant rating. ${r.quant.graded} ratios ranked as percentiles against the `
         + 'sector, averaged into five factor scores and then across them. Price multiples count, '
         + 'inside the Valuation factor; no fair value estimate does. It answers a different '
         + 'question from a star rating — how the company ranks against peers, not whether it is '

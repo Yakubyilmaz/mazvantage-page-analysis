@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — Investment Ideas
+   Vanlior — Investment Ideas
 
    A page of themed screens. Each idea is a thesis, a set of rules, and the
    companies that currently pass them.
@@ -80,7 +80,7 @@ export const BAG_FEED = {
   metrics: 'metricsTtm',
   // The company's sector, for anything that grades it: a ratio is ranked
   // against its own sector's distribution, so a score without the sector is a
-  // score against the wrong table. The watchlist's Maz Quant column buys this
+  // score against the wrong table. The watchlist's Vanlior Quant column buys this
   // alongside the two ratio feeds.
   profile: 'profile',
   growth: 'growth',

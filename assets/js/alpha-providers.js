@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — the Alpha Signal providers
+   Vanlior — the Alpha Signal providers
 
    Eleven adapters, one per category. Each takes a bag of feed results and
    returns signals; none of them knows what a score is worth, what the page
@@ -1407,7 +1407,7 @@ const attentionProvider = {
     const attentionSource = source({
       id: 'alpha:attention',
       type: 'attention_data',
-      publisher: 'Maz Vantage, from FMP coverage and news counts',
+      publisher: 'Vanlior, from FMP coverage and news counts',
       title: 'Attention and coverage measures',
       publicationDate: ctx.today,
     });

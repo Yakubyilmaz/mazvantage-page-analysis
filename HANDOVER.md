@@ -1,6 +1,6 @@
 # Handover
 
-For the developer folding this into the Maz Vantage platform.
+For the developer folding this into the Vanlior platform.
 
 This repo is a **complete, working stock research report** — 115 ratios across
 five factors, ~60 charts, all of it static ES modules with no build step. It is
@@ -235,6 +235,12 @@ assets/css/tokens.css           design tokens; light theme overrides semantics o
 assets/css/app.css              layout and components
 
 assets/js/app.js                routing, chrome (rail/tabs/price head), tab panels, settings, boot
+assets/js/footer.js             the page footer `chrome()` puts under every page — Seeking
+                                Alpha's shape, black in both themes. Its columns are
+                                read from `NAV`, so a menu change reaches it with no
+                                edit, and a link routes through `openNavItem` exactly
+                                as the rail's flyout does. No About, Terms or social
+                                links: none of those exist, so none are printed
 assets/js/fmp.js                FMP connector: 34 per-symbol feeds plus the
                                 screener, the three calendars and one
                                 transcript on demand, caching, plan-gate
@@ -246,7 +252,7 @@ assets/js/valuation-models.js   13 fair-value models (6 multiples, 6 DCF, 1 vend
 assets/js/gradeview.js          renders a graded factor: tables, pairs, panels,
                                 the per-factor tab, and the Ratings tab
 assets/js/charts.js             SVG primitives — no chart library
-assets/js/snowflake.js          the Vantage Flake radar
+assets/js/snowflake.js          the Vanlior Flake radar
 assets/js/sections.js           narrative sections — overview, dividend, ownership
 assets/js/overview.js           the Overview tab: company head, score card, card grid
 assets/js/financials.js         the Financials tab: the three filed statements
@@ -303,7 +309,10 @@ assets/js/articles.js           the article store — the seam between the feed
                                 and industries from. `queryArticles` returns a
                                 *page* and a total, which is the signature a
                                 server-side query has
-assets/js/feed.js               the Research feed at `?view=research&sub=latest`
+assets/js/feed.js               the Research feed at `?view=research&sub=latest`,
+                                on the market canvas (research.css) — plus the
+                                hero and section strip the article and Strategy
+                                pages share
                                 and the components both editorial surfaces
                                 share: the article card and row, the ticker
                                 link, the two rating chips, the pills and the
@@ -315,8 +324,20 @@ assets/data/articles.json       SAMPLE editorial fixtures — thirty articles
                                 across all seven categories. Real tickers,
                                 realistic figures, nothing live. The feed
                                 prints a standing notice saying so
-assets/js/calendar.js           the Calendar off the rail: earnings, dividends
-                                and splits, a week of company tiles at a time
+assets/js/dividend-model.js     the dividend module's inputs — the payment record with
+                                special dividends split out, the Σ4Q sums rebuilt from the
+                                quarterly statements, and workarounds A and B
+assets/js/dividend-lines.js     the 64 lines of MAZ_DIVIDEND_SPEC_FULL.md as data: weights,
+                                directions, getters, and a reason on every line that cannot
+                                be built
+assets/js/dividend-score.js     four composites on a 1-5 scale. No total, by design
+assets/js/dividendscores.js     the Scores panel on the Dividends tab
+assets/js/calendar.js           the Calendar off the rail, rebuilt on TradingView's:
+                                five calendars (economic, earnings, dividends,
+                                IPO, splits), a strip of seven day cards counting
+                                all five, and one sortable table for the chosen
+                                day. US names and sizes joined from two screener
+                                calls; economic releases at the reader's clock
 assets/js/ideas.js              the Investment Ideas **engine and data**: the 25
                                 portfolios, their rules, the filter registry
                                 and `runIdea`. No longer renders the index —
@@ -347,7 +368,8 @@ assets/js/util.js               formatting and DOM helpers
 
 assets/data/AAPL.json           bundled snapshot, so the app works with no key
 assets/data/sector-stats.json   sector percentile table — SEEDED, see §3
-assets/img/                     brand marks
+assets/img/                     the VL monogram: white for the black rail and footer,
+                                black for light backgrounds, and the favicon tile
 
 tools/build_sector_stats.py     measured distributions from FMP — incomplete, see §3
 tools/make_seed_stats.py        the modelled fallback shipped here
@@ -690,7 +712,7 @@ click path goes unexercised.
 | Page | Sections | What it reads |
 |---|---|---|
 | Markets Data | 10 | The overview hub, the Market Indices and Futures boards, the asset-class pages (equities, funds, economy), the sector/industry snapshots, and the three mover lists — routable but no longer in the menu. See §19. **ETF Market** (`&sub=etfs`) is the one with tabs: Overview, ETF Tables, Beat the Market, News; **Stocks** (`&sub=stocks`) carries Beat the Market beside Overview, Quotes, Sectors and News, and both mount the same `beatmarket.js` block. Its screener was a fourth tab until it became its own view; `&board=screener` still lands on that page |
-| Market News | 6 categories + 4 kept routes | The general and stock news wires, the ETF/index/futures matchers, and a quote rail |
+| Market News | 6 categories + 4 kept routes | The general and stock news wires, and the ETF/index/futures matchers |
 | Stock Screener | 7 | A directory of every listed company, screens via `runIdea()`, and two pages that point elsewhere |
 | ETF Screener | 1 + 15 collections | `?view=etfs` — the same screener pointed at funds. Split out of the Stocks menu: a company is scored against its sector, a fund is selected from a listing, and one menu for both said they were the same thing |
 | Investment Ideas | 1 index + 11 groups | 40 portfolios, each openable as an adjustable screener. See §18 |
@@ -736,8 +758,8 @@ whose name contains one of the words.
 
 ### Market News: one stream, and three kinds of category
 
-The page is a topic strip over a single column of stories with a quote rail
-beside it — publisher, hour, headline, the vendor's own summary, the symbols the
+The page is a topic strip over a single column of stories — publisher, hour,
+headline, the vendor's own summary, the symbols the
 story was filed under, the publisher's picture. The strip carries the six the
 market is read by: **Latest, Stocks, ETFs, Indices, Futures, Economy.**
 
@@ -772,22 +794,46 @@ and kept their routes — `&sub=earnings` and the other three still land, as doe
 `&sub=stock`, the old name for Stocks. Do not present any of them as a vendor
 category.
 
-The rail is context, not content: what the market did while those stories were
-being written. Five blocks — the country's index board, the session's gainers,
-losers and most active, and a **stocks calendar** — and it says quotes may be
-delayed. The calendar is two feeds under one heading, because a reader watching
-the week wants both and the rail has room for one block: the week's earnings
-load with the rail, and the week's ex-dividend dates are fetched the first time
-that tab is clicked, since a request for a list nobody looked at is one this
-page should not make. Both keep one line per company and only US listings — the
-calendar feed carries the same report on three exchanges, and five rows is no
-place for the Swiss line of a US company's results.
+The page has **no rail of its own**. It used to carry one — the country's index
+board, the session's gainers, losers and most active, and a stocks calendar —
+which repeated the market rail (`marketrail.js`) sitting beside it. The index
+board moved into the market rail as its first section, **US market summary**
+(the country follows the markets pages' picker), above the watchlist; the rest
+was already there. The old calendar's ex-dividend toggle did not move: the
+market rail's calendar is the week's earnings, and ex-dates are on the Calendar
+page.
+
+In the market rail a section's **title opens its page** — the summary opens
+Market Indices, Watchlist opens the Watchlist page — and the caret beside it is
+what folds the section away.
+
+### The Calendar: five kinds, one week, one day at a time
+
+Rebuilt 2026-09-24 on TradingView's calendar and the market canvas (`calendar.js`,
+`calendar.css`, tests in `tools/test_calendar.mjs`). A week costs five requests —
+`economic-calendar`, `earnings-calendar` (with `includeReportTimes=true`, which
+adds before-open / after-close and the fiscal period), `dividends-calendar`,
+`ipos-calendar` and `splits-calendar` — because the day cards count all five
+whichever tab is open. Kind, day and filters then redraw what is loaded.
+
+- **Names and market caps** come from two `company-screener` calls (companies,
+  funds) with byte-for-byte the parameters `earningsdesk.js` and
+  `marketpages.js` send, so they are usually cache hits. The market filter
+  defaults to the United States, where that join has names; a listing it does
+  not know shows its ticker and market and sorts after the rest.
+- **Economic releases are instants.** The vendor dates them in UTC; they are
+  shown at the reader's clock time and filed under the reader's own day, so the
+  week is fetched a day wide at each end. Public holidays are dates and stay put.
+  On today's table the next release is marked, the later ones count down, and a
+  line marks "now" — a 30-second ticker, cleared by `page.dispose()`.
+- `?view=calendar&kind=&week=&day=` is the state; `day` is in `VIEW_PARAMS`.
 
 ### The Calendar collapses cross-listings
 
 A week of the earnings calendar carries the same company three or four times:
-the US line, the Swiss one, the German one, and a London depositary. The
-`Listings` filter defaults to **One per company**; `Every listing` turns it off.
+the US line, the Swiss one, the German one, and a London depositary. There is
+no longer a toggle for it: the table is always one row per company, and the
+day bar says how many listings were merged.
 
 `dedupeEvents()` in `calendar.js` runs two passes, because the duplicates come
 in three shapes and the symbol only identifies two of them:
@@ -816,13 +862,13 @@ Three deliberate limits:
 - **It fails visibly.** Where the vendor's two estimates differ even slightly
   (`KIE.L` and `KIERF`), the pair survives as two rows. A duplicate on screen
   beats a company silently hidden, and the count of what *was* merged prints
-  under the week.
+  in the day bar.
 
 Dedupe runs **after** the market filter, not before: with a market chosen the
 reader is asking for that market's listings, and collapsing them onto a primary
 line somewhere else would empty the very filter they set.
 
-The survivor carries `alsoListed`, which the tile puts on its tooltip, so a
+The survivor carries `alsoListed`, which the row's symbol puts on its tooltip, so a
 reader who wonders where the Swiss line went can see it was merged rather than
 dropped. Rows are copied before merging — the week is cached and redrawn on
 every filter change, and writing onto the cached rows would accumulate
@@ -1215,6 +1261,20 @@ Four files, and the split between them is the point:
 | `feed.js` | the feed page and the components both editorial surfaces share |
 | `articlepage.js` | one article |
 
+**Rebuilt 2026-09-24 on the market canvas**, TradingView's ideas page as the
+shape: an eyebrowed hero, the seven categories plus Investing Strategy as the
+canvas's sticky strip, rounded pills (the category's kinds, or the topic
+shortcuts on Latest), a Sort select and a Filters drawer, then a featured lead
+and a grid of cards. A card's top band is what the piece is about — overlapping
+company marks, the tickers, the quant score coloured by band — because these
+pieces have no chart image to lead with. The headline's link is stretched over
+the card; ticker and Shariah chips sit above it with their own targets.
+`articleCard` keeps its name and is what the Earnings desk's Insights tab shows,
+in `.rs-grid`. The article page and Strategy sit on the same canvas; their body
+blocks and cards are the report's primitives, recoloured by `reportcanvas.css`.
+Layout answers to the column, not the screen (`container-type` on `.rs-page` /
+`.ra-page`), because the market rail's hide button moves it by 250px.
+
 ### The data model, and the one idea behind it
 
 **The visible filters are flat. The model underneath is not.**
@@ -1341,7 +1401,7 @@ that fill after the store loads and stay `hidden` when there is nothing, so the
 twelve-column grid never opens a gap.
 
 The News hand-off is deliberately **per company, not per headline**. The
-obvious feature is a "Read Vantace analysis" button on the individual story an
+obvious feature is a "Read Vanlior analysis" button on the individual story an
 article was written from, and that needs the article to record which news item
 that was. Nothing does yet, and matching by ticker and date would attach an
 article to a story it may have nothing to do with.
@@ -2671,3 +2731,111 @@ AAPL only.
   expected analyst count each) are a **stated assumption, not a measured
   distribution**. They are the crudest part of the score, and the calculation
   line on the signal says so.
+
+---
+
+## 23. The dividend module
+
+`MAZ_DIVIDEND_SPEC_FULL.md` is the specification — 64 lines across four
+factors, scraped from Seeking Alpha's dividend pages — and this is the build of
+it. Four files, and the split is the same one the equity model uses:
+
+| | |
+|---|---|
+| `dividend-model.js` | inputs: the payment record, the Σ4Q sums, the workarounds. No ranking |
+| `dividend-lines.js` | the 64 lines as data: weight, direction, getter, and a reason on each one that cannot be built |
+| `dividend-score.js` | the engine: percentile per line → weighted → re-rank → 1–5 |
+| `dividendscores.js` | the Scores panel on the Dividends tab |
+
+Plus `assets/data/dividend-stats.json` (seeded by
+`tools/make_dividend_seed.py`) and `tools/test_dividends.mjs` — 15 checks.
+
+### Four composites and no total, which is a decision rather than a gap
+
+The spec ends by weighting the four factors (Safety 2×) into one number. **This
+build deliberately stops one step short of that**, at the user's instruction,
+and the reasoning holds up: safety, growth and yield pull against each other by
+construction — the highest yields in a sector belong to the least safe payers —
+so averaging them nets out the tension that is the actual finding. The factor
+weights are still carried on `DIV_FACTORS` and printed, so a total is one
+`reduce` away if it is ever wanted.
+
+`tools/test_dividends.mjs` asserts the absence: no top-level `overall`,
+`total`, `score`, `composite` or `grade` on the result.
+
+### It is not the quant rating, and shares nothing with it
+
+Different universe, scale and table. The equity model ranks every company in a
+sector on a 0–5 scale against `sector-stats.json`; this ranks **payers against
+payers** on a **1–5** scale against `dividend-stats.json`. Neither reads the
+other. A company can be a Strong Buy on the quant composite and an F on
+dividend yield, and both statements are true.
+
+The 1–5 scale is the spec's (`score = 1 + 4 × percentile`) and it is why the
+dividend letters are their own ladder in `DIV_BANDS` — a 1.0 here is the worst
+payer in the sector, while a 1.0 on the quant model is a fifth of the way up.
+Sharing `letterFor` would have made one letter mean two positions.
+
+### The universe rule, and the one it is easy to get wrong
+
+**Only payers are scored.** A non-payer is outside the universe, not at the
+bottom of it — `scoreDividends` returns `pays: false` and no factors at all.
+This is also why the table is separate: a yield distribution including every
+non-payer's zero would put a 2% yielder in the top decile of Technology.
+
+A **lapsing** payer is the subtle case. It stays *inside* the universe and is
+flagged, per the spec — a company that has stopped paying is a different thing
+from one that never paid, and only the record can say which. Its forward lines
+go NM rather than annualising a payment that stopped being declared. The first
+build had this wrong (`pays` tested trailing DPS, so a lapsing payer vanished);
+the test now pins it.
+
+### NM, and never imputing
+
+A line that cannot be built carries `na` with a sentence saying why, is never
+computed, and **its weight is renormalised across the survivors** —
+`composeFactor` returns `coverage`, the share of the factor's designed weight
+that produced a figure, which the panel prints instead of a confidence
+adjective. Nothing is ever filled in with a zero or a median.
+
+Four lines are NM everywhere, and the panel names all four: DPS revisions and
+the funded pension status (no feed exists), the 60-month CAPM alpha (the report
+fetches one year of prices, not five) and active institutional ownership (needs
+13F with the passive complexes classified out by CIK).
+
+### Two bugs the tests caught, both of which produced plausible numbers
+
+1. **A truncated first year inflated every long CAGR.** The `dividends` feed
+   returns a fixed row count, so its window opens mid-year: Apple's oldest
+   bucket held one payment, not four, and a ten-year CAGR measured off that
+   quarter reported **23% a year for a dividend growing about 7%**. `dpsByYear`
+   now trims incomplete years off *both* ends. Only the ends — a short year
+   inside the record is real, and Payment Regularity is where it counts.
+2. **Interest coverage of exactly zero scored an F.** That is the vendor's
+   empty cell for a company with no net interest bill, and the spec says Apple
+   should print a dash. Scoring it put a debt-free company at the bottom of the
+   leverage tier. A *negative* ratio is kept — that one is real and should rank
+   badly.
+
+### The distribution table is modelled
+
+`dividend-stats.json` is tagged `"source": "seed"` and the panel says so. The
+ordering within a sector is meaningful; the exact percentile is not, until
+somebody builds a measured one over a live universe. Sector centres carry the
+effects that matter — utilities pay out 74% against technology's 25%, REIT
+payout ratios centre above 100% because they are measured on net income.
+
+**REITs get a standing warning.** The spec is explicit that payout ratios on
+net income misread for property trusts (depreciation crushes EPS; the
+denominator should be FFO/AFFO), and the panel prints that warning whenever the
+sector is Real Estate rather than scoring one silently.
+
+### Cost
+
+The panel is built only when the Scores tab is opened, and it then costs **two
+requests** — `incomeQ` and `cashflowQ`, which are `onDemand` and therefore
+absent from the company report's own load. Every Σ4Q figure in the spec needs
+them; without them fourteen of Safety's twenty-seven lines go dark.
+`loadDividendFeeds` uses the same three-step `loadAlphaBag` does — the dataset,
+then live, then the bundled snapshot — so the module works with no API key on
+the captured company.

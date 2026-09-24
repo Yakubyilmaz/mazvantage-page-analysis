@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — sector-relative grading
+   Vanlior — sector-relative grading
 
    The one place that knows how a raw ratio becomes a grade.
 

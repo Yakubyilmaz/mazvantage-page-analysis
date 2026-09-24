@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — the Sectors block
+   Vanlior — the Sectors block
 
    Market Data's sector breakdown: a table of sectors on the left, a treemap
    on the right, and clicking a sector swaps the treemap for the industries
@@ -131,8 +131,9 @@ function squarify(items, x, y, w, h, out = []) {
   return out;
 }
 
-/** One treemap over `rows` of `{ label, weight, change }`. */
-function treemap(rows, { onPick = null } = {}) {
+/** One treemap over `rows` of `{ label, weight, change }`. `linksIndustries`
+    says an industry tile opens its page, so its tooltip can say so too. */
+function treemap(rows, { onPick = null, linksIndustries = false } = {}) {
   const live = rows.filter((r) => r.weight > 0).sort((a, b) => b.weight - a.weight);
   if (!live.length) return emptyState('unavailable', 'Nothing to map here.', true);
 
@@ -149,7 +150,8 @@ function treemap(rows, { onPick = null } = {}) {
       class: `sb-map__t is-${heatTone(t.change)}${share < 0.035 ? ' is-tiny' : share < 0.09 ? ' is-small' : ''}`,
       style: { left: `${t.x}%`, top: `${t.y}%`, width: `${t.w}%`, height: `${t.h}%` },
       title: `${t.label} · ${pct(t.weight, { already: true })} of market cap`
-        + `${isNum(t.change) ? ` · ${pct(t.change, { already: true, sign: true })} today` : ''}`,
+        + `${isNum(t.change) ? ` · ${pct(t.change, { already: true, sign: true })} today` : ''}`
+        + `${t.industry && linksIndustries ? ' · opens the industry page' : ''}`,
     };
     return onPick
       ? el('button', { type: 'button', ...attrs, onclick: () => onPick(t) }, body)
@@ -289,19 +291,25 @@ function tilesFor(data, selected) {
 /**
  * The section.
  *
- * `onSector` and `onIndustry` are optional: without them the tiles and the
- * table rows still select, they just do not navigate. The heading takes an
- * `onOpen` the same way — a title that looks like a link and goes nowhere is
- * worse than one that plainly does not, so the arrow only appears with one.
+ * Every way out is optional, because the block sits on two pages that want
+ * different ones — a title or a button that looks like a link and goes nowhere
+ * is worse than one that plainly does not, so each appears only with its
+ * callback.
+ *
+ *   onOpen        makes the heading a link
+ *   onAll         a "Sectors & industries" button above the map while it shows
+ *                 every sector — the way to the full breakdown. The Sectors
+ *                 page leaves it out: that page is where it would lead.
+ *   onSectorPage  an "Open <sector>" button above the map once one is chosen.
+ *                 The row and tile clicks belong to the drill-down, so leaving
+ *                 the page cannot also be those clicks.
+ *   onIndustry    what an industry tile opens — its own page
+ *   onSector      told when a row is chosen, for a page that follows along
+ *
+ * `title` renames the heading, for the page where this block *is* the subject
+ * and a second heading called Sectors under a page called Sectors reads wrong.
  */
-/**
- * `onOpen` makes the heading a link; `title` renames it, for the page where
- * this block *is* the subject and a second heading called Sectors under a page
- * called Sectors reads as a mistake. `onSectorPage` puts a way through to one
- * sector's own page above the map — the row click belongs to the drill-down,
- * so leaving the page cannot also be the row click.
- */
-export function sectorsBlock({ onOpen = null, onSector = null, onIndustry = null,
+export function sectorsBlock({ onOpen = null, onAll = null, onSector = null, onIndustry = null,
   onSectorPage = null, title = 'Sectors' } = {}) {
   const root = el('section', { class: 'mh-section sb', id: 'market-sectors', 'aria-label': title });
   const body = el('div', { class: 'sb__body' }, [emptyState('loading', '', true)]);
@@ -334,6 +342,10 @@ export function sectorsBlock({ onOpen = null, onSector = null, onIndustry = null
         el('strong', { text: selected === ALL ? 'All sectors' : selected }),
         el('span', { class: 'sb-map__by', text: 'Sized by market weight, coloured by today' }),
         el('span', { class: 'sb-map__acts' }, [
+          selected === ALL && onAll ? el('button', {
+            type: 'button', class: 'sb-back', title: 'Every sector and the industries inside it',
+            onclick: onAll,
+          }, ['Sectors & industries', arrow()]) : null,
           selected === ALL || !onSectorPage ? null : el('button', {
             type: 'button', class: 'sb-back', onclick: () => onSectorPage(selected),
           }, [`Open ${selected}`, arrow()]),
@@ -344,6 +356,7 @@ export function sectorsBlock({ onOpen = null, onSector = null, onIndustry = null
         ].filter(Boolean)),
       ]),
       treemap(tiles, {
+        linksIndustries: !!onIndustry,
         onPick: (t) => {
           if (t.rest) return;
           if (t.sector) { selected = t.sector; draw(); return; }

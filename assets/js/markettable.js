@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — the dense market table
+   Vanlior — the dense market table
 
    One table shape, used by every page that lists a lot of companies: All
    Stocks, the ETF directory, and anything added later. It is the interaction

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — analysis model
+   Vanlior — analysis model
 
    Turns a raw FMP `Dataset` into the numbers the report renders:
 

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — graded factor views
+   Vanlior — graded factor views
 
    Renders one factor as: a header carrying its 0-5 score and letter, then a
    block per subtopic, then inside each block the ratio table —

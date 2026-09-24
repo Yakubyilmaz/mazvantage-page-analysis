@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Maz Vantage — seed sector distributions.
+Vanlior — seed sector distributions.
 
 Generates a *modelled* assets/data/sector-stats.json so the report grades
 sensibly before anyone has run the real builder. It is tagged

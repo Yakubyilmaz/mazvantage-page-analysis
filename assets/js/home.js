@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — Home
+   Vanlior — Home
 
    The market's front page. A banner of what the indices and the busiest
    listings are doing, the wire down the middle with what is popular beside
@@ -185,7 +185,7 @@ export function renderHomePage(sub, nav = {}) {
 
   page.append(
     el('header', { class: 'mh-hero hm-hero' }, [
-      el('div', { class: 'mh-eyebrow', text: 'MAZ VANTAGE' }),
+      el('div', { class: 'mh-eyebrow', text: 'VANLIOR' }),
       el('h1', { class: 'hm-title', text: 'Today’s market' }),
       el('div', { class: 'mh-hero__meta' }, [
         el('span', { text: 'Quotes, rankings and the wire, from Financial Modeling Prep. Every section below is the page it summarises, loaded as you reach it.' }),
@@ -200,7 +200,7 @@ export function renderHomePage(sub, nav = {}) {
     /* No rail of its own any more: Trending, Top gainers and Top losers are
        the market rail's Most active, Gainers and Losers, and that rail is on
        this page too. The wire takes the width the duplicate was using. */
-    el('div', { class: 'nw-layout nw-layout--solo hm-lead' }, [stream]),
+    el('div', { class: 'nw-layout hm-lead' }, [stream]),
     sections,
   );
 

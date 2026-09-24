@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — Investment Ideas
+   Vanlior — Investment Ideas
 
    The portfolio directory at `?view=ideas`, and one portfolio's screener at
    `?view=ideas&idea=<key>`.
@@ -345,7 +345,7 @@ function universeShort(idea) {
 function portfolioPage(idea, nav) {
   // `bootNavPage` titled the page from the section, which for a portfolio is
   // whichever group it happens to sit in. The portfolio is the page.
-  document.title = `${idea.title} — Maz Vantage Investment Ideas`;
+  document.title = `${idea.title} — Vanlior Investment Ideas`;
 
   const state = stateFromUrl(idea);
   const host = el('div', { class: 'ovw' });

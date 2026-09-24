@@ -1,0 +1,84 @@
+/* ==========================================================================
+   Vanlior — the page footer
+
+   Seeking Alpha's footer is the reference, measured off their page: black,
+   40px of air above and below, 12px grey uppercase headings over 14px white
+   links, and hairline rules in #2c3032 between the three bands. It is black in
+   both themes, like the rail on the left, so the two read as the same frame
+   around the page.
+   ========================================================================== */
+
+.ft {
+  /* The content column is a flex column, so on a page shorter than the
+     screen this pushes the footer to the bottom instead of leaving it mid-way
+     up with empty canvas under it. */
+  margin-top: auto;
+  background: #000; color: #fff;
+  padding: 40px 32px 32px;
+  font-size: 14px; line-height: 1.4;
+}
+
+/* ---- the brand band ------------------------------------------------------ */
+
+.ft__top { display: flex; align-items: center; flex-wrap: wrap; gap: 12px 28px; }
+.ft__brand {
+  display: inline-flex; align-items: center; gap: 12px;
+  padding: 0; background: none; border: 0; cursor: pointer;
+}
+.ft__brand:hover { opacity: .85; }
+/* The same white monogram and set name the rail's brand uses, a size up. */
+.ft__mark { height: 28px; width: auto; flex: none; }
+.ft__word { font-size: 26px; font-weight: 600; line-height: 1; letter-spacing: -.01em; color: #fff; }
+.ft__tag { margin: 0; color: #acacac; font-size: 18px; line-height: 1.3; }
+
+.ft__rule { height: 1px; background: #2c3032; margin: 32px 0; }
+
+/* ---- the link columns ---------------------------------------------------- */
+
+/* Flowing columns rather than Seeking Alpha's grid rows. Their groups are
+   much the same length; ours run from one link (Watchlist) to eighteen (ETF
+   Screener), and in rows every short group sat over a hole the height of the
+   longest one in its row — about 900px of black at a laptop width. */
+.ft__cols { columns: 176px; column-gap: 40px; }
+.ft__col { break-inside: avoid; margin-bottom: 32px; }
+.ft__h {
+  margin: 0 0 16px; padding: 0;
+  font-size: 12px; line-height: 14px; font-weight: 400; letter-spacing: .04em;
+  text-transform: uppercase; color: #acacac;
+}
+.ft__links { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.ft__link {
+  display: inline; padding: 0; margin: 0; border: 0; background: none;
+  font: inherit; font-size: 14px; line-height: 16px; color: #fff; text-align: left; cursor: pointer;
+}
+.ft__link:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+/* ---- the base strip ------------------------------------------------------ */
+
+.ft__base {
+  display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between;
+  gap: 8px 32px; font-size: 12px; line-height: 16px;
+}
+.ft__copy { margin: 0; color: #fff; }
+.ft__credit { margin: 0; color: #acacac; }
+.ft__credit a { color: #fff; text-decoration: underline; text-underline-offset: 2px; }
+.ft__credit a:hover { color: #acacac; }
+.ft__note { margin: 12px 0 0; max-width: 92ch; color: #8a8a8a; font-size: 12px; line-height: 18px; }
+
+/* One focus ring for everything in the footer: white on black, whatever the
+   page's own accent is. */
+.ft button:focus-visible, .ft a:focus-visible { outline: 2px solid #fff; outline-offset: 3px; border-radius: 2px; }
+
+@media (max-width: 700px) {
+  .ft { padding: 28px 16px 24px; }
+  .ft__rule { margin: 24px 0; }
+  .ft__cols { columns: 140px; column-gap: 24px; }
+  .ft__col { margin-bottom: 28px; }
+  .ft__tag { font-size: 16px; }
+  .ft__mark { height: 22px; }
+  .ft__word { font-size: 21px; }
+}
+
+@media print {
+  .ft { display: none; }
+}

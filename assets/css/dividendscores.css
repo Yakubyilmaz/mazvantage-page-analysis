@@ -1,0 +1,138 @@
+/* ==========================================================================
+   Vanlior — the dividend scores panel
+
+   Inside the report's own card on the Dividends tab, so it inherits the
+   canvas tokens through `reportcanvas.css` and follows the theme with
+   everything else. `dvs-` throughout.
+   ========================================================================== */
+
+.dvs-loading, .dvs-none { margin: 0; font-size: 13px; color: var(--text-soft); }
+.dvs-none strong { color: var(--text-solid); }
+
+.dvs-lede {
+  margin: 0 0 18px; max-width: 92ch;
+  font-size: 13px; line-height: 1.65; color: var(--text-soft);
+}
+.dvs-lede b { color: var(--text-solid); }
+
+/* ---- the four composites ------------------------------------------------- */
+
+/* Four across where there is room, two on a laptop with the rail open, one on
+   a phone. Never three: the fourth wrapping alone under three reads as an
+   afterthought rather than as one of four equals. */
+.dvs-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+
+.dvs-card {
+  display: flex; flex-direction: column; gap: 6px; min-width: 0;
+  padding: 14px 16px 12px; border: 1px solid var(--border-soft); border-radius: 12px;
+  /* The tone band down the left edge: the score's own colour, so the four
+     cards read as four grades before a word of them is read. */
+  border-left: 3px solid var(--border-strong);
+}
+.dvs-card.is-strong { border-left-color: var(--grade-strong, #1a9c6b); }
+.dvs-card.is-good   { border-left-color: var(--ok, #2e9e5b); }
+.dvs-card.is-mid    { border-left-color: var(--grade-mid, #c98a12); }
+.dvs-card.is-weak   { border-left-color: var(--grade-poor, #d9803a); }
+.dvs-card.is-poor   { border-left-color: var(--bad, #d64545); }
+
+.dvs-card__t { margin: 0; font-size: 13px; font-weight: 650; color: var(--text-solid); }
+.dvs-card__q { margin: 0; font-size: 11px; line-height: 1.45; color: var(--text-subtle); min-height: 2.9em; }
+.dvs-card__score { display: flex; align-items: baseline; gap: 8px; margin-top: 2px; }
+.dvs-card__score b { font-size: 30px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; color: var(--text-solid); }
+.dvs-card__letter { font-size: 14px; font-weight: 650; color: var(--text-soft); }
+.dvs-card__rank { margin: 0; font-size: 11px; color: var(--text-softer); }
+
+.dvs-cov { display: grid; gap: 4px; margin-top: 4px; }
+.dvs-cov__track { height: 3px; border-radius: 2px; background: var(--surface-3); overflow: hidden; }
+.dvs-cov__track i { display: block; height: 100%; background: var(--text-softer); }
+.dvs-cov span { font-size: 10px; color: var(--text-subtle); }
+
+.dvs-more {
+  align-self: flex-start; margin-top: 6px; padding: 0;
+  background: none; border: 0; cursor: pointer;
+  font-size: 11px; font-weight: 600; color: var(--brand-01);
+}
+.dvs-more:hover { text-decoration: underline; }
+
+/* ---- the lines behind a factor ------------------------------------------- */
+
+.dvs-detail { display: grid; gap: 16px; }
+.dvs-lines {
+  margin-top: 18px; padding: 16px 18px;
+  border: 1px solid var(--border-soft); border-radius: 12px; background: var(--surface-2);
+}
+/* An author `display` beats the user agent's `[hidden]`, so a grid or a flex
+   container has to opt back out itself or the panel never closes. */
+.dvs-lines[hidden] { display: none; }
+.dvs-lines__t { margin: 0 0 4px; font-size: 13px; font-weight: 650; color: var(--text-solid); }
+.dvs-lines__b { margin: 0 0 14px; max-width: 88ch; font-size: 12px; line-height: 1.6; color: var(--text-softer); }
+
+.dvs-group + .dvs-group { margin-top: 14px; }
+.dvs-group h4 {
+  margin: 0 0 6px; font-size: 10px; font-weight: 600; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--text-subtle);
+}
+.dvs-rows { display: grid; }
+
+.dvs-row {
+  display: grid; grid-template-columns: 42px minmax(0, 1fr) auto 76px;
+  align-items: baseline; gap: 12px;
+  padding: 8px 0; border-top: 1px solid var(--border-subtle);
+}
+.dvs-rows > .dvs-row:first-child { border-top: 0; }
+.dvs-row.is-off { opacity: .62; }
+.dvs-row__w { font-size: 11px; color: var(--text-subtle); font-variant-numeric: tabular-nums; }
+.dvs-row__l { display: grid; gap: 2px; min-width: 0; }
+.dvs-row__l b { font-size: 12px; font-weight: 600; color: var(--text-strong); }
+.dvs-row__l small { font-size: 11px; line-height: 1.5; color: var(--text-subtle); }
+.dvs-row__note { color: var(--text-softer); font-style: italic; }
+.dvs-row__v { font-size: 12px; font-variant-numeric: tabular-nums; color: var(--text-solid); white-space: nowrap; }
+
+.dvs-row__g {
+  display: flex; align-items: baseline; justify-content: flex-end; gap: 5px;
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.dvs-row__g b { font-size: 12px; font-weight: 700; }
+.dvs-row__g span { font-size: 10px; color: var(--text-softer); }
+.dvs-row__g.is-strong b { color: var(--grade-strong, #1a9c6b); }
+.dvs-row__g.is-good b   { color: var(--ok, #2e9e5b); }
+.dvs-row__g.is-mid b    { color: var(--grade-mid, #c98a12); }
+.dvs-row__g.is-weak b   { color: var(--grade-poor, #d9803a); }
+.dvs-row__g.is-poor b   { color: var(--bad, #d64545); }
+.dvs-row__g.is-na { font-size: 10px; color: var(--text-subtle); }
+
+.dvs-tag {
+  margin-left: 6px; padding: 1px 6px; border-radius: 999px;
+  border: 1px solid var(--border-soft); background: var(--surface-1);
+  font-size: 9px; font-style: normal; font-weight: 600; letter-spacing: .03em;
+  color: var(--text-softer); white-space: nowrap; cursor: help;
+}
+
+.dvs-nm { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border-soft); }
+.dvs-nm h4 {
+  margin: 0 0 6px; font-size: 10px; font-weight: 600; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--text-subtle);
+}
+.dvs-nm ul { margin: 0; padding-left: 18px; display: grid; gap: 5px; }
+.dvs-nm li { font-size: 11px; line-height: 1.55; color: var(--text-softer); }
+.dvs-nm li b { color: var(--text-soft); }
+.dvs-nm__note { margin: 8px 0 0; font-size: 11px; color: var(--text-subtle); }
+
+/* ---- the disclosure ------------------------------------------------------ */
+
+.dvs-disc { margin-top: 18px; font-size: 11px; color: var(--text-softer); }
+.dvs-disc summary { cursor: pointer; width: fit-content; color: var(--text-soft); }
+.dvs-disc > div { padding-top: 10px; display: grid; gap: 8px; max-width: 94ch; }
+.dvs-disc p { margin: 0; line-height: 1.65; }
+.dvs-disc b { color: var(--text-soft); }
+.dvs-disc code { font-size: 10px; }
+
+@media (max-width: 1240px) {
+  .dvs-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 620px) {
+  .dvs-grid { grid-template-columns: minmax(0, 1fr); }
+  .dvs-card__q { min-height: 0; }
+  .dvs-row { grid-template-columns: 38px minmax(0, 1fr) auto; row-gap: 4px; }
+  .dvs-row__g { grid-column: 2 / -1; justify-content: flex-start; }
+}

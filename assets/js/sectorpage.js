@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — the sector pages
+   Vanlior — the sector pages
 
    Two levels, the way a sector section wants to work:
 
@@ -344,6 +344,9 @@ function breakdownPage(nav) {
       // the map head says the tiles are still coloured by the session.
       title: 'Market weight and the year',
       onSectorPage: (sector) => nav.goView?.('sectors', sectorSlug(sector)),
+      // An industry tile opens that industry's page, as its row in the
+      // Performance table below already does.
+      onIndustry: (industry) => nav.goIndustry?.(industry),
     }),
     el('section', { class: 'mh-section', id: 'sector-performance', 'aria-label': 'Sector performance' }, [
       el('h2', { class: 'mh-heading mh-heading--section' }, [
@@ -655,7 +658,7 @@ function groupPage(kind, name, nav) {
   // The router names the tab from the nav entry, and an industry's entry is
   // the hidden one called "Industry" — true of the route, useless to a reader
   // with three of these open. The page knows which one it is, so it says so.
-  try { document.title = `${name} — Maz Vantage`; } catch { /* no document */ }
+  try { document.title = `${name} — Vanlior`; } catch { /* no document */ }
   const page = el('main', { class: 'mh-page mi-page mi-page--group', id: 'sector-group' });
   const body = el('div', { class: 'mi-body' });
   const navigation = el('nav', { class: 'mh-navigation', 'aria-label': `${name} sections` });

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — the Research menu
+   Vanlior — the Research menu
 
    This module is the **router for the Research section**, plus the one page
    that has nowhere else to live.
@@ -31,10 +31,10 @@
 
 import { el } from './util.js';
 import { card, notice, ohead, table } from './ui.js';
-import { pageHead, NAV_BY_VIEW } from './nav.js';
+import { NAV_BY_VIEW } from './nav.js';
 import { FACTOR_KEYS, FACTOR_BY_KEY } from './factors.js';
 import { parseQuery } from './taxonomy.js';
-import { renderResearchFeed } from './feed.js';
+import { renderResearchFeed, researchHero, researchStrip } from './feed.js';
 import { renderArticlePage } from './articlepage.js';
 
 /**
@@ -49,7 +49,13 @@ export function renderResearchHubPage(sub, nav = {}) {
     return renderArticlePage(new URLSearchParams(location.search).get('slug'), nav);
   }
   if (sub === 'strategy') {
-    return el('div', {}, [pageHead('research', 'strategy', nav), strategySection(nav)]);
+    // On the canvas with the rest of Research. The cards below are the report's
+    // own primitives, which `reportcanvas.css` restyles inside `.mh-page`.
+    return el('main', { class: 'mh-page rs-page rs-page--strategy', id: 'research-strategy' }, [
+      researchHero('Investing Strategy', 'What this product believes about a company, and what it refuses to do.'),
+      researchStrip('strategy', nav),
+      el('div', { class: 'rs-strategy' }, [strategySection(nav)]),
+    ]);
   }
   return renderResearchFeed(parseQuery(), nav);
 }

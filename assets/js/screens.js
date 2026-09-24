@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — the Stock Screener pages
+   Vanlior — the Stock Screener pages
 
    One menu, one engine. Every list here is a screen over the market, graded
    on the way through by the same lite path the Investment Ideas page uses,

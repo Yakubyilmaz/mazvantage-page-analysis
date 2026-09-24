@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Maz Vantage — layout & components
+   Vanlior — layout & components
    ========================================================================== */
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -69,8 +69,15 @@ svg { display: block; }
   display: flex; flex-direction: column; gap: var(--x4);
   /* Side padding trimmed with the rail's own width: at 224px the gutter and
      the item inset together were costing more than the longest label
-     ("Investment Ideas") had left to sit in, and it wrapped to two lines. */
-  padding: var(--x3) var(--x1_5);
+     ("Investment Ideas") had left to sit in, and it wrapped to two lines.
+     The budget, measured: 224 − 2×8 gutter − 2×10 inset − 20 icon − 2×10
+     gaps − 15 caret leaves 133px, and the label needs 113. A scrollbar still
+     leaves room, and the labels are `nowrap` besides (`.sidenav__item`). */
+  padding: var(--x3) var(--x1);
+  /* When the rail does scroll, a thin dark bar rather than the default 15px
+     grey one, which was taking its width straight out of the labels. */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, .18) transparent;
   /* A sticky element is a stacking context whatever its z-index, so the rail
      caps everything inside it — the hover flyouts ask for `--z-popover` and
      still came out under the page, because 800 only ranks them against their
@@ -82,18 +89,26 @@ svg { display: block; }
   display: flex; align-items: center; gap: var(--x1_5);
   /* Side padding matches `.sidenav__item`, so the mark starts on the same
      vertical line as the nav icons under it. */
-  padding: var(--x1) var(--x1_5);
+  padding: var(--x1) 10px;
 }
-/* Supplied artwork, both filled white, so they only ever sit on the rail. */
-/* Scaled down with the rail. Both are set by height with `width: auto`, so
-   each keeps its own aspect ratio and the two stay in proportion. */
-.sidenav__mark { height: 22px; width: auto; flex: none; }
-.sidenav__word { height: 16px; width: auto; flex: none; }
+/* The VL monogram, supplied in white for the black rail (vanlior-mark-white
+   .svg; the black one is for light backgrounds). Set by height with
+   `width: auto`, so it keeps its own 3245:2204 proportions. */
+.sidenav__mark { height: 20px; width: auto; flex: none; }
+/* The name is set as text rather than artwork: there is a mark file for the
+   VL monogram but no wordmark, and live text stays sharp at any zoom. */
+.sidenav__word { flex: none; font-size: 19px; font-weight: 600; line-height: 1; letter-spacing: -.01em; color: #fff; }
 .sidenav__nav { display: grid; gap: 2px; }
 .sidenav__item {
-  display: flex; align-items: center; gap: var(--x1_5);
-  padding: var(--x1_5); border-radius: var(--r-1);
+  display: flex; align-items: center; gap: 10px;
+  /* 9px, not 12, top and bottom: fourteen items at the old height needed
+     878px and put a scrollbar on the rail at a 760px-tall window. */
+  padding: 9px 10px; border-radius: var(--r-1);
   font-size: var(--text-sm); color: #a1a1aa;
+  /* A label never wraps. "Investment Ideas" on two lines made its row twice
+     the height of every other; if a label ever outgrows the rail it ends in
+     an ellipsis instead (`.railtop__l`). */
+  white-space: nowrap;
   cursor: default; user-select: none;
   transition: background .12s ease, color .12s ease;
 }
@@ -123,6 +138,14 @@ svg { display: block; }
   border-bottom: 1px solid var(--border-soft);
 }
 .utilbar__spacer { flex: 1; }
+/* Pricing's only entry point in the chrome: text, because it is a page rather
+   than a control, and quiet, because a research tool that shouts about its
+   plans in every header is selling instead of reporting. */
+.utilbar__plans {
+  padding: 7px 13px; border: 1px solid var(--border-strong); border-radius: 999px;
+  font-size: 12px; font-weight: 600; color: var(--text-soft); white-space: nowrap;
+}
+.utilbar__plans:hover { color: var(--text-solid); border-color: var(--brand-01); background: var(--brand-01-subtle); }
 
 /* ---------- stock head --------------------------------------------------- */
 
@@ -476,14 +499,6 @@ svg { display: block; }
 .person__t { font-size: var(--text-tiny); color: var(--text-softer); }
 .person__pay { margin-left: auto; text-align: right; font-size: var(--text-xs);
   font-variant-numeric: tabular-nums; }
-
-/* ---------- footer ------------------------------------------------------- */
-.foot { border-top: 1px solid var(--border-soft); margin-top: var(--x6); padding: var(--x4) 0 0; }
-.foot__cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--x3); }
-.foot h4 { font-size: var(--text-tiny); text-transform: uppercase; letter-spacing: .07em;
-  color: var(--text-softer); margin-bottom: var(--x1); }
-.foot li { font-size: var(--text-xs); color: var(--text-soft); padding: 3px 0; }
-.foot__legal { margin-top: var(--x4); font-size: var(--text-tiny); color: var(--text-subtle); line-height: 1.7; }
 
 /* ---------- settings dialog ---------------------------------------------- */
 dialog {
@@ -1682,17 +1697,15 @@ dialog .hint { font-size: var(--text-tiny); color: var(--text-softer); margin-to
 }
 
 /* ==========================================================================
-   The Calendar
+   A row of labelled fields
 
-   A week as five columns of company tiles. The logo carries the naming,
-   because the calendar feeds return a symbol and a date and nothing else —
-   so the tile is deliberately mostly image, with the ticker under it for the
-   long tail the vendor has no picture for.
+   Built for the old Calendar's filters and kept for the report's Dividends
+   tab, whose income calculator lays its inputs out the same way. The
+   Calendar itself now lives on the market canvas, in calendar.css.
    ========================================================================== */
 
-/* The filter row. Wraps to two lines under about 900px rather than shrinking
-   the selects, because a select narrower than its longest option truncates
-   the option and the reader cannot tell what they picked. */
+/* Wraps to two lines rather than shrinking the fields, because a select
+   narrower than its longest option truncates it. */
 .calbar {
   display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--x1_5);
   margin-bottom: var(--x3);
@@ -1712,127 +1725,12 @@ dialog .hint { font-size: var(--text-tiny); color: var(--text-softer); margin-to
 .calfield__input:hover { border-color: var(--border-strong); }
 .calfield__input:focus { outline: none; border-color: var(--border-strong); }
 .calfield--search .calfield__input { width: 130px; }
-
-/* Pushed to the far end: the week is the page's other axis, and putting it
-   beside the filters would read as a sixth filter. */
-.calnav { display: inline-flex; align-items: center; gap: var(--x1); margin-left: auto; }
-.calnav__range {
-  font-size: var(--text-xs); color: var(--text-soft); font-variant-numeric: tabular-nums;
-  margin-right: var(--x1);
-}
-.calnav__btn {
-  min-width: 34px; height: 34px; padding: 0 var(--x1);
-  display: inline-grid; place-content: center;
-  border: 1px solid var(--border-soft); border-radius: var(--r-sm);
-  background: var(--surface-1); color: var(--text-soft);
-  font-size: var(--text-sm); font-weight: 600; cursor: pointer;
-}
-.calnav__btn:hover { color: var(--text-solid); border-color: var(--border-strong); }
-.calnav__btn--today { padding: 0 var(--x2); border-radius: var(--r-pill); }
-
-.calcount {
-  font-size: var(--text-tiny); color: var(--text-subtle);
-  margin-bottom: var(--x1_5); font-variant-numeric: tabular-nums;
-}
-
-/* One column per day. `--cal-cols` is set on the element because the week
-   grows a sixth and seventh column only when something is actually scheduled
-   on the weekend. */
-.calweek {
-  display: grid; gap: var(--x1_5);
-  grid-template-columns: repeat(var(--cal-cols, 5), minmax(0, 1fr));
-  align-items: start;
-}
-
-.calday {
-  background: var(--surface-1); border: 1px solid var(--border-soft);
-  border-radius: var(--r-2); padding: var(--x1_5);
-  display: flex; flex-direction: column; gap: var(--x1_5); min-width: 0;
-}
-/* Today is marked by its heading, not by a filled column: a tinted block
-   behind forty logos fights every one of them. */
-.calday.is-today { border-color: var(--brand-01); }
-.calday.is-today .calday__name { color: var(--brand-01); }
-
-.calday__head {
-  display: flex; align-items: baseline; justify-content: space-between; gap: var(--x1);
-  padding-bottom: var(--x1); border-bottom: 1px solid var(--border-soft);
-}
-.calday__name {
-  font-size: var(--text-xs); font-weight: 600; color: var(--text-solid);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.calday__count {
-  font-size: var(--text-micro); color: var(--text-subtle);
-  font-variant-numeric: tabular-nums; flex: none;
-}
-.calday__empty { font-size: var(--text-tiny); color: var(--text-subtle); padding: var(--x1) 0; }
-
-/* `auto-fill`, not `auto-fit`: a day with two events should show two tiles at
-   their own size rather than two tiles stretched across the whole column. */
-.calday__grid {
-  display: grid; gap: var(--x1);
-  grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
-}
-
-.calday__more {
-  font-size: var(--text-tiny); font-weight: 600; color: var(--text-soft);
-  background: none; text-align: left; cursor: pointer;
-}
-.calday__more:hover { color: var(--text-solid); text-decoration: underline; }
-
-/* ---------- the tile ------------------------------------------------------ */
-
-.caltile {
-  display: flex; flex-direction: column; align-items: center; gap: 5px;
-  padding: 6px 2px; border-radius: var(--r-1);
-  background: none; border: 1px solid transparent; cursor: pointer; min-width: 0;
-}
-.caltile:hover { background: var(--surface-2); border-color: var(--border-soft); }
-
-/* White behind every logo in both themes. The vendor's images are mostly
-   transparent PNGs drawn for a light page, and a dark card turns half of
-   them into a silhouette. */
-.caltile__logo, .caltile__mono {
-  width: 40px; height: 40px; border-radius: var(--r-1); flex: none;
-  object-fit: contain; background: #fff; border: 1px solid var(--border-soft);
-}
-.caltile__mono {
-  display: grid; place-content: center;
-  font-size: 10px; font-weight: 700; letter-spacing: -0.02em;
-  color: hsl(0 0% 35%); background: hsl(0 0% 93%);
-  overflow: hidden; padding: 0 2px;
-}
-
-.caltile__sym {
-  font-size: var(--text-micro); font-weight: 600; color: var(--text-soft);
-  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-.caltile:hover .caltile__sym { color: var(--text-solid); }
-.caltile__note {
-  font-size: 10px; color: var(--text-subtle); font-variant-numeric: tabular-nums;
-  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-
-/* Reuses the app's shimmer rather than inventing a second loading idiom. */
-.caltile--skeleton { height: 62px; }
-
-/* Five columns stop being columns well before the phone: at 1000px each is
-   about 150px, which is three tiles across, and below that the week reads
-   better as a list of days. */
-@media (max-width: 1000px) {
-  .calweek { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
 @media (max-width: 620px) {
-  .calweek { grid-template-columns: minmax(0, 1fr); }
-  .calnav { margin-left: 0; width: 100%; }
   .calfield__input { max-width: none; }
 }
 
 @media print {
-  .calbar, .calday__more { display: none !important; }
-  .calweek { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .calday { break-inside: avoid; }
+  .calbar { display: none !important; }
 }
 
 /* ==========================================================================
@@ -2489,7 +2387,7 @@ a.nwitem__t:hover { color: var(--brand-01); }
 
 /* The rail item. Same skin as `.sidenav__item`, plus room for the caret. */
 .railtop { width: 100%; justify-content: flex-start; }
-.railtop__l { flex: 1; min-width: 0; text-align: left; }
+.railtop__l { flex: 1; min-width: 0; text-align: left; overflow: hidden; text-overflow: ellipsis; }
 .railtop__c {
   width: 15px; height: 15px; flex: none; opacity: .45;
   transition: transform .14s ease, opacity .14s ease;
@@ -3220,100 +3118,8 @@ a.nwitem__t:hover { color: var(--brand-01); }
 
 /* ---- the feed ------------------------------------------------------------ */
 
-.rfcard { padding-bottom: var(--x1_5); }
-
-.rfhead { margin-bottom: var(--x2); }
-.rfhead__t { font-size: var(--text-xl); font-weight: 600; letter-spacing: -0.01em; }
-.rfhead__b {
-  margin-top: 6px; max-width: 62ch;
-  font-size: var(--text-xs); color: var(--text-softer); line-height: 1.55;
-}
-
-/* Pills scroll sideways rather than wrapping to four rows on a laptop. The
-   scrollbar is hidden but the overflow is real, so a trackpad swipe and a
-   keyboard tab both still reach the far end. */
-.fpills {
-  display: flex; gap: var(--x1); align-items: center;
-  overflow-x: auto; scrollbar-width: none;
-  padding-bottom: var(--x1); margin-bottom: var(--x1);
-}
-.fpills::-webkit-scrollbar { display: none; }
-.fpills--sub, .fpills--topic { padding-top: var(--x1); border-top: 1px solid var(--border-subtle); }
-.fpills--topic { margin-bottom: 0; }
-
-.fpill {
-  display: inline-flex; align-items: center; gap: 6px; flex: none;
-  padding: 6px var(--x1_5); border-radius: var(--r-pill);
-  border: 1px solid var(--border-soft); background: none; cursor: pointer;
-  font-size: var(--text-tiny); font-weight: 600; color: var(--text-softer);
-  white-space: nowrap;
-}
-.fpill:hover { color: var(--text-strong); border-color: var(--border-strong); }
-.fpill.is-active {
-  background: var(--brand-01-softer); border-color: var(--brand-01-soft);
-  color: var(--brand-01);
-}
-.fpill__n {
-  font-style: normal; font-weight: 500; font-size: 10px;
-  color: var(--text-subtle); font-variant-numeric: tabular-nums;
-}
-.fpill.is-active .fpill__n { color: var(--brand-01); opacity: .7; }
-
-.fpills--sub .fpill { font-weight: 500; }
-.fpill--more { margin-left: auto; }
-.fpill__c { width: 13px; height: 13px; transition: transform .15s ease; }
-.fpill--more.is-open .fpill__c { transform: rotate(180deg); }
-
-/* ---- the extra-filters drawer -------------------------------------------- */
-
-.fmore {
-  border-top: 1px solid var(--border-soft);
-  margin-top: var(--x1_5); padding-top: var(--x2);
-  display: grid; gap: var(--x2);
-}
-/* An author `display` beats the user agent's `[hidden] { display: none }`, so
-   the drawer has to opt back out itself. Without this the panel is permanently
-   open and the toggle silently does nothing. */
-.fmore[hidden] { display: none; }
-.fmore__h {
-  font-size: var(--text-micro); font-weight: 600; letter-spacing: .05em;
-  text-transform: uppercase; color: var(--text-subtle); margin-bottom: var(--x1);
-}
-.fmore__row {
-  display: grid; gap: var(--x1_5);
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-}
-.fmore__n {
-  margin-top: var(--x1); font-size: var(--text-micro);
-  color: var(--text-subtle); line-height: 1.5;
-}
-
-.fsel { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
-.fsel__l { font-size: var(--text-micro); color: var(--text-softer); font-weight: 500; }
-.fsel__i {
-  width: 100%; padding: 7px var(--x1); border-radius: var(--r-sm);
-  border: 1px solid var(--border-soft); background: var(--surface-2);
-  color: var(--text-strong); font-size: var(--text-tiny); font-family: inherit;
-}
-.fsel__i:hover { border-color: var(--border-strong); }
-
-/* ---- active filter chips ------------------------------------------------- */
-
-.fchips {
-  display: flex; flex-wrap: wrap; gap: var(--x1);
-  border-top: 1px solid var(--border-subtle);
-  margin-top: var(--x1_5); padding-top: var(--x1_5);
-}
-.fchip {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 4px var(--x1); border-radius: var(--r-sm);
-  background: var(--surface-3); border: 0; cursor: pointer;
-  font-size: var(--text-micro); font-weight: 600; color: var(--text-soft);
-}
-.fchip i { font-style: normal; font-size: var(--text-sm); line-height: 1; color: var(--text-subtle); }
-.fchip:hover { color: var(--text-solid); }
-.fchip:hover i { color: var(--bad); }
-.fchip--clear { background: none; color: var(--text-subtle); text-decoration: underline; }
+/* The feed itself is on the market canvas now (research.css). What stays here
+   is what other pages still borrow from it. */
 
 /* ---- the results bar ----------------------------------------------------- */
 
@@ -3324,42 +3130,8 @@ a.nwitem__t:hover { color: var(--brand-01); }
 .rfbar__n { font-size: var(--text-xs); color: var(--text-softer); }
 .rfbar__n b { color: var(--text-strong); font-variant-numeric: tabular-nums; }
 
-/* ---- the article cards --------------------------------------------------- */
-
-/* A list, not a grid of tiles. Financial reading is a vertical scan of
-   headlines, and a three-across card grid makes the eye travel sideways for
-   every row. Rules between rather than boxes around: twelve bordered cards in
-   a column is eleven more borders than the page needs. */
-.afeed { display: flex; flex-direction: column; }
-.acard {
-  display: flex; flex-direction: column; gap: 6px;
-  padding: var(--x2) 0; border-bottom: 1px solid var(--border-subtle);
-}
-.acard:first-child { padding-top: 0; }
-.acard:last-child { border-bottom: 0; padding-bottom: 0; }
-
-.acard__tickers { display: flex; flex-wrap: wrap; gap: var(--x1_5); align-items: baseline; }
-.acard__more { font-size: var(--text-micro); color: var(--text-subtle); }
-
-.acard__title {
-  font-size: var(--text-lg); font-weight: 600; line-height: 1.35;
-  color: var(--text-solid); letter-spacing: -0.01em;
-  text-decoration: none; max-width: 68ch;
-}
-.acard__title:hover { color: var(--brand-01); }
-
-.acard__sum {
-  font-size: var(--text-xs); color: var(--text-softer);
-  line-height: 1.6; max-width: 78ch;
-}
-
-.acard__meta {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
-  font-size: var(--text-micro); color: var(--text-subtle);
-}
-.acard__type { color: var(--text-softer); font-weight: 600; }
+/* The separator dot between meta items, borrowed by the sector and market pages. */
 .acard__dot { color: var(--text-subtle); }
-.acard__badges { display: flex; flex-wrap: wrap; gap: var(--x1); margin-top: 2px; }
 
 /* ---- the compact row, for Related and for company surfaces --------------- */
 
@@ -3399,34 +3171,6 @@ a.nwitem__t:hover { color: var(--brand-01); }
    The article page
    ========================================================================== */
 
-.apcrumbs {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
-  margin-bottom: var(--x2); font-size: var(--text-micro);
-}
-.apcrumb {
-  background: none; padding: 0; cursor: pointer;
-  color: var(--text-softer); font-size: var(--text-micro); font-weight: 600;
-}
-.apcrumb:hover { color: var(--brand-01); text-decoration: underline; }
-.apcrumbs__s { color: var(--text-subtle); }
-
-.aphead__tickers { display: flex; flex-wrap: wrap; gap: var(--x2); margin-bottom: var(--x1_5); }
-.aphead__t {
-  font-size: var(--text-hero); font-weight: 600; line-height: 1.2;
-  letter-spacing: -0.02em; max-width: 30ch;
-}
-.aphead__s {
-  margin-top: var(--x1_5); max-width: 70ch;
-  font-size: var(--text-base); color: var(--text-soft); line-height: 1.55;
-}
-.aphead__meta {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
-  margin-top: var(--x2); font-size: var(--text-micro); color: var(--text-subtle);
-}
-.aphead__by { color: var(--text-soft); font-weight: 600; }
-.aphead__badges { display: flex; flex-wrap: wrap; gap: var(--x1); margin-top: var(--x1_5); }
-.aphead__badges:empty { display: none; }
-
 /* One measure for the prose, and it is the reason the article body has its own
    column rather than running the full twelve. Anything past about 75
    characters costs the reader the start of the next line. */
@@ -3438,7 +3182,6 @@ a.nwitem__t:hover { color: var(--brand-01); }
   font-size: var(--text-lg); font-weight: 600; letter-spacing: -0.01em;
   color: var(--text-solid); margin: var(--x3) 0 var(--x1_5);
 }
-.apbody > *:first-child { margin-top: 0; }
 
 .apblock__t {
   font-size: var(--text-micro); font-weight: 600; letter-spacing: .05em;
@@ -3471,42 +3214,7 @@ a.nwitem__t:hover { color: var(--brand-01); }
   font-size: var(--text-tiny); color: var(--text-soft);
 }
 
-/* ---- the side column ----------------------------------------------------- */
-
-/* Not a `.card` itself — a stack of them. `.ovw > .card` does not apply, so
-   the gap is set here. */
-/* `align-self: start` because a grid item stretches to its row by default, and
-   this row is as tall as the article body — which left the side column's last
-   card floating above several hundred pixels of nothing. */
-.apside { display: flex; flex-direction: column; gap: var(--x3); align-self: start; }
-.apside > .card { margin-bottom: 0; }
-
-.aprate { padding: var(--x1_5) 0; border-bottom: 1px solid var(--border-subtle); }
-.aprate:last-of-type { border-bottom: 0; }
-.aprate__k {
-  font-size: var(--text-micro); font-weight: 600; letter-spacing: .04em;
-  text-transform: uppercase; color: var(--text-subtle); margin-bottom: var(--x1);
-}
-.aprate__b {
-  margin-top: var(--x1); font-size: var(--text-micro);
-  color: var(--text-softer); line-height: 1.55;
-}
-
-.apsubs { display: flex; flex-direction: column; gap: var(--x1); margin-bottom: var(--x1_5); }
-.apsub {
-  display: grid; grid-template-columns: 60px minmax(0, 1fr); gap: 2px var(--x1);
-  padding: var(--x1); border-radius: var(--r-sm); background: var(--surface-2);
-  cursor: pointer; text-align: left;
-}
-.apsub:hover { background: var(--surface-3); }
-.apsub b { font-size: var(--text-xs); font-weight: 700; color: var(--text-strong); }
-.apsub span { font-size: var(--text-xs); color: var(--text-soft); }
-.apsub i {
-  grid-column: 2; font-style: normal; font-size: var(--text-micro); color: var(--text-subtle);
-}
-.apsub:hover b { color: var(--brand-01); }
-
-.aptopics { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: var(--x1_5); }
+/* The topic chip, borrowed by the portfolio pages. */
 .aptopic {
   padding: 4px var(--x1); border-radius: var(--r-pill);
   border: 1px solid var(--border-soft); background: none; cursor: pointer;
@@ -3516,24 +3224,11 @@ a.nwitem__t:hover { color: var(--brand-01); }
 
 /* ---- narrow -------------------------------------------------------------- */
 
-@media (max-width: 1180px) {
-  /* The article's side column follows the body rather than sitting beside a
-     half-width one: at span 6 the ratings card and the related list would each
-     be half a column wide and twice as tall. */
-  .apside { grid-column: span 12; flex-direction: row; flex-wrap: wrap; align-items: flex-start; }
-  .apside > .card { flex: 1 1 260px; }
-}
-
 @media (max-width: 720px) {
-  .acard__title { font-size: var(--text-base); }
-  .aphead__t { font-size: var(--text-mega); }
-  .aphead__s { font-size: var(--text-sm); }
-  .apside { flex-direction: column; }
   .rfbar { align-items: flex-start; }
 }
 
 @media (max-width: 560px) {
-  .fmore__row { grid-template-columns: minmax(0, 1fr); }
   .fpager { flex-wrap: wrap; gap: var(--x1); }
   .fpager__n { order: -1; width: 100%; text-align: center; }
 }
@@ -3541,8 +3236,7 @@ a.nwitem__t:hover { color: var(--brand-01); }
 /* On paper a filter is not a control and a pill row is noise. The article
    keeps its head, its body and its tables. */
 @media print {
-  .rfcard, .fpager, .fchips, .fmore, .aptopics, .apcrumbs { display: none !important; }
-  .acard { break-inside: avoid; }
+  .fpager { display: none !important; }
 }
 
 /* ==========================================================================

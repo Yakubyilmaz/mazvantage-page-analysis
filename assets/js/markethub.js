@@ -12,6 +12,7 @@ import { etfTablesBoard } from './etf-board.js';
 import { beatTheMarket } from './beatmarket.js';
 import { marketChart } from './markethub-chart.js';
 import { sectorsBlock } from './sectorsblock.js';
+import { sectorSlug } from './nav.js';
 import { economyMaps } from './economy-maps.js';
 import { usEconomy } from './economy-us.js';
 import { countryEconomy } from './economy-country.js';
@@ -705,8 +706,18 @@ export function renderMarketHub(nav = {}, { section = null } = {}) {
     if (!section) {
       const at = ordered.findIndex(n => n.id === 'market-stocks');
       // The heading leads to the Sectors page, like every other section
-      // heading on this canvas that has a page of its own.
-      const block = sectorsBlock({ onOpen: () => nav.goView?.('sectors', 'all') });
+      // heading on this canvas that has a page of its own — and so does a
+      // button above the map, which is where a reader looking at the map
+      // looks for it. A chosen sector opens its own page, an industry tile
+      // its industry's.
+      const openAll = () => nav.goView?.('sectors', 'all');
+      const block = sectorsBlock({
+        onOpen: openAll,
+        onAll: openAll,
+        onSectorPage: (sector) => nav.goView?.('sectors', sectorSlug(sector)),
+        onIndustry: (industry) => (nav.goIndustry
+          ? nav.goIndustry(industry) : nav.goView?.('sectors', 'industry', { industry })),
+      });
       resources.add(block);
       ordered.splice(at < 0 ? ordered.length : at, 0, block);
     }
