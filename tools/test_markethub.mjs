@@ -82,6 +82,10 @@ globalThis.IntersectionObserver = class { observe() {} unobserve() {} disconnect
 globalThis.requestAnimationFrame = callback => queueMicrotask(callback);
 globalThis.getComputedStyle = () => ({ getPropertyValue: () => '' });
 globalThis.matchMedia = () => ({ matches: true });
+// A bare addEventListener is window's. Nothing here fires window input events,
+// so the section jump's take-over listeners only need somewhere to register.
+globalThis.addEventListener = () => {};
+globalThis.removeEventListener = () => {};
 
 const calls = [];
 globalThis.fetch = createFixtureFetch(calls);
