@@ -1,0 +1,284 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* ==========================================================================
+   Maz Vantage — design tokens
+
+   One canvas. The legacy build carried two token sets — the report's gold
+   "tokens.css" and the market pages' `.mh-page` set — and then bridged the
+   first onto the second (`reportcanvas.css`) so every surface ended up on the
+   market canvas anyway. This port keeps only the result of that bridge: the
+   market canvas's colours, plus the two families it never defined (grades
+   and chart series), which come from tokens.css unchanged.
+
+   The names follow shadcn/ui's convention (`--background`, `--muted`,
+   `--accent`, …) so its components theme without translation, plus the
+   app's own: `--up`/`--down` for price moves, `--grade-*` for the A–F ladder,
+   `--chart-*` for series, `--rail-*` for the black product rail.
+
+   Light is the default, as it was: the legacy shell read `light` whenever
+   nothing was stored. `[data-theme]` on <html> is set before first paint by
+   the inline script in `layout.tsx`.
+   ========================================================================== */
+
+:root,
+[data-theme="light"] {
+  --background: #ffffff;
+  --foreground: #131722;
+  --muted: #fafbfc;
+  --muted-foreground: #707785;
+  --accent: #f2f3f5;
+  --accent-foreground: #131722;
+  --border: #e9ebef;
+  --input: #e9ebef;
+  --ring: #2962ff;
+  --primary: #2962ff;
+  --primary-foreground: #ffffff;
+  --secondary: #f2f3f5;
+  --secondary-foreground: #131722;
+  --popover: #ffffff;
+  --popover-foreground: #131722;
+  --card: #ffffff;
+  --card-foreground: #131722;
+  --destructive: #ed4355;
+
+  --up: #078575;
+  --down: #ed4355;
+  --grid: #f0f1f4;
+  --warning: hsl(25 100% 54%);
+
+  /* Grade text sits on a pale tint, so the light set runs much darker than
+     the dark one: measured at 4.5:1 or better against the blended background. */
+  --grade-strong: hsl(155 78% 22%);
+  --grade-good: hsl(96 62% 22%);
+  --grade-mid: hsl(42 96% 23%);
+  --grade-weak: hsl(24 88% 31%);
+  --grade-poor: hsl(2 74% 38%);
+  --grade-na: #707785;
+  --grade-strong-bg: hsl(151 63% 48% / 16%);
+  --grade-good-bg: hsl(96 50% 34% / 14%);
+  --grade-mid-bg: hsl(42 90% 40% / 18%);
+  --grade-weak-bg: hsl(26 85% 45% / 15%);
+  --grade-poor-bg: hsl(2 70% 50% / 13%);
+  --grade-na-bg: hsl(0 0% 13% / 7%);
+
+  --chart-1: hsl(204 75% 51%);
+  --chart-2: hsl(171 100% 35%);
+  --chart-3: hsl(327 46% 51%);
+  --chart-4: hsl(36 72% 64%);
+  --chart-5: hsl(273 81% 61%);
+  --chart-6: hsl(350 74% 64%);
+  --chart-axis: hsl(0 0% 13% / 45%);
+
+  --radar-ring: hsl(50 20% 82%);
+  --radar-fill: rgba(206, 149, 40, 0.8);
+  --radar-line: rgba(206, 149, 40, 1);
+  --radar-label: hsl(0 0% 13%);
+
+  --radius: 10px;
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --background: #131722;
+  --foreground: #e8eaf0;
+  --muted: #191e2a;
+  --muted-foreground: #969ba9;
+  --accent: #202530;
+  --accent-foreground: #e8eaf0;
+  --border: #2a2e39;
+  --input: #2a2e39;
+  --ring: #5085f7;
+  --primary: #5085f7;
+  --primary-foreground: #ffffff;
+  --secondary: #202530;
+  --secondary-foreground: #e8eaf0;
+  --popover: #131722;
+  --popover-foreground: #e8eaf0;
+  --card: #131722;
+  --card-foreground: #e8eaf0;
+  --destructive: #f7525f;
+
+  --up: #26a69a;
+  --down: #f7525f;
+  --grid: #242936;
+
+  --grade-strong: hsl(151 63% 48%);
+  --grade-good: hsl(96 45% 55%);
+  --grade-mid: hsl(43 86% 52%);
+  --grade-weak: hsl(25 100% 54%);
+  --grade-poor: hsl(0 77% 58%);
+  --grade-na: #969ba9;
+  --grade-strong-bg: hsl(151 63% 48% / 14%);
+  --grade-good-bg: hsl(96 45% 55% / 14%);
+  --grade-mid-bg: hsl(43 86% 52% / 14%);
+  --grade-weak-bg: hsl(25 100% 54% / 14%);
+  --grade-poor-bg: hsl(0 77% 58% / 14%);
+  --grade-na-bg: #202530;
+
+  --chart-2: hsl(171 71% 67%);
+  --chart-axis: hsl(0 0% 100% / 35%);
+
+  --radar-ring: hsl(0 0% 22%);
+  --radar-label: hsl(0 0% 100%);
+
+  color-scheme: dark;
+}
+
+/* The product rail and the footer are black in both themes — that contrast
+   is what makes a light page sit against them the way the design intends. */
+:root {
+  --rail-bg: #000000;
+  --rail-fg: #a1a1aa;
+  --rail-hover: rgb(255 255 255 / 0.07);
+  --rail-active: rgb(255 255 255 / 0.10);
+  /* Blue on the black chrome: the dark theme's primary, 6:1 on black (the
+     light theme's #2962ff is 4.3:1 there, under AA for body-size text). */
+  --rail-accent: #5085f7;
+
+  --sidenav-w: 224px;
+  --utilbar-h: 58px;
+  --flake-w: 260px;
+  --shell-max: 1200px;
+  --gutter: clamp(24px, 3.2vw, 64px);
+}
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-destructive: var(--destructive);
+
+  --color-up: var(--up);
+  --color-down: var(--down);
+  --color-grid: var(--grid);
+  --color-warning: var(--warning);
+
+  --color-grade-strong: var(--grade-strong);
+  --color-grade-good: var(--grade-good);
+  --color-grade-mid: var(--grade-mid);
+  --color-grade-weak: var(--grade-weak);
+  --color-grade-poor: var(--grade-poor);
+  --color-grade-na: var(--grade-na);
+  --color-grade-strong-bg: var(--grade-strong-bg);
+  --color-grade-good-bg: var(--grade-good-bg);
+  --color-grade-mid-bg: var(--grade-mid-bg);
+  --color-grade-weak-bg: var(--grade-weak-bg);
+  --color-grade-poor-bg: var(--grade-poor-bg);
+  --color-grade-na-bg: var(--grade-na-bg);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
+
+  --color-rail: var(--rail-bg);
+  --color-rail-fg: var(--rail-fg);
+  --color-rail-hover: var(--rail-hover);
+  --color-rail-active: var(--rail-active);
+  --color-rail-accent: var(--rail-accent);
+
+  --font-sans: var(--font-inter), -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI",
+    "Helvetica Neue", Arial, sans-serif;
+  /* The logo's typeface, for the wordmark only (see components/shell/brand.tsx). */
+  --font-brand: var(--font-klarheit), var(--font-inter), -apple-system, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+  --text-micro: 11px;
+  --text-tiny: 12px;
+  --text-13: 13px;
+
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: var(--radius);
+  --radius-xl: 14px;
+
+  --breakpoint-rail: 1281px;
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+    scroll-padding-top: 126px;
+  }
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 3px;
+  }
+  /* An author `display` beats the UA's `[hidden]` rule — the legacy filter
+     drawer sat permanently open because of exactly that. */
+  [hidden] {
+    display: none !important;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+}
+
+/* Numbers line up in columns everywhere a figure is printed. */
+@utility tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* A thin, quiet scrollbar for the rails and wide tables. */
+@utility scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--muted-foreground) 35%, transparent) transparent;
+}
+@utility scroll-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* The page gutter every canvas page uses, and the bleed that lets a sticky
+   strip run edge to edge inside it. */
+@utility px-gutter {
+  padding-inline: var(--gutter);
+}
+@utility -mx-gutter {
+  margin-inline: calc(-1 * var(--gutter));
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}

@@ -1,0 +1,2110 @@
+// Ported from assets/js/ideas.js (the engine: rules, the idea catalogue, the
+// filter builder and `runIdea`) — logic unchanged; types added for the port.
+// The result cards are `components/ideas/idea-result.tsx`.
+import { isNum, money, num, pct, dec, mult } from './format';
+import { fetchScreener, fetchFor, mapLimited } from './fmp';
+import { loadSectorStats, sectorLookup, letterFor, MAX_SCORE } from './grading';
+import {
+  scoreLite, returnsFromPrices, dcfFromFeed, insiderFromStats, floatFromFeed,
+  estimatesFromFeed, gradesFromFeed, dividendRecordFromFeed, LITE_SOURCES, LITE_DEPTH,
+} from './model';
+import { FACTOR_BY_KEY, FACTOR_KEYS } from './factors';
+import { IDEA_GROUPS } from './nav';
+import { SHARIAH_STANDARDS, EXCLUDED_ACTIVITIES } from './shariah';
+import { BANKS, BANK_QUORUM, BANK_REQUESTS, loadBankBook, quorumOf, withBaseline } from './institutions';
+/* ==========================================================================
+   Maz Vantage — Investment Ideas
+
+   A page of themed screens. Each idea is a thesis, a set of rules, and the
+   companies that currently pass them.
+
+   This is the only surface in the app that is not about one company, and that
+   changes what it can afford. A full report costs 27 feeds per company; a
+   twenty-name list built that way would be 540 requests. So an idea runs a
+   deliberately cheaper pipeline, and the honesty of the page rests on saying
+   so plainly at every step:
+
+     1. **FMP screens server-side** on size, sector and country — roughly all
+        its screener understands, and none of it about ratios. One call, asking
+        for as many rows as the vendor will return. That is the *universe*.
+     2. **The universe is deduplicated**, so a company appears once. A second
+        listing of the same shares (`NVDA.NE`) and a second share class (`GOOG`
+        beside `GOOGL`) are the same investment, and either would take a slot
+        from a company not already in the set.
+     3. **Candidates are capped by a request budget**, not by a fixed number.
+        An idea needing only trailing ratios tests three hundred companies; one
+        needing price history as well tests a hundred and fifty. Either way it
+        spends about `REQUEST_BUDGET` requests, and anything past the cap is
+        never tested — so a result is the best of a sample rather than the best
+        of the market. Every idea says so under its table.
+     4. **Two to four feeds per candidate** fill the rules. Ratio rules run in
+        the browser because the vendor's screener cannot express them, and
+        factor-score rules go through `scoreLite`, which grades up to `LITE_TOTAL`
+        metrics against the company's own sector using the report's own metric
+        definitions and distributions.
+
+   The scores here are **not** the ones on a Ratings tab. Those come from 77
+   ratios off a full 27-feed pull; these come from at most `LITE_TOTAL` off
+   four. Same
+   scale, same distributions, much thinner evidence — which is why every score
+   printed here carries the count of ratios behind it.
+
+   Nothing here is advice, and the ideas are not ranked against each other. An
+   idea is a question worth asking, and the companies under it are the ones
+   that currently answer it — which is a starting point for the full report,
+   not a substitute for reading one.
+
+   Runs are explicit. Opening the index costs nothing; opening one idea costs
+   one screener call plus two to four requests per company tested, and the
+   figure is printed on its Run button.
+   ========================================================================== */
+
+
+/**
+ * Roughly how many requests one idea may spend on candidates.
+ *
+ * The cap is derived from this rather than fixed, so an idea needing a fourth
+ * feed tests fewer companies instead of quietly costing twice as much. Raising
+ * it widens every screen linearly — and linearly is also how it consumes an
+ * FMP quota, which is why it is one number in one place.
+ */
+export const REQUEST_BUDGET = 600;
+
+/** Floor and ceiling on the derived cap, whatever the budget says. */
+export const MIN_CANDIDATES = 40;
+export const MAX_CANDIDATES = 400;
+
+/** How many rows an idea shows once the rules have run, unless it says. */
+const RESULT_CAP = 25;
+
+/** Bag name -> the feed that fills it. */
+export const BAG_FEED = {
+  ratios: 'ratiosTtm',
+  metrics: 'metricsTtm',
+  // The company's sector, for anything that grades it: a ratio is ranked
+  // against its own sector's distribution, so a score without the sector is a
+  // score against the wrong table. The watchlist's Maz Vantage Quant column buys this
+  // alongside the two ratio feeds.
+  profile: 'profile',
+  growth: 'growth',
+  returns: 'prices',
+  dcf: 'dcfLevered',
+  insider: 'insiderStats',
+  float: 'sharesFloat',
+  estimates: 'estimates',
+  // Added for the Shariah screens, which need debt and cash as separate
+  // lines rather than netted — every published methodology divides each of
+  // them by the same base, and a net figure cannot be split back out. One
+  // more request per candidate, which is the cost of running those screens
+  // at all.
+  balance: 'balance',
+  // The sell side's rating tally. One more request per candidate, and only the
+  // screens that actually read an analyst figure pay it — `bagsFor` derives
+  // the list from the rules.
+  grades: 'grades',
+  // Dated events rather than figures, and the only two bags no rule reads:
+  // the watchlist's calendar buys them per company to answer "what is coming
+  // up for what I hold". Both come back as the vendor's own list — no shape
+  // in `BAG_SHAPE` — because the whole run is the point, not its newest row.
+  earnings: 'earnings',
+  dividends: 'dividends',
+  // The same dividend feed, shaped into a record a rule can test — years of
+  // raises and five-year growth. A separate bag rather than a shape on
+  // `dividends`, because the calendar wants the raw list; `fmp.js` caches per
+  // request, so a surface buying both pays for the feed once.
+  divHistory: 'dividends',
+  // Every 13F filer's combined holding in the company, this quarter and last
+  // — the baseline the big-banks portfolio measures the banks against. Asked
+  // for the quarter the banks' filings describe (see `runIdea`).
+  instSummary: 'holdersSummary',
+};
+
+/**
+ * Bag name -> how to shape that feed's payload before a rule reads it.
+ *
+ * A bag with no entry is used exactly as the vendor sent it. The rest need
+ * either picking (the newest fiscal year out of a list) or deriving (a
+ * discount, a four-quarter insider total), and all of that lives in
+ * `model.js` — the only file that is supposed to know a vendor field name.
+ */
+export const BAG_SHAPE = {
+  returns: (data: any) => returnsFromPrices(data),
+  growth: (data: any) => {
+    // A list of fiscal years; the newest once sorted is the one to grade.
+    const list = (Array.isArray(data) ? data : [data]).filter(Boolean)
+      .sort((x, y) => +new Date(x.date) - +new Date(y.date));
+    const last = list.at(-1);
+    if (!last) return null;
+    // The year before rides along for the one question the newest row cannot
+    // answer alone — is earnings growth speeding up or slowing down. The
+    // difference is in percentage points: 30% growth after 20% is +0.10.
+    const prior = list.at(-2)?.epsgrowth;
+    return {
+      ...last,
+      epsgrowthPrior: isNum(prior) ? prior : null,
+      epsAcceleration: isNum(prior) && isNum(last.epsgrowth) ? last.epsgrowth - prior : null,
+    };
+  },
+  dcf: (data: any, hit: any) => dcfFromFeed(Array.isArray(data) ? data[0] : data, hit?.price),
+  insider: (data: any) => insiderFromStats(data),
+  float: (data: any) => floatFromFeed(Array.isArray(data) ? data[0] : data),
+  estimates: (data: any) => estimatesFromFeed(data),
+  balance: (data: any) => {
+    const list = Array.isArray(data) ? data : [data];
+    return list.filter(Boolean)
+      .sort((x, y) => +new Date(x.date) - +new Date(y.date)).at(-1) || null;
+  },
+  grades: (data: any) => gradesFromFeed(Array.isArray(data) ? data[0] : data),
+  divHistory: (data: any) => dividendRecordFromFeed(data),
+};
+
+/** Every idea shows a score, and a score needs these two. */
+const BASE_BAGS = ['ratios', 'metrics'];
+
+/**
+ * Bags filled once per run rather than once per company: `banks` is the
+ * big-banks portfolio's 13F table, read before the screener is asked. A rule
+ * reading only these costs nothing per company, so `runIdea` applies it
+ * before the candidate cap.
+ */
+const PRELOADED_BAGS = new Set(['banks']);
+
+/** Every metric this path can grade, across all five factors. */
+export const LITE_TOTAL = Object.values(LITE_DEPTH).reduce((a, b) => a + b, 0);
+
+/* ==========================================================================
+   Reading a candidate
+
+   Every rule and column below goes through these, so a vendor field name
+   appears once rather than once per idea. `c` is a candidate:
+
+     { symbol, name, sector, industry, marketCap, price, beta, r, km }
+
+   where `r` is the `ratios-ttm` row and `km` the `key-metrics-ttm` row. Both
+   can be null — a company the vendor has no ratios for still appears in the
+   universe count, it just cannot pass a ratio rule.
+   ========================================================================== */
+
+function field(bag: any, name: any) {
+  const get = (c: any) => c[bag]?.[name];
+  get.bag = bag;
+  return get;
+}
+
+export const F = {
+  pe: field('ratios', 'priceToEarningsRatioTTM'),
+  pb: field('ratios', 'priceToBookRatioTTM'),
+  ps: field('ratios', 'priceToSalesRatioTTM'),
+  peg: field('ratios', 'priceToEarningsGrowthRatioTTM'),
+  grossMargin: field('ratios', 'grossProfitMarginTTM'),
+  operatingMargin: field('ratios', 'operatingProfitMarginTTM'),
+  netMargin: field('ratios', 'netProfitMarginTTM'),
+  currentRatio: field('ratios', 'currentRatioTTM'),
+  debtToEquity: field('ratios', 'debtToEquityRatioTTM'),
+  interestCover: field('ratios', 'interestCoverageRatioTTM'),
+  dividendYield: field('ratios', 'dividendYieldTTM'),
+  payout: field('ratios', 'dividendPayoutRatioTTM'),
+  fcfToOcf: field('ratios', 'freeCashFlowOperatingCashFlowRatioTTM'),
+  assetTurnover: field('ratios', 'assetTurnoverTTM'),
+
+  roe: field('metrics', 'returnOnEquityTTM'),
+  roic: field('metrics', 'returnOnInvestedCapitalTTM'),
+  fcfYield: field('metrics', 'freeCashFlowYieldTTM'),
+  netDebtToEbitda: field('metrics', 'netDebtToEBITDATTM'),
+  incomeQuality: field('metrics', 'incomeQualityTTM'),
+  capexToRevenue: field('metrics', 'capexToRevenueTTM'),
+  rdToRevenue: field('metrics', 'researchAndDevelopementToRevenueTTM'),
+  evToEbitda: field('metrics', 'evToEBITDATTM'),
+
+  revenueGrowth: field('growth', 'revenueGrowth'),
+  epsGrowth: field('growth', 'epsgrowth'),
+  fcfGrowth: field('growth', 'freeCashFlowGrowth'),
+  epsGrowthPrior: field('growth', 'epsgrowthPrior'),
+  epsAcceleration: field('growth', 'epsAcceleration'),
+
+  divRaises: field('divHistory', 'raises'),
+  divGrowth5y: field('divHistory', 'growth5y'),
+
+  /* Derived bags, shaped by the builders in model.js. */
+  discount: field('dcf', 'discount'),
+  fairValue: field('dcf', 'fairValue'),
+  insiderNet: field('insider', 'net'),
+  insiderBought: field('insider', 'acquired'),
+  closelyHeld: field('float', 'closelyHeld'),
+  fwdEpsGrowth: field('estimates', 'epsGrowth'),
+  fwdRevenueGrowth: field('estimates', 'revenueGrowth'),
+  analysts: field('estimates', 'analysts'),
+
+  totalDebt: field('balance', 'totalDebt'),
+  cashAndShortTerm: field('balance', 'cashAndShortTermInvestments'),
+  totalAssets: field('balance', 'totalAssets'),
+
+  return1y: field('returns', 'r1y'),
+  return6m: field('returns', 'r6m'),
+  drawdown: field('returns', 'drawdown'),
+
+  /* The sell side's view, which is emphatically not this report's. See
+     `gradesFromFeed` in model.js for why the 0-5 scale is shared and the
+     meaning is not. */
+  analystScore: field('grades', 'score'),
+  analystCount: field('grades', 'total'),
+  analystBuyShare: field('grades', 'buyShare'),
+
+  /* The big banks' 13F holdings — `Stake` in institutions.ts. Counts are of
+     the banks read, which `read` carries. */
+  bankHolders: field('banks', 'holders'),
+  bankAdders: field('banks', 'adders'),
+  bankCutters: field('banks', 'cutters'),
+  bankChange: field('banks', 'change'),
+  bankExcess: field('banks', 'excess'),
+  bankStake: field('banks', 'ofCompany'),
+  bankStakeGain: field('banks', 'stakeGain'),
+  bankValue: field('banks', 'value'),
+};
+
+/* Every accessor knows its own name.
+ *
+ * This is what makes a rule *introspectable*: `atLeast(label, F.roic, 0.10)`
+ * records `{ metric: 'roic', op: 'gte', value: 0.10 }` beside the closure, so
+ * a rule can be described in data as well as run. Portfolios used to be
+ * editable through these descriptors; they are fixed now (custom screens are
+ * the Stock Screener's job, `screener-filters.ts`), and the descriptors stay
+ * as a description of each rule. Stamped in a loop rather than passed to
+ * `field()` so none of the definitions above had to be touched. */
+for (const [key, get] of Object.entries(F)) (get as any).key = key; 
+
+/**
+ * Fill one bag for one symbol.
+ *
+ * `BAG_FEED` says which feed a bag reads and `BAG_SHAPE` how to shape it. A
+ * caller outside the screening engine — the market tables, for instance —
+ * wants the pair applied, not the maps. Returns null on anything that did not
+ * come back, which every consumer already renders as "n/a".
+ */
+export async function loadBag(bag: any, symbol: any, extra: any = {}) {
+  const feed = (BAG_FEED as any)[bag];
+  if (!feed) return null;
+  const r = await fetchFor(feed, symbol, extra);
+  if (r.status !== 'ok' || r.data == null) return null;
+  const shape = (BAG_SHAPE as any)[bag];
+  return shape ? shape(r.data, { symbol }) : r.data;
+}
+
+/* ---------- rules -----------------------------------------------------------
+
+   A rule carries two descriptions of itself: the closure that tests a company,
+   and a **`filter` descriptor** saying what it is testing in data rather than
+   in code.
+
+       { metric: 'roic', op: 'gte', value: 0.10 }
+
+   The descriptor is attached by the builders below, so no idea had to be
+   written twice. Portfolios are curated and read-only; the label is what the
+   portfolio page prints, and the descriptor is kept as the rule's data.
+   -------------------------------------------------------------------------- */
+
+/** A rule: a readable claim, the bags it reads, and the test behind it. */
+export const rule = (label: any, needs: any, test: any, filter: any = null) => ({ label, needs, test, filter });
+
+export const atLeast = (label: any, get: any, min: any) => rule(label, [get.bag], (c: any) => {
+  const v = get(c);
+  return isNum(v) && v >= min;
+}, { metric: get.key, op: 'gte', value: min });
+
+/** Positive and at or below `max`, unless negatives are meaningful. */
+export const atMost = (label: any, get: any, max: any, { allowNegative = false }: any = {}) => rule(label, [get.bag], (c: any) => {
+  const v = get(c);
+  if (!isNum(v)) return false;
+  if (!allowNegative && v <= 0) return false;
+  return v <= max;
+}, { metric: get.key, op: 'lte', value: max, allowNegative });
+
+export const between = (label: any, get: any, lo: any, hi: any) => rule(label, [get.bag], (c: any) => {
+  const v = get(c);
+  return isNum(v) && v >= lo && v <= hi;
+}, { metric: get.key, op: 'between', value: [lo, hi] });
+
+/**
+ * A rule on one of the report's own factor scores.
+ *
+ * The same 0-MAX_SCORE scale the Ratings tab uses, and the same sector
+ * distributions behind it — but computed by `scoreLite` over at most
+ * `LITE_DEPTH[key]` metrics rather than the factor's full set.
+ *
+ * A company the screen could not measure **fails** the rule rather than
+ * passing it. `null` is not a low score, and a screen asking for 4 out of 5
+ * must not quietly admit the companies it knows nothing about.
+ */
+export const scoreAtLeast = (key: any, min: any) => {
+  const meta = FACTOR_BY_KEY[key];
+  return rule(
+    `${meta.title} score of ${dec(min, 1)} or better out of ${MAX_SCORE}`,
+    LITE_SOURCES[key] || BASE_BAGS,
+    (c: any) => {
+      const f = c.lite?.factors?.[key];
+      return isNum(f?.score) && f.score >= min;
+    },
+    // Namespaced, because a factor key like `growth` would otherwise collide
+    // with a ratio of the same name in the metric registry.
+    { metric: `score:${key}`, op: 'gte', value: min },
+  );
+};
+
+/**
+ * A rule on the **composite** score rather than on one factor.
+ *
+ * `scoreAtLeast` takes a factor key, so it cannot express "rated Buy or
+ * better overall" — which is the single most common thing a preset screen
+ * filters on. Same refusal to guess: a company the screen could not measure
+ * fails rather than passes.
+ */
+export const overallAtLeast = (min: any) => rule(
+  `Overall score of ${dec(min, 1)} or better out of ${MAX_SCORE}`,
+  BASE_BAGS,
+  (c: any) => isNum(c.lite?.score) && c.lite.score >= min,
+  { metric: 'score:overall', op: 'gte', value: min },
+);
+
+/* ==========================================================================
+   The ideas
+
+   Editorial, not derived. Each is a claim about what makes a company worth
+   a second look, expressed as rules this data can actually test — which is
+   the binding constraint on all of them. `universe` is what FMP screens
+   server-side; `rules` run in the browser afterwards.
+
+   `sort` picks the ordering. Where an idea has an obvious "more of this is
+   the point" measure, it sorts on that; otherwise it falls back to the
+   reduced score, which is what `sortByScore` marks.
+   ========================================================================== */
+
+export const BILLION = 1e9;
+
+/**
+ * Shared universe defaults: real, tradable, listed operating companies.
+ *
+ * Deliberately loose. Every extra server-side filter is another parameter
+ * name that has to be exactly right, and a screener that silently ignores an
+ * unknown parameter returns a wider universe than the idea claims. Size and
+ * sector are the two worth spending on; funds are filtered again in the
+ * browser after the call, where the check cannot be silently dropped.
+ */
+export const LISTED = {
+  isEtf: false,
+  isFund: false,
+  isActivelyTrading: true,
+  country: 'US',
+  limit: 5000,
+};
+
+export const sortByScore = (c: any) => (isNum(c.lite?.score) ? c.lite.score : -1);
+export const sortByFactor = (key: any) => (c: any) => {
+  const v = c.lite?.factors?.[key]?.score;
+  return isNum(v) ? v : -1;
+};
+
+/** The five single-factor screens, built from one shared template. */
+function factorIdea(key: any, { tag, thesis, note }: any) {
+  const meta = FACTOR_BY_KEY[key];
+  return {
+    key: `score-${key}`,
+    group: 'Our ratings',
+    title: `Top-rated on ${meta.title.toLowerCase()}`,
+    tag,
+    scoreIdea: true,
+    thesis,
+    universe: { ...LISTED, marketCapMoreThan: 1 * BILLION },
+    rules: [scoreAtLeast(key, 4)],
+    sort: sortByFactor(key),
+    sortLabel: `${meta.title.toLowerCase()} score`,
+    columns: [],
+    note: `${note} This is a single-factor screen by design: it says nothing about the other `
+      + 'four, and the score columns beside it are there so you can see what it ignored. The '
+      + `${meta.title.toLowerCase()} score is built from at most ${LITE_DEPTH[key] || 0} ratios `
+      + 'here, against that factor’s full set on a Ratings tab.',
+  };
+}
+
+/* ==========================================================================
+   Shariah compliance, as three rules
+
+   Two balance-sheet ratios against market capitalisation, plus the activity
+   keywords. AAOIFI's limits are the strictest of the five published sets, so
+   they are the ones screened on — a company clearing AAOIFI clears the other
+   four on these two ratios, which makes a single list defensible where five
+   overlapping ones would not be.
+
+   Defined here rather than in `shariah-screens.js` because two surfaces build
+   on them — the Shariah desk's five screens and the Halal group of
+   Investment Ideas — and this is the module both can import without a cycle.
+   One definition, so no threshold can drift between them.
+
+   Hand-built with `rule()`, so none of the three carries a filter
+   descriptor. On a portfolio page they show as fixed conditions the reader
+   cannot loosen, which is the point: a halal screen whose compliance test can
+   be edited away is not a halal screen.
+   ========================================================================== */
+
+const AAOIFI = SHARIAH_STANDARDS.find((s) => s.key === 'aaoifi');
+
+/** Debt over market capitalisation, from the balance sheet and the screener. */
+const debtRatio = (c: any) => {
+  const d = F.totalDebt(c);
+  return (isNum(d) && isNum(c.marketCap) && c.marketCap > 0) ? d / c.marketCap : null;
+};
+
+const cashRatio = (c: any) => {
+  const cash = F.cashAndShortTerm(c);
+  return (isNum(cash) && isNum(c.marketCap) && c.marketCap > 0) ? cash / c.marketCap : null;
+};
+
+export const shariahRules = () => [
+  rule(`Interest-bearing debt under ${pct(AAOIFI!.debt)} of market cap`, ['balance'],
+    (c: any) => { const v = debtRatio(c); return isNum(v) && v <= AAOIFI!.debt; }),
+  rule(`Cash and short-term investments under ${pct(AAOIFI!.liquid)} of market cap`, ['balance'],
+    (c: any) => { const v = cashRatio(c); return isNum(v) && v <= AAOIFI!.liquid; }),
+  rule('Business activity not excluded', [], (c: any) => {
+    const hay = `${c.industry || ''} ${c.sector || ''}`.toLowerCase();
+    return !EXCLUDED_ACTIVITIES.some((w) => hay.includes(w));
+  }),
+];
+
+export const SHARIAH_NOTE = 'Screened on AAOIFI’s limits, the strictest of the five published sets, so a '
+  + 'company here clears the other four on these two ratios as well. This is a mechanical screen '
+  + 'and not a ruling: the non-compliant-income test, the receivables test and the averaged '
+  + 'market-capitalisation basis the providers use are all absent, and any of the three could '
+  + 'exclude a company that passes here. Verify against the provider before relying on it.';
+
+/**
+ * A screen with the compliance rules in front of whatever it adds.
+ *
+ * Compliance always comes first so the funnel on the result page reads as
+ * "this many were compliant, then this many of those were also cheap" rather
+ * than the other way round — which is the order a reader filtering for halal
+ * names actually thinks in. The caveat is appended to every note for the same
+ * reason the rules are fixed: it is not optional.
+ */
+export function halalIdea({ extra = [], note, ...idea }: any) {
+  return {
+    group: 'Halal',
+    universe: { ...LISTED, marketCapMoreThan: 1 * BILLION },
+    sort: sortByScore,
+    sortLabel: 'overall score',
+    columns: [],
+    ...idea,
+    rules: [...shariahRules(), ...extra],
+    note: `${note ? `${note} ` : ''}${SHARIAH_NOTE}`,
+  };
+}
+
+/**
+ * The hand-kept list behind "Halal AI beneficiaries".
+ *
+ * The vendor publishes no thematic tag, so "exposed to AI" cannot be screened
+ * for — it can only be written down. This is that list, grouped by where in
+ * the build-out each company sits, and it is an editorial judgement as of
+ * September 2026 rather than a fact the data holds. The screen measures what
+ * the list cannot: whether the company is compliant, and whether the benefit
+ * has reached its revenue yet.
+ *
+ * US-domiciled companies only, like every universe in this module, so TSMC,
+ * ASML and Arm are absent however central they are.
+ */
+const AI_EXPOSED = [
+  // Compute and memory
+  'NVDA', 'AMD', 'AVGO', 'MRVL', 'MU', 'QCOM', 'INTC', 'ALAB', 'CRDO', 'MPWR', 'LSCC', 'SITM', 'AMBA',
+  // The equipment and software that make the chips
+  'AMAT', 'LRCX', 'KLAC', 'TER', 'ONTO', 'SNPS', 'CDNS',
+  // Networking and optics
+  'ANET', 'CSCO', 'CIEN', 'COHR', 'LITE', 'FN',
+  // Servers and storage
+  'SMCI', 'DELL', 'HPE', 'NTAP', 'PSTG', 'WDC', 'STX',
+  // Power and cooling for the data centre
+  'VRT', 'GEV', 'ETN', 'NVT', 'MOD',
+  // The platforms buying all of it
+  'MSFT', 'GOOGL', 'AMZN', 'META', 'ORCL', 'IBM',
+  // Software selling it on
+  'PLTR', 'NOW', 'CRM', 'ADBE', 'SNOW', 'DDOG', 'MDB', 'CRWD', 'NET', 'AI',
+  // Where it is housed
+  'EQIX', 'DLR',
+];
+
+/**
+ * The big-banks portfolio's rules. Two-thirds is of the banks actually read,
+ * so a bank whose filing failed shrinks the bar rather than counting as a
+ * bank that holds nothing — and `loadBankBook` refuses to run on fewer than
+ * two-thirds of all nine.
+ */
+function bankRules() {
+  const of = (c: any) => c.banks;
+  return [
+    rule('Held by at least two-thirds of the banks', ['banks'],
+      (c: any) => !!of(c) && of(c).holders >= quorumOf(of(c).read),
+      { metric: 'bankHolders', op: 'gte', value: BANK_QUORUM }),
+    rule('Added to by at least two-thirds of them, after stock splits', ['banks'],
+      (c: any) => !!of(c) && of(c).adders >= quorumOf(of(c).read),
+      { metric: 'bankAdders', op: 'gte', value: BANK_QUORUM }),
+    rule('Their combined shares up 5% or more on the quarter', ['banks'],
+      (c: any) => isNum(of(c)?.change) && of(c).change >= 0.05,
+      { metric: 'bankChange', op: 'gte', value: 0.05 }),
+    // A company the vendor has no summary for fails: without the baseline,
+    // a merger paid in shares is indistinguishable from nine banks buying.
+    rule('Accumulated faster than all 13F filers combined', ['banks', 'instSummary'],
+      (c: any) => isNum(of(c)?.excess) && of(c).excess > 0,
+      { metric: 'bankExcess', op: 'gt', value: 0 }),
+  ];
+}
+
+export const IDEAS = [
+  /* ---- the score screens, which are what the ratings are for ---- */
+  {
+    key: 'score-all-round',
+    group: 'Our ratings',
+    title: 'Strong on every factor',
+    tag: 'All five',
+    scoreIdea: true,
+    thesis: 'Four out of five on valuation, growth, profitability, financial health and momentum '
+      + 'at the same time. Deliberately the hardest screen here — most good companies are '
+      + 'expensive, most cheap ones are cheap for a reason, and a name clearing all five at once '
+      + 'is rare enough that an empty result is a real answer rather than a broken screen.',
+    universe: { ...LISTED, marketCapMoreThan: 1 * BILLION },
+    rules: FACTOR_KEYS.map((k) => scoreAtLeast(k, 4)),
+    sort: sortByScore,
+    sortLabel: 'overall score',
+    columns: [],
+    note: 'Each of the five has to be measurable as well as high. A company whose price history '
+      + 'or growth feed did not load fails on the factor it could not be measured on rather than '
+      + 'passing on the ones it could, which is the only safe way round for a screen this strict.',
+  },
+
+  factorIdea('valuation', {
+    tag: 'Value',
+    thesis: 'Priced in roughly the cheapest fifth of its own sector on the multiples and yields '
+      + 'this report grades — earnings, sales, book, cash flow, and the yields that invert them. '
+      + 'Sector-relative throughout, so a utility is judged against utilities rather than against '
+      + 'software.',
+    note: 'A high valuation score is a statement about price, not about quality.',
+  }),
+
+  factorIdea('growth', {
+    tag: 'Growth',
+    thesis: 'Growing faster than most of its sector on the lines that matter — revenue, earnings, '
+      + 'cash flow, book value — measured against what its own sector managed rather than against '
+      + 'an absolute bar.',
+    note: 'Growth here is the last filed year against the one before it, so it is history rather '
+      + 'than a forecast.',
+  }),
+
+  factorIdea('profitability', {
+    tag: 'Quality',
+    thesis: 'Turning revenue into profit and capital into returns better than most of its sector: '
+      + 'margins at every level, returns on equity, assets and invested capital, and how much of '
+      + 'the profit arrives as cash.',
+    note: 'The best single description of a business worth owning, and a poor one of a share '
+      + 'worth buying at any price.',
+  }),
+
+  factorIdea('health', {
+    tag: 'Safety',
+    thesis: 'A balance sheet in the top fifth of its sector — liquidity, leverage and coverage '
+      + 'together. The screen that matters least in a rising market and most in a falling one.',
+    note: 'Sector-relative, so a bank and a software company are each judged against their own '
+      + 'kind rather than against each other.',
+  }),
+
+  factorIdea('momentum', {
+    tag: 'Momentum',
+    thesis: 'The market has been re-rating it, and by more than most of its sector: the three, '
+      + 'six, nine and twelve-month returns, what it gave back at the worst point, and how '
+      + 'volatile the ride was.',
+    note: 'Momentum is the one factor here that says nothing whatever about the business. It '
+      + 'costs an extra feed per company — the price history — so this screen tests fewer '
+      + 'candidates than the others.',
+  }),
+
+  {
+    key: 'compounding-growth',
+    group: 'Growth',
+    title: 'Growing and getting better at it',
+    tag: 'Growth',
+    thesis: 'Revenue and earnings both rising, with the cash following them. Growth on the top '
+      + 'line alone is the easiest thing in the world to buy; growth that reaches the bottom line '
+      + 'and then the bank account is not.',
+    universe: { ...LISTED, marketCapMoreThan: 1 * BILLION },
+    rules: [
+      atLeast('Revenue growing above 10%', F.revenueGrowth, 0.10),
+      atLeast('Earnings per share growing above 10%', F.epsGrowth, 0.10),
+      atLeast('Free cash flow growing', F.fcfGrowth, 0),
+      atLeast('Return on invested capital above 10%', F.roic, 0.10),
+    ],
+    sort: (c: any) => F.revenueGrowth(c) ?? -1,
+    sortLabel: 'revenue growth',
+    columns: ['revenueGrowth', 'epsGrowth', 'roic'],
+    note: 'Growth figures are the last filed fiscal year against the one before it, not the '
+      + 'trailing twelve months — so a company that turned a corner two quarters ago will not '
+      + 'show it here yet.',
+  },
+
+  /* ---- eligibility filter plus a ranking, rather than a set of rules ----
+     A different shape from everything else on this page. The screens above
+     ask a question and list whoever answers it; this one defines who is
+     eligible and then ranks the eligible on the report's own composite,
+     keeping a fixed number.
+
+     That is how the published retail "AI portfolio" strategies are built —
+     an eligibility layer of sector, region, size, price and liquidity, then a
+     model that ranks inside it, then a holdings cap. The eligibility layer is
+     ordinary screening and reproduces almost exactly. The ranking model does
+     not: theirs learns weights from decades of realised forward returns,
+     and this one is an equal-weighted percentile rank against the sector as
+     it stands today. Same inputs, different question — so the constituents
+     will not match, and the card says so rather than implying otherwise.
+     -------------------------------------------------------------------- */
+  {
+    key: 'us-tech-top15',
+    group: 'Ranked portfolios',
+    title: 'US technology leaders, top 15',
+    tag: 'Ranked',
+    scoreIdea: true,
+    ranked: true,
+    resultLimit: 15,
+    // No rule reads growth or price history, but the ranking should: a
+    // composite built from two feeds would rank on valuation, profitability
+    // and health alone and call the result a leader board.
+    bags: ['growth', 'returns'],
+    thesis: 'Every US-listed technology company over $1b, priced over $10 and actually trading, '
+      + 'ranked on this report’s own composite score and cut at fifteen holdings. The filters '
+      + 'decide who is eligible; the score decides who is in.',
+    universe: {
+      ...LISTED,
+      sector: 'Technology',
+      marketCapMoreThan: 1 * BILLION,
+      priceMoreThan: 10,
+      volumeMoreThan: 1000,
+    },
+    rules: [],
+    sort: sortByScore,
+    sortLabel: 'overall score',
+    columns: [],
+    note: 'Two things about the eligibility filters do not map cleanly. The sector '
+      + 'field is "Technology" rather than the GICS "Information Technology", and the two '
+      + 'disagree at the edges — GICS puts Alphabet and Meta in Communication Services and '
+      + 'Amazon in Consumer Discretionary, and this data may not. There is also no thematic '
+      + 'tag in this data, so a "theme" filter has no equivalent; here it would be redundant '
+      + 'with the sector anyway. Everything else — region, market cap, price, volume, holdings '
+      + 'cap — maps directly.',
+  },
+
+  {
+    key: 'us-value-top20',
+    group: 'Ranked portfolios',
+    title: 'US value, top 20',
+    tag: 'Ranked',
+    scoreIdea: true,
+    ranked: true,
+    resultLimit: 20,
+    bags: ['growth', 'returns'],
+    /*
+     * Double the standard budget, and the reason is methodological rather
+     * than generous.
+     *
+     * Candidates are taken largest first, and the largest companies are the
+     * least likely to trade under 15x earnings. A sector screen can live with
+     * that bias because it is asking about an attribute size does not predict;
+     * a value screen cannot, because size predicts the attribute directly and
+     * the sample would be selected against the thing being looked for. Twice
+     * the budget is not a fix, only a deeper sample — the honest ceiling is
+     * still stated under the table.
+     */
+    budget: 1200,
+    thesis: 'US-listed mid and large caps trading under fifteen times earnings, ranked on this '
+      + 'report’s composite and cut at twenty holdings. A low multiple is where a value search '
+      + 'starts rather than where it ends: the ranking is what separates a company the market '
+      + 'has overlooked from one it has correctly marked down.',
+    universe: {
+      ...LISTED,
+      marketCapMoreThan: 2 * BILLION,
+      marketCapLowerThan: 200 * BILLION,
+      volumeMoreThan: 1000,
+    },
+    rules: [
+      atMost('P/E under 15', F.pe, 15),
+    ],
+    sort: sortByScore,
+    sortLabel: 'overall score',
+    columns: ['pe', 'pb', 'roe'],
+    note: 'Three things a reader comparing this against a published value portfolio should '
+      + 'know. First, the source material disagrees with itself: the strategy description names '
+      + 'a P/E under 15 as its primary criterion while the filter panel shows a theme of P/E '
+      + 'under 35. The stricter figure is used here because it is the one that makes the '
+      + 'strategy a value strategy — the looser one admits most of the market. Second, mid and '
+      + 'large cap are read as $2b to $200b; the published filters name the buckets but not the '
+      + 'boundaries, so those numbers are an assumption. Third, a P/E screen quietly excludes '
+      + 'every company that lost money, which is a real filter nobody states — a loss makes the '
+      + 'ratio meaningless rather than high.',
+  },
+
+  /* ---- value, on somebody's estimate of what it is worth ---- */
+  {
+    key: 'below-fair-value',
+    group: 'Value',
+    title: 'Trading below estimated fair value',
+    tag: 'Value',
+    thesis: 'The share price sits at least a fifth below the reference levered discounted cash '
+      + 'flow, and the business behind it is actually profitable. The discount is the reason to '
+      + 'look; the profitability test is what stops the screen filling up with companies that '
+      + 'are cheap because they are broken.',
+    universe: { ...LISTED, marketCapMoreThan: 1 * BILLION },
+    rules: [
+      atLeast('At least 20% below fair value', F.discount, 0.20),
+      atLeast('Profitable on a net basis', F.netMargin, 0.03),
+      atLeast('Return on equity above 8%', F.roe, 0.08),
+      atMost('Debt under 1.5× equity', F.debtToEquity, 1.5),
+    ],
+    sort: (c: any) => F.discount(c) ?? -1,
+    sortLabel: 'discount to fair value',
+    columns: ['discount', 'pe', 'roe'],
+    note: 'The fair value is one reference discounted cash flow with one set of assumptions, '
+      + 'not this report’s. The report deliberately never grades a fair value — a model is a '
+      + 'set of assumptions the reader picks — and a filter is not a grade, but the number is '
+      + 'still somebody else’s opinion rather than a fact about the company.',
+  },
+
+  {
+    key: 'value-and-quality',
+    group: 'Value',
+    title: 'Cheap on the multiples, sound underneath',
+    tag: 'Value',
+    thesis: 'The classic value screen with the trap removed. Low multiples on earnings, book and '
+      + 'sales at once, but only for companies earning a real return and covering their interest '
+      + '— which is what separates a bargain from a value trap.',
+    universe: { ...LISTED, marketCapMoreThan: 1 * BILLION },
+    rules: [
+      atMost('P/E under 15', F.pe, 15),
+      atMost('P/B under 3', F.pb, 3),
+      atLeast('Return on equity above 12%', F.roe, 0.12),
+      atLeast('Interest covered more than 5×', F.interestCover, 5),
+    ],
+    sort: (c: any) => -(F.pe(c) ?? 1e9),
+    sortLabel: 'lowest P/E',
+    columns: ['pe', 'pb', 'roe'],
+  },
+
+  /* ---- what the people running the company are doing ---- */
+  {
+    key: 'insider-buying',
+    group: 'Insider signals',
+    title: 'Insiders have been buying',
+    tag: 'Insider',
+    thesis: 'Directors and officers bought more stock than they sold over the last four reported '
+      + 'quarters. Insider selling means very little — most of it is vesting and tax — but '
+      + 'insider buying is somebody with better information choosing to increase their exposure '
+      + 'with their own money.',
+    universe: { ...LISTED, marketCapMoreThan: 0.5 * BILLION },
+    rules: [
+      atLeast('Net buyers over four quarters', F.insiderNet, 1),
+      atLeast('Bought a meaningful number of shares', F.insiderBought, 10000),
+      atLeast('Profitable on a net basis', F.netMargin, 0.01),
+    ],
+    sort: (c: any) => F.insiderNet(c) ?? -1,
+    sortLabel: 'net shares bought',
+    columns: ['insiderNet', 'pe', 'netMargin'],
+    note: 'Share counts, not dollars — the statistics feed reports quantities. Ten thousand '
+      + 'shares of a $5 stock and of a $500 one are very different commitments, so read the '
+      + 'count against the price rather than on its own.',
+  },
+
+  {
+    key: 'undervalued-insider-buying',
+    group: 'Insider signals',
+    title: 'Undervalued smaller companies insiders are buying',
+    tag: 'Insider',
+    thesis: 'The two signals together, in the part of the market where they matter most. Small '
+      + 'companies are the least covered by analysts, so a discount is more likely to be real — '
+      + 'and insiders buying into that discount is the strongest version of the argument.',
+    universe: {
+      ...LISTED,
+      marketCapMoreThan: 0.3 * BILLION,
+      marketCapLowerThan: 10 * BILLION,
+      volumeMoreThan: 50000,
+    },
+    rules: [
+      atLeast('At least 15% below fair value', F.discount, 0.15),
+      atLeast('Net buyers over four quarters', F.insiderNet, 1),
+      atLeast('Profitable on a net basis', F.netMargin, 0.01),
+    ],
+    sort: (c: any) => F.discount(c) ?? -1,
+    sortLabel: 'discount to fair value',
+    columns: ['discount', 'insiderNet', 'netMargin'],
+    note: 'The narrowest screen here: it needs a discount, a net insider buy and a profit at the '
+      + 'same time, in a size band where any of the three may be missing from the data. An empty '
+      + 'result is common and is not a fault.',
+  },
+
+  {
+    key: 'founder-held-growth',
+    group: 'Insider signals',
+    title: 'Closely held and growing',
+    tag: 'Insider',
+    thesis: 'A large block of the company is not freely traded — a founder, a family, a '
+      + 'strategic holder — and the business is growing. The argument is alignment: an owner '
+      + 'with a fifth of the shares is not managing to the next quarter.',
+    universe: { ...LISTED, marketCapMoreThan: 0.5 * BILLION },
+    rules: [
+      atLeast('At least 20% closely held', F.closelyHeld, 0.20),
+      atLeast('Revenue growing above 8%', F.revenueGrowth, 0.08),
+      atLeast('Return on equity above 10%', F.roe, 0.10),
+    ],
+    sort: (c: any) => F.closelyHeld(c) ?? -1,
+    sortLabel: 'share closely held',
+    columns: ['closelyHeld', 'revenueGrowth', 'roe'],
+    note: 'Closely held is the complement of the reported free float, so it is a proxy for '
+      + 'insider ownership rather than a measure of it. A founder’s stake, a family trust, a '
+      + 'government holding and a cross-shareholding all land in the same number, and the feed '
+      + 'does not say which.',
+  },
+
+  /* ---- what the big banks are doing ----
+     The one idea whose universe comes from somebody else's filings rather
+     than from the screener: the companies nine global banks hold, from their
+     13Fs (institutions.ts). The first three rules read only that table and
+     run before the candidate cap; the fourth costs one request a company. */
+  {
+    key: 'big-bank-buying',
+    group: 'Institutional holders',
+    title: 'Following the big banks',
+    tag: '13F',
+    banks: true,
+    // Nine banks in `BANKS`; the suite fails if that changes and this does not.
+    thesis: 'The stocks Goldman Sachs, JPMorgan, BNP Paribas and six other global banks '
+      + 'were buying last quarter, read from their 13F filings: held by most of them, added to by most '
+      + 'of them, and accumulated faster than institutions as a whole. Following one bank tells you '
+      + 'about its clients and its trading desk; following nine at once looks for the companies they '
+      + 'agree on.',
+    universe: { ...LISTED, marketCapMoreThan: 2 * BILLION },
+    rules: bankRules(),
+    sort: (c: any) => {
+      const s = c.banks;
+      if (!s) return -1;
+      // Banks adding first; inside the same count, how much more of the
+      // company they own than a quarter before. A stake gain is a fraction in
+      // (−1, 1), mapped into (0, 1) so it never jumps a count. Not the growth
+      // rate of their shares: that favours positions that started tiny.
+      return s.adders + (isNum(s.stakeGain) ? (s.stakeGain + 1) / 2 : 0);
+    },
+    sortLabel: 'banks adding, then the rise in their stake',
+    // Which companies get the per-company requests: the ones most banks added
+    // to, by the most, rather than the largest the banks happen to hold.
+    prerank: (c: any) => {
+      const s = c.banks;
+      if (!s) return -1;
+      return s.adders + (isNum(s.change) && s.change > 0 ? s.change / (1 + s.change) : 0);
+    },
+    columns: ['bankAdders', 'bankStakeGain', 'bankExcess'],
+    note: 'A bank’s 13F is three businesses in one filing — its asset manager’s funds, its private '
+      + 'bank’s client accounts and its trading desk’s inventory, including shares held to hedge '
+      + 'derivatives sold to clients. A rising share count is client money, index rebalancing and '
+      + 'hedging as much as conviction, which is why one bank is never enough here. Long stock only: '
+      + 'options and bonds are left out. Share counts are adjusted for splits, and the last rule '
+      + 'catches mergers paid in shares, which raise every holder’s count with nobody buying. The '
+      + 'filings are as of the quarter end and arrive up to 45 days after it.',
+  },
+
+  /* ---- what the street expects next ---- */
+  {
+    key: 'forecast-growth',
+    group: 'Growth',
+    title: 'Forecast to grow earnings fast',
+    tag: 'Forecast',
+    thesis: 'Analysts expect earnings per share to compound above 20% a year across the estimate '
+      + 'window, and enough of them cover the name for that to be a consensus rather than one '
+      + 'model. The only screen here that looks forward rather than back.',
+    universe: { ...LISTED, marketCapMoreThan: 1 * BILLION },
+    rules: [
+      atLeast('Forecast EPS growth above 20% a year', F.fwdEpsGrowth, 0.20),
+      atLeast('Forecast revenue growth above 8% a year', F.fwdRevenueGrowth, 0.08),
+      atLeast('Covered by at least 5 analysts', F.analysts, 5),
+      atLeast('Profitable today', F.netMargin, 0.01),
+    ],
+    sort: (c: any) => F.fwdEpsGrowth(c) ?? -1,
+    sortLabel: 'forecast EPS growth',
+    columns: ['fwdEpsGrowth', 'fwdRevenueGrowth', 'analysts'],
+    note: 'A consensus is a mean of models, and the far years of one are a much thinner sample '
+      + 'than the near years. The growth rate here is the median year-on-year step across the '
+      + 'window rather than an endpoint rate, which stops one bad year deciding the number.',
+  },
+
+  {
+    key: 'growth-at-a-price',
+    group: 'Growth',
+    title: 'Growth at a reasonable price',
+    tag: 'GARP',
+    thesis: 'Growing meaningfully, and not priced as though it will keep doing so for ever. PEG '
+      + 'is the crude version of this trade-off and it is crude on purpose — the point is to '
+      + 'exclude the names where every year of the next decade is already in the price.',
+    universe: { ...LISTED, marketCapMoreThan: 1 * BILLION },
+    rules: [
+      atMost('PEG under 1.5', F.peg, 1.5),
+      atLeast('Revenue growing above 8%', F.revenueGrowth, 0.08),
+      atLeast('Return on invested capital above 10%', F.roic, 0.10),
+      atMost('P/E under 30', F.pe, 30),
+    ],
+    sort: (c: any) => -(F.peg(c) ?? 1e9),
+    sortLabel: 'lowest PEG',
+    columns: ['peg', 'revenueGrowth', 'roic'],
+  },
+
+  /* ---- size bands ---- */
+  {
+    key: 'midcap-momentum',
+    group: 'Momentum',
+    title: 'Mid caps the market has noticed',
+    tag: 'Mid cap',
+    thesis: 'Between two and twenty billion — big enough to be liquid and covered, small '
+      + 'enough that a good year still moves the price. Rising over twelve months, without the '
+      + 'drawdown that says the rise was a bounce off a collapse.',
+    universe: {
+      ...LISTED,
+      marketCapMoreThan: 2 * BILLION,
+      marketCapLowerThan: 20 * BILLION,
+    },
+    rules: [
+      atLeast('Up more than 15% over a year', F.return1y, 0.15),
+      atLeast('Up over six months as well', F.return6m, 0),
+      atMost('Worst fall inside the year under 30%', F.drawdown, 0.30),
+      atLeast('Profitable on a net basis', F.netMargin, 0.02),
+    ],
+    sort: (c: any) => F.return1y(c) ?? -1,
+    sortLabel: 'one-year return',
+    columns: ['return1y', 'return6m', 'drawdown'],
+    note: 'Price returns exclude dividends, and a screen on past return is the one screen here '
+      + 'with no claim about the business at all. It is included because momentum is a factor '
+      + 'this report already grades, not because a rise predicts another one.',
+  },
+
+  /* ---- the ratio screens ---- */
+  {
+    key: 'quality-cheap',
+    group: 'Value',
+    title: 'Quality at a fair price',
+    tag: 'Any sector',
+    thesis: 'A business earning a high return on the capital it employs, priced no higher than '
+      + 'the market as a whole. The combination is the rarer half of "quality investing" — plenty '
+      + 'of companies earn good returns, and most of them are priced for it.',
+    universe: { ...LISTED, marketCapMoreThan: 2 * BILLION },
+    rules: [
+      atLeast('Return on invested capital above 15%', F.roic, 0.15),
+      atLeast('Return on equity above 15%', F.roe, 0.15),
+      atMost('P/E under 22', F.pe, 22),
+      atLeast('Operating margin above 12%', F.operatingMargin, 0.12),
+    ],
+    sort: (c: any) => F.roic(c) ?? -1,
+    sortLabel: 'return on invested capital',
+    columns: ['pe', 'roic', 'operatingMargin'],
+  },
+
+  {
+    key: 'dividend-compounders',
+    group: 'Income',
+    title: 'Dividend compounders',
+    tag: 'Income',
+    thesis: 'A yield you can live on, covered twice over — once by profit and again by the cash '
+      + 'that actually pays it. The cover test is the point: a high yield with a thin payout '
+      + 'ratio is income, and a high yield with a stretched one is a warning.',
+    universe: { ...LISTED, marketCapMoreThan: 2 * BILLION, dividendMoreThan: 0 },
+    rules: [
+      between('Yield between 2% and 8%', F.dividendYield, 0.02, 0.08),
+      atMost('Pays out under 65% of earnings', F.payout, 0.65),
+      atLeast('Free cash flow is 70%+ of operating cash flow', F.fcfToOcf, 0.70),
+      atMost('Net debt under 3× EBITDA', F.netDebtToEbitda, 3, { allowNegative: true }),
+    ],
+    sort: (c: any) => F.dividendYield(c) ?? -1,
+    sortLabel: 'dividend yield',
+    columns: ['dividendYield', 'payout', 'netDebtToEbitda'],
+    note: 'The yield ceiling is deliberate. Above about 8% the figure is usually a share price '
+      + 'that has already fallen, and the screen would be selecting for exactly the distress it '
+      + 'is meant to avoid.',
+  },
+
+  {
+    key: 'fortress',
+    group: 'Quality and safety',
+    title: 'Fortress balance sheets',
+    tag: 'Defensive',
+    thesis: 'Companies that could survive a bad year without asking anyone for anything: more '
+      + 'cash than debt, comfortable liquidity, and interest costs covered many times over. The '
+      + 'least exciting screen here, and the one that matters most when credit tightens.',
+    universe: { ...LISTED, marketCapMoreThan: 1 * BILLION },
+    rules: [
+      atMost('Debt under half of equity', F.debtToEquity, 0.5),
+      atLeast('Current ratio above 1.5', F.currentRatio, 1.5),
+      atLeast('Interest covered more than 10×', F.interestCover, 10),
+      atLeast('Profitable on a net basis', F.netMargin, 0.01),
+    ],
+    sort: sortByScore,
+    sortLabel: 'overall score',
+    columns: ['debtToEquity', 'currentRatio', 'interestCover'],
+  },
+
+  {
+    key: 'cash-machines',
+    group: 'Quality and safety',
+    title: 'Cash machines',
+    tag: 'Cash flow',
+    thesis: 'Businesses whose profit turns into cash and whose cash is not immediately eaten by '
+      + 'the next round of capital spending. Earnings can be shaped by accounting choices; a free '
+      + 'cash flow yield is much harder to argue with.',
+    universe: { ...LISTED, marketCapMoreThan: 2 * BILLION },
+    rules: [
+      atLeast('Free cash flow yield above 5%', F.fcfYield, 0.05),
+      atLeast('Operating cash flow converts to profit above 1×', F.incomeQuality, 1),
+      atMost('Capital spending under 8% of revenue', F.capexToRevenue, 0.08),
+      atLeast('Free cash flow is 60%+ of operating cash flow', F.fcfToOcf, 0.60),
+    ],
+    sort: (c: any) => F.fcfYield(c) ?? -1,
+    sortLabel: 'free cash flow yield',
+    columns: ['fcfYield', 'incomeQuality', 'capexToRevenue'],
+  },
+
+  {
+    key: 'tech-margins',
+    group: 'Sectors',
+    title: 'Technology that earns its multiple',
+    tag: 'Technology',
+    thesis: 'The sector is priced for growth almost everywhere, so the question is which names '
+      + 'have the economics to justify it. Gross margin is the closest thing to a proxy for '
+      + 'pricing power, and reinvestment in R&D is what keeps it there.',
+    universe: { ...LISTED, sector: 'Technology', marketCapMoreThan: 2 * BILLION },
+    rules: [
+      atLeast('Gross margin above 55%', F.grossMargin, 0.55),
+      atLeast('Operating margin above 15%', F.operatingMargin, 0.15),
+      atLeast('Spends 5%+ of revenue on R&D', F.rdToRevenue, 0.05),
+      atLeast('Return on invested capital above 12%', F.roic, 0.12),
+    ],
+    sort: (c: any) => F.grossMargin(c) ?? -1,
+    sortLabel: 'gross margin',
+    columns: ['grossMargin', 'rdToRevenue', 'pe'],
+  },
+
+  {
+    key: 'healthcare-durable',
+    group: 'Sectors',
+    title: 'Durable healthcare',
+    tag: 'Healthcare',
+    thesis: 'Healthcare demand does not track the cycle, but healthcare balance sheets often '
+      + 'carry the debt of an acquisition spree. This looks for the profitable half of the sector '
+      + 'that has not borrowed its way to scale.',
+    universe: { ...LISTED, sector: 'Healthcare', marketCapMoreThan: 2 * BILLION },
+    rules: [
+      atLeast('Operating margin above 12%', F.operatingMargin, 0.12),
+      atMost('Net debt under 2.5× EBITDA', F.netDebtToEbitda, 2.5, { allowNegative: true }),
+      atLeast('Return on equity above 12%', F.roe, 0.12),
+      atLeast('Free cash flow yield above 3%', F.fcfYield, 0.03),
+    ],
+    sort: sortByScore,
+    sortLabel: 'overall score',
+    columns: ['operatingMargin', 'roe', 'netDebtToEbitda'],
+  },
+
+  {
+    key: 'industrial-workhorses',
+    group: 'Sectors',
+    title: 'Industrial workhorses',
+    tag: 'Industrials',
+    thesis: 'Capital-heavy businesses live or die on how hard they work their asset base. High '
+      + 'asset turnover with a real return on capital is what separates an operator from a '
+      + 'company that merely owns a lot of equipment.',
+    universe: { ...LISTED, sector: 'Industrials', marketCapMoreThan: 1 * BILLION },
+    rules: [
+      atLeast('Asset turnover above 0.8×', F.assetTurnover, 0.8),
+      atLeast('Return on capital above 10%', F.roic, 0.10),
+      atMost('Debt under 1× equity', F.debtToEquity, 1),
+      atLeast('Interest covered more than 5×', F.interestCover, 5),
+    ],
+    sort: (c: any) => F.roic(c) ?? -1,
+    sortLabel: 'return on invested capital',
+    columns: ['assetTurnover', 'roic', 'debtToEquity'],
+  },
+
+  {
+    key: 'small-profitable',
+    group: 'Size',
+    title: 'Profitable smaller companies',
+    tag: 'Small cap',
+    thesis: 'Most of the small-cap universe does not make money. This is the part that does, is '
+      + 'not carrying much debt, and is priced below where a profitable large cap would be — '
+      + 'which is where the size discount is supposed to live.',
+    universe: {
+      ...LISTED,
+      marketCapMoreThan: 0.3 * BILLION,
+      marketCapLowerThan: 5 * BILLION,
+      volumeMoreThan: 100000,
+    },
+    rules: [
+      atLeast('Net margin above 8%', F.netMargin, 0.08),
+      atLeast('Return on equity above 12%', F.roe, 0.12),
+      atMost('P/E under 18', F.pe, 18),
+      atMost('Debt under 1× equity', F.debtToEquity, 1),
+    ],
+    sort: sortByScore,
+    sortLabel: 'overall score',
+    columns: ['pe', 'netMargin', 'roe'],
+    note: 'A minimum daily volume is part of the universe here and nowhere else. A small company '
+      + 'that barely trades can screen beautifully and still be impossible to buy or sell at '
+      + 'anything near the printed price.',
+  },
+
+  /* ==========================================================================
+     Featured screens
+
+     The preset screens a reader arriving from another research product looks
+     for by name, under those names. Fourteen of them; what each one screens
+     for is ours, because the thresholds behind a competitor's preset are not
+     published and inventing a match would be a worse kind of copy than an
+     honest equivalent.
+
+     Three notes that apply to the whole group:
+
+     * **A sector or industry screen is ranked, not ruled.** "The best
+       biotechnology stocks" cannot be a ratio screen — most of that industry
+       is pre-revenue and every margin rule would empty the list. Eligibility
+       is the industry; the composite decides the order. That is also how the
+       products these are named after describe them.
+     * **`industry` is a vendor parameter this app had not used before.** If
+       FMP renames a classification, the screen silently widens rather than
+       failing, so each one prints the industry it asked for.
+     * **Six of the catalogue are missing on purpose.** Most Shorted Stocks
+       needs short interest, which none of the 34 feeds carries; the three ETF
+       screens need an ETF data path and a grading model that is not
+       sector-relative company fundamentals; and the AI and crypto screens need
+       a thematic classification the vendor does not publish. §18 records all
+       six rather than shipping a label with the wrong thing under it.
+     ========================================================================== */
+
+  {
+    key: 'top-rated-stocks',
+    group: 'Featured screens',
+    title: 'Top Rated Stocks',
+    tag: 'Strong buy',
+    scoreIdea: true,
+    thesis: 'Rated Strong Buy on the composite — the top band of this report’s own rating, over '
+      + 'every ratio it could rank against the sector. The broadest of the featured screens and '
+      + 'the one closest to "what does the model like right now".',
+    universe: { ...LISTED, marketCapMoreThan: 1 * BILLION },
+    bags: ['growth', 'returns'],
+    rules: [overallAtLeast(4)],
+    sort: sortByScore,
+    sortLabel: 'overall score',
+    columns: ['pe', 'roic', 'revenueGrowth'],
+    note: 'Not the same screen as "Strong on every factor", which asks for four out of five on '
+      + 'all five factors at once. This asks for four out of five on the average, which a company '
+      + 'can reach with one outstanding factor carrying four ordinary ones. The factor columns '
+      + 'are there so you can see which of the two you are looking at.',
+  },
+
+  {
+    key: 'stocks-by-quant',
+    group: 'Featured screens',
+    title: 'Stocks by Quant',
+    tag: 'Ranked',
+    scoreIdea: true,
+    ranked: true,
+    resultLimit: 50,
+    bags: ['growth', 'returns'],
+    thesis: 'Every company in the universe ranked by the composite, with no rule to pass first. '
+      + 'The plain leader board: no thesis, no thresholds, just the score in order.',
+    universe: { ...LISTED, marketCapMoreThan: 1 * BILLION },
+    rules: [],
+    sort: sortByScore,
+    sortLabel: 'overall score',
+    columns: ['pe', 'roic', 'dividendYield'],
+    note: 'Ranked over the tested sample rather than the whole market — candidates are taken '
+      + 'largest first and capped, so this is the best fifty of a few hundred rather than of '
+      + 'several thousand. The funnel under the table says how many were actually tested.',
+  },
+
+  {
+    key: 'top-dividend-stocks',
+    group: 'Featured screens',
+    title: 'Top Dividend Stocks',
+    tag: 'Income',
+    thesis: 'A dividend worth owning for the income: a yield above the market’s, a payout ratio '
+      + 'that leaves room, and enough cash conversion to keep paying it. Yield-led — the rating '
+      + 'screen is the next one along.',
+    universe: { ...LISTED, marketCapMoreThan: 2 * BILLION, dividendMoreThan: 0 },
+    rules: [
+      atLeast('Yield of 3% or better', F.dividendYield, 0.03),
+      atMost('Pays out under 75% of earnings', F.payout, 0.75),
+      atLeast('Free cash flow is 60%+ of operating cash flow', F.fcfToOcf, 0.60),
+    ],
+    sort: (c: any) => F.dividendYield(c) ?? -1,
+    sortLabel: 'dividend yield',
+    columns: ['dividendYield', 'payout', 'fcfToOcf'],
+    note: 'Three per cent is a floor rather than a target: below it the income case is thin '
+      + 'enough that the question becomes a total-return one, which the growth and value screens '
+      + 'answer better.',
+  },
+
+  {
+    key: 'top-quant-dividend-stocks',
+    group: 'Featured screens',
+    title: 'Top Quant Dividend Stocks',
+    tag: 'Income',
+    scoreIdea: true,
+    thesis: 'Dividend payers that also rate well on the composite. The same universe as the '
+      + 'screen above approached from the other end: the rating decides eligibility and the '
+      + 'yield is a condition rather than the point.',
+    universe: { ...LISTED, marketCapMoreThan: 2 * BILLION, dividendMoreThan: 0 },
+    bags: ['growth', 'returns'],
+    rules: [
+      overallAtLeast(3.5),
+      atLeast('Pays a dividend at all', F.dividendYield, 0.001),
+      atMost('Pays out under 80% of earnings', F.payout, 0.80),
+    ],
+    sort: sortByScore,
+    sortLabel: 'overall score',
+    columns: ['dividendYield', 'payout', 'roic'],
+    note: 'A rating-led income screen will return lower yields than a yield-led one, and that is '
+      + 'the trade being made rather than a fault in it: the companies that rank best on the '
+      + 'other four factors are rarely the ones paying the most out.',
+  },
+
+  {
+    key: 'top-yield-monsters',
+    group: 'Featured screens',
+    title: 'Top Yield Monsters',
+    tag: 'High yield',
+    thesis: 'The highest yields in the market that still clear a solvency test. Seven per cent '
+      + 'and up is where the yield stops being a decision about income and starts being a '
+      + 'statement about risk, so the rules here are about whether the payment survives.',
+    universe: { ...LISTED, marketCapMoreThan: 1 * BILLION, dividendMoreThan: 0 },
+    rules: [
+      atLeast('Yield of 7% or better', F.dividendYield, 0.07),
+      atMost('Pays out under 100% of earnings', F.payout, 1.0),
+      atMost('Net debt under 5× EBITDA', F.netDebtToEbitda, 5, { allowNegative: true }),
+      atLeast('Profitable on a net basis', F.netMargin, 0.001),
+    ],
+    sort: (c: any) => F.dividendYield(c) ?? -1,
+    sortLabel: 'dividend yield',
+    columns: ['dividendYield', 'payout', 'netDebtToEbitda'],
+    note: 'Read this screen backwards. A 7% yield is usually a price that has already fallen, so '
+      + 'the useful question is not "how much does it pay" but "what does the market know that '
+      + 'the payout ratio does not show". The solvency rules remove the worst of it and cannot '
+      + 'remove all of it.',
+  },
+
+  {
+    key: 'high-dividend-yield-stocks',
+    group: 'Featured screens',
+    title: 'High Dividend Yield Stocks',
+    tag: 'High yield',
+    thesis: 'Yields above 4% with a payout that is still covered. The middle ground between an '
+      + 'ordinary income screen and the distressed end of the yield curve.',
+    universe: { ...LISTED, marketCapMoreThan: 1 * BILLION, dividendMoreThan: 0 },
+    rules: [
+      between('Yield between 4% and 12%', F.dividendYield, 0.04, 0.12),
+      atMost('Pays out under 85% of earnings', F.payout, 0.85),
+      atLeast('Free cash flow is 50%+ of operating cash flow', F.fcfToOcf, 0.50),
+    ],
+    sort: (c: any) => F.dividendYield(c) ?? -1,
+    sortLabel: 'dividend yield',
+    columns: ['dividendYield', 'payout', 'netDebtToEbitda'],
+    note: 'The 12% ceiling excludes the arithmetic artefacts rather than the risky companies: a '
+      + 'trailing yield far above that is usually a special dividend annualised, or a price that '
+      + 'fell after the last declaration.',
+  },
+
+  {
+    key: 'top-dividend-growth-stocks',
+    group: 'Featured screens',
+    title: 'Top Dividend Growth Stocks',
+    tag: 'Dividend growth',
+    thesis: 'A smaller dividend today with the earnings behind it to raise tomorrow. The low '
+      + 'payout ratio is the point — it is the room a company needs to keep increasing without '
+      + 'the increase costing it anything it wanted to spend elsewhere.',
+    universe: { ...LISTED, marketCapMoreThan: 2 * BILLION, dividendMoreThan: 0 },
+    rules: [
+      atLeast('Pays a dividend at all', F.dividendYield, 0.001),
+      atMost('Pays out under 50% of earnings', F.payout, 0.50),
+      atLeast('Earnings per share growing above 8%', F.epsGrowth, 0.08),
+      atLeast('Free cash flow growing', F.fcfGrowth, 0),
+    ],
+    sort: (c: any) => F.epsGrowth(c) ?? -1,
+    sortLabel: 'earnings growth',
+    columns: ['dividendYield', 'payout', 'epsGrowth'],
+    note: 'This report has no dividend *history* in the screening path, so the growth tested '
+      + 'here is the earnings behind the dividend rather than a run of increases. A company that '
+      + 'has raised its payout for twenty years and one that started last quarter both pass, and '
+      + 'the record is on the company’s own Dividends tab.',
+  },
+
+  {
+    key: 'top-growth-stocks',
+    group: 'Featured screens',
+    title: 'Top Growth Stocks',
+    tag: 'Growth',
+    scoreIdea: true,
+    thesis: 'Growing faster than most of its sector on the lines that matter, and doing it on the '
+      + 'top line and the bottom line together. Growth on revenue alone is the easiest thing in '
+      + 'the market to buy.',
+    universe: { ...LISTED, marketCapMoreThan: 1 * BILLION },
+    bags: ['returns'],
+    rules: [
+      scoreAtLeast('growth', 4),
+      atLeast('Revenue growing above 15%', F.revenueGrowth, 0.15),
+      atLeast('Earnings per share growing', F.epsGrowth, 0),
+    ],
+    sort: (c: any) => F.revenueGrowth(c) ?? -1,
+    sortLabel: 'revenue growth',
+    columns: ['revenueGrowth', 'epsGrowth', 'grossMargin'],
+    note: 'The growth score is sector-relative and the 15% floor is absolute, so both have to '
+      + 'hold: a company growing 12% in a sector growing 4% scores well and does not clear the '
+      + 'floor. That is deliberate — a screen called Top Growth Stocks should not return the '
+      + 'fastest-growing utility.',
+  },
+
+  {
+    key: 'top-value-stocks',
+    group: 'Featured screens',
+    title: 'Top Value Stocks',
+    tag: 'Value',
+    scoreIdea: true,
+    thesis: 'In the cheapest part of its sector on the multiples, and profitable enough that the '
+      + 'discount is a price rather than a diagnosis. The profitability floor is what separates '
+      + 'this from a list of companies that are cheap for a reason.',
+    universe: { ...LISTED, marketCapMoreThan: 1 * BILLION },
+    bags: ['growth', 'returns'],
+    rules: [
+      scoreAtLeast('valuation', 4),
+      atLeast('Profitable on a net basis', F.netMargin, 0.02),
+      scoreAtLeast('health', 3),
+    ],
+    sort: sortByFactor('valuation'),
+    sortLabel: 'valuation score',
+    columns: ['pe', 'pb', 'fcfYield'],
+    note: 'The balance-sheet condition is the one doing the quiet work. Cheap multiples and a '
+      + 'stretched balance sheet is the combination that turns a value screen into a list of '
+      + 'companies the market has already decided about.',
+  },
+
+  {
+    key: 'top-small-cap-stocks',
+    group: 'Featured screens',
+    title: 'Top Small Cap Stocks',
+    tag: 'Small cap',
+    scoreIdea: true,
+    thesis: 'Companies between $300m and $2b that still rate well. Small enough to be under-'
+      + 'covered, large enough to be tradable, and held to the same composite as everything else.',
+    universe: { ...LISTED, marketCapMoreThan: 300e6, marketCapLowerThan: 2 * BILLION, priceMoreThan: 3 },
+    bags: ['growth', 'returns'],
+    rules: [
+      overallAtLeast(3.5),
+      atLeast('Profitable on a net basis', F.netMargin, 0.001),
+    ],
+    sort: sortByScore,
+    sortLabel: 'overall score',
+    columns: ['pe', 'roic', 'revenueGrowth'],
+    note: 'Candidates are taken largest first, so a small-cap screen samples the top of its own '
+      + 'range rather than the middle of it — this is the best of the larger small caps, not of '
+      + 'all of them. The $3 share price floor removes the sub-dollar tail, where the spread '
+      + 'often costs more than the thesis is worth.',
+  },
+
+  {
+    key: 'top-tech-stocks',
+    group: 'Featured screens',
+    title: 'Top Tech Stocks',
+    tag: 'Technology',
+    scoreIdea: true,
+    ranked: true,
+    resultLimit: 25,
+    bags: ['growth', 'returns'],
+    thesis: 'Every technology company over $2b, ranked by the composite and cut at twenty-five. '
+      + 'Eligibility is the sector; the score decides the order.',
+    universe: { ...LISTED, sector: 'Technology', marketCapMoreThan: 2 * BILLION },
+    rules: [],
+    sort: sortByScore,
+    sortLabel: 'overall score',
+    columns: ['pe', 'revenueGrowth', 'roic'],
+    note: 'Close to "US technology leaders, top 15" under Ranked portfolios, and worth knowing '
+      + 'how they differ: that one adds a $10 price and a volume floor and cuts at fifteen, so it '
+      + 'is the tradability-filtered version of this list. The "Technology" sector here is also not '
+      + 'GICS Information Technology — Alphabet, Meta and Amazon sit elsewhere in GICS and may '
+      + 'not here.',
+  },
+
+  {
+    key: 'top-biotechnology-stocks',
+    group: 'Featured screens',
+    title: 'Top Biotechnology Stocks',
+    tag: 'Biotech',
+    scoreIdea: true,
+    ranked: true,
+    resultLimit: 25,
+    bags: ['growth', 'returns'],
+    thesis: 'Biotechnology companies over $1b, ranked by the composite. Ranked rather than '
+      + 'ruled on purpose: most of this industry is pre-revenue, and any margin or earnings rule '
+      + 'would return an empty list and call it a finding.',
+    universe: { ...LISTED, industry: 'Biotechnology', marketCapMoreThan: 1 * BILLION },
+    rules: [],
+    sort: sortByScore,
+    sortLabel: 'overall score',
+    columns: ['pb', 'revenueGrowth', 'currentRatio'],
+    note: 'Treat the composite here more cautiously than elsewhere. Valuation multiples on a '
+      + 'company with no earnings are undefined rather than low, so the factor is graded on '
+      + 'fewer ratios than usual and the count beside each score says how many. Cash runway — '
+      + 'the thing that actually decides a pre-revenue biotech — is not one of them.',
+  },
+
+  {
+    key: 'top-semiconductor-stocks',
+    group: 'Featured screens',
+    title: 'Top Semiconductor Stocks',
+    tag: 'Semiconductors',
+    scoreIdea: true,
+    ranked: true,
+    resultLimit: 25,
+    bags: ['growth', 'returns'],
+    thesis: 'Semiconductor companies over $1b, ranked by the composite. The most cyclical '
+      + 'industry in the technology sector, judged on the same ratios as everything else.',
+    universe: { ...LISTED, industry: 'Semiconductors', marketCapMoreThan: 1 * BILLION },
+    rules: [],
+    sort: sortByScore,
+    sortLabel: 'overall score',
+    columns: ['pe', 'grossMargin', 'revenueGrowth'],
+    note: 'Every figure here is trailing, and this industry’s trailing figures are at their best '
+      + 'at the top of a cycle. A high growth score late in an upturn is a description of the '
+      + 'last twelve months, not a forecast of the next twelve. Equipment makers are classified '
+      + 'separately and are not in this list.',
+  },
+
+  {
+    key: 'all-stocks',
+    group: 'Featured screens',
+    title: 'All Stocks',
+    tag: 'Everything',
+    scoreIdea: true,
+    ranked: true,
+    resultLimit: 50,
+    bags: ['growth', 'returns'],
+    thesis: 'The whole universe with no rule applied, ranked by the composite. The blank screen: '
+      + 'the place to start if you would rather add your own filters than begin from somebody '
+      + 'else’s thesis.',
+    universe: { ...LISTED, marketCapMoreThan: 300e6 },
+    rules: [],
+    sort: sortByScore,
+    sortLabel: 'overall score',
+    columns: ['pe', 'roic', 'dividendYield'],
+    note: 'The one screen on this page whose label is honest about returning everything. It is '
+      + 'still the best fifty of a tested sample rather than of the market — the funnel under the '
+      + 'table says how many companies the universe held and how many were actually measured.',
+  },
+
+  /* ==========================================================================
+     The one screen on this page that is not built on our own opinion
+     ========================================================================== */
+
+  {
+    key: 'top-wallstreet-stocks',
+    group: 'Ranked portfolios',
+    title: 'Top WallStreet Stocks',
+    tag: 'Analyst rated',
+    ranked: true,
+    resultLimit: 30,
+    thesis: 'What the sell side likes best. Analysts covering the company are tallied — strong '
+      + 'buy through strong sell — and the tally is ranked. Eligibility is real coverage and a '
+      + 'bullish balance; the ranking is their average, not ours.',
+    universe: { ...LISTED, marketCapMoreThan: 2 * BILLION },
+    // A ranked idea infers no bags from its rules, so the ranking feed has to
+    // be asked for outright.
+    bags: ['grades'],
+    rules: [
+      atLeast('Covered by at least 10 analysts', F.analystCount, 10),
+      atLeast('More than half rate it buy or better', F.analystBuyShare, 0.50),
+    ],
+    sort: (c: any) => F.analystScore(c) ?? -1,
+    sortLabel: 'analyst rating',
+    columns: ['analystScore', 'analystCount', 'analystBuyShare'],
+    note: 'This is the one screen here that ranks on somebody else’s opinion, and the distinction '
+      + 'matters more than it looks. Every other score in this product is a percentile of '
+      + 'measurable ratios against a sector; this is a count of published recommendations put on '
+      + 'the same 0-5 scale so it can be sorted. A 4.2 here means analysts are bullish, not that '
+      + 'the company ranks well on anything. '
+      + 'Two known biases come with it. Sell-side ratings skew bullish — sell recommendations are '
+      + 'rare across the whole market, so "more than half rate it buy" is a low bar rather than a '
+      + 'high one. And coverage itself is not random: large, liquid, heavily traded companies '
+      + 'attract more analysts, so a coverage floor of ten is also, quietly, a size filter. The '
+      + 'ten-analyst minimum is there because a mean of three opinions is not a consensus.',
+  },
+
+  /* ==========================================================================
+     Halal
+
+     Seven themed screens behind the same compliance test the Shariah desk
+     runs. Each is `halalIdea`, so the three AAOIFI rules come first, cannot be
+     edited away, and the caveat rides on every note. What each adds on top is
+     an ordinary, adjustable rule set — the reader can move any threshold
+     after the compliance test, never the test itself.
+
+     Distinct from the desk's five on purpose. Those are the broad cuts
+     (compliant, compliant and good, compliant and paying); these are the
+     narrower questions a halal investor asks next.
+     ========================================================================== */
+
+  halalIdea({
+    key: 'halal-top-growth',
+    title: 'Top Shariah-compliant growth stocks',
+    tag: 'Growth',
+    scoreIdea: true,
+    thesis: 'Shariah-compliant companies growing faster than most of their sector, and fast in '
+      + 'absolute terms too — revenue up 15% or more, with earnings following. The desk’s Halal '
+      + 'Growth screen asks for double digits; this one asks for the top of the table.',
+    extra: [
+      scoreAtLeast('growth', 4),
+      atLeast('Revenue growing 15%+', F.revenueGrowth, 0.15),
+      atLeast('Earnings per share growing', F.epsGrowth, 0),
+    ],
+    sort: sortByFactor('growth'),
+    sortLabel: 'growth score',
+    columns: ['revenueGrowth', 'epsGrowth', 'grossMargin'],
+    note: 'Both halves have to hold: the growth score is sector-relative and the 15% floor is '
+      + 'absolute, so the fastest-growing utility does not qualify as a growth stock. Growth is '
+      + 'the last filed year against the one before it.',
+  }),
+
+  halalIdea({
+    key: 'halal-hidden-gems',
+    title: 'Hidden gems',
+    tag: 'Under-covered',
+    thesis: 'Shariah-compliant smaller companies that few analysts follow, earning a real return on '
+      + 'capital, still growing, and not priced as if everybody already knew. The argument is '
+      + 'attention: a good business nobody is writing about is where a price is most likely to '
+      + 'be wrong.',
+    universe: {
+      ...LISTED,
+      marketCapMoreThan: 0.3 * BILLION,
+      marketCapLowerThan: 5 * BILLION,
+      volumeMoreThan: 50000,
+    },
+    extra: [
+      // Hand-built, because "nobody publishes an estimate" has to pass: the
+      // descriptor builders read a missing number as a failure, and a company
+      // with no coverage at all is the most hidden of the lot.
+      rule('Followed by five analysts or fewer', ['estimates'], (c: any) => {
+        const n = F.analysts(c);
+        return !isNum(n) || n <= 5;
+      }),
+      atLeast('Return on invested capital above 12%', F.roic, 0.12),
+      atLeast('Revenue growing 5%+', F.revenueGrowth, 0.05),
+      atMost('P/E under 20', F.pe, 20),
+    ],
+    columns: ['analysts', 'roic', 'pe'],
+    note: 'Coverage is read from the analyst-estimates feed, and a company with no published '
+      + 'estimates counts as uncovered — which is also what a feed that failed to load looks '
+      + 'like, so check the Analysts column before trusting the "hidden" half. Candidates are '
+      + 'taken largest first, so this samples the top of the $300m–$5b band rather than the '
+      + 'smallest names in it.',
+  }),
+
+  halalIdea({
+    key: 'halal-undervalued',
+    title: 'Undervalued halal stocks',
+    tag: 'Value',
+    thesis: 'Shariah-compliant companies trading at least a fifth below the reference discounted '
+      + 'cash flow value, and profitable enough that the discount is a price rather than a '
+      + 'diagnosis.',
+    extra: [
+      atLeast('At least 20% below fair value', F.discount, 0.20),
+      atLeast('Profitable on a net basis', F.netMargin, 0.03),
+      atLeast('Return on equity above 8%', F.roe, 0.08),
+    ],
+    sort: (c: any) => F.discount(c) ?? -1,
+    sortLabel: 'discount to fair value',
+    columns: ['discount', 'pe', 'roe'],
+    note: 'The fair value is one reference levered DCF, not this report’s — a model is a set of '
+      + 'assumptions, and the discount is somebody else’s opinion rather than a fact. The desk’s '
+      + 'Halal Value screen asks the other question, a low earnings multiple.',
+  }),
+
+  halalIdea({
+    key: 'halal-ai',
+    title: 'Halal AI beneficiaries',
+    tag: 'AI',
+    thesis: 'Shariah-compliant companies from a hand-kept list of the AI build-out — chips, the '
+      + 'tools that make them, networking, servers, power and cooling, the platforms and the '
+      + 'software — where the benefit has reached revenue: growing 10% or more.',
+    universe: { ...LISTED, marketCapMoreThan: 1 * BILLION },
+    symbols: AI_EXPOSED,
+    extra: [
+      atLeast('Revenue growing 10%+', F.revenueGrowth, 0.10),
+    ],
+    sort: (c: any) => F.revenueGrowth(c) ?? -1,
+    sortLabel: 'revenue growth',
+    columns: ['revenueGrowth', 'grossMargin', 'rdToRevenue'],
+    note: `The list of ${AI_EXPOSED.length} is ours and is an editorial judgement, not a `
+      + 'classification: no data source tags a theme, so exposure to AI can only be written down. '
+      + 'Compliance and revenue growth are measured. The platforms most exposed to AI are also '
+      + 'the ones most often carrying cash above the AAOIFI limit, so expect several large names '
+      + 'to fail on the cash test rather than on anything about AI.',
+  }),
+
+  halalIdea({
+    key: 'halal-dividend-growers',
+    title: 'Halal dividend growers',
+    tag: 'Dividend growth',
+    thesis: 'Shariah-compliant companies that have raised their dividend five years running, grown '
+      + 'it 5% a year or better over those five, and still pay out under 60% of earnings — room to '
+      + 'keep raising it.',
+    universe: { ...LISTED, marketCapMoreThan: 1 * BILLION, dividendMoreThan: 0 },
+    extra: [
+      atLeast('Raised the dividend 5 years running', F.divRaises, 5),
+      atLeast('Dividend growing 5%+ a year over five years', F.divGrowth5y, 0.05),
+      atMost('Pays out under 60% of earnings', F.payout, 0.60),
+    ],
+    sort: (c: any) => F.divGrowth5y(c) ?? -1,
+    sortLabel: 'five-year dividend growth',
+    columns: ['divRaises', 'divGrowth5y', 'payout'],
+    note: 'Raises are counted on calendar-year totals from the dividend feed, so a payer that moved '
+      + 'a payment across New Year can show one year up and the next down without changing what it '
+      + 'pays. The feed reaches back about fifteen years for a quarterly payer. A dividend from a '
+      + 'compliant company is not automatically compliant income in full — see Purification on the '
+      + 'Shariah desk.',
+  }),
+
+  halalIdea({
+    key: 'halal-small-caps',
+    title: 'Halal small caps',
+    tag: 'Small cap',
+    scoreIdea: true,
+    thesis: 'Shariah-compliant companies between $300m and $2b that are profitable and rate well on '
+      + 'the composite. Small enough to be under-covered, large enough to trade, held to the same '
+      + 'score as everything else.',
+    universe: {
+      ...LISTED,
+      marketCapMoreThan: 0.3 * BILLION,
+      marketCapLowerThan: 2 * BILLION,
+      priceMoreThan: 3,
+      volumeMoreThan: 100000,
+    },
+    bags: ['growth', 'returns'],
+    extra: [
+      atLeast('Profitable on a net basis', F.netMargin, 0.02),
+      overallAtLeast(3.5),
+    ],
+    columns: ['pe', 'roic', 'revenueGrowth'],
+    note: 'Candidates are taken largest first, so this is the best of the larger small caps rather '
+      + 'than of the whole band. The volume and $3 price floors are there because a small company '
+      + 'that barely trades can screen well and still be impossible to buy near the printed price.',
+  }),
+
+  halalIdea({
+    key: 'halal-eps-acceleration',
+    title: 'Halal stocks with accelerating EPS',
+    tag: 'Acceleration',
+    thesis: 'Shariah-compliant companies whose earnings per share grew faster last year than the '
+      + 'year before — 15% or more, on top of a year that was already growing — and that analysts '
+      + 'expect to keep growing. Acceleration is the second derivative: not "growing" but "growing '
+      + 'faster".',
+    extra: [
+      atLeast('EPS growing 15%+ last year', F.epsGrowth, 0.15),
+      atLeast('EPS grew the year before as well', F.epsGrowthPrior, 0),
+      atLeast('EPS growth faster than the year before', F.epsAcceleration, 0),
+      atLeast('Forecast EPS growth 10%+ a year', F.fwdEpsGrowth, 0.10),
+    ],
+    sort: (c: any) => F.epsAcceleration(c) ?? -1,
+    sortLabel: 'EPS acceleration',
+    columns: ['epsGrowth', 'epsGrowthPrior', 'fwdEpsGrowth'],
+    note: 'Measured on the last two filed fiscal years, not on quarters — so an acceleration that '
+      + 'began two quarters ago will not show yet. Requiring the earlier year to have grown too '
+      + 'keeps out the rebound from a collapse, which reads as spectacular acceleration and is '
+      + 'nothing of the kind.',
+  }),
+];
+
+export const IDEA_BY_KEY = Object.fromEntries(IDEAS.map((i) => [i.key, i]));
+
+/**
+ * Section order on the index — `IDEA_GROUPS`, which lives in `nav.js`.
+ *
+ * It moved there when Investment Ideas became a top-level rail menu: the rail
+ * builds one menu item per group and the router accepts one slug per group, so
+ * the list is a *destination vocabulary* and belongs beside `SECTORS` for
+ * exactly the same reason. A group renamed here and not there would be a menu
+ * item opening an empty page.
+ *
+ * An idea whose `group` is missing from the list still renders, under "More".
+ */
+const GROUP_ORDER = IDEA_GROUPS;
+
+export function groupedIdeas() {
+  const seen = new Map();
+  for (const idea of IDEAS) {
+    const g = idea.group || 'More';
+    if (!seen.has(g)) seen.set(g, []);
+    seen.get(g).push(idea);
+  }
+  const ordered = GROUP_ORDER.filter((g) => seen.has(g));
+  const rest = [...seen.keys()].filter((g) => !GROUP_ORDER.includes(g));
+  return [...ordered, ...rest].map((name) => ({ name, ideas: seen.get(name) }));
+}
+
+/**
+ * Every bag an idea needs: the two every score column needs, whatever its
+ * rules read, and anything it asks for outright.
+ *
+ * The last of those is for ranked ideas, which have no rules to infer from —
+ * they filter on the universe alone and then sort on the composite score, so
+ * they have to say which feeds that score should be built from.
+ */
+export function bagsFor(idea: any) {
+  const out = new Set(BASE_BAGS);
+  for (const r of idea.rules) for (const b of r.needs || []) out.add(b);
+  for (const b of idea.bags || []) out.add(b);
+  return [...out].filter((b) => !PRELOADED_BAGS.has(b));
+}
+
+/**
+ * How many candidates this idea can afford, given what it has to fetch.
+ *
+ * An idea may raise its own budget. That is not a convenience: candidates are
+ * taken largest first, so a screen looking for something the largest companies
+ * rarely have — cheapness, most obviously — is sampling against itself, and
+ * the only fix available is to sample deeper.
+ */
+export function capFor(idea: any) {
+  const perCandidate = Math.max(bagsFor(idea).length, 1);
+  const budget = idea.budget || REQUEST_BUDGET;
+  return Math.min(MAX_CANDIDATES,
+    Math.max(MIN_CANDIDATES, Math.floor(budget / perCandidate)));
+}
+
+/** About how many requests one run spends: the screener, any filings read first, then the candidates. */
+export function requestsFor(idea: any) {
+  return 1 + (idea.banks ? BANK_REQUESTS : 0) + capFor(idea) * bagsFor(idea).length;
+}
+
+/* ==========================================================================
+   Columns
+
+   What each idea shows beside the score. Defined once, referenced by key from
+   an idea's `columns`, so two ideas asking about the same ratio print it the
+   same way.
+   ========================================================================== */
+
+export const COLUMNS: Record<string, any> = {
+  pe: { label: 'P/E', get: F.pe, fmt: (v: any) => mult(v) },
+  pb: { label: 'P/B', get: F.pb, fmt: (v: any) => mult(v) },
+  peg: { label: 'PEG', get: F.peg, fmt: (v: any) => mult(v) },
+  evToEbitda: { label: 'EV/EBITDA', get: F.evToEbitda, fmt: (v: any) => mult(v) },
+  roic: { label: 'ROIC', get: F.roic, fmt: (v: any) => pct(v) },
+  roe: { label: 'ROE', get: F.roe, fmt: (v: any) => pct(v) },
+  grossMargin: { label: 'Gross margin', get: F.grossMargin, fmt: (v: any) => pct(v) },
+  operatingMargin: { label: 'Operating margin', get: F.operatingMargin, fmt: (v: any) => pct(v) },
+  netMargin: { label: 'Net margin', get: F.netMargin, fmt: (v: any) => pct(v) },
+  dividendYield: { label: 'Yield', get: F.dividendYield, fmt: (v: any) => pct(v, { dp: 2 }) },
+  payout: { label: 'Payout', get: F.payout, fmt: (v: any) => pct(v, { dp: 0 }) },
+  netDebtToEbitda: { label: 'Net debt/EBITDA', get: F.netDebtToEbitda, fmt: (v: any) => mult(v) },
+  debtToEquity: { label: 'Debt/equity', get: F.debtToEquity, fmt: (v: any) => mult(v) },
+  currentRatio: { label: 'Current ratio', get: F.currentRatio, fmt: (v: any) => mult(v) },
+  interestCover: { label: 'Interest cover', get: F.interestCover, fmt: (v: any) => mult(v) },
+  fcfYield: { label: 'FCF yield', get: F.fcfYield, fmt: (v: any) => pct(v) },
+  incomeQuality: { label: 'Cash conversion', get: F.incomeQuality, fmt: (v: any) => mult(v) },
+  capexToRevenue: { label: 'Capex/revenue', get: F.capexToRevenue, fmt: (v: any) => pct(v) },
+  rdToRevenue: { label: 'R&D/revenue', get: F.rdToRevenue, fmt: (v: any) => pct(v) },
+  assetTurnover: { label: 'Asset turnover', get: F.assetTurnover, fmt: (v: any) => mult(v) },
+  revenueGrowth: { label: 'Revenue growth', get: F.revenueGrowth, fmt: (v: any) => pct(v, { sign: true }) },
+  epsGrowth: { label: 'EPS growth', get: F.epsGrowth, fmt: (v: any) => pct(v, { sign: true }) },
+  discount: { label: 'Below fair value', get: F.discount, fmt: (v: any) => pct(v) },
+  insiderNet: { label: 'Net shares bought', get: F.insiderNet, fmt: (v: any) => num(v, 0) },
+  closelyHeld: { label: 'Closely held', get: F.closelyHeld, fmt: (v: any) => pct(v) },
+  fwdEpsGrowth: { label: 'Forecast EPS growth', get: F.fwdEpsGrowth, fmt: (v: any) => pct(v, { sign: true }) },
+  fwdRevenueGrowth: { label: 'Forecast revenue growth', get: F.fwdRevenueGrowth, fmt: (v: any) => pct(v, { sign: true }) },
+  analysts: { label: 'Analysts', get: F.analysts, fmt: (v: any) => String(v) },
+  return1y: { label: '1-year return', get: F.return1y, fmt: (v: any) => pct(v, { sign: true }) },
+  return6m: { label: '6-month return', get: F.return6m, fmt: (v: any) => pct(v, { sign: true }) },
+  drawdown: { label: 'Worst fall', get: F.drawdown, fmt: (v: any) => pct(v) },
+
+  /* Each was already a field on `F` and already screened on by at least one
+     idea; they simply had no column. */
+  ps: { label: 'P/S', get: F.ps, fmt: (v: any) => mult(v) },
+  analystScore: { label: 'Analyst rating', get: F.analystScore, fmt: (v: any) => dec(v, 2) },
+  analystCount: { label: 'Analysts covering', get: F.analystCount, fmt: (v: any) => num(v, 0) },
+  analystBuyShare: { label: 'Buy or better', get: F.analystBuyShare, fmt: (v: any) => pct(v, { dp: 0 }) },
+  insiderBought: { label: 'Shares bought by insiders', get: F.insiderBought, fmt: (v: any) => num(v, 0) },
+  fcfGrowth: { label: 'FCF growth', get: F.fcfGrowth, fmt: (v: any) => pct(v, { sign: true }) },
+  fcfToOcf: { label: 'FCF/operating cash flow', get: F.fcfToOcf, fmt: (v: any) => mult(v) },
+
+  /* Added with the Halal ideas. Acceleration is a difference of two growth
+     rates, so it prints in points rather than as a percentage of anything. */
+  epsGrowthPrior: { label: 'EPS growth, year before', get: F.epsGrowthPrior, fmt: (v: any) => pct(v, { sign: true }) },
+  epsAcceleration: { label: 'EPS growth acceleration', get: F.epsAcceleration,
+    fmt: (v: any) => `${v >= 0 ? '+' : '−'}${num(Math.abs(v) * 100, 1)} pts` },
+  divRaises: { label: 'Years of dividend raises', get: F.divRaises, fmt: (v: any) => num(v, 0) },
+  divGrowth5y: { label: 'Dividend growth, 5-year', get: F.divGrowth5y, fmt: (v: any) => pct(v, { sign: true }) },
+
+  /* The big banks' 13F figures. */
+  bankHolders: { label: 'Banks holding', get: F.bankHolders, fmt: (v: any) => num(v, 0) },
+  bankAdders: { label: 'Banks adding', get: F.bankAdders, fmt: (v: any) => num(v, 0) },
+  bankChange: { label: 'Banks’ shares, change', get: F.bankChange, fmt: (v: any) => pct(v, { sign: true }) },
+  bankExcess: { label: 'Beyond all 13F filers', get: F.bankExcess, fmt: (v: any) => pct(v, { sign: true }) },
+  bankStake: { label: 'Banks’ stake', get: F.bankStake, fmt: (v: any) => pct(v, { dp: 2 }) },
+  bankStakeGain: { label: 'Stake change', get: F.bankStakeGain,
+    fmt: (v: any) => `${v >= 0 ? '+' : '−'}${num(Math.abs(v) * 100, 2)} pts` },
+};
+
+/* ==========================================================================
+   Deduplication
+
+   The screener returns listings, and an idea wants companies. Two things make
+   those differ:
+
+     - **A second listing of the same shares.** `NVDA.NE` is NVDA on Cboe
+       Canada. Same company, same economics, different row.
+     - **A second share class.** `GOOG` beside `GOOGL`, `BRK-A` beside
+       `BRK-B` — one business, two lines, and both pass or fail together.
+
+   Either takes a slot in the tested sample away from a company not already in
+   it, which is the real cost: at a cap of three hundred, a hundred duplicate
+   listings is a third of the screen spent re-testing names it already has.
+   ========================================================================== */
+
+/** Legal and share-class wording that does not distinguish two companies. */
+const NAME_NOISE = new Set([
+  'inc', 'incorporated', 'corp', 'corporation', 'co', 'company', 'plc', 'ltd',
+  'limited', 'sa', 'nv', 'ag', 'llc', 'lp', 'holdings', 'holding', 'group',
+  'the', 'class', 'a', 'b', 'c', 'series', 'cl', 'ordinary', 'shares', 'common',
+  'stock', 'adr', 'ads', 'new',
+]);
+
+function companyKey(name: any) {
+  const words = String(name || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter((w) => w && !NAME_NOISE.has(w));
+  return words.join(' ');
+}
+
+/** The ticker without its exchange suffix: `NVDA.NE` -> `NVDA`. */
+const baseSymbol = (sym: any) => String(sym || '').split('.')[0];
+
+/**
+ * One row per company, keeping the biggest and plainest listing of each.
+ *
+ * Preference inside a group: a symbol with no exchange suffix beats one with a
+ * suffix, and after that the larger market capitalisation wins. That keeps
+ * `NVDA` over `NVDA.NE`, and the heavier of `GOOGL` and `GOOG`.
+ *
+ * The name pass runs second and is the riskier of the two — two genuinely
+ * different companies could normalise to the same words. It is worth it
+ * because share classes share no ticker at all, and the count it removes is
+ * printed under every result so a wrong merge is at least visible.
+ *
+ * Exported so it can be exercised directly. It is pure, it decides which
+ * companies a screen is even allowed to see, and it is the one part of this
+ * module that can be checked without an API key.
+ */
+export function dedupe(rows: any) {
+  const pick = (a: any, b: any) => {
+    const aSuffixed = a.symbol.includes('.');
+    const bSuffixed = b.symbol.includes('.');
+    if (aSuffixed !== bSuffixed) return aSuffixed ? b : a;
+    return (b.marketCap ?? 0) > (a.marketCap ?? 0) ? b : a;
+  };
+
+  const collapse = (list: any, keyOf: any) => {
+    const best = new Map();
+    for (const r of list) {
+      const k = keyOf(r);
+      if (!k) continue;
+      best.set(k, best.has(k) ? pick(best.get(k), r) : r);
+    }
+    return [...best.values()];
+  };
+
+  const byTicker = collapse(rows, (r: any) => baseSymbol(r.symbol));
+  return collapse(byTicker, (r: any) => companyKey(r.companyName) || baseSymbol(r.symbol));
+}
+
+/* ==========================================================================
+   Running one idea
+   ========================================================================== */
+
+/**
+ * Screen, deduplicate, enrich, test, score, rank.
+ *
+ * `onProgress(done, total)` is called as the candidate pulls land, so the
+ * caller can show something moving through what is otherwise a long silence.
+ *
+ * The result reports the whole funnel — listings returned, companies after
+ * deduplication, companies tested, companies passed — because a headline of
+ * "eight companies" means nothing without the three numbers above it.
+ */
+export async function runIdea(idea: any, { onProgress }: any = {}) {
+  /* The big-banks portfolio reads its filings before anything else: they
+     decide which companies are worth a screener row at all, and a run that
+     cannot read them has nothing to say. */
+  const book = idea.banks
+    ? await loadBankBook({ onProgress: (done: number, total: number) => onProgress?.(done, total, 'filings') })
+    : null;
+  if (book && book.status !== 'ok') return { state: book.status, message: book.message, idea, book };
+
+  const hits = await fetchScreener(idea.universe);
+  if (hits.status !== 'ok') return { state: hits.status, message: hits.message, idea };
+
+  /* An idea with `symbols` is a hand-kept list — a theme the vendor does not
+     tag. The list narrows the screener's universe rather than replacing it,
+     so it costs the same one call, every name still arrives with its sector,
+     size and price, and a name the universe excludes (too small, delisted,
+     domiciled abroad) drops out instead of being tested on a guess. */
+  const named = idea.symbols ? new Set(idea.symbols) : book ? new Set(book.stakes.keys()) : null;
+  const listings = hits.data!.filter((h) => h.symbol && !h.isEtf && !h.isFund
+    && (!named || named.has(baseSymbol(h.symbol))));
+  const universe = dedupe(listings);
+  if (!universe.length) {
+    return { state: 'empty', idea, listings: listings.length, universeSize: 0, tested: 0, rows: [], book };
+  }
+
+  const bags = bagsFor(idea);
+  const cap = capFor(idea);
+  const stakeOf = (h: any) => book?.stakes.get(baseSymbol(h.symbol)) ?? null;
+
+  /* Rules that read only preloaded bags cost nothing, so they run before the
+     cap: the request budget is then spent on companies the banks actually
+     bought rather than on the largest companies they happen to hold. */
+  const free = book ? idea.rules.filter((r: any) => (r.needs || []).every((b: string) => PRELOADED_BAGS.has(b))) : [];
+  const pool = free.length ? universe.filter((h) => free.every((r: any) => r.test({ banks: stakeOf(h) }))) : universe;
+
+  // Largest first, then capped. Size is the only ranking the screener gives us
+  // for free, and it is at least a defensible one: the names most readers have
+  // heard of get tested, and the tail is stated rather than hidden. An idea
+  // whose own signal is already known before the cap (`prerank`) spends the
+  // budget on its strongest names instead, size breaking ties.
+  const rank = idea.prerank ? (h: any) => idea.prerank({ banks: stakeOf(h), marketCap: h.marketCap }) : null;
+  const candidates = [...pool]
+    .sort((x, y) => (rank ? rank(y) - rank(x) : 0) || (y.marketCap ?? 0) - (x.marketCap ?? 0))
+    .slice(0, cap);
+
+  const stats = await loadSectorStats();
+  const lookups = new Map();
+  const lookupFor = (sector: any) => {
+    if (!lookups.has(sector)) lookups.set(sector, sectorLookup(stats, sector));
+    return lookups.get(sector);
+  };
+
+  // Thirteen months, not the six years `fetchFor` defaults to: the longest
+  // window any momentum metric looks at is a year, and six years of daily
+  // closes for three hundred companies is a payload nobody reads.
+  const from = new Date(Date.now() - 400 * 864e5).toISOString().slice(0, 10);
+
+  let done = 0;
+  const rows = await mapLimited(candidates, async (h) => {
+    const results = await Promise.all(bags.map((bag) => fetchFor(
+      (BAG_FEED as any)[bag], h.symbol,
+      bag === 'returns' ? { from } : bag === 'instSummary' && book?.latest ? { lastQuarter: book.latest } : {},
+    )));
+    onProgress?.(++done, candidates.length);
+
+    const c = {
+      symbol: h.symbol,
+      name: h.companyName || h.symbol,
+      sector: h.sector || '',
+      industry: h.industry || '',
+      marketCap: isNum(h.marketCap) ? h.marketCap : null,
+      price: isNum(h.price) ? h.price : null,
+      volume: isNum(h.volume) ? h.volume : null,
+      beta: isNum(h.beta) ? h.beta : null,
+      lastAnnualDividend: isNum(h.lastAnnualDividend) ? h.lastAnnualDividend : null,
+      exchange: h.exchangeShortName || h.exchange || '',
+      country: h.country || '',
+    };
+    for (const bag of Object.keys(BAG_FEED)) (c as any)[bag] = null;
+
+    bags.forEach((bag, i) => {
+      const r = results[i];
+      if (r.status !== 'ok' || r.data == null) return;
+      const shape = (BAG_SHAPE as any)[bag];
+      (c as any)[bag] = shape ? shape(r.data, h) : r.data;
+    });
+    if (book) {
+      const stake = stakeOf(h);
+      (c as any).banks = stake ? withBaseline(stake, (c as any).instSummary) : null;
+    }
+
+    (c as any).lite = scoreLite(c, lookupFor(c.sector));
+    (c as any).passes = idea.rules.map((rl: any) => rl.test(c));
+    (c as any).passed = (c as any).passes.every(Boolean);
+    return c;
+  }, 6);
+
+  const winners = rows
+    .filter((c) => (c as any).passed)
+    .sort((x, y) => (idea.sort(y) ?? -1) - (idea.sort(x) ?? -1))
+    .slice(0, idea.resultLimit || RESULT_CAP);
+
+  return {
+    state: 'ok',
+    idea,
+    listings: listings.length,
+    universeSize: universe.length,
+    tested: candidates.length,
+    cap,
+    feedsPer: bags.length,
+    passedCount: rows.filter((c) => (c as any).passed).length,
+    resultLimit: idea.resultLimit || RESULT_CAP,
+    /* The big-banks portfolio's filings, and how many companies cleared the
+       free rules before the cap — the step of its funnel the others lack. */
+    book,
+    prefiltered: free.length ? pool.length : null,
+    rows: winners,
+    /* Kept so the rules card can say which rule did the excluding — "nothing
+       passed" is a far worse answer than "eleven of the twelve failed on the
+       P/E test alone". */
+    all: rows,
+  };
+}
+
+/* ==========================================================================
+   The index page
+   ========================================================================== */
+
+/* The index that used to live here — a column of twenty-three tall cards —
+   was replaced by the directory in `portfolios.js` when Investment Ideas
+   became a top-level rail menu. Same twenty-three portfolios, same groups,
+   same rules, same run; a layout to scan rather than to read. `universeLine`
+   below is the one piece of it that survived, because two surfaces print it.
+
+   `renderIdeaResult` is NOT superseded: `screens.js` renders the Stocks,
+   Quant and Shariah menu screens through it, and those are not portfolios. */
+
+/**
+ * The server-side half of a screen, in words.
+ *
+ * Survived the index it was written for, because other surfaces print it:
+ * the rules card and `portfolioSummary` on the Investment Ideas page.
+ */
+export function universeLine(idea: any) {
+  const u = idea.universe;
+  const bits = [];
+  if (idea.symbols) bits.push(`a hand-kept list of ${idea.symbols.length} companies`);
+  if (idea.banks) bits.push(`companies held in ${BANKS.length} banks’ latest 13F filings`);
+  if (u.industry) bits.push(u.industry);
+  if (u.sector) bits.push(u.sector);
+  if (isNum(u.marketCapMoreThan) && isNum(u.marketCapLowerThan)) {
+    bits.push(`${money(u.marketCapMoreThan)}–${money(u.marketCapLowerThan)}`);
+  } else if (isNum(u.marketCapMoreThan)) {
+    bits.push(`over ${money(u.marketCapMoreThan)}`);
+  } else if (isNum(u.marketCapLowerThan)) {
+    bits.push(`under ${money(u.marketCapLowerThan)}`);
+  }
+  if (isNum(u.priceMoreThan)) bits.push(`over $${u.priceMoreThan} a share`);
+  if (isNum(u.volumeMoreThan)) bits.push(`${num(u.volumeMoreThan, 0)}+ daily volume`);
+  if (isNum(u.dividendMoreThan)) bits.push('pays a dividend');
+  bits.push('US-listed operating companies');
+  return `Universe: ${bits.join(' · ')}.`;
+}
+
+/* ==========================================================================
+   One idea's results
+   ========================================================================== */
+
