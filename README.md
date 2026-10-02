@@ -56,12 +56,19 @@ non-obvious choices were made; that is the main design documentation.
 
 ## Documents
 
+- [`HANDOVER.md`](HANDOVER.md): **start here** — the state of the project,
+  the rules, what is promised but not built, and what to do before launch.
 - [`web/PORTING.md`](web/PORTING.md): how the app was built, module by module,
   and every feature added since, with its files, cost and tests.
 - [`web/DATA-PROVENANCE.md`](web/DATA-PROVENANCE.md): where each bundled data
   file comes from. Repo only; it is not served.
 - [`MAZ_DIVIDEND_SPEC_FULL.md`](MAZ_DIVIDEND_SPEC_FULL.md): the dividend
   module's specification.
+- [`MAZ_ALPHA_SIGNAL_SPEC.md`](MAZ_ALPHA_SIGNAL_SPEC.md): the Alpha Signal's
+  logic, how to replicate it, the model prompt and the original master prompt.
+- [`MAZ_ETF_SCORING_SPEC.md`](MAZ_ETF_SCORING_SPEC.md): the five ETF grades.
+- [`FMP_DATA_REQUIREMENTS.md`](FMP_DATA_REQUIREMENTS.md): every market-data
+  endpoint the app uses, for a vendor quote.
 - [`tools/capture/README.md`](tools/capture/README.md): how the hand-captured
   data files were made.
 
