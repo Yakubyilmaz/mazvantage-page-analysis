@@ -2,268 +2,214 @@
    Vanlior — the dividend scores panel
 
    The third panel of the Dividends tab: the four composites from
-   `dividend-score.js`, the lines behind each one, and the disclosures the
-   module owes a reader.
+   `dividend-score.js`, laid out exactly as the Valuation, Growth,
+   Profitability and Financial Health tabs lay out a factor —
+
+     the hero, with the grade, the scale, the bar and how the lines sit
+     against the sector median
+     the four composites beside it, with this one picked out
+     the lines carrying the grade and the lines holding it back
+
+   — and, like those four tabs, **no ratio tables**. `FACTOR_TAB_DETAIL` in
+   `gradeview.js` states the rule this follows: the Analysis tab is where
+   every line's table already lives, and repeating all sixty-four here made
+   the two surfaces the same page twice. Every line, its sector median, its
+   ranking and the sentence explaining it are under Dividend Grades on the
+   Analysis tab, one click away through each hero's own link.
 
    ---------------------------------------------------------------------------
-   Four cards, and deliberately no fifth
+   The one card a factor tab has that this cannot
    ---------------------------------------------------------------------------
 
-   Every instinct of a scoring page is to add a headline number across the
-   top. This one does not, and the panel says why in one line rather than
-   leaving a reader to wonder whether it is missing: safety, growth, yield and
-   consistency pull against each other, and the tension between them is the
-   finding. A company with an A on safety and an F on yield is telling you
-   something precise; the average of those two is telling you nothing.
-
-   ---------------------------------------------------------------------------
-   What the panel has to disclose, and does
-   ---------------------------------------------------------------------------
-
-   - the ranks are against **payers in the same sector**, not all companies
-   - the table behind them is **modelled** until somebody runs a measured build
-   - two figures are **workarounds** for feeds that do not exist, and say so
-   - lines that could not be built are **listed with their reasons**, not hidden
-   - REITs are **called out**: the spec is explicit that payout ratios on net
-     income misread for them, and a panel that scored one silently would be
-     the single worst thing this module could do
+   A factor tab pairs its hero with the flake, highlighting the factor being
+   read. The dividend is not an axis of that flake and will not become one —
+   different universe, different scale, nothing in `scores` reads it — so the
+   slot carries the four dividend composites instead, which answers the same
+   question the flake is there to answer: where does this grade sit against
+   the others without scrolling back.
    ========================================================================== */
 
-import { el, isNum, pct } from './util.js';
-import { card, ohead, notice } from './ui.js';
-import { DIV_FACTOR_BY_KEY } from './dividend-lines.js';
-import { loadDividendStats, scoreDividends, dividendTone } from './dividend-score.js';
-import { loadDividendFeeds } from './dividend-model.js';
+import { el, isNum, dec } from './util.js';
+import { card, notice, icon } from './ui.js';
+import { gradePill, leadColumn } from './gradeview.js';
+import { toneForLetter } from './grading.js';
+import { DIV_MAX } from './dividend-score.js';
+import {
+  loadDividendScores, openDividendSection, divLines, divLeaders, divCheckCounts, divGradeList,
+  lapsedNotice, reitNotice, seedNotice, disclosureBody, noTotalLine, notAPayer,
+} from './dividend-grades.js';
 
-/** Which factors the reader has opened. Module-level, so a redraw keeps them. */
-const open = new Set();
+/** The card id one composite's hero gets, so the grade lists can reach it. */
+const heroId = (key) => `dvg-${key}`;
 
 /**
- * The panel. Returns the cards synchronously and fills them once the payer
- * table lands — the rest of the tab is already on screen by then, and a
- * skeleton for four cards is less use than the cards arriving.
+ * The panel. Returns its host synchronously and fills it once the payer table
+ * lands — the rest of the tab is already on screen by then, and a skeleton is
+ * less use than the cards arriving.
+ *
+ * A nested grid rather than a run of cards spread into the tab's own: the
+ * panel is one thing, and its cards should keep their twelve columns whatever
+ * the panel above them is doing.
  */
 export function dividendScoresPanel(a, nav = {}) {
-  const host = el('div', { class: 'dvs' }, [el('p', { class: 'dvs-loading', text: 'Ranking against sector payers…' })]);
+  const host = el('div', { class: 'ovw ovw__c12 dvg' }, [
+    card('dvg-loading', [
+      el('div', { class: 'ocard__head' }, [el('h2', { text: 'Dividend grades' })]),
+      el('p', { class: 'fhero__q', text: 'Ranking against sector payers…' }),
+    ], 'ocard ovw__c12'),
+  ]);
 
-  /* The payer table and the two quarterly statements, together: the table is
-     one shared fetch per page load, the statements are two requests and only a
-     reader who opened this panel pays for them. */
-  Promise.all([
-    loadDividendStats(),
-    loadDividendFeeds(a.facts?.symbol || a.ds?.symbol, a.ds),
-  ]).then(([stats, feeds]) => {
-    const result = scoreDividends(a, stats, { feeds });
-    host.replaceChildren(...body(result, a));
-  }).catch((error) => {
-    host.replaceChildren(notice(`The dividend scores could not be built — ${String(error?.message || error)}.`, 'notice--error'));
-  });
+  loadDividendScores(a)
+    .then((r) => host.replaceChildren(...cards(a, r, nav)))
+    .catch((error) => host.replaceChildren(card('dvg-error', [
+      el('div', { class: 'ocard__head' }, [el('h2', { text: 'Dividend grades' })]),
+      notice(`The dividend grades could not be built — ${String(error?.message || error)}.`, 'notice--error'),
+    ], 'ocard ovw__c12')));
 
-  return [card('dv-scores', [
-    ohead('Dividend scores', null,
-      'Four composite scores from the dividend module: safety, growth, yield and consistency, '
-      + 'each ranked against the dividend payers in this company’s own sector.'),
-    host,
-  ], 'ocard ovw__c12')];
+  return [host];
+}
+
+function cards(a, r, nav) {
+  if (!r.pays) return [overviewCard(a, r)];
+  return [
+    overviewCard(a, r),
+    ...r.order.flatMap((key) => composite(a, r, r.factors[key], nav)),
+  ];
 }
 
 /* ==========================================================================
-   The body
+   The overview
+
+   The reason there is no fifth number, the warnings this company earns, and
+   every disclosure the module owes — folded away, because the grades are what
+   a reader came for. The four grades themselves are not here: each hero
+   carries them beside it, picked out.
    ========================================================================== */
 
-function body(r, a) {
-  if (!r.pays) {
-    return [
-      el('p', { class: 'dvs-none' }, [
-        el('strong', { text: `${a.facts?.name || 'This company'} is not in the dividend universe.` }),
-        el('span', { text: ` ${r.why}` }),
-      ]),
-    ];
-  }
+function overviewCard(a, r) {
+  return card('dvg-overview', [
+    el('div', { class: 'ocard__head' }, [el('h2', { text: 'Dividend grades' })]),
+    el('p', { class: 'fhero__q', text: 'Four composites from the dividend module, each the weighted '
+      + 'average of its own lines and each ranked against the dividend payers in this sector rather '
+      + 'than against the whole of it.' }),
+
+    r.pays ? noTotalLine(r) : notAPayer(a, r),
+
+    r.pays ? seedNotice(r) : null,
+    r.pays && r.lapsed ? lapsedNotice(r) : null,
+    r.pays && r.inputs.sector === 'Real Estate' ? reitNotice() : null,
+
+    r.pays ? el('details', { class: 'dvg-disc' }, [
+      el('summary', { text: 'Where these grades come from' }),
+      disclosureBody(r),
+    ]) : null,
+  ], 'ocard ovw__c12');
+}
+
+/* ==========================================================================
+   One composite, as a factor tab lays out a factor
+   ========================================================================== */
+
+function composite(a, r, f, nav) {
+  const metrics = divLines(f, r);
+  const { above, below } = divLeaders(metrics, f.score);
 
   return [
-    lede(r),
-    r.lapsed ? lapsedNotice(r) : null,
-    r.inputs.sector === 'Real Estate' ? reitNotice() : null,
-    el('div', { class: 'dvs-grid' }, r.order.map((k) => factorCard(r.factors[k], r))),
-    el('div', { class: 'dvs-detail' }, r.order.map((k) => factorDetail(r.factors[k]))),
-    disclosure(r),
+    heroCard(a, r, f, metrics, nav),
+    peersCard(r, f),
+    (above.length || below.length) ? linesCard(a, f, above, below) : null,
   ].filter(Boolean);
 }
 
-/** The one line that explains the absence of a headline number. */
-function lede(r) {
-  return el('p', { class: 'dvs-lede' }, [
-    'Four composites on a 1–5 scale, each ranked against the dividend payers in ',
-    el('b', { text: r.inputs.sector || 'this sector' }),
-    '. There is deliberately no overall dividend score: safety, growth and yield pull against '
-    + 'each other, so an average of the four would hide the very tension worth reading. These '
-    + 'are also entirely separate from the quant rating on the Ratings tab — a different '
-    + 'universe, a different scale and a different table.',
-  ]);
-}
+/** Grade, how the lines sit against the payer median, and the way out. */
+function heroCard(a, r, f, metrics, nav) {
+  const width = isNum(f.score) ? (f.score / DIV_MAX) * 100 : 0;
+  const share = isNum(f.coverage) ? Math.round(f.coverage * 100) : null;
+  const checks = divCheckCounts(metrics);
 
-function lapsedNotice(r) {
-  const last = r.inputs.lastPaymentAt
-    ? new Date(r.inputs.lastPaymentAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
-    : 'some time ago';
-  return notice(`<b>This dividend is lapsing.</b> The last regular payment was ${last}, more than two `
-    + 'expected intervals ago. The forward lines report nothing rather than annualising a payment that has '
-    + 'stopped being declared, and the trailing lines are falling toward zero on their own.', 'notice--warn');
-}
-
-function reitNotice() {
-  return notice('<b>Read the safety factor with care for a REIT.</b> A property trust pays out of funds '
-    + 'from operations, and depreciation drives its net income far below the cash it collects — so a '
-    + 'payout ratio measured on earnings reads well above 100% for a perfectly sound trust. The ranking is '
-    + 'against other property payers, which absorbs some of this, but the specification is explicit that '
-    + 'these formulas misread for the sector until funds from operations replaces the denominator.', 'notice--warn');
-}
-
-/* ==========================================================================
-   One factor, as a card
-   ========================================================================== */
-
-function factorCard(f, r) {
-  const isOpen = open.has(f.key);
-  const toggle = el('button', {
-    type: 'button', class: 'dvs-more', 'aria-expanded': String(isOpen),
-    'aria-controls': `dvs-lines-${f.key}`,
-    text: isOpen ? 'Hide the lines' : `${f.gradedLines} lines`,
-    onclick: () => {
-      if (open.has(f.key)) open.delete(f.key); else open.add(f.key);
-      const panel = document.getElementById(`dvs-lines-${f.key}`);
-      const nowOpen = open.has(f.key);
-      if (panel) panel.hidden = !nowOpen;
-      toggle.setAttribute('aria-expanded', String(nowOpen));
-      toggle.textContent = nowOpen ? 'Hide the lines' : `${f.gradedLines} lines`;
-      if (nowOpen) panel?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    },
-  });
-
-  return el('article', { class: `dvs-card is-${dividendTone(f.score)}` }, [
-    el('h3', { class: 'dvs-card__t', text: f.title }),
-    el('p', { class: 'dvs-card__q', text: f.question }),
-    el('div', { class: 'dvs-card__score' }, [
-      el('b', { text: isNum(f.score) ? f.score.toFixed(2) : 'n/a' }),
-      el('span', { class: 'dvs-card__letter', text: f.letter || '' }),
+  const tile = (state, count, label) => el('div', { class: `fcheck is-${state}` }, [
+    icon(state, `fcheck__icon ${state}`),
+    el('div', {}, [
+      el('b', { text: String(count) }),
+      el('span', { text: label }),
     ]),
-    el('p', { class: 'dvs-card__rank', text: f.rank ? `${f.rank.text} of ${r.inputs.sector || 'sector'} payers` : 'Not ranked' }),
-    coverageBar(f),
-    toggle,
   ]);
+
+  return card(heroId(f.key), [
+    el('div', { class: 'ocard__head' }, [
+      el('h2', { text: f.title }),
+      gradePill(f.score, f.letter, { size: 'lg' }),
+    ]),
+    el('p', { class: 'fhero__q', text: f.question }),
+
+    el('div', { class: 'fhero__score' }, [
+      el('b', { text: isNum(f.score) ? dec(f.score, 2) : '—' }),
+      el('i', { text: `/${DIV_MAX}` }),
+      el('span', { class: 'fhero__basis', text: `${f.gradedLines} of ${f.totalLines} lines weighted`
+        + (isNum(share) ? ` · ${share}% of the designed weight` : '')
+        + (f.rank ? ` · ${f.rank.text} of ${r.inputs.sector || 'sector'} payers` : '') }),
+    ]),
+    el('div', { class: 'gradebar' }, [
+      el('div', {
+        class: `gradebar__fill is-${toneForLetter(f.letter)}`,
+        style: { width: `${width}%` },
+      }),
+    ]),
+
+    el('p', { class: 'osub' }, [
+      'Against the payer median',
+      icon('info', 'ocard__info', 'How many of this composite’s lines fall on the better side of '
+        + 'the median across sector payers. A reading aid only: the tick is never summed into a grade, '
+        + 'and the score above is the weighted mean of the line percentiles rather than of these.'),
+    ]),
+    el('div', { class: 'fchecks' }, [
+      tile('pass', checks.pass, 'beat the median'),
+      tile('fail', checks.fail, 'below it'),
+      tile('na', checks.na, 'not ranked'),
+    ]),
+
+    el('button', {
+      type: 'button', class: 'omore', text: 'Read every line',
+      onclick: () => openDividendSection(nav, f.anchor),
+    }),
+  ], 'ocard ovw__c8');
+}
+
+/** Where this grade sits against the other three. The flake's slot, unflaked. */
+function peersCard(r, f) {
+  return card(`dvg-peers-${f.key}`, [
+    el('div', { class: 'ocard__head' }, [
+      el('h2', {}, [
+        'Against the other composites',
+        icon('info', 'ocard__info', 'The four are deliberately not averaged. Safety, growth and yield '
+          + 'pull against each other by construction, and the tension between them is the finding.'),
+      ]),
+    ]),
+    divGradeList(r, { hrefFor: (s) => `#${heroId(s.key)}`, highlight: f.key }),
+  ], 'ocard ovw__c4');
 }
 
 /**
- * How much of the factor was actually measurable.
+ * The lines at both ends of the composite, in one card.
  *
- * The honest alternative to a confidence adjective: the share of the factor's
- * designed weight that produced a figure. 100% means every line computed.
+ * One block rather than two, because the split is the point: the same columns
+ * down both halves, so a line carrying the grade and one dragging it can be
+ * read against each other without moving between cards.
  */
-function coverageBar(f) {
-  const share = isNum(f.coverage) ? Math.round(f.coverage * 100) : 0;
-  return el('div', { class: 'dvs-cov', title: `${f.usedWeight} of ${f.designedWeight} weight computed` }, [
-    el('div', { class: 'dvs-cov__track' }, [el('i', { style: { width: `${share}%` } })]),
-    el('span', { text: `${share}% of the factor measured` }),
-  ]);
-}
-
-/* ==========================================================================
-   The lines behind one factor
-   ========================================================================== */
-
-function factorDetail(f) {
-  const groups = new Map();
-  for (const line of f.lines) {
-    const key = line.group || 'Other';
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key).push(line);
-  }
-
-  return el('div', {
-    class: 'dvs-lines', id: `dvs-lines-${f.key}`, hidden: !open.has(f.key),
-  }, [
-    el('h3', { class: 'dvs-lines__t', text: `${f.title} — every line` }),
-    el('p', { class: 'dvs-lines__b', text: f.blurb }),
-    ...[...groups.entries()].map(([name, lines]) => el('div', { class: 'dvs-group' }, [
-      el('h4', { text: name }),
-      el('div', { class: 'dvs-rows' }, lines.map(lineRow)),
-    ])),
-    f.nm.length ? el('div', { class: 'dvs-nm' }, [
-      el('h4', { text: `Not meaningful here — ${f.nm.length} of ${f.totalLines} lines` }),
-      el('ul', {}, f.nm.map((l) => el('li', {}, [
-        el('b', { text: l.label }),
-        el('span', { text: ` — ${l.why}` }),
-      ]))),
-      el('p', { class: 'dvs-nm__note', text: 'Each of these is dropped and its weight shared across the '
-        + 'lines that did compute. Nothing is filled in with a zero or a sector median.' }),
-    ]) : null,
-  ].filter(Boolean));
-}
-
-function lineRow(l) {
-  const ok = l.state === 'ok';
-  const tag = l.workaround
-    ? el('i', { class: 'dvs-tag', title: l.workaround === 'A'
-        ? 'Uses the indicated forward rate: the latest declared payment annualised at its own cadence, not an analyst forecast.'
-        : 'Uses a modelled forward cash flow: the consensus earnings estimate scaled by the company’s own three-year cash conversion.',
-      text: `Workaround ${l.workaround}` })
-    : (l.approximate ? el('i', { class: 'dvs-tag', title: l.note || 'An approximation — see the note.', text: 'Approximate' }) : null);
-
-  return el('div', { class: `dvs-row${ok ? '' : ' is-off'}` }, [
-    el('span', { class: 'dvs-row__w', text: `${l.weight}%` }),
-    el('span', { class: 'dvs-row__l' }, [
-      el('b', { text: l.label }),
-      tag,
-      l.desc ? el('small', { text: l.desc }) : null,
-      l.note ? el('small', { class: 'dvs-row__note', text: l.note }) : null,
-      !ok && l.why ? el('small', { class: 'dvs-row__note', text: l.why }) : null,
-    ].filter(Boolean)),
-    el('span', { class: 'dvs-row__v', text: l.text }),
-    ok
-      ? el('span', { class: `dvs-row__g is-${dividendTone(l.score)}`, title: l.rank ? `${l.rank.text} of sector payers` : '' }, [
-        el('b', { text: l.score.toFixed(2) }),
-        el('span', { text: l.letter }),
-      ])
-      : el('span', { class: 'dvs-row__g is-na', text: l.state === 'nm' ? 'NM' : l.state === 'unranked' ? 'Unranked' : 'No data' }),
-  ]);
-}
-
-/* ==========================================================================
-   What the reader is owed
-   ========================================================================== */
-
-function disclosure(r) {
-  const t = r.table;
-  const seeded = t.quality === 'seed';
-  const lines = [];
-
-  lines.push(`Ranked against ${t.count ? `${t.count.toLocaleString('en-US')} modelled ` : ''}dividend payers `
-    + `in ${t.sector || 'the sector'}. Payers only: a company that pays nothing is outside this universe `
-    + 'rather than at the bottom of it, because a non-payer ranked against payers would come last on every '
-    + 'line and read as a bad dividend rather than as no dividend.');
-
-  if (seeded) {
-    lines.push('The distributions behind these ranks are **modelled, not measured** — shaped from sector '
-      + 'norms so the module ranks sensibly before a real universe has been built over a live key. The '
-      + 'ordering within a sector is meaningful; the exact percentile is not yet. Regenerate or replace the '
-      + 'table with `tools/make_dividend_seed.py`.');
-  }
-
-  lines.push('Two figures are substitutes for feeds that do not exist. The **forward dividend** is the '
-    + 'latest declared payment annualised at its own cadence — an indicated rate, not an analyst forecast. '
-    + '**Forward cash flow** is the consensus earnings estimate scaled by the company’s own three-year '
-    + 'cash conversion. Every line that uses either is tagged.');
-
-  lines.push('A payout ratio above 100% is kept exactly as it computes and ranks badly. It is never capped '
-    + 'and never reported as not-meaningful, because a company paying out more than it earns is the single '
-    + 'most useful thing this module can tell you.');
-
-  return el('details', { class: 'dvs-disc' }, [
-    el('summary', { text: 'Where these scores come from' }),
-    el('div', {}, lines.map((text) => el('p', {
-      // The only markup is the bold this file writes itself.
-      html: text.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/`(.+?)`/g, '<code>$1</code>'),
-    }))),
-  ]);
+function linesCard(a, f, above, below) {
+  return card(`dvg-${f.key}-lines`, [
+    el('div', { class: 'ocard__head' }, [
+      el('h2', {}, [
+        'Lines behind the grade',
+        icon('info', 'ocard__info', 'Split at the composite’s own score: every line on the left '
+          + 'grades at or above it, every one on the right below it. Five of each at most, out of '
+          + `${f.totalLines}. Every line, with its weight and the sentence behind it, is under `
+          + 'Dividend Grades on the Analysis tab.'),
+      ]),
+    ]),
+    el('div', { class: 'fleadgrid' }, [
+      leadColumn(a, `Carrying the ${f.title.toLowerCase()} grade`, above),
+      leadColumn(a, 'Holding it back', below),
+    ]),
+  ], 'ocard ovw__c12');
 }

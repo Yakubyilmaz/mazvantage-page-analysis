@@ -1,238 +1,259 @@
 /* ==========================================================================
    Vanlior — plans and pricing (`?view=pricing`)
 
-   Inside `.mh-page`, so the market canvas's own variables apply and the page
-   themes light and dark with everything else. It reuses `.mh-hero`,
-   `.mh-eyebrow`, `.qd-title` and `.qd-strap` from the desk pages rather than
-   restating them; what is here is the plan grid, the comparison matrix and
-   the reading panels, which nothing else in the product has.
+   Laid out after Investing.com's Pro plans page: a dark band with an accent
+   glow and a faint grid, a white box holding both plans, and a comparison
+   table under it on the page's own background.
+
+   Inside `.mh-page`, so the comparison themes light and dark with everything
+   else. The band and the plan box do not: they are dark and white in both
+   themes, as on the page this copies. The accent is one token, `--pr-accent`,
+   so the page can be moved to the product's blue in one edit.
    ========================================================================== */
 
+.pr-page, .pr-dialog { --pr-accent: #ff6b00; --pr-accent-soft: #ff6b0033; }
 .pr-page { padding-bottom: 72px; }
 
-/* The headline is two sentences and the second is the point, so it gets its
-   own line and the muted tone — a subhead inside the h1 rather than after it. */
-.pr-title { display: grid; gap: 4px; max-width: 24ch; }
-.pr-title__b { color: var(--mh-muted); }
+/* ---------- the band -------------------------------------------------------- */
 
-/* ---------- the billing toggle --------------------------------------------- */
-
-.pr-toggle {
-  display: inline-flex; gap: 4px; margin: 4px 0 30px; padding: 4px;
-  border: 1px solid var(--mh-border); border-radius: 10px; background: var(--mh-soft);
+/* Full-bleed inside the content column: the negative margin undoes the
+   page's own gutter, which is the same clamp `.mh-page` pads with. */
+.pr-band {
+  --pr-gutter: clamp(24px, 3.2vw, 64px);
+  position: relative; isolation: isolate;
+  margin: 0 calc(-1 * var(--pr-gutter));
+  padding: 48px var(--pr-gutter) 28px;
+  background:
+    radial-gradient(124% 30.72% at 46.04% -0.61%, var(--pr-accent) 0%, #11111100 100%),
+    #242424;
+  color: #fff;
 }
-.pr-toggle__b {
-  display: flex; align-items: baseline; gap: 7px; padding: 9px 16px;
-  border-radius: 7px; font-size: 13px; font-weight: 600; color: var(--mh-muted);
+/* The grid squares, fading out before they reach the box. */
+.pr-band::before {
+  content: ''; position: absolute; inset: 0 0 auto; height: 460px; z-index: -1;
+  background-image:
+    linear-gradient(#ffffff14 1px, transparent 1px),
+    linear-gradient(90deg, #ffffff14 1px, transparent 1px);
+  background-size: 44px 44px; background-position: center top;
+  -webkit-mask-image: linear-gradient(#000 20%, transparent);
+  mask-image: linear-gradient(#000 20%, transparent);
+  pointer-events: none;
 }
-.pr-toggle__b:hover { color: var(--mh-fg); }
-.pr-toggle__b.is-active { background: var(--mh-bg); color: var(--mh-fg); box-shadow: 0 1px 3px #0000001f; }
-.pr-toggle__n { font-size: 11px; font-weight: 500; font-style: normal; color: var(--mh-up); }
+.pr-band__in { max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; }
 
-/* ---------- the plan cards ------------------------------------------------- */
+.pr-logo { display: flex; align-items: center; gap: 10px; font-size: 24px; font-weight: 600; letter-spacing: -.01em; }
+.pr-logo img { width: auto; height: 30px; }
 
-/* Four columns on a wide screen, two at laptop width, one on a phone.
-   ---------------------------------------------------------------------------
-   Why the cards are a subgrid
-   ---------------------------------------------------------------------------
-   Equal card heights are not enough: the four heads are naturally different
-   heights — one price wraps, one note runs to two lines, one card carries the
-   Recommended flag — so four `flex` cards put their CTAs at four different
-   offsets, which is the one thing a plan grid must not do.
-
-   Each card therefore spans four rows of the parent grid and adopts them with
-   `subgrid`, so head, CTA, body and small print each size to the tallest of
-   the four and every card's CTA lands on the same line. A `min-height` on the
-   head would do the same with a magic number that a longer sentence or a
-   larger font silently breaks; this holds whatever the copy says.
-
-   At the two-column breakpoint the second pair takes implicit rows 5-8 and
-   aligns with each other, which is the correct behaviour — the pairs are on
-   different rows of the page and were never being compared side by side. */
-.pr-grid {
-  display: grid; gap: 16px; align-items: stretch;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  grid-template-rows: repeat(4, auto);
+.pr-h1 {
+  margin: 22px 0 0; padding-bottom: 15px; max-width: 24ch;
+  font-size: clamp(28px, 3vw, 40px); font-weight: 700; line-height: 1.2;
+  letter-spacing: -.02em; text-align: center; color: #fff;
 }
-@media (max-width: 1240px) { .pr-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 680px) {
-  .pr-grid { grid-template-columns: minmax(0, 1fr); }
-  /* One card per row: nothing is beside anything, so the rows the head
-     reserves to align four CTAs are just empty screen. Give them back. */
-  .pr-card__flag:empty { display: none; }
-  .pr-card__alt:empty { display: none; }
-  .pr-card__alt { min-height: 0; }
-}
+.pr-offer { text-align: center; }
+.pr-offer__pre { font-size: 16px; text-transform: uppercase; letter-spacing: .02em; }
+.pr-offer__big { margin: 0; font-size: 44px; font-weight: 700; line-height: 1.2; text-transform: uppercase; }
 
-.pr-card {
-  display: grid; grid-template-rows: subgrid; grid-row: span 4; row-gap: 0;
-  padding: 24px 22px 26px; border: 1px solid var(--mh-border);
-  border-radius: 14px; background: var(--mh-soft);
+/* ---------- the billing switch ---------------------------------------------- */
+
+.pr-switch {
+  position: relative; display: inline-flex; gap: 0; margin: 26px 0 0; padding: 4px;
+  border-radius: 16px;
 }
-/* Subgrid is not everywhere. Without it the cards fall back to a flex column,
-   which still gives equal heights and a floored small-print line — only the
-   CTAs stop aligning, which is a degradation rather than a break. */
+.pr-switch__b {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  min-width: 124px; padding: 8px 12px; border-radius: 13px;
+}
+.pr-switch__l { font-size: 14px; font-weight: 700; line-height: 1.2; }
+.pr-switch__v { font-size: 24px; font-weight: 700; line-height: 1.25; }
+
+/* On the band: frosted, white type, the chosen period a white tile. */
+.pr-switch--band { background: #ffffff59; }
+.pr-switch--band .pr-switch__b { color: #fff; }
+.pr-switch--band .pr-switch__b:hover { background: #ffffff1f; }
+.pr-switch--band .pr-switch__b.is-active { background: #fff; color: #000; }
+
+/* Over the table: the page's own surface behind it, so it themes, and the
+   same white tile as the band's for the chosen period. */
+.pr-switch--plain { display: flex; width: fit-content; margin: 22px auto 34px; background: var(--mh-hover); }
+.pr-switch--plain .pr-switch__b { color: var(--mh-fg); }
+.pr-switch--plain .pr-switch__b:hover { background: var(--mh-border); }
+.pr-switch--plain .pr-switch__b.is-active { background: #fff; color: #000; box-shadow: 0 1px 4px #0000002e; }
+
+/* The hand-written nudge over the longest period. */
+.pr-switch__note {
+  position: absolute; left: calc(100% - 64px); top: -30px;
+  display: flex; align-items: flex-end; gap: 4px; white-space: nowrap;
+  font-family: 'Segoe Print', 'Bradley Hand', 'Comic Sans MS', cursive;
+  font-size: 15px; color: #fff; pointer-events: none;
+}
+.pr-switch__note svg { margin-bottom: -4px; }
+
+/* ---------- the plan box ---------------------------------------------------- */
+
+/* The two columns are a subgrid of the box, so the top halves and the bottom
+   halves line up across the plans whatever each one says — the Claim Offer
+   buttons land on one line. */
+.pr-box {
+  display: grid; width: 100%; margin-top: 28px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: auto 1fr auto;
+  border-radius: 16px; overflow: hidden; background: #fff; color: #000;
+}
+.pr-plan { display: grid; grid-row: span 2; grid-template-rows: subgrid; min-width: 0; }
+.pr-plan + .pr-plan { border-left: 1px solid #0000001a; }
 @supports not (grid-template-rows: subgrid) {
-  .pr-card { display: flex; flex-direction: column; }
+  .pr-plan { display: flex; flex-direction: column; }
+  .pr-plan__body { flex: 1; }
 }
-/* The recommended one is lifted by a ring and a fill rather than by scale: a
-   transformed card breaks the alignment that makes four lists comparable. */
-.pr-card.is-recommended {
-  border-color: var(--mh-blue); background: var(--mh-bg);
-  box-shadow: 0 0 0 1px var(--mh-blue), 0 14px 40px #0000002e;
-}
-.pr-card__flag {
-  margin: -6px 0 8px; min-height: 1.3em;
-  font-size: 10px; font-weight: 700; letter-spacing: .1em;
-  text-transform: uppercase; color: var(--mh-blue);
-}
-.pr-card__n { margin: 0; font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
-.pr-card__price { display: flex; align-items: baseline; gap: 6px; margin: 12px 0 0; flex-wrap: wrap; }
-.pr-card__price strong { font-size: clamp(30px, 2.6vw, 38px); font-weight: 700; letter-spacing: -.04em; line-height: 1; }
-.pr-card__per { font-size: 13px; color: var(--mh-muted); }
-.pr-card__pre { font-size: 15px; font-weight: 600; color: var(--mh-muted); }
-.pr-card__note { margin: 10px 0 0; font-size: 12px; line-height: 1.55; color: var(--mh-muted); }
-/* Two reserved lines whether this plan has a second billing period or not.
-   Together with the always-rendered flag above, this is what puts the four
-   CTAs on one line — see the note in `planCard`. */
-.pr-card__alt { margin: 6px 0 0; min-height: 2.9em; font-size: 11px; line-height: 1.45; color: var(--mh-muted); }
-/* The four subgrid rows. The body is the one that grows; the rest size to
-   their content and are matched across the cards by the subgrid. */
-.pr-card__head { display: block; }
-.pr-card__body { flex: 1; align-self: start; }
 
-.pr-card__cta {
-  margin: 16px 0 0; padding: 12px 16px; width: 100%;
-  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  border: 1px solid var(--mh-border); border-radius: 9px; background: var(--mh-bg);
-  font-size: 13px; font-weight: 600; color: var(--mh-fg);
+.pr-plan__top { padding: 40px 32px 24px; }
+.pr-plan__row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 49px; }
+.pr-plan__n { margin: 0; font-size: 40px; font-weight: 700; line-height: 1.2; letter-spacing: -.02em; color: #000; }
+.pr-badge {
+  padding: 7px 16px; border-radius: 20px; background: var(--pr-accent-soft); color: var(--pr-accent);
+  font-size: 15px; font-weight: 700; text-transform: uppercase; white-space: nowrap;
 }
-.pr-card__cta:hover { background: var(--mh-hover); }
-.pr-card__cta--primary { background: var(--mh-blue); border-color: var(--mh-blue); color: #fff; }
-.pr-card__cta--primary:hover { background: var(--mh-blue); filter: brightness(1.08); }
-.pr-card__cta.is-done { color: var(--mh-up); border-color: var(--mh-up); }
-.pr-card__cta .mh-chevron { font-size: 15px; line-height: 1; }
+.pr-badge:empty { visibility: hidden; }
+.pr-plan__tag { margin: 8px 0 0; font-size: 18px; line-height: 1.25; color: #0009; }
+.pr-plan__tag b { color: #000; font-weight: 700; }
 
-.pr-card__strap { margin: 18px 0 0; font-size: 13px; font-weight: 500; line-height: 1.6; }
-.pr-card__body > .pr-card__strap { margin-top: 18px; }
-.pr-card__why { margin: 10px 0 0; font-size: 12px; line-height: 1.65; color: var(--mh-muted); }
+/* The price: a small raised currency sign, the whole dollars large, the cents
+   a size down — then the billing line under it and the saving to the right. */
+.pr-price { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 18px; min-height: 62px; }
+.pr-amt { display: flex; align-items: baseline; line-height: 1; }
+.pr-amt__cur { align-self: flex-start; margin: 2px 2px 0 0; font-size: 20px; }
+.pr-amt__int { font-size: 48px; font-weight: 700; letter-spacing: -.02em; }
+.pr-amt__dec { font-size: 32px; font-weight: 700; }
+.pr-price__per { display: block; margin-top: 3px; font-size: 14px; color: #0009; }
+.pr-save { font-size: 17px; font-weight: 700; text-transform: uppercase; color: var(--pr-accent); white-space: nowrap; }
 
-.pr-list { margin: 16px 0 0; padding: 0; list-style: none; display: grid; gap: 9px; }
-.pr-list li { position: relative; padding-left: 19px; font-size: 12.5px; line-height: 1.55; }
-.pr-list li::before {
-  content: '✓'; position: absolute; left: 0; top: 0;
-  font-size: 11px; font-weight: 700; color: var(--mh-up);
+.pr-claim {
+  width: 100%; margin-top: 22px; padding: 17px; border-radius: 8px;
+  background: var(--pr-accent); color: #fff; font-size: 20px; font-weight: 700; line-height: 1.25;
 }
-/* The limits line closes the card, pinned to the bottom so it reads as the
-   card's own small print rather than as the last bullet. */
-.pr-card__limit {
-  margin: 18px 0 0; padding-top: 14px; border-top: 1px solid var(--mh-border);
-  font-size: 11px; line-height: 1.6; color: var(--mh-muted);
+.pr-claim:hover { filter: brightness(1.08); }
+
+.pr-plan__body { padding: 20px 32px 32px; background: #0000000a; }
+.pr-plan__h { margin: 0; font-size: 20px; font-weight: 700; line-height: 1.25; color: #000; }
+
+.pr-lead, .pr-points { margin: 0; padding: 0; list-style: none; display: grid; }
+.pr-lead { gap: 16px; margin-top: 18px; padding-bottom: 22px; border-bottom: 1px dashed #00000026; }
+.pr-points { gap: 16px; margin-top: 22px; }
+.pr-lead li, .pr-points li { position: relative; padding-left: 20px; }
+.pr-lead li { font-size: 16px; line-height: 1.3; }
+.pr-points li { font-size: 14px; line-height: 1.3; }
+.pr-lead li::before, .pr-points li::before {
+  content: ''; position: absolute; left: 2px; border-radius: 50%;
 }
-.pr-card > .pr-card__limit { margin-top: auto; align-self: end; }
+.pr-lead li::before { top: .45em; width: 6px; height: 6px; background: var(--pr-accent); }
+.pr-points li::before { top: .5em; width: 5px; height: 5px; background: #00000059; }
+.pr-fig { font-weight: 700; color: var(--pr-accent); }
 
-/* ---------- the reading panels --------------------------------------------- */
+.pr-who { padding-top: 26px; }
+.pr-who p { margin: 10px 0 0; font-size: 14px; line-height: 1.45; }
 
-.pr-panel {
-  margin-top: 26px; padding: 26px 26px 28px;
-  border: 1px solid var(--mh-border); border-radius: 14px; background: var(--mh-soft);
+.pr-box__more { grid-column: 1 / -1; display: flex; justify-content: center; border-top: 1px solid #0000001a; }
+.pr-box__more button {
+  display: inline-flex; align-items: center; gap: 8px; padding: 16px 0;
+  font-size: 16px; color: var(--pr-accent);
 }
-.pr-panel--wide { padding-left: 0; padding-right: 0; }
-.pr-panel--wide > .pr-panel__t, .pr-panel--wide > .pr-p { padding: 0 26px; }
-.pr-panel__t { margin: 0 0 14px; font-size: 20px; font-weight: 700; letter-spacing: -.02em; }
-.pr-p { margin: 0 0 18px; max-width: 88ch; font-size: 13.5px; line-height: 1.7; color: var(--mh-muted); }
-.pr-note { margin: 16px 0 0; max-width: 96ch; font-size: 12px; line-height: 1.7; color: var(--mh-muted); }
+.pr-box__more button:hover { text-decoration: underline; }
+.pr-box__chev { font-size: 20px; line-height: 1; }
 
+.pr-fine {
+  width: 100%; margin: 12px 0 0; padding: 5px 12px; border-radius: 20px;
+  background: #00000066; font-size: 15px; text-align: center; color: #fff;
+}
+
+/* ---------- the comparison -------------------------------------------------- */
+
+.pr-compare { max-width: 980px; margin: 0 auto; padding-top: 60px; scroll-margin-top: 70px; }
+.pr-compare__t { margin: 0; font-size: clamp(28px, 2.8vw, 36px); font-weight: 700; letter-spacing: -.02em; text-align: center; }
+
+.pr-cmp { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 14px; }
+.pr-cmp__lc { width: 41%; }
+.pr-cmp thead th {
+  position: sticky; top: var(--utilbar-h, 58px); z-index: 2;
+  padding: 14px 12px 16px; vertical-align: bottom; text-align: center;
+  background: var(--mh-bg); border-bottom: 1px solid var(--mh-border);
+}
+.pr-cmp thead th > * { display: block; }
+.pr-badge--sm { display: inline-block !important; margin-bottom: 8px; padding: 4px 11px; font-size: 11px; }
+.pr-cmp__n { font-size: 24px; font-weight: 700; letter-spacing: -.01em; }
+.pr-price--compact { flex-direction: column; justify-content: flex-end; gap: 2px; margin-top: 6px; min-height: 0; }
+.pr-price--compact .pr-save { min-height: 1.3em; font-size: 13px; }
+.pr-price--compact .pr-amt__cur { font-size: 15px; }
+.pr-price--compact .pr-amt__int { font-size: 32px; }
+.pr-price--compact .pr-amt__dec { font-size: 22px; }
+.pr-price--compact .pr-price__per, .pr-cmp .pr-price__per { margin-top: 2px; font-size: 13px; color: var(--mh-muted); }
+.pr-claim--sm { margin-top: 12px; padding: 11px 8px; font-size: 15px; }
+
+.pr-cmp__group th {
+  padding: 30px 16px 10px; text-align: left;
+  font-size: 18px; font-weight: 600; color: var(--pr-accent);
+}
+.pr-cmp tbody th[scope='row'] {
+  padding: 11px 16px; text-align: left; font-weight: 400; line-height: 1.4;
+  background: var(--mh-hover); border-bottom: 1px solid var(--mh-bg);
+}
+.pr-cmp tbody td {
+  padding: 11px 12px; text-align: center; line-height: 1.4;
+  border-bottom: 1px solid var(--mh-border);
+}
+.pr-cmp__who th, .pr-cmp__who td { padding-top: 22px !important; vertical-align: top; }
+.pr-cmp__who th { font-size: 18px; font-weight: 700 !important; background: none !important; }
+.pr-cmp__who td { font-size: 13px; text-align: left; color: var(--mh-muted); border-bottom: 0; }
+
+.pr-tick {
+  display: inline-block; width: 20px; height: 20px; vertical-align: middle;
+  background: var(--pr-accent);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M4 10.5l4 4 8-9' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M4 10.5l4 4 8-9' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.pr-dash { color: var(--mh-muted); opacity: .6; }
+.pr-cellt { font-size: 13px; }
+
+/* ---------- narrow screens -------------------------------------------------- */
+
+@media (max-width: 760px) {
+  .pr-box { grid-template-columns: minmax(0, 1fr); }
+  .pr-plan + .pr-plan { border-left: 0; border-top: 1px solid #0000001a; }
+  .pr-plan__top { padding: 28px 22px 22px; }
+  .pr-plan__body { padding: 18px 22px 26px; }
+  .pr-plan__n { font-size: 34px; }
+}
+@media (max-width: 600px) {
+  .pr-band { --pr-gutter: 18px; padding-top: 36px; }
+  .pr-offer__big { font-size: 36px; }
+  .pr-switch--band, .pr-switch--plain { width: 100%; }
+  .pr-switch__b { flex: 1; min-width: 0; padding: 8px 4px; }
+  .pr-switch__v { font-size: 20px; }
+  .pr-switch__note { left: auto; right: 0; top: -26px; font-size: 13px; }
+  .pr-claim { font-size: 18px; padding: 15px; }
+  .pr-cmp { font-size: 12.5px; }
+  .pr-cmp__lc { width: 38%; }
+  .pr-cmp thead th { padding: 10px 4px 12px; }
+  .pr-cmp__n { font-size: 18px; }
+  .pr-badge--sm { font-size: 9px; padding: 3px 7px; }
+  .pr-price--compact .pr-amt__int { font-size: 24px; }
+  .pr-price--compact .pr-amt__dec { font-size: 16px; }
+  .pr-price--compact .pr-save, .pr-price--compact .pr-price__per { font-size: 11px; }
+  .pr-claim--sm { font-size: 12px; padding: 9px 4px; }
+  .pr-cmp tbody th[scope='row'] { padding: 10px; }
+  .pr-cmp tbody td { padding: 10px 4px; }
+  .pr-cmp__group th { padding: 24px 10px 8px; font-size: 16px; }
+}
+
+/* ---------- the checkout panel (a dialog, outside `.pr-page`) --------------- */
+
+.pr-dialog .mh-dialog__head h2 { font-size: 22px; }
 .pr-warn {
-  margin: 0 0 16px; padding: 13px 15px; max-width: 96ch;
-  border-left: 3px solid var(--mh-blue); border-radius: 0 8px 8px 0;
+  margin: 0 0 16px; padding: 13px 15px;
+  border-left: 3px solid var(--pr-accent); border-radius: 0 8px 8px 0;
   background: var(--mh-hover); font-size: 13px; line-height: 1.65;
 }
 .pr-warn b { font-weight: 700; }
-
-.pr-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
-.pr-btn {
-  display: inline-flex; align-items: center; gap: 6px; padding: 10px 15px;
-  border: 1px solid var(--mh-border); border-radius: 9px; background: var(--mh-bg);
-  font-size: 13px; font-weight: 500; color: var(--mh-fg);
-}
-.pr-btn:hover { background: var(--mh-hover); }
-.pr-btn--primary { background: var(--mh-blue); border-color: var(--mh-blue); color: #fff; }
-.pr-btn--primary:hover { background: var(--mh-blue); filter: brightness(1.08); }
-
-/* ---------- the comparison matrix ------------------------------------------ */
-
-.pr-mx__scroll { overflow-x: auto; }
-.pr-mx { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 720px; }
-.pr-mx thead th {
-  position: sticky; top: var(--utilbar-h, 58px); z-index: 2;
-  padding: 14px 14px 12px; text-align: center; vertical-align: bottom;
-  background: var(--mh-soft); border-bottom: 1px solid var(--mh-border);
-}
-.pr-mx thead th:first-child { text-align: left; padding-left: 26px; }
-.pr-mx__n { display: block; font-size: 13px; font-weight: 700; }
-.pr-mx__p { display: block; margin-top: 2px; font-size: 11px; font-weight: 500; color: var(--mh-muted); }
-
-.pr-mx__group th {
-  padding: 22px 26px 8px; text-align: left; font-size: 11px; font-weight: 700;
-  letter-spacing: .09em; text-transform: uppercase; color: var(--mh-muted);
-}
-.pr-mx__note {
-  display: block; margin-top: 6px; max-width: 80ch;
-  font-size: 11.5px; font-weight: 400; letter-spacing: 0; text-transform: none;
-  font-style: normal; line-height: 1.6;
-}
-.pr-mx tbody th[scope='row'] {
-  padding: 11px 14px 11px 26px; text-align: left; font-weight: 400;
-  border-top: 1px solid var(--mh-border);
-}
-.pr-mx tbody td {
-  padding: 11px 14px; text-align: center; border-top: 1px solid var(--mh-border);
-  border-left: 1px solid var(--mh-border);
-}
-/* The recommended column is tinted the whole way down, so a reader scanning
-   the matrix never loses which one the cards singled out. */
-.pr-mx tbody td:nth-child(4), .pr-mx thead th:nth-child(4) { background: var(--mh-hover); }
-
-.pr-tick { color: var(--mh-up); font-weight: 700; }
-.pr-dash { color: var(--mh-muted); opacity: .55; }
-.pr-cellt { font-size: 11.5px; line-height: 1.4; display: inline-block; }
-
-/* ---------- the cost panels ------------------------------------------------ */
-
-.pr-costs { display: grid; gap: 16px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
-@media (max-width: 1000px) { .pr-costs { grid-template-columns: minmax(0, 1fr); } }
-.pr-cost { padding: 18px 18px 20px; border: 1px solid var(--mh-border); border-radius: 11px; background: var(--mh-bg); }
-.pr-cost__t { margin: 0 0 9px; font-size: 14px; font-weight: 700; letter-spacing: -.01em; }
-.pr-cost__b { margin: 0; font-size: 12.5px; line-height: 1.7; color: var(--mh-muted); }
-
-/* ---------- what no plan buys ---------------------------------------------- */
-
-.pr-nots { margin: 0; display: grid; gap: 14px; max-width: 100ch; }
-.pr-nots dt { font-size: 13px; font-weight: 700; }
-.pr-nots dd { margin: 5px 0 0; font-size: 12.5px; line-height: 1.7; color: var(--mh-muted); }
-
-/* ---------- the FAQ -------------------------------------------------------- */
-
-.pr-faq { display: grid; max-width: 104ch; border-top: 1px solid var(--mh-border); }
-.pr-faq__i { border-bottom: 1px solid var(--mh-border); }
-.pr-faq__i summary {
-  display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
-  padding: 15px 2px; cursor: pointer; list-style: none;
-  font-size: 13.5px; font-weight: 600;
-}
-.pr-faq__i summary::-webkit-details-marker { display: none; }
-.pr-faq__i summary::after { content: '+'; font-size: 17px; font-weight: 400; color: var(--mh-muted); }
-.pr-faq__i[open] summary::after { content: '−'; }
-.pr-faq__i summary:hover { color: var(--mh-blue); }
-.pr-faq__i p { margin: 0 0 17px; padding-right: 36px; max-width: 92ch; font-size: 13px; line-height: 1.75; color: var(--mh-muted); }
-
-/* ---------- the checkout seam ---------------------------------------------- */
-
-.pr-checkout {
-  margin-top: 22px; padding: 24px 24px 26px;
-  border: 1px solid var(--mh-blue); border-radius: 14px; background: var(--mh-soft);
-}
+.pr-note { margin: 16px 0 0; font-size: 13px; line-height: 1.7; color: var(--mh-muted); }
 .pr-scroll { overflow-x: auto; }
 .pr-grid2 { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 520px; }
 .pr-grid2 th {
@@ -242,3 +263,14 @@
 }
 .pr-grid2 td { padding: 11px 12px; line-height: 1.65; border-bottom: 1px solid var(--mh-border); vertical-align: top; }
 .pr-grid2 td:first-child { font-weight: 600; white-space: nowrap; }
+
+.pr-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+.pr-btn {
+  display: inline-flex; align-items: center; gap: 6px; padding: 10px 15px;
+  border: 1px solid var(--mh-border); border-radius: 9px; background: var(--mh-bg);
+  font-size: 13px; font-weight: 500; color: var(--mh-fg);
+}
+.pr-btn:hover { background: var(--mh-hover); }
+.pr-btn--primary { background: var(--pr-accent); border-color: var(--pr-accent); color: #fff; }
+.pr-btn--primary:hover { background: var(--pr-accent); filter: brightness(1.08); }
+.pr-btn .mh-chevron { font-size: 15px; line-height: 1; }

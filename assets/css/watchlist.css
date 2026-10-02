@@ -57,6 +57,176 @@ tr:hover .wl-remove, .wl-remove:focus-visible { opacity: 1; }
 /* ---- purification --------------------------------------------------------
    The table is the board's, so this is the head, the two editable cells and
    the total line under it. */
+/* ---- the health score ---------------------------------------------------
+   One number for the whole list, above the table it is averaged from. Ruled
+   off below rather than boxed: it belongs to the list, not beside it. */
+
+.wl-health {
+  margin: 8px 0 28px; padding-bottom: 26px;
+  border-bottom: 1px solid var(--mh-border);
+  max-width: 560px;
+}
+.wl-health__head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.wl-health__head .mh-heading--section { margin-bottom: 0; }
+/* `.mh-section-description` is set to pull up under a section heading that
+   keeps its own 28px. This heading does not, so the pull has to come back off
+   or the sentence lands on top of the title. */
+.wl-health .mh-section-description { margin-top: 10px; margin-bottom: 0; max-width: 62ch; }
+
+.wl-health__score { display: flex; align-items: baseline; gap: 6px; margin-top: 14px; }
+.wl-health__score b { font-size: 34px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.wl-health__score i { font-style: normal; font-size: 15px; color: var(--mh-muted); }
+.wl-health__score + .gradebar { margin-top: 12px; }
+
+.wl-health__sub {
+  margin: 22px 0 6px; font-size: 10px; font-weight: 600; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--mh-muted);
+}
+.wl-health__note {
+  margin: 16px 0 0; font-size: 12px; line-height: 1.6; color: var(--mh-muted);
+}
+
+@media (max-width: 720px) {
+  .wl-health .fgrades__row { grid-template-columns: 110px 1fr auto; gap: 12px; }
+}
+
+/* ---- the blocks under and around the table ------------------------------
+   Four sections sharing one rhythm: a rule above, a heading with its control
+   on the right, a sentence, then the thing itself. `.wl-purify` already had
+   this shape and keeps its own rule; these match it so the page reads as one
+   column rather than as a stack of panels. */
+
+.wl-movers, .wl-alloc, .wl-divs, .wl-cal {
+  margin-top: 46px; padding-top: 34px; border-top: 1px solid var(--mh-border);
+}
+/* The movers block leads the page, above the table, so it carries no rule of
+   its own — the tab strip above it already draws one. */
+.wl-movers { margin-top: 8px; padding-top: 0; border-top: 0; }
+
+.wl-bhead {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap;
+}
+.wl-bhead .mh-heading--section { margin-bottom: 0; }
+/* `.mh-section-description` pulls up 12px under a heading that keeps its own
+   28px. These headings do not, so the pull comes back off. */
+.wl-movers .mh-section-description,
+.wl-alloc .mh-section-description,
+.wl-divs .mh-section-description,
+.wl-cal .mh-section-description { margin-top: 10px; margin-bottom: 22px; max-width: 78ch; }
+
+.wl-scroll { overflow-x: auto; }
+
+/* ---- gainers and losers -------------------------------------------------- */
+
+.wl-movers__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 34px; }
+.wl-movers__col { min-width: 0; }
+.wl-movers__t {
+  margin: 0 0 6px; font-size: 10px; font-weight: 600; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--mh-muted);
+}
+.wl-movers__list { list-style: none; margin: 0; padding: 0; }
+.wl-movers__none { margin: 8px 0 0; font-size: 13px; color: var(--mh-muted); }
+
+.wl-mover {
+  display: grid; grid-template-columns: minmax(58px, auto) minmax(0, 1fr) auto auto;
+  align-items: baseline; gap: 12px;
+  padding: 11px 0; border-bottom: 1px solid var(--mh-border);
+}
+.wl-mover:last-child { border-bottom: 0; }
+.wl-mover__n {
+  min-width: 0; font-size: 13px; color: var(--mh-muted);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.wl-mover__p { font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.wl-mover__c {
+  font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums;
+  white-space: nowrap; min-width: 66px; text-align: right;
+}
+.wl-mover__c.is-up { color: var(--good); }
+.wl-mover__c.is-down { color: var(--bad); }
+
+/* ---- dividends ----------------------------------------------------------- */
+
+.wl-divs__na { color: var(--mh-muted); }
+.wl-divs__total { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+.wl-divs__total-k {
+  font-size: 10px; font-weight: 600; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--mh-muted);
+}
+.wl-divs__total-v { font-size: 22px; font-variant-numeric: tabular-nums; }
+.wl-divs__total-n { font-size: 12px; color: var(--mh-muted); }
+
+/* ---- allocation ---------------------------------------------------------- */
+
+.wl-alloc__grid {
+  display: grid; grid-template-columns: auto minmax(0, 1fr);
+  gap: 34px; align-items: center;
+}
+.wl-alloc__chart { min-width: 0; }
+/* The donut ships its own legend beside it, which would repeat the list to
+   its right word for word. The list is the richer of the two — it names the
+   holdings in each sector — so the legend goes. */
+.wl-alloc__chart .legend { display: none; }
+
+.wl-alloc__list { list-style: none; margin: 0; padding: 0; min-width: 0; }
+.wl-alloc__row {
+  display: grid; grid-template-columns: 10px minmax(96px, auto) minmax(0, 1fr) auto;
+  align-items: baseline; gap: 12px;
+  padding: 10px 0; border-bottom: 1px solid var(--mh-border);
+}
+.wl-alloc__row:last-child { border-bottom: 0; }
+.wl-alloc__swatch { width: 10px; height: 10px; border-radius: 3px; align-self: center; }
+.wl-alloc__name { font-size: 13px; font-weight: 500; }
+.wl-alloc__names {
+  min-width: 0; font-size: 12px; color: var(--mh-muted);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.wl-alloc__share { font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.wl-alloc__gap { margin: 18px 0 0; font-size: 12px; line-height: 1.6; color: var(--mh-muted); max-width: 74ch; }
+
+/* A basis the list cannot support yet. Dimmed and unclickable rather than
+   hidden: the reader should see the option exists and what it wants. */
+.mh-idea.is-blocked { opacity: .45; cursor: not-allowed; }
+
+/* ---- shares held --------------------------------------------------------- */
+
+.wl-sizes { margin-top: 24px; }
+.wl-sizes > summary {
+  cursor: pointer; width: fit-content;
+  font-size: 10px; font-weight: 600; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--mh-muted); padding: 4px 0;
+}
+.wl-sizes__b { margin: 8px 0 14px; font-size: 12px; line-height: 1.6; color: var(--mh-muted); max-width: 74ch; }
+.wl-sizes__grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px 18px;
+}
+.wl-size { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.wl-size__k { min-width: 0; }
+.wl-size .wl-cell { max-width: 104px; }
+
+/* ---- calendar ------------------------------------------------------------ */
+
+.wl-cal__when b { display: block; font-size: 13px; font-weight: 500; white-space: nowrap; }
+.wl-cal__when span { display: block; margin-top: 2px; font-size: 11px; color: var(--mh-muted); }
+.wl-cal__detail { font-size: 12px; color: var(--mh-muted); }
+.wl-cal__tag {
+  display: inline-block; padding: 3px 9px; border-radius: 20px;
+  border: 1px solid var(--mh-border); font-size: 11px; white-space: nowrap;
+}
+.wl-cal__tag.is-earnings { color: var(--mh-fg); }
+.wl-cal__tag.is-dividend { color: var(--mh-muted); }
+.wl-cal__gap { margin: 16px 0 0; font-size: 12px; line-height: 1.6; color: var(--mh-muted); max-width: 74ch; }
+
+@media (max-width: 860px) {
+  .wl-movers__grid { grid-template-columns: minmax(0, 1fr); gap: 26px; }
+  .wl-alloc__grid { grid-template-columns: minmax(0, 1fr); gap: 24px; justify-items: start; }
+  .wl-alloc__row { grid-template-columns: 10px minmax(0, 1fr) auto; }
+  .wl-alloc__names { display: none; }
+  .wl-mover { grid-template-columns: minmax(52px, auto) minmax(0, 1fr) auto; }
+  .wl-mover__p { display: none; }
+}
+
 .wl-purify { margin-top: 46px; padding-top: 34px; border-top: 1px solid var(--mh-border); }
 .wl-purify__head { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 .wl-purify__head .mh-heading--section { margin-bottom: 0; }

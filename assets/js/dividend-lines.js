@@ -58,6 +58,7 @@ const FMT = {
 export const DIV_FACTORS = [
   {
     key: 'safety', title: 'Dividend Safety', weight: 2,
+    anchor: 'dividend-safety',
     question: 'Can the company keep paying this dividend?',
     blurb: 'Payout coverage out of cash, earnings and the forward estimate, then the '
       + 'balance sheet behind it. Weighted double: a dividend that is not safe makes '
@@ -65,12 +66,14 @@ export const DIV_FACTORS = [
   },
   {
     key: 'growth', title: 'Dividend Growth', weight: 1,
+    anchor: 'dividend-growth',
     question: 'Has the payment been rising, and can it keep rising?',
     blurb: 'The dividend’s own CAGRs over one, three, five and ten years, then the '
       + 'forward earnings and cash-flow growth that would have to fund the next raise.',
   },
   {
     key: 'yield', title: 'Dividend Yield', weight: 1,
+    anchor: 'dividend-yield',
     question: 'How much does it pay for the price?',
     blurb: 'The forward and trailing yields, ranked beside the free-cash-flow and '
       + 'earnings yields — the test of whether the dividend yield is being funded '
@@ -78,11 +81,48 @@ export const DIV_FACTORS = [
   },
   {
     key: 'consistency', title: 'Dividend Consistency', weight: 1,
+    anchor: 'dividend-consistency',
     question: 'How dependable has the record been?',
     blurb: 'Streaks, cuts and the steadiness of both the payment and the payout ratio, '
       + 'built from the payment record with special dividends taken out.',
   },
 ];
+
+/**
+ * What each subtopic inside a factor is asking.
+ *
+ * The lines carry their group's *name*; this carries the sentence under it, so
+ * a dividend subtopic heading reads the way a graded factor's does rather than
+ * as a bare label over a table. Keyed `factor|group` because two factors reuse
+ * a group name and mean different things by it.
+ */
+export const DIV_GROUP_NOTES = {
+  'safety|Payout coverage': 'The dividend against each of the three things that could pay for it: '
+    + 'free cash flow, adjusted earnings and operating cash flow, trailing and forward.',
+  'safety|Coverage': 'The same three ratios the other way up. Shown because the sector tables carry '
+    + 'them, weighted lightly because they are the reciprocals of the tier above.',
+  'safety|Leverage': 'What the balance sheet behind the payment looks like — borrowings against '
+    + 'earnings, capital, equity and assets, and whether the interest bill is covered.',
+  'safety|Earnings quality': 'Whether the earnings the payout ratios are measured against are worth '
+    + 'measuring against: the cash they turn into, the margin they come from and the equity behind them.',
+  'safety|Market signal': 'What the market and the ownership register say about the payment, plus the '
+    + 'penny-stock control the specification puts in this tier.',
+  'growth|The dividend’s own record': 'What the payment has actually done, over one, three, five and '
+    + 'ten years and on the indicated forward rate.',
+  'growth|What would fund the next raise': 'The forward growth in earnings, cash flow and revenue that '
+    + 'a further increase would have to come out of.',
+  'yield|What it pays': 'The forward and trailing yields, and the four-year average they are moving '
+    + 'against.',
+  'yield|Is the yield real?': 'The same price, measured against cash flow and earnings instead. A '
+    + 'dividend yield well above these is being funded from somewhere other than the business.',
+  'yield|What it would have paid': 'Yield on cost — today’s payment against the price one, three and '
+    + 'five years ago, which is what a holder rather than a buyer receives.',
+  'consistency|Streaks': 'How long the record runs: consecutive increases, uninterrupted payment and '
+    + 'how often the payment has risen.',
+  'consistency|Cuts': 'The cuts themselves — how many, and how long since the last one.',
+  'consistency|Steadiness': 'How much the payment and the payout ratio wobble, and how much of the '
+    + 'record depends on one-off specials rather than the regular dividend.',
+};
 
 export const DIV_FACTOR_KEYS = DIV_FACTORS.map((f) => f.key);
 export const DIV_FACTOR_BY_KEY = Object.fromEntries(DIV_FACTORS.map((f) => [f.key, f]));

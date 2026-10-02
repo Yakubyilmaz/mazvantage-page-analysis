@@ -17,69 +17,25 @@
    sections. So the definitions live here, `screener-presets.js` registers
    them, and `shariahdesk.js` lists them on a rail. One definition, three
    places that read it, and no threshold that can drift between them.
+
+   The compliance rules moved to `ideas.js` when Investment Ideas gained a
+   Halal group of its own: both surfaces build on them, and `ideas.js` is the
+   one module both can import without a cycle.
    ========================================================================== */
 
-import { isNum, pct } from './util.js';
 import {
-  F, LISTED, BILLION, rule, atLeast, atMost, between, scoreAtLeast,
-  sortByScore, sortByFactor,
+  F, atLeast, atMost, between, scoreAtLeast, sortByFactor, halalIdea, SHARIAH_NOTE,
 } from './ideas.js';
-import { SHARIAH_STANDARDS, EXCLUDED_ACTIVITIES } from './shariah.js';
-
-
-const AAOIFI = SHARIAH_STANDARDS.find((s) => s.key === 'aaoifi');
-
-/** Debt over market capitalisation, from the balance sheet and the screener. */
-const debtRatio = (c) => {
-  const d = F.totalDebt(c);
-  return (isNum(d) && isNum(c.marketCap) && c.marketCap > 0) ? d / c.marketCap : null;
-};
-
-const cashRatio = (c) => {
-  const cash = F.cashAndShortTerm(c);
-  return (isNum(cash) && isNum(c.marketCap) && c.marketCap > 0) ? cash / c.marketCap : null;
-};
-
-const shariahRules = () => [
-  rule(`Interest-bearing debt under ${pct(AAOIFI.debt)} of market cap`, ['balance'],
-    (c) => { const v = debtRatio(c); return isNum(v) && v <= AAOIFI.debt; }),
-  rule(`Cash and short-term investments under ${pct(AAOIFI.liquid)} of market cap`, ['balance'],
-    (c) => { const v = cashRatio(c); return isNum(v) && v <= AAOIFI.liquid; }),
-  rule('Business activity not excluded', [], (c) => {
-    const hay = `${c.industry || ''} ${c.sector || ''}`.toLowerCase();
-    return !EXCLUDED_ACTIVITIES.some((w) => hay.includes(w));
-  }),
-];
-
-const SHARIAH_NOTE = 'Screened on AAOIFI’s limits, the strictest of the five published sets, so a '
-  + 'company here clears the other four on these two ratios as well. This is a mechanical screen '
-  + 'and not a ruling: the non-compliant-income test, the receivables test and the averaged '
-  + 'market-capitalisation basis the providers use are all absent, and any of the three could '
-  + 'exclude a company that passes here. Verify against the provider before relying on it.';
 
 /**
  * A Shariah screen with whatever extra rules the section wants on top.
  *
- * The compliance rules always come first so the funnel on the result page
- * reads as "this many were compliant, then this many of those were also
- * cheap" rather than the other way round — which is the order a reader
- * filtering for halal names actually thinks in.
+ * The compliance rules themselves live in `ideas.js` beside `halalIdea`,
+ * because the Halal group of Investment Ideas is built on the same three —
+ * one definition, so a threshold cannot say one thing on the desk and another
+ * on the ideas page.
  */
-function shariahIdea({ key, title, tag, thesis, extra = [], sort, sortLabel, columns = [], note }) {
-  return {
-    key,
-    group: 'Shariah',
-    title,
-    tag,
-    thesis,
-    universe: { ...LISTED, marketCapMoreThan: 1 * BILLION },
-    rules: [...shariahRules(), ...extra],
-    sort: sort || sortByScore,
-    sortLabel: sortLabel || 'overall score',
-    columns,
-    note: `${note ? `${note} ` : ''}${SHARIAH_NOTE}`,
-  };
-}
+const shariahIdea = (opts) => halalIdea({ ...opts, group: 'Shariah' });
 
 /* ==========================================================================
    The five screens

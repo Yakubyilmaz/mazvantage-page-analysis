@@ -522,6 +522,49 @@ function deriveDividends(ds) {
   };
 }
 
+/**
+ * A dividend record as the two numbers a screen can test: how many years in a
+ * row the payout has gone up, and how fast it grew over the last five.
+ *
+ * Calendar-year totals with the current, incomplete year dropped — the same
+ * basis as `deriveDividends` — so a company three quarters into its year does
+ * not look as if it cut. A year counts as a raise only when the total beat the
+ * year before by more than rounding, and a missing year ends the run: a payer
+ * that skipped a year did not raise through it.
+ *
+ * A record whose last full year is not last year has lapsed, and scores a run
+ * of zero rather than the run it had when it stopped.
+ */
+export function dividendRecordFromFeed(rows) {
+  const map = new Map();
+  for (const d of arr(rows)) {
+    const y = yearOf(d.date ?? d.paymentDate ?? d.recordDate);
+    const amt = d.adjDividend ?? d.dividend;
+    if (!isNum(y) || !isNum(amt) || amt <= 0) continue;
+    map.set(y, (map.get(y) || 0) + amt);
+  }
+  const thisYear = new Date().getUTCFullYear();
+  const years = [...map.entries()].filter(([y]) => y < thisYear).sort((a, b) => a[0] - b[0]);
+  if (!years.length) return null;
+
+  const lastYear = years.at(-1)[0];
+  const lapsed = lastYear < thisYear - 1;
+
+  let raises = 0;
+  for (let i = years.length - 1; i > 0 && !lapsed; i--) {
+    const [y, cur] = years[i];
+    const [py, prev] = years[i - 1];
+    if (y - py !== 1 || cur <= prev * 1.001) break;
+    raises++;
+  }
+
+  const byYear = new Map(years);
+  const base = byYear.get(lastYear - 5);
+  const growth5y = isNum(base) && base > 0 ? cagr(base, byYear.get(lastYear), 5) : null;
+
+  return { years: years.length, lastYear, lapsed, raises, growth5y };
+}
+
 /* ==========================================================================
    The last quarter
    ========================================================================== */
@@ -2035,6 +2078,25 @@ function deriveSeries(ds, facts, bm) {
     const tax = isNum(row.taxRate) ? clamp(row.taxRate, 0, 0.5) : 0.21;
     row.wacc = (e / total) * costOfEquity + (d / total) * rd * (1 - tax);
     row.spread = isNum(row.roic) ? row.roic - row.wacc : null;
+    /* The legs the line above weighted, kept rather than discarded. A panel
+       that printed the build-up would otherwise have to repeat this
+       arithmetic, and the printed working and the charted bar would be free
+       to drift apart — which is the one thing a shown calculation must not
+       do. `rdSource` records whether the cost of debt was observed or
+       substituted, because a company that files no interest line is priced at
+       the risk-free rate and the reader should be told so. */
+    row.waccParts = {
+      costOfEquity,
+      equityValue: e,
+      debtValue: d,
+      equityWeight: e / total,
+      debtWeight: d / total,
+      costOfDebt: rd,
+      rdSource: isNum(row.costOfDebt) ? 'observed' : 'riskFree',
+      taxRate: tax,
+      taxSource: isNum(row.taxRate) ? 'filed' : 'default',
+      afterTaxCostOfDebt: rd * (1 - tax),
+    };
   }
 
   return {

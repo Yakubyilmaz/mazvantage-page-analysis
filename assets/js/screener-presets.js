@@ -34,8 +34,12 @@ const aliases = {
   'small-profitable':'top-small-cap-stocks',
 };
 const claimed = new Set([...featured.map(item=>item.id), ...sectors.map(item=>item.id), ...Object.keys(aliases)]);
-const ideas = IDEAS.filter(idea => !claimed.has(idea.key))
+const ideas = IDEAS.filter(idea => !claimed.has(idea.key) && idea.group !== 'Halal')
   .map(idea => ({id:idea.key,title:idea.title,group:'Investment Ideas',idea}));
+// The Halal ideas file after the Shariah desk's own screens rather than among
+// the general ideas: a reader looking for compliant names looks in one place.
+const halal = IDEAS.filter(idea => idea.group === 'Halal')
+  .map(idea => ({id:idea.key,title:idea.title,group:'Shariah',idea}));
 const basic = COLLECTIONS.filter(item => item.id !== 'all').map(item => ({...item,group:'Market Collections'}));
 
 /* The Shariah screens are not entries in `IDEAS` — they are built from the
@@ -52,7 +56,7 @@ export const SCREENER_PRESETS = [
     id:sectorSlug(title),title,group:'Featured Screeners',
     unavailable:'Short-interest data is not available from the connected screener feeds.',
   })),
-  ...sectors, ...ideas, ...shariah, ...basic,
+  ...sectors, ...ideas, ...shariah, ...halal, ...basic,
 ];
 // Stocks by Quant is the single canonical screen; both names remain discoverable.
 SCREENER_PRESETS.find(item=>item.id==='stocks-by-quant').title='Top Quant Stocks (Stocks by Quant)';

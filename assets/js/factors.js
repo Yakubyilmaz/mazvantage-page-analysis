@@ -1397,6 +1397,18 @@ export const FACTORS = [
                   'returnOnTangibleAssets', 'returnOnCapitalEmployed'],
       },
       {
+        /* Display only, like `flow` above. A hurdle rate is an assumption —
+           today's beta, the risk-free rate a reader sets in Settings — and
+           grading a company against a number it can move in Settings would
+           put an opinion inside the factor score. `metrics: []` keeps it out
+           of every average; the chart is there to be argued with. */
+        key: 'costofcapital', title: 'What That Capital Costs',
+        desc: 'The returns above against the weighted cost of the money funding them. '
+          + 'A year earning less than its capital costs destroyed value however profitable it looked.',
+        metrics: [],
+        panel: 'costOfCapital',
+      },
+      {
         key: 'efficiency', title: 'How Hard the Assets Work',
         desc: 'How much revenue the balance sheet produces, and what it costs to keep it producing.',
         metrics: ['assetTurnover', 'fixedAssetTurnover', 'capexToRevenue', 'cashPerShare',

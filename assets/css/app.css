@@ -603,6 +603,41 @@ dialog .hint { font-size: var(--text-tiny); color: var(--text-softer); margin-to
 .gradebar__fill.is-weak   { background: var(--grade-weak); }
 .gradebar__fill.is-poor   { background: var(--grade-poor); }
 
+/* ---- the cost of capital, built one line at a time ---------------------- */
+
+/* Open by default and styled to be read rather than skipped: this is the
+   arithmetic behind a red bar that moves whenever somebody edits Settings,
+   and a hurdle rate nobody can check is not a hurdle rate. */
+.wacc { margin-top: var(--x3); }
+.wacc > summary {
+  cursor: pointer; width: fit-content;
+  font-size: var(--text-tiny); font-weight: 600; letter-spacing: 0.04em;
+  text-transform: uppercase; color: var(--text-soft); padding: var(--x0_5) 0;
+}
+.wacc > summary::marker { color: var(--text-subtle); }
+
+.wacc__steps { margin-top: var(--x1_5); max-width: 720px; }
+.wacc__step {
+  display: flex; align-items: baseline; gap: var(--x2);
+  padding: var(--x1) 0; border-bottom: 1px solid var(--border-subtle);
+}
+.wacc__step:last-child { border-bottom: 0; }
+/* A subtotal: the line the rows above it add up to. Ruled off rather than
+   tinted, so the three of them read as arithmetic and not as verdicts. */
+.wacc__step.is-total {
+  border-bottom: 0; border-top: 1px solid var(--border-strong);
+  margin-top: var(--x0_5); padding-top: var(--x1_5);
+}
+.wacc__k { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.wacc__k b { font-size: var(--text-xs); font-weight: 600; }
+.wacc__k small { font-size: var(--text-tiny); line-height: 1.55; color: var(--text-softer); }
+.wacc__v {
+  flex: none; font-size: var(--text-sm); font-weight: 600;
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.wacc__step.is-total .wacc__k b,
+.wacc__step.is-total .wacc__v { color: var(--text-solid); font-weight: 700; }
+
 /* ---- ratio tables ------------------------------------------------------- */
 
 /* Five columns since the sector median joined them; below this the table
@@ -618,6 +653,17 @@ dialog .hint { font-size: var(--text-tiny); color: var(--text-softer); margin-to
 .tbl--ratios tr.ratio.is-na { opacity: 0.55; }
 
 .ratio__name { display: flex; align-items: center; gap: var(--x1); }
+
+/* The caveat chip beside a ratio's name. Quiet by construction: it qualifies
+   the figure, it is not a second reading of it, and a row carrying one still
+   grades exactly like the rows around it. Only the dividend module sets it. */
+.ratio__tag {
+  padding: 1px 6px; border-radius: 999px;
+  border: 1px solid var(--border-soft); background: var(--surface-2);
+  font-size: var(--text-tiny); font-style: normal; font-weight: 600;
+  letter-spacing: 0.02em; color: var(--text-softer);
+  white-space: nowrap; cursor: help;
+}
 .ratio__value { font-weight: 600; }
 .ratio__whyrow td {
   padding-top: 0; padding-bottom: var(--x1_5);

@@ -51,11 +51,12 @@ import { fetchScreener, fetchFor, mapLimited } from './fmp.js';
 import { loadSectorStats, sectorLookup, letterFor, MAX_SCORE } from './grading.js';
 import {
   scoreLite, returnsFromPrices, dcfFromFeed, insiderFromStats, floatFromFeed,
-  estimatesFromFeed, gradesFromFeed, LITE_SOURCES, LITE_DEPTH,
+  estimatesFromFeed, gradesFromFeed, dividendRecordFromFeed, LITE_SOURCES, LITE_DEPTH,
 } from './model.js';
 import { FACTOR_BY_KEY, FACTOR_KEYS } from './factors.js';
 import { gradePill } from './gradeview.js';
 import { IDEA_GROUPS } from './nav.js';
+import { SHARIAH_STANDARDS, EXCLUDED_ACTIVITIES } from './shariah.js';
 
 /**
  * Roughly how many requests one idea may spend on candidates.
@@ -99,6 +100,17 @@ export const BAG_FEED = {
   // screens that actually read an analyst figure pay it — `bagsFor` derives
   // the list from the rules.
   grades: 'grades',
+  // Dated events rather than figures, and the only two bags no rule reads:
+  // the watchlist's calendar buys them per company to answer "what is coming
+  // up for what I hold". Both come back as the vendor's own list — no shape
+  // in `BAG_SHAPE` — because the whole run is the point, not its newest row.
+  earnings: 'earnings',
+  dividends: 'dividends',
+  // The same dividend feed, shaped into a record a rule can test — years of
+  // raises and five-year growth. A separate bag rather than a shape on
+  // `dividends`, because the calendar wants the raw list; `fmp.js` caches per
+  // request, so a surface buying both pays for the feed once.
+  divHistory: 'dividends',
 };
 
 /**
@@ -113,9 +125,19 @@ export const BAG_SHAPE = {
   returns: (data) => returnsFromPrices(data),
   growth: (data) => {
     // A list of fiscal years; the newest once sorted is the one to grade.
-    const list = Array.isArray(data) ? data : [data];
-    return list.filter(Boolean)
-      .sort((x, y) => new Date(x.date) - new Date(y.date)).at(-1) || null;
+    const list = (Array.isArray(data) ? data : [data]).filter(Boolean)
+      .sort((x, y) => new Date(x.date) - new Date(y.date));
+    const last = list.at(-1);
+    if (!last) return null;
+    // The year before rides along for the one question the newest row cannot
+    // answer alone — is earnings growth speeding up or slowing down. The
+    // difference is in percentage points: 30% growth after 20% is +0.10.
+    const prior = list.at(-2)?.epsgrowth;
+    return {
+      ...last,
+      epsgrowthPrior: isNum(prior) ? prior : null,
+      epsAcceleration: isNum(prior) && isNum(last.epsgrowth) ? last.epsgrowth - prior : null,
+    };
   },
   dcf: (data, hit) => dcfFromFeed(Array.isArray(data) ? data[0] : data, hit?.price),
   insider: (data) => insiderFromStats(data),
@@ -127,6 +149,7 @@ export const BAG_SHAPE = {
       .sort((x, y) => new Date(x.date) - new Date(y.date)).at(-1) || null;
   },
   grades: (data) => gradesFromFeed(Array.isArray(data) ? data[0] : data),
+  divHistory: (data) => dividendRecordFromFeed(data),
 };
 
 /** Every idea shows a score, and a score needs these two. */
@@ -182,6 +205,11 @@ export const F = {
   revenueGrowth: field('growth', 'revenueGrowth'),
   epsGrowth: field('growth', 'epsgrowth'),
   fcfGrowth: field('growth', 'freeCashFlowGrowth'),
+  epsGrowthPrior: field('growth', 'epsgrowthPrior'),
+  epsAcceleration: field('growth', 'epsAcceleration'),
+
+  divRaises: field('divHistory', 'raises'),
+  divGrowth5y: field('divHistory', 'growth5y'),
 
   /* Derived bags, shaped by the builders in model.js. */
   discount: field('dcf', 'discount'),
@@ -376,6 +404,110 @@ function factorIdea(key, { tag, thesis, note }) {
       + 'here, against that factor’s full set on a Ratings tab.',
   };
 }
+
+/* ==========================================================================
+   Shariah compliance, as three rules
+
+   Two balance-sheet ratios against market capitalisation, plus the activity
+   keywords. AAOIFI's limits are the strictest of the five published sets, so
+   they are the ones screened on — a company clearing AAOIFI clears the other
+   four on these two ratios, which makes a single list defensible where five
+   overlapping ones would not be.
+
+   Defined here rather than in `shariah-screens.js` because two surfaces build
+   on them — the Shariah desk's five screens and the Halal group of
+   Investment Ideas — and this is the module both can import without a cycle.
+   One definition, so no threshold can drift between them.
+
+   Hand-built with `rule()`, so none of the three carries a filter
+   descriptor. On a portfolio page they show as fixed conditions the reader
+   cannot loosen, which is the point: a halal screen whose compliance test can
+   be edited away is not a halal screen.
+   ========================================================================== */
+
+const AAOIFI = SHARIAH_STANDARDS.find((s) => s.key === 'aaoifi');
+
+/** Debt over market capitalisation, from the balance sheet and the screener. */
+const debtRatio = (c) => {
+  const d = F.totalDebt(c);
+  return (isNum(d) && isNum(c.marketCap) && c.marketCap > 0) ? d / c.marketCap : null;
+};
+
+const cashRatio = (c) => {
+  const cash = F.cashAndShortTerm(c);
+  return (isNum(cash) && isNum(c.marketCap) && c.marketCap > 0) ? cash / c.marketCap : null;
+};
+
+export const shariahRules = () => [
+  rule(`Interest-bearing debt under ${pct(AAOIFI.debt)} of market cap`, ['balance'],
+    (c) => { const v = debtRatio(c); return isNum(v) && v <= AAOIFI.debt; }),
+  rule(`Cash and short-term investments under ${pct(AAOIFI.liquid)} of market cap`, ['balance'],
+    (c) => { const v = cashRatio(c); return isNum(v) && v <= AAOIFI.liquid; }),
+  rule('Business activity not excluded', [], (c) => {
+    const hay = `${c.industry || ''} ${c.sector || ''}`.toLowerCase();
+    return !EXCLUDED_ACTIVITIES.some((w) => hay.includes(w));
+  }),
+];
+
+export const SHARIAH_NOTE = 'Screened on AAOIFI’s limits, the strictest of the five published sets, so a '
+  + 'company here clears the other four on these two ratios as well. This is a mechanical screen '
+  + 'and not a ruling: the non-compliant-income test, the receivables test and the averaged '
+  + 'market-capitalisation basis the providers use are all absent, and any of the three could '
+  + 'exclude a company that passes here. Verify against the provider before relying on it.';
+
+/**
+ * A screen with the compliance rules in front of whatever it adds.
+ *
+ * Compliance always comes first so the funnel on the result page reads as
+ * "this many were compliant, then this many of those were also cheap" rather
+ * than the other way round — which is the order a reader filtering for halal
+ * names actually thinks in. The caveat is appended to every note for the same
+ * reason the rules are fixed: it is not optional.
+ */
+export function halalIdea({ extra = [], note, ...idea }) {
+  return {
+    group: 'Halal',
+    universe: { ...LISTED, marketCapMoreThan: 1 * BILLION },
+    sort: sortByScore,
+    sortLabel: 'overall score',
+    columns: [],
+    ...idea,
+    rules: [...shariahRules(), ...extra],
+    note: `${note ? `${note} ` : ''}${SHARIAH_NOTE}`,
+  };
+}
+
+/**
+ * The hand-kept list behind "Halal AI beneficiaries".
+ *
+ * The vendor publishes no thematic tag, so "exposed to AI" cannot be screened
+ * for — it can only be written down. This is that list, grouped by where in
+ * the build-out each company sits, and it is an editorial judgement as of
+ * September 2026 rather than a fact the data holds. The screen measures what
+ * the list cannot: whether the company is compliant, and whether the benefit
+ * has reached its revenue yet.
+ *
+ * US-domiciled companies only, like every universe in this module, so TSMC,
+ * ASML and Arm are absent however central they are.
+ */
+const AI_EXPOSED = [
+  // Compute and memory
+  'NVDA', 'AMD', 'AVGO', 'MRVL', 'MU', 'QCOM', 'INTC', 'ALAB', 'CRDO', 'MPWR', 'LSCC', 'SITM', 'AMBA',
+  // The equipment and software that make the chips
+  'AMAT', 'LRCX', 'KLAC', 'TER', 'ONTO', 'SNPS', 'CDNS',
+  // Networking and optics
+  'ANET', 'CSCO', 'CIEN', 'COHR', 'LITE', 'FN',
+  // Servers and storage
+  'SMCI', 'DELL', 'HPE', 'NTAP', 'PSTG', 'WDC', 'STX',
+  // Power and cooling for the data centre
+  'VRT', 'GEV', 'ETN', 'NVT', 'MOD',
+  // The platforms buying all of it
+  'MSFT', 'GOOGL', 'AMZN', 'META', 'ORCL', 'IBM',
+  // Software selling it on
+  'PLTR', 'NOW', 'CRM', 'ADBE', 'SNOW', 'DDOG', 'MDB', 'CRWD', 'NET', 'AI',
+  // Where it is housed
+  'EQIX', 'DLR',
+];
 
 export const IDEAS = [
   /* ---- the score screens, which are what the ratings are for ---- */
@@ -1312,6 +1444,189 @@ export const IDEAS = [
       + 'attract more analysts, so a coverage floor of ten is also, quietly, a size filter. The '
       + 'ten-analyst minimum is there because a mean of three opinions is not a consensus.',
   },
+
+  /* ==========================================================================
+     Halal
+
+     Seven themed screens behind the same compliance test the Shariah desk
+     runs. Each is `halalIdea`, so the three AAOIFI rules come first, cannot be
+     edited away, and the caveat rides on every note. What each adds on top is
+     an ordinary, adjustable rule set — the reader can move any threshold
+     after the compliance test, never the test itself.
+
+     Distinct from the desk's five on purpose. Those are the broad cuts
+     (compliant, compliant and good, compliant and paying); these are the
+     narrower questions a halal investor asks next.
+     ========================================================================== */
+
+  halalIdea({
+    key: 'halal-top-growth',
+    title: 'Top Shariah-compliant growth stocks',
+    tag: 'Growth',
+    scoreIdea: true,
+    thesis: 'Shariah-compliant companies growing faster than most of their sector, and fast in '
+      + 'absolute terms too — revenue up 15% or more, with earnings following. The desk’s Halal '
+      + 'Growth screen asks for double digits; this one asks for the top of the table.',
+    extra: [
+      scoreAtLeast('growth', 4),
+      atLeast('Revenue growing 15%+', F.revenueGrowth, 0.15),
+      atLeast('Earnings per share growing', F.epsGrowth, 0),
+    ],
+    sort: sortByFactor('growth'),
+    sortLabel: 'growth score',
+    columns: ['revenueGrowth', 'epsGrowth', 'grossMargin'],
+    note: 'Both halves have to hold: the growth score is sector-relative and the 15% floor is '
+      + 'absolute, so the fastest-growing utility does not qualify as a growth stock. Growth is '
+      + 'the last filed year against the one before it.',
+  }),
+
+  halalIdea({
+    key: 'halal-hidden-gems',
+    title: 'Hidden gems',
+    tag: 'Under-covered',
+    thesis: 'Shariah-compliant smaller companies that few analysts follow, earning a real return on '
+      + 'capital, still growing, and not priced as if everybody already knew. The argument is '
+      + 'attention: a good business nobody is writing about is where a price is most likely to '
+      + 'be wrong.',
+    universe: {
+      ...LISTED,
+      marketCapMoreThan: 0.3 * BILLION,
+      marketCapLowerThan: 5 * BILLION,
+      volumeMoreThan: 50000,
+    },
+    extra: [
+      // Hand-built, because "nobody publishes an estimate" has to pass: the
+      // descriptor builders read a missing number as a failure, and a company
+      // with no coverage at all is the most hidden of the lot.
+      rule('Followed by five analysts or fewer', ['estimates'], (c) => {
+        const n = F.analysts(c);
+        return !isNum(n) || n <= 5;
+      }),
+      atLeast('Return on invested capital above 12%', F.roic, 0.12),
+      atLeast('Revenue growing 5%+', F.revenueGrowth, 0.05),
+      atMost('P/E under 20', F.pe, 20),
+    ],
+    columns: ['analysts', 'roic', 'pe'],
+    note: 'Coverage is read from the analyst-estimates feed, and a company with no published '
+      + 'estimates counts as uncovered — which is also what a feed that failed to load looks '
+      + 'like, so check the Analysts column before trusting the "hidden" half. Candidates are '
+      + 'taken largest first, so this samples the top of the $300m–$5b band rather than the '
+      + 'smallest names in it.',
+  }),
+
+  halalIdea({
+    key: 'halal-undervalued',
+    title: 'Undervalued halal stocks',
+    tag: 'Value',
+    thesis: 'Shariah-compliant companies trading at least a fifth below the vendor’s discounted '
+      + 'cash flow value, and profitable enough that the discount is a price rather than a '
+      + 'diagnosis.',
+    extra: [
+      atLeast('At least 20% below fair value', F.discount, 0.20),
+      atLeast('Profitable on a net basis', F.netMargin, 0.03),
+      atLeast('Return on equity above 8%', F.roe, 0.08),
+    ],
+    sort: (c) => F.discount(c) ?? -1,
+    sortLabel: 'discount to fair value',
+    columns: ['discount', 'pe', 'roe'],
+    note: 'The fair value is one vendor’s levered DCF, not this report’s — a model is a set of '
+      + 'assumptions, and the discount is somebody else’s opinion rather than a fact. The desk’s '
+      + 'Halal Value screen asks the other question, a low earnings multiple.',
+  }),
+
+  halalIdea({
+    key: 'halal-ai',
+    title: 'Halal AI beneficiaries',
+    tag: 'AI',
+    thesis: 'Shariah-compliant companies from a hand-kept list of the AI build-out — chips, the '
+      + 'tools that make them, networking, servers, power and cooling, the platforms and the '
+      + 'software — where the benefit has reached revenue: growing 10% or more.',
+    universe: { ...LISTED, marketCapMoreThan: 1 * BILLION },
+    symbols: AI_EXPOSED,
+    extra: [
+      atLeast('Revenue growing 10%+', F.revenueGrowth, 0.10),
+    ],
+    sort: (c) => F.revenueGrowth(c) ?? -1,
+    sortLabel: 'revenue growth',
+    columns: ['revenueGrowth', 'grossMargin', 'rdToRevenue'],
+    note: `The list of ${AI_EXPOSED.length} is ours and is an editorial judgement, not a `
+      + 'classification: the vendor tags no theme, so exposure to AI can only be written down. '
+      + 'Compliance and revenue growth are measured. The platforms most exposed to AI are also '
+      + 'the ones most often carrying cash above the AAOIFI limit, so expect several large names '
+      + 'to fail on the cash test rather than on anything about AI.',
+  }),
+
+  halalIdea({
+    key: 'halal-dividend-growers',
+    title: 'Halal dividend growers',
+    tag: 'Dividend growth',
+    thesis: 'Shariah-compliant companies that have raised their dividend five years running, grown '
+      + 'it 5% a year or better over those five, and still pay out under 60% of earnings — room to '
+      + 'keep raising it.',
+    universe: { ...LISTED, marketCapMoreThan: 1 * BILLION, dividendMoreThan: 0 },
+    extra: [
+      atLeast('Raised the dividend 5 years running', F.divRaises, 5),
+      atLeast('Dividend growing 5%+ a year over five years', F.divGrowth5y, 0.05),
+      atMost('Pays out under 60% of earnings', F.payout, 0.60),
+    ],
+    sort: (c) => F.divGrowth5y(c) ?? -1,
+    sortLabel: 'five-year dividend growth',
+    columns: ['divRaises', 'divGrowth5y', 'payout'],
+    note: 'Raises are counted on calendar-year totals from the dividend feed, so a payer that moved '
+      + 'a payment across New Year can show one year up and the next down without changing what it '
+      + 'pays. The feed reaches back about fifteen years for a quarterly payer. A dividend from a '
+      + 'compliant company is not automatically compliant income in full — see Purification on the '
+      + 'Shariah desk.',
+  }),
+
+  halalIdea({
+    key: 'halal-small-caps',
+    title: 'Halal small caps',
+    tag: 'Small cap',
+    scoreIdea: true,
+    thesis: 'Shariah-compliant companies between $300m and $2b that are profitable and rate well on '
+      + 'the composite. Small enough to be under-covered, large enough to trade, held to the same '
+      + 'score as everything else.',
+    universe: {
+      ...LISTED,
+      marketCapMoreThan: 0.3 * BILLION,
+      marketCapLowerThan: 2 * BILLION,
+      priceMoreThan: 3,
+      volumeMoreThan: 100000,
+    },
+    bags: ['growth', 'returns'],
+    extra: [
+      atLeast('Profitable on a net basis', F.netMargin, 0.02),
+      overallAtLeast(3.5),
+    ],
+    columns: ['pe', 'roic', 'revenueGrowth'],
+    note: 'Candidates are taken largest first, so this is the best of the larger small caps rather '
+      + 'than of the whole band. The volume and $3 price floors are there because a small company '
+      + 'that barely trades can screen well and still be impossible to buy near the printed price.',
+  }),
+
+  halalIdea({
+    key: 'halal-eps-acceleration',
+    title: 'Halal stocks with accelerating EPS',
+    tag: 'Acceleration',
+    thesis: 'Shariah-compliant companies whose earnings per share grew faster last year than the '
+      + 'year before — 15% or more, on top of a year that was already growing — and that analysts '
+      + 'expect to keep growing. Acceleration is the second derivative: not "growing" but "growing '
+      + 'faster".',
+    extra: [
+      atLeast('EPS growing 15%+ last year', F.epsGrowth, 0.15),
+      atLeast('EPS grew the year before as well', F.epsGrowthPrior, 0),
+      atLeast('EPS growth faster than the year before', F.epsAcceleration, 0),
+      atLeast('Forecast EPS growth 10%+ a year', F.fwdEpsGrowth, 0.10),
+    ],
+    sort: (c) => F.epsAcceleration(c) ?? -1,
+    sortLabel: 'EPS acceleration',
+    columns: ['epsGrowth', 'epsGrowthPrior', 'fwdEpsGrowth'],
+    note: 'Measured on the last two filed fiscal years, not on quarters — so an acceleration that '
+      + 'began two quarters ago will not show yet. Requiring the earlier year to have grown too '
+      + 'keeps out the rebound from a collapse, which reads as spectacular acceleration and is '
+      + 'nothing of the kind.',
+  }),
 ];
 
 export const IDEA_BY_KEY = Object.fromEntries(IDEAS.map((i) => [i.key, i]));
@@ -1422,6 +1737,14 @@ const COLUMNS = {
   insiderBought: { label: 'Shares bought by insiders', get: F.insiderBought, fmt: (v) => num(v, 0) },
   fcfGrowth: { label: 'FCF growth', get: F.fcfGrowth, fmt: (v) => pct(v, { sign: true }) },
   fcfToOcf: { label: 'FCF/operating cash flow', get: F.fcfToOcf, fmt: (v) => mult(v) },
+
+  /* Added with the Halal ideas. Acceleration is a difference of two growth
+     rates, so it prints in points rather than as a percentage of anything. */
+  epsGrowthPrior: { label: 'EPS growth, year before', get: F.epsGrowthPrior, fmt: (v) => pct(v, { sign: true }) },
+  epsAcceleration: { label: 'EPS growth acceleration', get: F.epsAcceleration,
+    fmt: (v) => `${v >= 0 ? '+' : '−'}${num(Math.abs(v) * 100, 1)} pts` },
+  divRaises: { label: 'Years of dividend raises', get: F.divRaises, fmt: (v) => num(v, 0) },
+  divGrowth5y: { label: 'Dividend growth, 5-year', get: F.divGrowth5y, fmt: (v) => pct(v, { sign: true }) },
 };
 
 /* ==========================================================================
@@ -1461,6 +1784,8 @@ const FILTER_META = {
   fcfGrowth: ['Growth', 'pct'],
   fwdEpsGrowth: ['Growth', 'pct'],
   fwdRevenueGrowth: ['Growth', 'pct'],
+  epsGrowthPrior: ['Growth', 'pct'],
+  epsAcceleration: ['Growth', 'pct'],
 
   grossMargin: ['Profitability', 'pct'],
   operatingMargin: ['Profitability', 'pct'],
@@ -1478,6 +1803,8 @@ const FILTER_META = {
 
   dividendYield: ['Dividends', 'pct'],
   payout: ['Dividends', 'pct'],
+  divRaises: ['Dividends', 'count'],
+  divGrowth5y: ['Dividends', 'pct'],
 
   return1y: ['Momentum', 'pct'],
   return6m: ['Momentum', 'pct'],
@@ -1764,7 +2091,14 @@ export async function runIdea(idea, { onProgress } = {}) {
   const hits = await fetchScreener(idea.universe);
   if (hits.status !== 'ok') return { state: hits.status, message: hits.message, idea };
 
-  const listings = hits.data.filter((h) => h.symbol && !h.isEtf && !h.isFund);
+  /* An idea with `symbols` is a hand-kept list — a theme the vendor does not
+     tag. The list narrows the screener's universe rather than replacing it,
+     so it costs the same one call, every name still arrives with its sector,
+     size and price, and a name the universe excludes (too small, delisted,
+     domiciled abroad) drops out instead of being tested on a guess. */
+  const named = idea.symbols ? new Set(idea.symbols) : null;
+  const listings = hits.data.filter((h) => h.symbol && !h.isEtf && !h.isFund
+    && (!named || named.has(baseSymbol(h.symbol))));
   const universe = dedupe(listings);
   if (!universe.length) {
     return { state: 'empty', idea, listings: listings.length, universeSize: 0, tested: 0, rows: [] };
@@ -1873,6 +2207,7 @@ export async function runIdea(idea, { onProgress } = {}) {
 export function universeLine(idea) {
   const u = idea.universe;
   const bits = [];
+  if (idea.symbols) bits.push(`a hand-kept list of ${idea.symbols.length} companies`);
   if (u.industry) bits.push(u.industry);
   if (u.sector) bits.push(u.sector);
   if (isNum(u.marketCapMoreThan) && isNum(u.marketCapLowerThan)) {

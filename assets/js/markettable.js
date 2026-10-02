@@ -290,6 +290,11 @@ export function marketTable({
   // filters.
   state = null,
   showTabs = true,
+  /* Called after a bought tab finishes loading its per-company feeds. The
+     table redraws itself; this is for a caller with something of its own
+     above the table computed from the same bags — the watchlist's health
+     score — which would otherwise sit stale beside a table full of figures. */
+  onFill = null,
 }) {
   const host = el('div', { class: 'mtwrap' });
   state = state || newTableState(sets);
@@ -302,7 +307,7 @@ export function marketTable({
        above the table. */
     host.replaceChildren(...[
       showTabs ? tabStrip(sets, state, set, rows, draw) : null,
-      body(set, rows, state, identity, perPage, draw, emptyText),
+      body(set, rows, state, identity, perPage, draw, emptyText, onFill),
       costNote ? el('p', { class: 't-tiny subtle mt2', text: costNote }) : null,
     ].filter(Boolean));
   };
@@ -347,7 +352,7 @@ function tabStrip(sets, state, current, rows, draw) {
 
 /* ---------- the body -------------------------------------------------------- */
 
-function body(set, rows, state, identity, perPage, draw, emptyText) {
+function body(set, rows, state, identity, perPage, draw, emptyText, onFill) {
   const col = set.columns.find((c) => c.key === state.sort) || set.columns[0];
 
   const sorted = [...rows].sort((a, b) => {
@@ -376,7 +381,7 @@ function body(set, rows, state, identity, perPage, draw, emptyText) {
     && slice.some((r) => set.bags.some((b) => !r.bags?.[b]));
 
   return el('div', {}, [
-    needsFill ? fillBar(set, slice, state, draw) : null,
+    needsFill ? fillBar(set, slice, state, draw, onFill) : null,
 
     slice.length
       ? el('div', { class: 'mtscroll' }, [
@@ -436,7 +441,7 @@ function headerCell(col, state, draw) {
  * described — fifty rows times two feeds is a hundred requests, and a reader
  * on a metered key should see that number before it is spent.
  */
-function fillBar(set, slice, state, draw) {
+function fillBar(set, slice, state, draw, onFill) {
   const missing = slice.filter((r) => set.bags.some((b) => !r.bags?.[b]));
   const cost = missing.length * set.bags.length;
 
@@ -460,6 +465,7 @@ function fillBar(set, slice, state, draw) {
       });
       state.filling = false;
       draw();
+      onFill?.();
     },
   });
 

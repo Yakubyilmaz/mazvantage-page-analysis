@@ -59,13 +59,26 @@ layout can be seen working end to end. Nothing in them is live and the page
 says so. Two of the thirty quote the bundled AAPL snapshot's own numbers, so at
 least one worked example agrees with what the report renders.
 
-**Investment Ideas** at `?view=ideas` is 40 portfolio screens — a thesis, a set
-of rules, and the companies that currently pass them — filed into 11 groups. The
+**Investment Ideas** at `?view=ideas` is 47 portfolio screens — a thesis, a set
+of rules, and the companies that currently pass them — filed into 12 groups. The
 first group, **Featured screens**, is fourteen presets named after Seeking
 Alpha's published screeners, so a reader arriving from that product finds what
 they know by the name they know it by. The names are theirs; the thresholds are
 not published anywhere, so the rules behind each one are ours and are argued for
 on the page.
+
+The second, **Halal**, is seven themed screens behind the Shariah desk's own
+compliance test: Top Shariah-compliant growth stocks, Hidden gems, Undervalued
+halal stocks, Halal AI beneficiaries, Halal dividend growers, Halal small caps
+and Halal stocks with accelerating EPS. The three AAOIFI rules come first on
+every one and are fixed — a halal screen whose compliance test can be edited
+away is not a halal screen — while everything added on top is adjustable. The
+rules live once in `ideas.js` (`shariahRules`, `halalIdea`) and the desk builds
+on the same definition. Two of the seven needed data the screens had never
+read: the dividend feed shaped into years of raises and five-year growth, and
+the prior fiscal year's EPS growth so acceleration can be measured. The AI
+screen runs on a hand-kept list of 56 companies, because the vendor tags no
+theme; the list is an editorial judgement and the page says so.
 Open one and its rules are **controls**: change a threshold, drop a rule, add
 one from forty metrics, and run it again across every listed US company over the
 size floor you set. A dropdown at the top switches to any other portfolio
@@ -86,7 +99,7 @@ candlestick charts, searchable rankings and calendars), **Market News**,
 (a directory of every listed company, plus screens over the whole market),
 **ETF Screener** (the same table pointed at funds, with the collections that
 cut five thousand listings down), **Sectors** (a breakdown across all eleven,
-then one page each with its top 50 companies), **Investment Ideas** (40
+then one page each with its top 50 companies), **Investment Ideas** (47
 portfolio screens, each openable as an adjustable screener), **Research** (the
 article feed, plus the page that explains what the whole product believes),
 **Earnings** (the transcript library and a beat/miss scorecard), **Quant** (one
@@ -731,7 +744,7 @@ assets/js/shariahdesk.js    the Shariah desk: five compliance screens in one tab
 assets/js/shariah-screens.js the AAOIFI screens themselves, registered as screener presets
 assets/js/earningsdesk.js   the Earnings desk: the calendar as a screener, and the call library
 assets/js/sectorpage.js     one page per sector, and the distribution behind its grades
-assets/js/ideas.js          Investment Ideas: the 40 portfolios, their rules, the
+assets/js/ideas.js          Investment Ideas: the 47 portfolios, their rules, the
                             filter registry and the screening engine
 assets/js/portfolios.js     the portfolio directory, and one portfolio as a screener
 assets/js/researchhub.js    the Research menu: routes the feed, an article and Strategy
@@ -866,46 +879,40 @@ lets you pick the cap.
 
 `?view=pricing`, reached from **Plans** in the utility bar and from the footer
 rather than from the rail — the rail is research destinations and a plan is not
-one. Four tiers: **Reader** (free), **Investor** ($29/mo), **Analyst**
-($79/mo, the recommended one) and **Desk** (a licence, from $2,400/yr).
+one. The page is laid out after Investing.com's Pro plans page: a dark band
+with a Monthly / Yearly / 2 Years switch, two plans side by side, a link down
+to a full comparison table, and the table itself.
 
-The structure falls out of the quota arithmetic above. A reader who brings
-their own FMP key costs this product **nothing** to serve and is already paying
-more for the data than a subscription could charge, so that tier is free with
-no expiry and no card, and it is not feature-crippled — every grade, every fair
-value and every screen is the same code a paid plan runs. What a paid plan
-sells is therefore the **data licence**, so nobody needs a second subscription,
-plus the two things a licence cannot buy: a server that writes yesterday's
-scores down, and metered model tokens for the long-form narrative.
+Two plans, with Investing's names and this product's features:
 
-That second one is why the Analyst tier exists at all. Three tabs in this
-product refuse to render today — Quant **Rating Changes**, **Rating Upgrades
-and Downgrades**, and Shariah **Compliance Changes** — because a change is the
-difference between today's verdict and a previous one and nothing is stored
-between sessions. They are the tier's headline feature rather than a roadmap
-note, and the page says so in the same words those tabs do.
+| | Monthly | Yearly (a month) | 2 Years (a month) |
+|---|---|---|---|
+| **Pro** | $17.99 | $9.49 — save $102 | $8.99 — save $216 |
+| **Pro+** (*Best value*) | $44.49 | $23.99 — save $246 | $21.99 — save $540 |
 
-The value metric is a **person**, not a seat (nothing here is collaborative)
-and not a report (a meter running while somebody reads taxes the one behaviour
-this product wants). The two genuinely expensive *actions* are the tier
-boundaries instead: the Alpha Signal market scan and the written narrative,
-both of which already print their cost before they run.
+**Pro** is the whole report on any company with the data licence included.
+**Pro+** adds the two genuinely expensive actions — the Alpha Signal market
+scan and the long-form written narrative — plus the stored daily scores that
+Quant **Rating Changes**, **Rating Upgrades and Downgrades** and Shariah
+**Compliance Changes** need, which is why those three tabs refuse to render
+today. The discounts on the switch and the "up to 50% off" headline are
+computed from the prices and rounded down, so they cannot overstate a saving.
+
+The free way in is unchanged: a reader who brings their own FMP key runs the
+whole product for nothing, with no expiry. It is not a card on this page; the
+checkout panel offers it.
 
 **Nothing on the page takes a payment**, because there is no server behind this
-build to take one. Rather than render a Subscribe button that quietly does
-nothing, the paid CTAs open a panel naming the four missing pieces — a
+build to take one. Claim Offer opens a panel naming the four missing pieces — a
 processor, an account, a data proxy, and the nightly job — which is the rule
 the Rating Changes and Compliance Changes tabs already follow. `CHECKOUT.href`
 in [assets/js/subscribe.js](assets/js/subscribe.js) is the one edit that turns
 the page live.
 
 The prices are text in the DOM and are also emitted as `Product`/`Offer`
-JSON-LD, written on every billing-toggle repaint and removed when the page is
-disposed, so an assistant asked what this costs can answer without guessing.
-There is deliberately no `aggregateRating`, no testimonial and no "most
-popular" badge: there are no customers yet, and all three would be fabricated.
-The middle tier is marked *Recommended*, which is this product's own judgement,
-rather than *Most popular*, which would be a claim about other people.
+JSON-LD, written on every switch repaint and removed when the page is disposed.
+There is deliberately no `aggregateRating`, no testimonial and no customer
+logo: there are no customers yet, and all three would be fabricated.
 
 ---
 

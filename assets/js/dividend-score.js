@@ -72,15 +72,13 @@ export function dividendLetter(score) {
   return 'F';
 }
 
-/** Three tones, matching the report's grade colouring. */
-export function dividendTone(score) {
-  if (!isNum(score)) return 'na';
-  if (score >= 3.8) return 'strong';
-  if (score >= 3.2) return 'good';
-  if (score >= 2.3) return 'mid';
-  if (score >= 1.7) return 'weak';
-  return 'poor';
-}
+/* There is deliberately no tone function here.
+ *
+ * Colouring goes through `toneForLetter` in `grading.js`, the same map the
+ * five factor grades use, so a dividend A and a valuation A are the same
+ * green. A second ladder keyed on this scale's own thresholds is how a letter
+ * and its colour end up disagreeing at the bottom of the range — a 1.5 is a
+ * D- and would have been painted the F red. */
 
 /** A percentile, as the spec words it: `score = 1 + 4 × percentile`. */
 export const scoreFromPercentile = (p) =>
@@ -277,7 +275,6 @@ export function scoreDividends(a, stats, { peerSamples = {}, feeds = {} } = {}) 
       lines,
       composite, pctile, score,
       letter: dividendLetter(score),
-      tone: dividendTone(score),
       rank: isNum(pctile) ? rankLabel(pctile) : null,
       reranked: isNum(reranked),
       coverage, designedWeight: designed, usedWeight: used,

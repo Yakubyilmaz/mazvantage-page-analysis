@@ -107,7 +107,7 @@ export const MARKET_ETF = 'SPY';
  * still renders, under "More".
  */
 export const IDEA_GROUPS = [
-  'Featured screens', 'Our ratings', 'Ranked portfolios', 'Value', 'Growth', 'Income',
+  'Featured screens', 'Halal', 'Our ratings', 'Ranked portfolios', 'Value', 'Growth', 'Income',
   'Quality and safety', 'Insider signals', 'Momentum', 'Sectors', 'Size',
 ];
 

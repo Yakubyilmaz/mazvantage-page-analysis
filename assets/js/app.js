@@ -26,6 +26,7 @@ import { renderAlphaDesk } from './alphadesk.js';
 import { renderAlphaTab } from './alphatab.js';
 import { renderForecastTab } from './forecast.js';
 import { renderDividendsTab } from './dividends.js';
+import { renderDividendGrades } from './dividend-grades.js';
 import { renderShariahTab } from './shariah.js';
 import { renderTranscriptsTab } from './transcripts.js';
 import { renderNewsTab } from './news.js';
@@ -53,18 +54,19 @@ const DEFAULT_SYMBOL = 'AAPL';
 const THEME_KEY = 'mazvantage.theme';
 
 /**
- * The rail's second group: shortcuts, under the seven menus.
+ * The rail's second group: shortcuts, under the menus.
  *
- * Short. Stock Screener, Sectors & Industries and Investment Ideas moved into
- * the menus above when those were built, and listing a destination twice in
- * one rail makes both copies look like different places.
+ * Down to one. Stock Screener, Sectors & Industries and Investment Ideas
+ * moved into the menus above when those were built, and Vanlior Picks went
+ * the same way — it opened the Quant menu's own screener under a second name,
+ * and listing a destination twice in one rail makes both copies look like
+ * different places.
  *
  * Calendar is the exception and stays: it is reached often enough to be worth
  * one click from anywhere, and Research → Earnings is not an obvious place to
  * look for it.
  */
 const SIDE_NAV = [
-  { label: 'Vanlior Picks', icon: 'trending', view: 'quant', sub: 'screener' },
   { label: 'Calendar', icon: 'calendar', view: 'calendar' },
 ];
 /* Home leads the rail rather than sitting in the shortcuts below it: it is the
@@ -1204,6 +1206,13 @@ async function render(force) {
         renderAbout(a),
         ...FACTOR_KEYS.map((k) => renderFactor(a, k)),
         renderDividend(a),
+        // The dividend module's four composites, in the same grade design as
+        // the five factors above — and deliberately after the unscored
+        // dividend section rather than among the factors, because they rank a
+        // different universe on a different scale and are no part of the
+        // overall rating. Async: the payer table and two quarterly statements
+        // are fetched only once a reader opens a surface that shows them.
+        renderDividendGrades(a),
         renderManagement(a),
         renderOwnership(a),
         renderCompetitors(a),

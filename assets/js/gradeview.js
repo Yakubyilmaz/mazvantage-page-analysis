@@ -14,8 +14,8 @@
    the page is the mean of the metric grades above it.
    ========================================================================== */
 
-import { el, esc, isNum, pct, dec, money, mult, yearOf, fmtDate, price as priceFmt } from './util.js';
-import { card, blockEl, notice, icon, keyInfo, checkRow, feedGate, curSymbol } from './ui.js';
+import { el, esc, isNum, pct, dec, money, mult, yearOf, fmtDate, signClass, price as priceFmt } from './util.js';
+import { card, blockEl, notice, icon, keyInfo, checkRow, feedGate, curSymbol, statLine, table } from './ui.js';
 import {
   MODEL_GROUPS, MODELS, DEFAULT_MODEL_ID, DEFAULT_BASIS, modelById, allFairValues,
 } from './valuation-models.js';
@@ -76,6 +76,20 @@ function rankBar(m) {
  * the figure is here, it is correct, and it is deliberately outside the
  * average — see `ungraded` in factors.js.
  */
+/**
+ * The optional chip beside a ratio's name.
+ *
+ * Nothing in the equity model sets `tag`; the dividend module does, for the
+ * two lines it computes from a substitute feed and the handful it computes on
+ * a narrower definition than the specification asks for. A caveat that belongs
+ * to the figure itself belongs next to its name rather than only in prose
+ * three rows below it.
+ */
+function ratioTag(m) {
+  if (!m.tag) return null;
+  return el('i', { class: 'ratio__tag', title: m.tag.title || null, text: m.tag.text });
+}
+
 function notScored(why = 'Shown for context; deliberately outside the factor score') {
   return el('span', { class: 'grade grade--unscored', title: why }, [el('b', { text: '—' })]);
 }
@@ -153,7 +167,17 @@ function medianCell(m, fmt) {
   });
 }
 
-function gradeTable(a, metrics) {
+/**
+ * The ratio table, and the one piece of this file the dividend module reuses.
+ *
+ * Exported rather than copied: the dividend composites are graded on their own
+ * scale against their own universe, but a reader comparing a payout ratio to a
+ * P/E should not have to learn a second table to do it. Everything that varies
+ * between the two travels on the metric objects — see `divMetrics` in
+ * `dividend-grades.js` — so this function does not know which model built its
+ * rows.
+ */
+export function gradeTable(a, metrics) {
   const sym = a.facts.symbol;
 
   const head = el('thead', {}, [
@@ -199,7 +223,9 @@ function gradeTable(a, metrics) {
 
     body.append(el('tr', { class: `ratio ${m.state === 'ok' ? '' : 'is-na'}`.trim() }, [
       el('td', {}, [
-        el('div', { class: 'ratio__name' }, [medianTick(m), el('span', { text: m.label })]),
+        el('div', { class: 'ratio__name' }, [
+          medianTick(m), el('span', { text: m.label }), ratioTag(m),
+        ].filter(Boolean)),
       ]),
       el('td', { class: 'num ratio__value', text: isNum(m.value) ? fmt(m.value) : 'n/a' }),
       el('td', { class: 'num ratio__median' }, [medianCell(m, fmt)]),
@@ -486,7 +512,7 @@ function pairRows(a, lead, follow, pair) {
    worth arguing with.
    ========================================================================== */
 
-function subtopicSummary(a, metrics) {
+export function subtopicSummary(a, metrics) {
   const live = metrics.filter((m) => isNum(m.pctile) && isNum(m.grade));
   if (live.length < 4) return null;
 
@@ -1133,11 +1159,152 @@ function debtEquityPanel(a) {
   ]);
 }
 
+/* ==========================================================================
+   Return on capital against what that capital costs
+
+   The one panel in this factor with an opinion built into its shape. A bar
+   above the line is a year the business earned more than its funding cost; a
+   bar below it is a year it destroyed value however profitable it looked.
+   That is the whole question, so both series are bars on one scale rather
+   than a line crossing a line.
+
+   ---------------------------------------------------------------------------
+   Why the working is printed, and why it is not graded
+   ---------------------------------------------------------------------------
+
+   A weighted average cost of capital is an assumption wearing a decimal
+   point: change the risk-free rate in Settings and every bar on the red
+   series moves. So the panel shows the whole build-up — the rate, the beta,
+   the premium, the borrowing cost, the tax shield and the two weights — and
+   the group it sits in carries `metrics: []`, which keeps it out of the
+   profitability score entirely. A number a reader can move is a number that
+   must not move their grade.
+
+   The figures printed here are the ones the chart drew: `deriveSeries` keeps
+   the legs it weighted on each row (`waccParts`) rather than this panel
+   re-deriving them, so the working and the bar cannot disagree.
+   ========================================================================== */
+
+function costOfCapitalPanel(a) {
+  const series = a.series;
+  const rows = series?.rows || [];
+  if (!series?.available || !rows.length) {
+    return feedGate(a, 'income', 'The annual statements')
+      || notice('No annual statement history was returned for this company, so there is no capital '
+        + 'base to measure a return against.');
+  }
+
+  const last = series.latest || {};
+  const spreads = rows.map((r) => r.spread).filter(isNum);
+  const cleared = spreads.filter((v) => v > 0).length;
+
+  return el('div', {}, [
+    el('p', { class: 't-xs soft', text: 'Return on invested capital against the weighted cost of '
+      + `the capital earning it, ${series.span}. The green bar is what the business made; the red `
+      + 'bar is what the money cost. Green above red is the whole case for a company compounding '
+      + '— and it has to hold for years, not once.' }),
+
+    columnChart(rows.map((r) => String(r.year)), [
+      { name: 'Return on invested capital', color: 'var(--good)', values: rows.map((r) => r.roic) },
+      { name: 'Weighted cost of capital', color: 'var(--bad)', values: rows.map((r) => r.wacc) },
+    ], { height: 300, valueFmt: (v) => pct(v, { dp: 0 }) }),
+
+    el('div', { class: 'ostats ostats--split mt2' }, [
+      statLine('Return on invested capital', pct(last.roic), { note: `FY${last.year ?? ''}` }),
+      statLine('Weighted cost of capital', pct(last.wacc), {
+        note: series.waccBasis === 'market' ? 'market-weighted' : 'book-weighted',
+      }),
+      statLine('Spread', isNum(last.spread) ? pct(last.spread, { sign: true }) : 'n/a', {
+        tone: signClass(last.spread),
+        note: 'earned less cost',
+        title: 'Positive means the last filed year earned more on its capital than that capital '
+          + 'costs. Sustained, it is the whole case for a company compounding.',
+      }),
+      statLine('Years above cost', spreads.length ? `${cleared} of ${spreads.length}` : 'n/a',
+        { note: series.span }),
+    ]),
+
+    waccWorking(a, series, last),
+  ]);
+}
+
+/**
+ * The cost of capital, built one line at a time.
+ *
+ * Open by default rather than folded away: a hurdle rate with its arithmetic
+ * hidden is exactly the thing this panel exists to stop being. Every row says
+ * where its number came from, and the three that are assumptions rather than
+ * measurements say so in their own note.
+ */
+function waccWorking(a, series, last) {
+  const w = last.waccParts;
+  if (!w) return null;
+
+  const bm = a.bm || {};
+  const rate = (v) => (isNum(v) ? `${dec(v * 100, 2)}%` : 'n/a');
+  const year = isNum(last.year) ? `FY${last.year}` : 'the last filed year';
+
+  const step = (label, value, note, total = false) => el('div', {
+    class: `wacc__step${total ? ' is-total' : ''}`,
+  }, [
+    el('span', { class: 'wacc__k' }, [
+      el('b', { text: label }),
+      note ? el('small', { text: note }) : null,
+    ].filter(Boolean)),
+    el('span', { class: 'wacc__v', text: value }),
+  ]);
+
+  return el('details', { class: 'wacc', open: true }, [
+    el('summary', { text: 'How the cost of capital is built' }),
+    el('div', { class: 'wacc__steps' }, [
+      step('Risk-free rate', rate(bm.riskFreeRate),
+        'The ten-year treasury. An assumption — editable in Settings.'),
+      step('Beta', isNum(a.facts.beta) ? dec(a.facts.beta, 2) : 'assumed 1.00',
+        isNum(a.facts.beta)
+          ? 'How far the share moves for a given move in the market, from the company profile.'
+          : 'No beta on the profile, so the market’s own is used and the cost of equity is '
+            + 'the plain equity return.'),
+      step('Equity risk premium', rate(bm.equityRiskPremium),
+        'What holding equities rather than treasuries is expected to pay. An assumption — '
+        + 'editable in Settings.'),
+      step('Cost of equity', rate(w.costOfEquity),
+        'CAPM: the risk-free rate plus beta times the premium.', true),
+
+      step('Cost of debt', rate(w.costOfDebt), w.rdSource === 'observed'
+        ? `Interest paid over total borrowings, ${year}.`
+        : 'No usable interest line was filed, so borrowing is priced at the risk-free rate — '
+          + 'the cheapest anything can be borrowed at, which understates the hurdle rather than '
+          + 'inventing one.'),
+      step('Effective tax rate', rate(w.taxRate), w.taxSource === 'filed'
+        ? `Tax expense over pre-tax income, ${year}, capped at 50%.`
+        : 'No usable tax line was filed, so the US federal rate stands in.'),
+      step('After-tax cost of debt', rate(w.afterTaxCostOfDebt),
+        'Interest is deductible, so the company bears the rate less the tax it saves.', true),
+
+      step('Equity weight', pct(w.equityWeight, { dp: 0 }), series.waccBasis === 'market'
+        ? 'Market capitalisation over market capitalisation plus debt — what the equity is '
+          + 'worth rather than what it is carried at.'
+        : 'Book equity over book equity plus debt. This data plan returns no market capitalisation '
+          + 'per year, which understates the equity weight and so the whole hurdle.'),
+      step('Debt weight', pct(w.debtWeight, { dp: 0 }),
+        `Total borrowings over the same total, ${year}.`),
+      step('Weighted average cost of capital', rate(last.wacc),
+        'Each leg at its own cost, weighted by how much of the funding it is.', true),
+    ]),
+    el('p', { class: 't-tiny subtle mt1', text: 'The cost of equity is today’s beta and '
+      + 'today’s rates, because neither is published per historical year — so the red '
+      + 'series is "what this mix would cost at today’s prices", not what it cost in 2018. '
+      + 'The borrowing cost, the tax rate and the mix are each year’s own. It is a bar to '
+      + 'clear, not a measurement.' }),
+  ]);
+}
+
 const GROUP_PANELS = {
   analystForecast: analystForecastPanel,
   revenueFlow: revenueFlowPanel,
   balanceFlow: balanceFlowPanel,
   debtHistory: debtEquityPanel,
+  costOfCapital: costOfCapitalPanel,
 };
 
 /** Charts drawn after a particular ratio's row, closing off a related pair. */
@@ -1783,7 +1950,7 @@ const FACTOR_TAB_DETAIL = {
   // The three that keep something keep the one thing that exists nowhere else
   // in the product: the thirteen fair-value models, and the two Sankeys.
   valuation: (a) => [fairValueCard(a)],
-  profitability: onlyGroups('profitability', ['flow']),
+  profitability: onlyGroups('profitability', ['flow', 'costofcapital']),
   health: onlyGroups('health', ['sheet']),
 };
 
@@ -1944,8 +2111,14 @@ function ratioLeaders(a, key, meta, above, below) {
   ], 'ocard ovw__c12');
 }
 
-/** One half: a heading, a column head, and its ratios. */
-function leadColumn(a, title, metrics) {
+/**
+ * One half: a heading, a column head, and its ratios.
+ *
+ * Exported for the same reason `gradeTable` is — the dividend composites put
+ * their own lines through it, and a second column of ranked ratios that
+ * looked slightly different from this one would be the whole point missed.
+ */
+export function leadColumn(a, title, metrics) {
   return el('div', { class: 'flead__col' }, [
     el('p', { class: 'osub', text: title }),
     metrics.length ? el('div', { class: 'flead flead--head' }, [

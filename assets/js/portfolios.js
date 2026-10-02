@@ -330,6 +330,7 @@ function portfolioTile(idea, nav) {
 /** The universe in three or four words, for a tile. */
 function universeShort(idea) {
   const u = idea.universe || {};
+  if (idea.symbols) return `${idea.symbols.length} named companies`;
   if (u.sector) return u.sector;
   if (isNum(u.marketCapMoreThan) && isNum(u.marketCapLowerThan)) {
     return `${money(u.marketCapMoreThan)}–${money(u.marketCapLowerThan)}`;
