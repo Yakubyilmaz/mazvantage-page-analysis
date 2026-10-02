@@ -4,7 +4,7 @@
   "editor.rulers": [100],
   "[python]": { "editor.tabSize": 4 },
   "search.exclude": {
-    "assets/data/*.json": true
+    "web/public/data/*.json": true
   },
   "files.associations": { "*.json": "jsonc" }
 }

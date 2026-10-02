@@ -2,7 +2,7 @@
 """
 Vanlior — seed dividend-payer distributions.
 
-Generates a *modelled* assets/data/dividend-stats.json so the dividend module
+Generates a *modelled* web/public/data/dividend-stats.json so the dividend module
 ranks sensibly before anyone has run a measured builder over a real universe.
 It is tagged `"source": "seed"`, and the panel shows a standing notice while
 that tag is present, because these are shaped distributions rather than
@@ -45,7 +45,7 @@ import os
 import time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUT = os.path.join(ROOT, "assets", "data", "dividend-stats.json")
+OUT = os.path.join(ROOT, "web", "public", "data", "dividend-stats.json")
 
 SECTORS = [
     "Technology", "Healthcare", "Financial Services", "Consumer Cyclical",

@@ -1,7 +1,7 @@
 """Fold the five Alpha Signal feeds into the bundled AAPL snapshot.
 
 Every row here was returned by Financial Modeling Prep through the same
-Ultimate-tier connector the rest of assets/data/AAPL.json was captured with.
+Ultimate-tier connector the rest of web/public/data/AAPL.json was captured with.
 Nothing is synthesised: the numbers are Apple's filed figures, the published
 analyst grade history, the published price-target summary, and the aggregated
 13F for the quarter FMP had current at capture time.
@@ -15,7 +15,7 @@ import os
 import sys
 
 ROOT = sys.argv[1] if len(sys.argv) > 1 else "."
-SNAP = os.path.join(ROOT, "assets", "data", "AAPL.json")
+SNAP = os.path.join(ROOT, "web", "public", "data", "AAPL.json")
 CAPTURED = "2026-09-22"
 
 

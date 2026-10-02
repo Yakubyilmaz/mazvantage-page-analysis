@@ -1,6 +1,6 @@
 // Ported from tools/test_alpha.mjs — the same checks, run by Vitest against the TypeScript modules.
 import { test } from 'vitest';
-/* Run: node tools/test_alpha.mjs
+/* Run: npx vitest run tests/alpha.test.ts
 
    Node regression checks for the Alpha Signal engine. No real network, no
    credentials, no DOM: the engine modules are free of all three by design,

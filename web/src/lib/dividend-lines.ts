@@ -10,7 +10,7 @@
    Weights are the spec's, and they sum to 100 inside each factor
    ---------------------------------------------------------------------------
 
-   `tools/test_dividends.mjs` asserts that, because a weight typed wrong is
+   `tests/dividends.test.ts` asserts that, because a weight typed wrong is
    the one error in a file like this that produces a plausible score rather
    than an obvious break.
 

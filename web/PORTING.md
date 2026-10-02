@@ -1,8 +1,11 @@
 # Porting status — legacy `assets/js` → `web/`
 
-The legacy app (vanilla ES modules, `serve.py`) stays in the repo as the
-reference until every page here reaches parity. This file tracks what has
-moved. Update it in the same change as the port.
+**The legacy app was deleted on 2026-10-02** at the user's request. That was
+`index.html`, `assets/`, `serve.py`, `HANDOVER.md` and the Node test scripts
+in `tools/`. Every legacy path this file names now lives only in git history,
+at commit `e7659b5` and earlier. The Python tools stay, and now write into
+`web/public/data/`. This file remains the record of what each legacy module
+became; add to it in the same change as any new feature.
 
 ## How the port is done
 

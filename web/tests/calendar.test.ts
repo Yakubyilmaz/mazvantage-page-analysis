@@ -3,7 +3,7 @@ import { test } from 'vitest';
 // Offline checks for the Calendar's pure helpers: the week, the markets, the
 // one-row-per-company merge, and where an economic release is filed.
 //
-//   node tools/test_calendar.mjs
+//   npx vitest run tests/calendar.test.ts
 //
 // Runs in Tokyo time on purpose. The rule most likely to break quietly is
 // "a release is filed under the reader's own day", and it only shows in a

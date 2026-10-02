@@ -2,7 +2,7 @@
 """
 Vanlior — sector distribution builder.
 
-Writes assets/data/sector-stats.json: for every sector, for every ratio the
+Writes web/public/data/sector-stats.json: for every sector, for every ratio the
 report grades on, the distribution of that ratio across the sector, stored as
 21 percentile breakpoints (p0, p5, p10 … p100).
 
@@ -44,7 +44,7 @@ from typing import Any, Callable, Iterable
 
 BASE = "https://financialmodelingprep.com/stable"
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUT = os.path.join(ROOT, "assets", "data", "sector-stats.json")
+OUT = os.path.join(ROOT, "web", "public", "data", "sector-stats.json")
 
 EXCHANGES = ["NASDAQ", "NYSE", "AMEX"]
 SECTORS = [
@@ -206,7 +206,7 @@ BOUNDS: dict[str, tuple[float, float]] = {
     "offYearHigh": (0, 1), "aboveYearLow": (0, 20), "beta": (-3, 5),
 }
 # Metrics where a smaller number is the better one. Mirrors `better: 'low'` in
-# assets/js/factors.js — the two lists have to agree or the overall histogram
+# web/src/lib/factors.ts — the two lists have to agree or the overall histogram
 # below would rank companies the opposite way from the report itself.
 LOWER_IS_BETTER = {
     "peGaapTtm", "priceToSalesTtm", "priceToBookTtm", "priceToCashFlowTtm", "pegGaap",

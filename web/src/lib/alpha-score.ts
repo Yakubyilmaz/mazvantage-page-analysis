@@ -12,8 +12,7 @@
    ---------------------------------------------------------------------------
 
    Everything else in this product grades on 0-5 against the company's own
-   sector, and HANDOVER §8 is emphatic that one scale printed the same way
-   everywhere is the rule. This breaks it deliberately.
+   sector, and one scale printed the same way everywhere is the rule. This breaks it deliberately.
 
    The two numbers answer different questions. The quant rating asks "how good
    is this company relative to its sector, right now"; the Alpha Signal asks
@@ -31,8 +30,7 @@
 
    They are a starting allocation, chosen for a defensible reason each, and
    **they have not been validated against anything**. No backtest has been run
-   — the app stores no history to run one against (see `alpha-score` notes in
-   HANDOVER). They are versioned so that a score computed under one set is
+   — the app stores no history to run one against. They are versioned so that a score computed under one set is
    never silently compared with a score computed under another, and they live
    in one object so that changing them is one edit.
 

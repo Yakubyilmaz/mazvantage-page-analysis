@@ -45,8 +45,7 @@ const FMT = {
 /* ==========================================================================
    The contract
 
-   What `gradeAll()` returns is what the whole render layer consumes (HANDOVER
-   §4). Any engine that emits these shapes keeps every table, pair, chart,
+   What `gradeAll()` returns is what the whole render layer consumes. Any engine that emits these shapes keeps every table, pair, chart,
    summary strip and factor header working untouched.
    ========================================================================== */
 

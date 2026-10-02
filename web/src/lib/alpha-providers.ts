@@ -10,8 +10,8 @@
    Where this sits in the layering
    ---------------------------------------------------------------------------
 
-   HANDOVER §7 says `model.js` is the only file that reads a vendor field
-   name. This file breaks that rule, deliberately and narrowly: it is the
+   The rule elsewhere is that `model.ts` is the only file that reads a vendor
+   field name. This file breaks that rule, deliberately and narrowly: it is the
    Alpha Signal's own `model.js`. The alternative was to grow `model.js` by a
    third for a feature none of its existing consumers read, and to make every
    company report pay for quarterly statements it never opens.

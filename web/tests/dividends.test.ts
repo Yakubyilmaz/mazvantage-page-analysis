@@ -2,7 +2,7 @@
 import { test } from 'vitest';
 // Offline checks over the dividend module — no network, no DOM, no key.
 //
-//   node tools/test_dividends.mjs
+//   npx vitest run tests/dividends.test.ts
 //
 // What is worth testing here is not the arithmetic of any one line; it is the
 // handful of rules in MAZ_DIVIDEND_SPEC_FULL.md that produce a *plausible*

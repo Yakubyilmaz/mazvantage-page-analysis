@@ -2,7 +2,7 @@
 """
 Vanlior — seed sector distributions.
 
-Generates a *modelled* assets/data/sector-stats.json so the report grades
+Generates a *modelled* web/public/data/sector-stats.json so the report grades
 sensibly before anyone has run the real builder. It is tagged
 `"source": "seed"`, and the app shows a standing notice while that tag is
 present, because these are shaped distributions rather than measured ones.
@@ -36,7 +36,7 @@ import os
 import time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUT = os.path.join(ROOT, "assets", "data", "sector-stats.json")
+OUT = os.path.join(ROOT, "web", "public", "data", "sector-stats.json")
 
 SECTORS = [
     "Technology", "Healthcare", "Financial Services", "Consumer Cyclical",
@@ -360,11 +360,12 @@ def build() -> dict:
     return {
         "generatedAt": time.strftime("%Y-%m-%d"),
         "source": "seed",
+        # Served to readers, who are not told where the data comes from: keep
+        # the provider's name out of this string (web/DATA-PROVENANCE.md).
         "note": ("Modelled distributions, not measured ones. Sector P/E centres are "
-                 "anchored on FMP's sector P/E snapshot for 2026-08-27; the rest are "
-                 "market-wide shapes with per-sector adjustments. Run "
-                 "tools/build_sector_stats.py with an FMP key to replace this with "
-                 "measured data."),
+                 "anchored on a sector P/E snapshot for 2026-08-27; the rest are "
+                 "market-wide shapes with per-sector adjustments. A measured build "
+                 "replaces this."),
         "universe": {"quantileStep": 0.05},
         "sectors": sectors,
     }

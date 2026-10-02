@@ -1,6 +1,6 @@
 # The Alpha Signal captures
 
-Two files in `assets/data/` are hand-captured rather than fetched, and this is
+Two files in `web/public/data/` are hand-captured rather than fetched, and this is
 the record of where every figure came from so each can be re-read and re-typed.
 
 Neither is a feed. Both are frozen at their `capturedAt` date, and the UI
@@ -8,7 +8,7 @@ prints that date beside anything built from them.
 
 ---
 
-## 1. `assets/data/AAPL.json` — the bundled snapshot
+## 1. `web/public/data/AAPL.json` — the bundled snapshot
 
 Captured through an authenticated FMP connector at Ultimate tier. The app's own
 **Settings → Save snapshot** button produces exactly this shape from a live
@@ -41,7 +41,7 @@ back gated and the institutional category reports it rather than guessing.
 
 ---
 
-## 2. `assets/data/alpha-disclosures.json` — read by hand
+## 2. `web/public/data/alpha-disclosures.json` — read by hand
 
 Six categories have gaps no FMP endpoint fills. Where a primary source
 publishes the fact for free, it is read from the page below and typed in.
