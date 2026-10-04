@@ -15,7 +15,12 @@ export const metadata: Metadata = {
   description:
     `${BRAND_NAME} stock analysis: a five-factor report on valuation, growth, track record, balance sheet health `
     + 'and dividends.',
-  icons: { icon: '/img/mazvantage-favicon.svg' },
+  icons: {
+    icon: [
+      { url: '/img/mazvantage-favicon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/img/mazvantage-favicon.svg', type: 'image/svg+xml' },
+    ],
+  },
 };
 
 // Read per request, not at build: whether the operator configured a key is a
