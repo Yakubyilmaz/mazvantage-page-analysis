@@ -275,9 +275,41 @@ export function ResearchStrip({ active, query = null }: { active: string; query?
     <StickyStrip label="Research sections">
       <StripTab active={active === 'latest'} onClick={to(null)}>Latest</StripTab>
       {CATEGORIES.map((c: any) => <StripTab key={c.key} active={active === c.key} onClick={to(c.key)}>{c.label}</StripTab>)}
+      <StripTab active={active === 'letters'} onClick={() => nav.goView('research', 'letters')}>Letters &amp; Outlooks</StripTab>
       <StripTab active={active === 'strategy'} onClick={() => nav.goView('research', 'strategy')}>Investing Strategy</StripTab>
       <StripTab active={active === 'calculators'} onClick={() => nav.goView('research', 'calculators')}>Calculators</StripTab>
     </StickyStrip>
+  );
+}
+
+/* ---------- filter controls, shared by the feed and Letters & Outlooks ---------- */
+
+/** A filter pill; `aria-pressed` carries the state. */
+export function RsPill({ active, onClick, title, children }: { active?: boolean; onClick: () => void; title?: string; children: React.ReactNode }) {
+  return (
+    <button type="button" aria-pressed={!!active} title={title} onClick={onClick}
+      className={cn('whitespace-nowrap rounded-full border border-border px-3.5 py-1.5 text-13 font-medium hover:bg-accent',
+        active && 'border-foreground bg-foreground text-background hover:bg-foreground')}>
+      {children}
+    </button>
+  );
+}
+
+export const inputCls = 'h-9 w-full rounded-md border border-border bg-background px-2 text-13';
+
+export function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return <label className="grid gap-1 text-micro font-semibold uppercase tracking-[.06em] text-muted-foreground">{label}{children}</label>;
+}
+
+/** A text box that writes one query key on Enter. */
+export function FilterText({ label, value, placeholder, onApply }: { label: string; value: string; placeholder: string; onApply: (v: string) => void }) {
+  const [text, setText] = React.useState(value);
+  React.useEffect(() => setText(value), [value]);
+  return (
+    <Field label={label}>
+      <input type="search" placeholder={placeholder} value={text} autoComplete="off" spellCheck={false} className={cn(inputCls, 'font-normal normal-case tracking-normal')}
+        onChange={(e) => setText(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') onApply(text.trim()); }} />
+    </Field>
   );
 }
 

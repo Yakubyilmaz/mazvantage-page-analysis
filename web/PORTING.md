@@ -296,6 +296,72 @@ default, `?billing=`, the comparison rows and the checkout dialog are
 unchanged.** The screener's metric count is read from `screenMetrics()` (245;
 the page had said 244 since the Beneish row was added).
 
+## Research → Letters & Outlooks (2026-10-05)
+
+A library of other houses' published thinking, after Fiscal.ai's Fund Letters
+and S&P Global's research collection: outlooks, fund letters, memos and
+articles, research reports, chart books and official economic outlooks.
+`/research/letters`, second item in the Research menu and a tab on the
+Research strip. Three tables, like Fiscal.ai's Letters / Stocks / Investors:
+**Documents** (by month), **Investors** (one row per firm) and **Companies**
+(listed companies the letters name, with opened / exited / discussed counted
+by firm). Every filter shows how many documents it leaves.
+
+**353 documents from 114 firms**, all opened on 2026-10-05.
+
+| Piece | File |
+|---|---|
+| Model, vocabulary, the 19 curated entries, query, facets, the three tables | `lib/letters.ts` |
+| The 334 indexed entries and 100 firms — 150 picked by hand, 184 found by the crawler (`auto: true`) | `lib/letters-index.ts` |
+| The page | `components/research/letters-page.tsx` |
+| Route | `pages/research-page.tsx` (`sub === 'letters'`), `lib/nav.ts` |
+| Shared filter pills / fields (moved out of the feed) | `components/research/feed-parts.tsx` |
+| Tests | `tests/letters.test.ts` (24) |
+
+- **Links, never copies.** Every entry opens the publisher's own page or file
+  in a new tab. Nothing is downloaded or served from here; several documents
+  say "not for distribution".
+- **Two tiers.** *Curated* (19): read in full, with our own `about` line.
+  *Indexed* (150): found on each firm's own letters/insights page; the link
+  was opened and the title and date read from the page or the PDF's first
+  page. No `about`. Where a fund letter's own trade list was read ("we
+  purchased…", "we sold…") it carries `mentions`.
+- **Only names from Fiscal.ai.** The user first asked to pull Fiscal.ai's
+  1,157 investors and their letters; copying that index was declined (bot
+  checkpoint, paid product). They then asked to use just the public investor
+  list as a starting point: its firm names (not counts, tags, letters or
+  links) were read once in a browser and kept outside the repo. A crawler
+  then found each firm's own site, confirmed it, honoured robots.txt, read
+  its letters/insights page and opened each 2026 document for title and
+  date. 775 names → 655 with a resolving address → 403 sites → 172 passing
+  the same-company check → 61 with a 2026 document after filtering → 52 new
+  firms and 9 merged into firms already on file. Eight same-name companies
+  the check let through (a UK house buyer, a Bitcoin exchange, an M&A
+  adviser…) were removed by hand. Crawled entries say "Filed automatically";
+  their kind, topics and regions come from the title. Rejected on the way: documents with no publication date anywhere
+  (two Saga letters, the Ruffer Review, Harding Loevner's quarterly, Bank of
+  Canada's FSR), a BlackRock PDF behind a terms page, and Schroders (blank to
+  automated browsing).
+- **Dates.** Where a page's hidden metadata disagreed with the date the firm
+  shows readers, the visible date won (Smead, Brookfield, Deutsche Bank,
+  First Eagle). A document dated only by month keeps `YYYY-MM`. Baron's and
+  Vulcan's quarterly PDFs print no date; their month is the publisher's
+  upload folder. An address reused for each edition is `rolling`.
+- **Facet counts ignore their own filter**, so picking one kind never zeroes
+  the others; a choice that would empty the page is disabled, not hidden.
+- **Firms carry their type and 13F filer number**; the test holds every CIK to
+  the Superinvestors list so "13F holdings →" always lands.
+- **Filters go through `nav.goView`, not `goQuery`** — `goQuery` keeps only the
+  article feed's own keys and silently dropped these.
+- **No data cost**: the list is in code. A licensed feed (Fiscal.ai's
+  `/v1/fund-letters`, S&P aftermarket research) would replace `LETTERS` with a
+  loader; every function takes the list as an argument for that reason.
+- **Keeping it current is manual** until then. The crawler (name → address
+  guesses → same-company check → index page → dated links → each link opened)
+  and its quality rules lived in a session scratchpad and are not in the repo.
+- **The page code-splits**: `research-page.tsx` loads `letters-page.tsx` with
+  `next/dynamic`, so the library's data only downloads when the section opens.
+
 `marketpages.js` is not ported: its four sections were only reachable through
 `markets.js`'s `SECTIONS` table, which the dispatch resolved overview, stocks,
 ETFs and economy ahead of, so none of it ever rendered in the legacy app.

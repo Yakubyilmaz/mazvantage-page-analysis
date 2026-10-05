@@ -285,6 +285,8 @@ export const NAV: NavMenu[] = [
       { label: 'Latest Research', sub: 'latest' },
       // One article: a destination, not a section.
       { label: 'Article', sub: 'article', hidden: true },
+      // Other houses' outlooks and fund letters, linked at the publisher.
+      { label: 'Letters & Outlooks', sub: 'letters' },
       { label: 'Stock Analysis', symbolTab: 'Research' },
       { label: 'Investing Strategy', sub: 'strategy' },
       { label: 'Calculators', sub: 'calculators' },

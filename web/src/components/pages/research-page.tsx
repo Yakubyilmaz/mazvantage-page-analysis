@@ -3,9 +3,11 @@
 /* ==========================================================================
    Maz Vantage — the Research menu (`/research/<sub>`)
 
-   Three destinations: the editorial feed (`latest`), one article (`article`,
-   by `?slug=`), and Investing Strategy — the page that says what this product
-   believes. The rest of the menu opens things that already exist elsewhere.
+   Four destinations: the editorial feed (`latest`), one article (`article`,
+   by `?slug=`), Letters & Outlooks (`letters`, other houses' published work,
+   in `components/research/letters-page.tsx`), and Investing Strategy — the
+   page that says what this product believes. The rest of the menu opens
+   things that already exist elsewhere.
 
    The feed's filters are the URL: filtering thirty articles in memory is free,
    so every pill click writes the address and the back button steps back
@@ -26,7 +28,8 @@ import {
 } from '@/lib/taxonomy';
 import { PER_PAGE, articleBySlug, articlesReady, loadArticles, queryArticles, relatedArticles } from '@/lib/articles';
 import {
-  ArticleCard, ArticleRow, LeadCard, QuantBadge, ResearchHero, ResearchStrip, SampleBanner, ShariahBadge, TickerLink, type Article,
+  ArticleCard, ArticleRow, Field, FilterText, LeadCard, QuantBadge, ResearchHero, ResearchStrip, RsPill, SampleBanner, ShariahBadge, TickerLink,
+  inputCls, type Article,
 } from '@/components/research/feed-parts';
 import { PageFrame } from '@/components/pages/page-parts';
 import { DataTable, Notice, OCard, OHead, StatLine, StatLines } from '@/components/report/ui';
@@ -35,6 +38,13 @@ import { Skeleton } from '@/components/ui/primitives';
 import { useNav } from '@/components/nav-context';
 import { CalculatorsPage } from '@/components/pages/calculators-page';
 import { ResearchReportTab } from '@/components/pages/research-report-tab';
+import dynamic from 'next/dynamic';
+
+/* Letters & Outlooks carries its whole library in code (hundreds of entries), so
+   it loads only when its section opens rather than with every Research page. */
+const LettersPage = dynamic(() => import('@/components/research/letters-page').then((m) => m.LettersPage), {
+  loading: () => <div aria-busy="true" className="min-h-[60vh]" />,
+});
 import { cn } from '@/lib/cn';
 import { BrandMark } from '@/components/shell/brand';
 
@@ -55,34 +65,6 @@ function useArticleStore(): Article[] | null {
 /* ==========================================================================
    The feed
    ========================================================================== */
-
-function RsPill({ active, onClick, title, children }: { active?: boolean; onClick: () => void; title?: string; children: React.ReactNode }) {
-  return (
-    <button type="button" aria-pressed={!!active} title={title} onClick={onClick}
-      className={cn('whitespace-nowrap rounded-full border border-border px-3.5 py-1.5 text-13 font-medium hover:bg-accent',
-        active && 'border-foreground bg-foreground text-background hover:bg-foreground')}>
-      {children}
-    </button>
-  );
-}
-
-const inputCls = 'h-9 w-full rounded-md border border-border bg-background px-2 text-13';
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return <label className="grid gap-1 text-micro font-semibold uppercase tracking-[.06em] text-muted-foreground">{label}{children}</label>;
-}
-
-/** A text box that writes one query key on Enter. */
-function FilterText({ label, value, placeholder, onApply }: { label: string; value: string; placeholder: string; onApply: (v: string) => void }) {
-  const [text, setText] = React.useState(value);
-  React.useEffect(() => setText(value), [value]);
-  return (
-    <Field label={label}>
-      <input type="search" placeholder={placeholder} value={text} autoComplete="off" spellCheck={false} className={cn(inputCls, 'font-normal normal-case tracking-normal')}
-        onChange={(e) => setText(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') onApply(text.trim()); }} />
-    </Field>
-  );
-}
 
 /* Module-level, like the legacy: a drawer that closed itself on every filter
    click would be unusable. */
@@ -572,6 +554,7 @@ function Strategy() {
 
 export function ResearchPage({ sub }: { sub: string | null }) {
   if (sub === 'article') return <ArticlePage />;
+  if (sub === 'letters') return <LettersPage />;
   if (sub === 'strategy') return <Strategy />;
   if (sub === 'calculators') return <CalculatorsPage />;
   if (sub === 'valuation' || sub === 'dividends') return <ResearchReportTab tab={sub} />;
