@@ -307,12 +307,13 @@ Research strip. Three tables, like Fiscal.ai's Letters / Stocks / Investors:
 (listed companies the letters name, with opened / exited / discussed counted
 by firm). Every filter shows how many documents it leaves.
 
-**353 documents from 114 firms**, all opened on 2026-10-05.
+**352 documents from 114 firms**, all opened on 2026-10-05.
 
 | Piece | File |
 |---|---|
 | Model, vocabulary, the 19 curated entries, query, facets, the three tables | `lib/letters.ts` |
-| The 334 indexed entries and 100 firms — 150 picked by hand, 184 found by the crawler (`auto: true`) | `lib/letters-index.ts` |
+| The 333 indexed entries and 100 firms — 150 picked by hand, 183 found by the crawler (`auto: true`) | `lib/letters-index.ts` |
+| The crawler, the review step and a link checker | `tools/letters/` (see its README) |
 | The page | `components/research/letters-page.tsx` |
 | Route | `pages/research-page.tsx` (`sub === 'letters'`), `lib/nav.ts` |
 | Shared filter pills / fields (moved out of the feed) | `components/research/feed-parts.tsx` |
@@ -356,9 +357,12 @@ by firm). Every filter shows how many documents it leaves.
 - **No data cost**: the list is in code. A licensed feed (Fiscal.ai's
   `/v1/fund-letters`, S&P aftermarket research) would replace `LETTERS` with a
   loader; every function takes the list as an argument for that reason.
-- **Keeping it current is manual** until then. The crawler (name → address
-  guesses → same-company check → index page → dated links → each link opened)
-  and its quality rules lived in a session scratchpad and are not in the repo.
+- **Keeping it current:** `tools/letters/` holds the crawler (name → address
+  guesses → same-company check → index page → dated links → each link opened),
+  `review.py` (checks, de-duplication, a list to read by hand, paste-ready
+  entries) and `check_links.py` (re-opens every link: 345 of 355 answered on
+  2026-10-05, none dead; the other ten refuse scripts and were checked in a
+  browser). Names files and crawl output stay in its git-ignored `work/`.
 - **The page code-splits**: `research-page.tsx` loads `letters-page.tsx` with
   `next/dynamic`, so the library's data only downloads when the section opens.
 

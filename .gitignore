@@ -7,3 +7,6 @@ __pycache__/
 .agents/
 skills-lock.json
 .vscode/*.local.json
+
+# Letters & Outlooks crawler: names files, crawl state and output stay local
+tools/letters/work/
