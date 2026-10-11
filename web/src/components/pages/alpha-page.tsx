@@ -28,6 +28,7 @@ import { SCAN_FEEDS, runProviders } from '@/lib/alpha-providers';
 import { ALPHA_WEIGHTS, CALC_VERSION, classify, scoreAlpha } from '@/lib/alpha-score';
 import { CATEGORIES } from '@/lib/alpha-signals';
 import { ConfidencePill, StandingNotice } from '@/components/alpha/alpha-view';
+import { DemandDesk } from '@/components/pages/demand-page';
 import { EmptyState } from '@/components/market/market-ui';
 import {
   ConnectionButton, MetaDivider, PageFrame, PageHero, Panel, Para, SectionBar, Warn, useHasKey, useQueryState,
@@ -48,9 +49,10 @@ const SIZE_FLOORS = [
   { id: 'mid', label: 'Above $10bn', min: 10e9 },
 ];
 
-type TabId = 'scan' | 'method' | 'limits';
+type TabId = 'scan' | 'demand' | 'method' | 'limits';
 const TABS: { id: TabId; label: string }[] = [
   { id: 'scan', label: 'Scanner' },
+  { id: 'demand', label: 'Demand Discovery' },
   { id: 'method', label: 'Method' },
   { id: 'limits', label: 'Limits' },
 ];
@@ -268,7 +270,7 @@ function MethodTab() {
   return (
     <div className="grid gap-5 pt-6">
       <Panel title="What the number is">
-        <Para>The Alpha Signal is a weighted reading of recent, dated evidence about a company: eleven categories, each scored 0–100 from its own signals, combined by the weights below. It is not a forecast and it is not a quality rating.</Para>
+        <Para>The Alpha Signal is a weighted reading of recent, dated evidence about a company: eleven categories, each scored 0–100 from its own signals; nine are combined by the weights below, and workforce and industry are shown as context with no weight. Above $50bn the attention category does not apply and leaves the reading. It is not a forecast and it is not a quality rating.</Para>
         <Para>It is deliberately on a different scale from the quant rating, which is 0–5. The two answer different questions — “how good is this company relative to its sector” and “how much has recently changed here” — and a shared scale would invite averaging them, which produces a number that answers neither.</Para>
       </Panel>
       <Panel title="The eleven categories and their weights">
@@ -277,7 +279,7 @@ function MethodTab() {
           {[...CATS].sort((x, y) => W[y.id] - W[x.id]).map((c) => (
             <div key={c.id} className="grid grid-cols-[minmax(0,1fr)_minmax(80px,200px)_44px] items-center gap-4">
               <div className="grid gap-0.5"><strong className="text-13">{c.title}</strong><span className="text-tiny text-muted-foreground">{c.question}</span></div>
-              <div className="h-2 overflow-hidden rounded-full bg-accent"><div className="h-full rounded-full bg-primary" style={{ width: `${(W[c.id] / 0.2) * 100}%` }} /></div>
+              <div className="h-2 overflow-hidden rounded-full bg-accent"><div className="h-full rounded-full bg-primary" style={{ width: `${(W[c.id] / Math.max(...Object.values(W))) * 100}%` }} /></div>
               <div className="text-right text-13 font-semibold tnum">{Math.round(W[c.id] * 100)}%</div>
             </div>
           ))}
@@ -349,13 +351,19 @@ export function AlphaPage({ sub }: { sub: string | null }) {
   const nav = useNav();
   const asked = (sub && TAB_ALIAS[sub]) || sub;
   const tab: TabId = TABS.some((t) => t.id === asked) ? (asked as TabId) : 'scan';
+  /* Demand Discovery shares the menu but answers a different question —
+     which parts of a supply chain are inflecting, not which company has
+     changed — so it gets its own title and strap. */
+  const demand = tab === 'demand';
   return (
     <PageFrame id="alpha-desk">
-      <PageHero eyebrow="Maz Vantage Alpha Signal" title="Alpha Signal"
-        strap="Companies where something measurable has recently changed, and where fewer people than usual are looking. Eleven categories of dated, sourced evidence, scored 0–100 with the share of it that could actually be measured printed beside every number."
-        meta={<><ConnectionButton /><MetaDivider /><span>{CATS.length} categories · weighting v{CALC_VERSION} · unvalidated</span></>} />
+      <PageHero eyebrow="Maz Vantage Alpha Signal" title={demand ? 'Demand Discovery' : 'Alpha Signal'}
+        strap={demand
+          ? 'Where demand is accelerating along a supply chain, whether supply can keep up, and how much of it the price already assumes — read from filed quarters and dated, sourced evidence, with the backtest beside it.'
+          : 'Companies where something measurable has recently changed, and where fewer people than usual are looking. Eleven categories of dated, sourced evidence, scored 0–100 with the share of it that could actually be measured printed beside every number.'}
+        meta={<><ConnectionButton /><MetaDivider /><span>{demand ? 'Five chains · twenty-nine companies · research signal, not advice' : `${CATS.length} categories · weighting v${CALC_VERSION} · unvalidated`}</span></>} />
       <SectionBar label="Alpha Signal sections" items={TABS} active={tab} onSelect={(id) => nav.goView('alpha', id)} />
-      {tab === 'scan' ? <ScanTab /> : tab === 'method' ? <MethodTab /> : <LimitsTab />}
+      {tab === 'scan' ? <ScanTab /> : demand ? <DemandDesk /> : tab === 'method' ? <MethodTab /> : <LimitsTab />}
     </PageFrame>
   );
 }

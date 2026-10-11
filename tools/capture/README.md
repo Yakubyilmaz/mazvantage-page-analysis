@@ -135,3 +135,91 @@ Captured **2026-09-22**. Every figure is re-checkable at the URL given.
    publication lag, give it the same treatment.
 5. **Re-run `node tools/test_alpha.mjs` after editing.** Ten of the fifty
    checks cover this file's shape and the rules above.
+
+---
+
+## 3. Demand Discovery — `web/public/data/demand-capture.json` and `web/tests/fixtures/demand-history.json`
+
+Captured **2026-10-08** through the same connector, for the Demand Discovery pilot.
+
+| What | Endpoint | Depth |
+| --- | --- | --- |
+| Quarterly statements | `income-statement`, `balance-sheet-statement`, `cash-flow-statement` with `period=quarter&limit=120` | back to 1996 where the company existed |
+| Quarterly enterprise values | `enterprise-values?period=quarter&limit=32` | price, diluted shares at each quarter end |
+| Daily closes | `historical-price-eod/light`, 2018-06 → 2026-10 and 1997 → 2018-06 | thinned to the last close of each week |
+| Copper | `commodities-historical-price-eod-light?symbol=HGUSD` | 2018-06 → 2026-10 |
+
+The connector saves a reply larger than ~50 KB to disk as raw JSON; those files were sorted by symbol and kind and
+used as they are. Smaller replies were typed into `SYM.inc.txt` / `SYM.bs.txt` / `SYM.cf.txt` / `SYM.ev.txt`
+(pipe-separated, USD millions). Then:
+
+```bash
+python tools/capture/build_demand_capture.py <capture-dir>            # the served capture, 2017 onward
+python tools/capture/build_demand_capture.py <capture-dir> --history  # the 1996–2018 test fixture
+```
+
+**Point-in-time floors applied by the script:** Sandisk's carve-out quarters are treated as public at the
+2025-02-24 spin, and its pre-spin placeholder prices are dropped; Vertiv's 2019 rows (filed by the blank-cheque
+company) are treated as public at the 2020-02-10 merger, and its pre-merger prices are dropped. In the history
+fixture, rows whose filing date is missing or not after the period end get period end + 60 days.
+
+**To refresh:** re-read the same endpoints, rebuild, then run
+`DEMAND_PILOT=1 npx vitest run tests/demand-pilot.test.ts` in `web/` to regenerate `demand-backtest.json`.
+The evidence register (`demand-evidence.json`) is maintained by hand: each row carries the URL it was read from
+and its publication date; add rows rather than editing old ones, so the backtest keeps what was known when.
+
+**2026-10-09 additions.** Thirteen companies were added to the AI chain (ORCL, AMD, MRVL, ANET, STX, FORM, AMAT,
+LRCX, KLAC, NVT, MOD, PWR, GEV) through the same endpoints. Enterprise values were not needed: diluted shares come
+from the income statement. Statement replies under ~50 KB come back inline; nVent's income statement and GE
+Vernova's three statements were typed into `.txt` files, whose income format now takes an optional seventh column
+of diluted shares. nVent's 2017 quarters and GE Vernova's 2023 ones are carve-out figures, floored to the spin
+dates (2018-04-30, 2024-04-02) like Sandisk's and Vertiv's. The 16 original companies rebuild byte-identical.
+GE Vernova's prices were read from the full end-of-day chart (its light chart since the April 2024 listing is
+small enough to come back inline) and mapped to the light shape.
+
+The newest earnings call of each revenue-layer company was read for `management-voice.json`; replies the connector
+returned inline were recovered verbatim from the session's own log rather than retyped. Regenerate with
+`VOICE_CALLS=<dir> VOICE_WRITE=1 npx vitest run tests/management-voice.test.ts` in `web/`.
+
+---
+
+## 3. Peer rows in `AAPL.json` — `extras.peerRatios`, `peerGrowth`, `peerMetrics`
+
+Read through the authenticated market-data connector on **2026-10-09**, one
+call per peer per feed (`ratios-ttm`, `key-metrics-ttm`, latest annual
+`financial-growth`) for the six listed peers. The trimmed rows are kept in
+`tools/capture/peer-rows-2026-10-09.json` and folded in with:
+
+```bash
+python tools/capture/fold_peer_rows.py web/public/data/AAPL.json tools/capture/peer-rows-2026-10-09.json
+```
+
+Only ratios that compare across currencies are kept (TSM reports in TWD, SONY
+in JPY). The capture date is stored as `extras.peersCapturedAt`, and the
+Research tab prints it under the peer comparison: the peers are dated
+2026-10-09, Apple's own figures are those of the rest of the snapshot. A live
+session fetches the same three feeds per peer in `lib/report-load.ts`.
+
+---
+
+## 4. `web/public/data/NVDA.json` — the second bundled snapshot
+
+Read through the market-data connector on **2026-10-10** so NVIDIA's report
+renders without a key: quote, profile, TTM ratios and key metrics, financial
+scores, 10 annual income / balance / cash-flow statements, 10 years of ratios
+and key metrics, 3 years of growth, product and geographic segments, analyst
+estimates, price-target consensus, grades consensus, levered DCF, 279 daily
+closes and the peer list. The capture files sit in the session scratchpad
+and are assembled by:
+
+```bash
+python tools/capture/build_nvda_snapshot.py <capture-dir> web/public/data/NVDA.json web/public/data/AAPL.json
+```
+
+Two choices to know about. The vendor's peer list also returned a few
+sub-US$1b and non-chip names; the snapshot keeps the six listed chip
+designers (AMD, Broadcom, Intel, Qualcomm, Arm, Marvell), each with trimmed
+ratio, key-metric and growth rows. The market and sector benchmark series are
+copied from AAPL's snapshot, since both companies sit in Technology. Feeds a
+live session pulls that are not here (dividends, earnings history, insider
+and institutional data, news) show their usual "not available" notice.

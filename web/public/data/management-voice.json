@@ -1,0 +1,3656 @@
+{
+ "about": "Readings from the rule-based management-voice reader. Quotes are at most 25 words; the transcripts are not stored.",
+ "version": "1.0",
+ "calls": [
+  {
+   "symbol": "AAPL",
+   "period": "2026 Q3",
+   "date": "2026-07-30",
+   "reading": {
+    "score": 22,
+    "category": "positive",
+    "sentences": 177,
+    "positive": 44,
+    "negative": 27,
+    "flags": {
+     "capacityConstraint": 13,
+     "pricingPower": 1
+    },
+    "topPositive": [
+     {
+      "speaker": "Kevan Parekh",
+      "text": "We set revenue records in every category with June quarter records in advertising, the App Store, AppleCare, music, and video, where Apple TV+ viewership reached …",
+      "polarity": 2,
+      "positives": [
+       "records",
+       "records",
+       "all-time high"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Tim Cook",
+      "text": "We also set a June quarter revenue record in developed markets and an all-time record in emerging markets with particular strength in Greater China, where …",
+      "polarity": 2,
+      "positives": [
+       "record",
+       "record",
+       "record",
+       "all-time record"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Kevan Parekh",
+      "text": "We also set all-time records in cloud services and payment services, where Apple Pay saw a record level of users in both developed and emerging …",
+      "polarity": 2,
+      "positives": [
+       "record",
+       "records"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Kevan Parekh",
+      "text": "Products revenue was $78.7 billion, up 18% year-over-year, driven by double-digit growth on iPhone and Mac, both of which set new June quarter records.",
+      "polarity": 2,
+      "positives": [
+       "records",
+       "double-digit growth"
+      ],
+      "negatives": [],
+      "flags": []
+     }
+    ],
+    "topNegative": [
+     {
+      "speaker": "Kevan Parekh",
+      "text": "As Tim outlined earlier when we talked a bit about the dynamics around the memory costs, is we did see some partial offsets from things …",
+      "polarity": -2,
+      "positives": [],
+      "negatives": [
+       "memory costs",
+       "component costs"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Tim Cook",
+      "text": "However, with less flexibility in supply chain, we expect the impact from the supply constraints to increase significantly sequentially.",
+      "polarity": -2,
+      "positives": [],
+      "negatives": [
+       "constraints",
+       "less flexibility"
+      ],
+      "flags": [
+       "capacityConstraint"
+      ]
+     },
+     {
+      "speaker": "Tim Cook",
+      "text": "We're seeing some very significant constraints currently, with limited flexibility in the supply chain to remedy it.",
+      "polarity": -2,
+      "positives": [],
+      "negatives": [
+       "constraints",
+       "limited flexibility"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Kevan Parekh",
+      "text": "However, we do expect iPhone revenue to be impacted by these foreign exchange headwinds and supply constraints.",
+      "polarity": -2,
+      "positives": [],
+      "negatives": [
+       "headwinds",
+       "constraints"
+      ],
+      "flags": [
+       "capacityConstraint"
+      ]
+     }
+    ],
+    "speakersSkipped": [
+     "Operator",
+     "Michael Ng",
+     "Amit Daryanani",
+     "Ben Reitzes",
+     "Erik Woodring",
+     "Aaron Rakers",
+     "Wamsi Mohan",
+     "Samik Chatterjee"
+    ],
+    "concerns": [
+     {
+      "analyst": "Samik Chatterjee",
+      "firm": "JPMorgan",
+      "text": "Any way to walk us through the sequential driver there and how much of that is FX impacting it versus maybe increased commodity costs, et …",
+      "negatives": [
+       "moderation",
+       "commodity costs"
+      ]
+     },
+     {
+      "analyst": "Amit Daryanani",
+      "firm": "Evercore",
+      "text": "Can you just talk about how much of this decel is really supply constraint versus other factors like FX?",
+      "negatives": [
+       "constraint",
+       "decel"
+      ]
+     },
+     {
+      "analyst": "Ben Reitzes",
+      "firm": "Melius Research",
+      "text": "I think what we're struggling with after hours here is how much do these supply constraints really hit you in December and impact that because …",
+      "negatives": [
+       "constraints"
+      ]
+     },
+     {
+      "analyst": "Erik Woodring",
+      "firm": "Morgan Stanley",
+      "text": "I think the fiscal 4Q guidance assumes another deceleration.",
+      "negatives": [
+       "deceleration"
+      ]
+     }
+    ],
+    "analysts": 7,
+    "points": {
+     "bull": [
+      {
+       "theme": "regions",
+       "text": "Strength across regions",
+       "count": 15,
+       "words": [
+        "record",
+        "records",
+        "double-digit growth"
+       ],
+       "example": "We also set a June quarter revenue record in developed markets and an all-time record in emerging markets with particular strength in Greater China, where …",
+       "speaker": "Tim Cook"
+      },
+      {
+       "theme": "customers",
+       "text": "The customer base is growing",
+       "count": 12,
+       "words": [
+        "record",
+        "all-time high",
+        "records"
+       ],
+       "example": "We also set all-time records in cloud services and payment services, where Apple Pay saw a record level of users in both developed and emerging …",
+       "speaker": "Kevan Parekh"
+      },
+      {
+       "theme": "growth",
+       "text": "Revenue and earnings are growing, with records set",
+       "count": 12,
+       "words": [
+        "records",
+        "record",
+        "double-digit growth"
+       ],
+       "example": "We set revenue records in every category with June quarter records in advertising, the App Store, AppleCare, music, and video, where Apple TV+ viewership reached …",
+       "speaker": "Kevan Parekh"
+      },
+      {
+       "theme": "products",
+       "text": "New products are landing well",
+       "count": 4,
+       "words": [
+        "record",
+        "strong",
+        "strongest"
+       ],
+       "example": "We saw so much excitement around the best Mac lineup we've ever had, growing a strong 29% to achieve a June quarter revenue record.",
+       "speaker": "Tim Cook"
+      },
+      {
+       "theme": "demand",
+       "text": "Demand is strong",
+       "count": 4,
+       "words": [
+        "high levels of demand",
+        "strong"
+       ],
+       "example": "If you look forward into the current quarter, the September quarter, we continue to expect high levels of demand.",
+       "speaker": "Tim Cook"
+      }
+     ],
+     "bear": [
+      {
+       "theme": "supply",
+       "text": "Supply is limiting what they can sell",
+       "count": 18,
+       "words": [
+        "constraints",
+        "less flexibility",
+        "headwinds"
+       ],
+       "example": "However, with less flexibility in supply chain, we expect the impact from the supply constraints to increase significantly sequentially.",
+       "speaker": "Tim Cook"
+      },
+      {
+       "theme": "fx",
+       "text": "Currency is a headwind",
+       "count": 6,
+       "words": [
+        "headwind",
+        "headwinds",
+        "constraints"
+       ],
+       "example": "However, we do expect iPhone revenue to be impacted by these foreign exchange headwinds and supply constraints.",
+       "speaker": "Kevan Parekh"
+      },
+      {
+       "theme": "costs",
+       "text": "Costs are rising",
+       "count": 2,
+       "words": [
+        "memory costs",
+        "component costs"
+       ],
+       "example": "As Tim outlined earlier when we talked a bit about the dynamics around the memory costs, is we did see some partial offsets from things …",
+       "speaker": "Kevan Parekh"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "symbol": "AAPL",
+   "period": "2026 Q2",
+   "date": "2026-04-30",
+   "reading": {
+    "score": 39,
+    "category": "positive",
+    "sentences": 159,
+    "positive": 44,
+    "negative": 18,
+    "flags": {
+     "capacityConstraint": 9,
+     "orderCancellation": 1
+    },
+    "topPositive": [
+     {
+      "speaker": "Timothy Cook",
+      "text": "We set March quarter revenue records and grew double digits in every geographic segment, including strong double-digit growth in Greater China and the rest of …",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "records",
+       "double-digit growth",
+       "grew"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Timothy Cook",
+      "text": "We also achieved March quarter revenue records in both developed and emerging markets and saw double-digit growth in nearly every emerging market we track, including …",
+      "polarity": 2,
+      "positives": [
+       "records",
+       "double-digit growth"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Kevan Parekh",
+      "text": "As Tim mentioned earlier, we had a March quarter record for customers new to the Mac, and this helped drive a new all-time record for …",
+      "polarity": 2,
+      "positives": [
+       "record",
+       "record",
+       "all-time record"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Timothy Cook",
+      "text": "Services reached an all-time revenue record, growing 16% from a year ago, while EPS set a March quarter record of $2.01, up 22% year-over-year.",
+      "polarity": 2,
+      "positives": [
+       "record",
+       "record"
+      ],
+      "negatives": [],
+      "flags": []
+     }
+    ],
+    "topNegative": [
+     {
+      "speaker": "Timothy Cook",
+      "text": "David, the current constraint for -- well, the constraint in the March quarter and the June quarter, the primary constraint is the availability of the …",
+      "polarity": -2,
+      "positives": [],
+      "negatives": [
+       "constraint",
+       "constraint",
+       "constraint"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Timothy Cook",
+      "text": "And as we talked about in the last call, the constraints were primarily driven by the availability of the advanced nodes our SoCs are produced …",
+      "polarity": -1,
+      "positives": [
+       "high levels of demand"
+      ],
+      "negatives": [
+       "constraints",
+       "constraints"
+      ],
+      "flags": [
+       "capacityConstraint"
+      ]
+     },
+     {
+      "speaker": "Kevan Parekh",
+      "text": "If you look at our overall performance, right, our sequential gross margin impact was 110 basis points positively, and that was driven by favorable mix, …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "memory costs"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Kevan Parekh",
+      "text": "We believe if we remove the favorable benefit from foreign exchange and add back the unfavorable impact from supply constraints, we would have had a …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "constraints"
+      ],
+      "flags": [
+       "capacityConstraint"
+      ]
+     }
+    ],
+    "speakersSkipped": [
+     "Operator",
+     "Erik Woodring",
+     "Benjamin Reitzes",
+     "Michael Ng",
+     "Wamsi Mohan",
+     "David Vogt",
+     "Samik Chatterjee",
+     "Aaron Rakers",
+     "Amit Daryanani"
+    ],
+    "concerns": [
+     {
+      "analyst": "Samik Chatterjee",
+      "firm": "JPMorgan",
+      "text": "Kevan, the sequential moderation in the product gross margin this year is relatively muted compared to what we've historically seen, at least over the last …",
+      "negatives": [
+       "moderation"
+      ]
+     },
+     {
+      "analyst": "David Vogt",
+      "firm": "UBS",
+      "text": "I know a lot of different offerings are growing double digits that we're sort of asymptotically getting to a level where we're seeing increasingly more …",
+      "negatives": [
+       "challenging"
+      ]
+     },
+     {
+      "analyst": "Amit Daryanani",
+      "firm": "Evercore",
+      "text": "I'd love for you folks to just maybe double-click and talk about what are the levers that's driving this sort of impressive iPhone growth despite …",
+      "negatives": [
+       "constraints"
+      ]
+     },
+     {
+      "analyst": "Erik Woodring",
+      "firm": "Morgan Stanley",
+      "text": "I would love, maybe, Tim, if I could ask you just to maybe contextualize the supply constraints you alluded to in your prepared remarks, meaning …",
+      "negatives": [
+       "constraints"
+      ]
+     }
+    ],
+    "analysts": 8,
+    "points": {
+     "bull": [
+      {
+       "theme": "growth",
+       "text": "Revenue and earnings are growing, with records set",
+       "count": 17,
+       "words": [
+        "record",
+        "strong",
+        "double-digit growth"
+       ],
+       "example": "Services reached an all-time revenue record, growing 16% from a year ago, while EPS set a March quarter record of $2.01, up 22% year-over-year.",
+       "speaker": "Timothy Cook"
+      },
+      {
+       "theme": "regions",
+       "text": "Strength across regions",
+       "count": 11,
+       "words": [
+        "records",
+        "double-digit growth",
+        "grew"
+       ],
+       "example": "We set March quarter revenue records and grew double digits in every geographic segment, including strong double-digit growth in Greater China and the rest of …",
+       "speaker": "Timothy Cook"
+      },
+      {
+       "theme": "customers",
+       "text": "The customer base is growing",
+       "count": 8,
+       "words": [
+        "all-time high",
+        "record",
+        "records"
+       ],
+       "example": "As Tim mentioned earlier, we had a March quarter record for customers new to the Mac, and this helped drive a new all-time record for …",
+       "speaker": "Kevan Parekh"
+      },
+      {
+       "theme": "fx",
+       "text": "Currency is helping",
+       "count": 3,
+       "words": [
+        "tailwind",
+        "tailwinds"
+       ],
+       "example": "We expect services revenue to grow at year-over-year rate similar to what we reported in the March quarter after removing the favorable year-over-year impact from …",
+       "speaker": "Kevan Parekh"
+      },
+      {
+       "theme": "capital",
+       "text": "Cash generation and returns to shareholders",
+       "count": 3,
+       "words": [
+        "strong",
+        "records",
+        "raising"
+       ],
+       "example": "Both net income and diluted EPS achieved March quarter records and drove a very strong level of operating cash flow at $28.7 billion.",
+       "speaker": "Kevan Parekh"
+      }
+     ],
+     "bear": [
+      {
+       "theme": "supply",
+       "text": "Supply is limiting what they can sell",
+       "count": 12,
+       "words": [
+        "constraints",
+        "constraint",
+        "constrained"
+       ],
+       "example": "David, the current constraint for -- well, the constraint in the March quarter and the June quarter, the primary constraint is the availability of the …",
+       "speaker": "Timothy Cook"
+      },
+      {
+       "theme": "costs",
+       "text": "Costs are rising",
+       "count": 7,
+       "words": [
+        "memory costs",
+        "constraint"
+       ],
+       "example": "David, the current constraint for -- well, the constraint in the March quarter and the June quarter, the primary constraint is the availability of the …",
+       "speaker": "Timothy Cook"
+      },
+      {
+       "theme": "margin",
+       "text": "Margins are under pressure",
+       "count": 2,
+       "words": [
+        "memory costs"
+       ],
+       "example": "If you look at our overall performance, right, our sequential gross margin impact was 110 basis points positively, and that was driven by favorable mix, …",
+       "speaker": "Kevan Parekh"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "symbol": "ALB",
+   "period": "2026 Q2",
+   "date": "2026-08-06",
+   "reading": {
+    "score": 44,
+    "category": "positive",
+    "sentences": 183,
+    "positive": 30,
+    "negative": 10,
+    "flags": {
+     "pricingPower": 6,
+     "acceleration": 2
+    },
+    "topPositive": [
+     {
+      "speaker": "Jerry Masters",
+      "text": "We are improving our 2026 outlook considerations, including raising our specialty sales and EBITDA outlooks due to a strong year-to-date performance and reducing expected capital …",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "raising",
+       "improving"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Neal Sheorey",
+      "text": "This increase reflects strong year-to-date performance as our teams have worked to capture the upside of increased bromine pricing while mitigating Middle East-related supply chain …",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "upside"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Jerry Masters",
+      "text": "First, global electricity demand growth is accelerating, led by urbanization, AI and data centers and EVs.",
+      "polarity": 2,
+      "positives": [
+       "accelerating",
+       "demand growth"
+      ],
+      "negatives": [],
+      "flags": [
+       "acceleration"
+      ]
+     },
+     {
+      "speaker": "Eric Norris",
+      "text": "And as we go forward, I just want to emphasize we are looking at how we significantly improve the productivity and cost in this business …",
+      "polarity": 1,
+      "positives": [
+       "improved"
+      ],
+      "negatives": [],
+      "flags": []
+     }
+    ],
+    "topNegative": [
+     {
+      "speaker": "Neal Sheorey",
+      "text": "Importantly, these improvements continue to help us offset the supply chain disruptions and cost inflation related to the situation in the Middle East.",
+      "polarity": -2,
+      "positives": [],
+      "negatives": [
+       "inflation",
+       "cost inflation"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Eric Norris",
+      "text": "That has pushed actually towards higher energy density batteries, which has helped increase the gigawatt hours even as unit sales have been lower this year, …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "pull forward"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Neal Sheorey",
+      "text": "Our second half outlook assumes stabilization of the bromine market as we've seen pricing normalize since reaching a peak in April, and it reflects continued …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "uncertainty"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Jerry Masters",
+      "text": "In oil and gas, clear brine fluid demand has remained stable in the Middle East, while geopolitical uncertainty has incentivized demand in other regions such …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "uncertainty"
+      ],
+      "flags": []
+     }
+    ],
+    "speakersSkipped": [
+     "David Begleiter",
+     "John Ezekiel Roberts",
+     "Arun Viswanathan",
+     "Laurence Alexander",
+     "Evan McCaul",
+     "Vincent Andrews",
+     "Joshua Spector",
+     "Matthew DeYoe",
+     "Harris Fein",
+     "Mazahir Mammadli"
+    ],
+    "concerns": [
+     {
+      "analyst": "Arun Viswanathan",
+      "firm": null,
+      "text": "Do you expect that decline -- the recent price declines to kind of plateau and moderate as you go into the second half?",
+      "negatives": [
+       "decline",
+       "price declines"
+      ]
+     },
+     {
+      "analyst": "Vincent Andrews",
+      "firm": null,
+      "text": "How do we think about the normalization of the bromine price versus the incremental cost, the $70 million to $90 million, which I assume is …",
+      "negatives": [
+       "normalization"
+      ]
+     },
+     {
+      "analyst": "John Ezekiel Roberts",
+      "firm": null,
+      "text": "Could you talk a little bit about the constrained supply out of both Africa and China, lepidolite.",
+      "negatives": [
+       "constrained"
+      ]
+     },
+     {
+      "analyst": "Harris Fein",
+      "firm": null,
+      "text": "Just with the EBITDA bridge on Slide 6, it looks like COGS were about a $150 million headwind.",
+      "negatives": [
+       "headwind"
+      ]
+     }
+    ],
+    "analysts": 10
+   }
+  },
+  {
+   "symbol": "AMAT",
+   "period": "2026 Q3",
+   "date": "2026-08-13",
+   "reading": {
+    "score": 63,
+    "category": "strongly positive",
+    "sentences": 217,
+    "positive": 62,
+    "negative": 12,
+    "flags": {
+     "capacityConstraint": 8,
+     "acceleration": 6,
+     "pricingPower": 1
+    },
+    "topPositive": [
+     {
+      "speaker": "Gary E. Dickerson",
+      "text": "But our positions there are stronger And then relative to hybrid bonding, hybrid bonding is a way that every customer, whether it is leading edge …",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "stronger"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Brice A. Hill",
+      "text": "Non GAAP operating profit increased 45% year-over-year to a record $2.7 billion Applied Global Services delivered record revenue of $1.8 billion which is up 22% …",
+      "polarity": 2,
+      "positives": [
+       "record",
+       "record"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Brice A. Hill",
+      "text": "Our fiscal Q4 guidance demonstrates continued strong year over year momentum And in the second half of the calendar year, we expect particularly strong growth …",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "strong",
+       "momentum"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Brice A. Hill",
+      "text": "Fiscal Q3 also marks our 13th consecutive quarter of year over year gross margin expansion, which demonstrates how we are benefiting from the tremendous value …",
+      "polarity": 2,
+      "positives": [
+       "expansion",
+       "margin expansion"
+      ],
+      "negatives": [],
+      "flags": []
+     }
+    ],
+    "topNegative": [
+     {
+      "speaker": "Gary E. Dickerson",
+      "text": "Harlan, I would add that would add that, you know, for customers right now, optimizing output and yield is incredibly important in a supply constrained …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "constrained"
+      ],
+      "flags": [
+       "capacityConstraint"
+      ]
+     },
+     {
+      "speaker": "Brice A. Hill",
+      "text": "We want to we will be putting equipment inside Epic as well as other investments So what I would say about CapEx, it will still …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "decline"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Gary E. Dickerson",
+      "text": "Demand for advanced semiconductors and semiconductor equipment continues to strengthen and as customers find new ways to address clean room space constraints we see higher …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "constraints"
+      ],
+      "flags": [
+       "capacityConstraint"
+      ]
+     },
+     {
+      "speaker": "Brice A. Hill",
+      "text": "But, really, it is just, ramp headwinds as with the growth we are ramping a lot of customer service engineers, We have a lot of …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "headwinds"
+      ],
+      "flags": []
+     }
+    ],
+    "speakersSkipped": [
+     "Operator",
+     "C. J. Muse",
+     "Stacy Rasgon",
+     "Harlan Sur",
+     "Vivek Arya",
+     "Timothy Arcuri",
+     "Krish Sankar",
+     "Blayne Curtis",
+     "Jim Schneider",
+     "Mehdi Hosseini",
+     "Srini Pajjuri"
+    ],
+    "concerns": [
+     {
+      "analyst": "Mehdi Hosseini",
+      "firm": "Susquehanna International",
+      "text": "When do you think the industry would actually start adding some of the capacity to offset some of these losses due to, increased migration to …",
+      "negatives": [
+       "losses"
+      ]
+     },
+     {
+      "analyst": "Jim Schneider",
+      "firm": "Goldman Sachs",
+      "text": "And then just given the first half versus second half dynamic we are seeing in calendar 2026, Is there any reason why in calendar 2027, …",
+      "negatives": [
+       "not accelerating"
+      ]
+     }
+    ],
+    "analysts": 10
+   }
+  },
+  {
+   "symbol": "AMD",
+   "period": "2026 Q2",
+   "date": "2026-08-04",
+   "reading": {
+    "score": 74,
+    "category": "strongly positive",
+    "sentences": 168,
+    "positive": 48,
+    "negative": 5,
+    "flags": {
+     "acceleration": 10
+    },
+    "topPositive": [
+     {
+      "speaker": "Lisa Su",
+      "text": "And then we should expect more growth for each of those businesses in Q4 with more supply coming on for server as well as for …",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "strong",
+       "strong",
+       "double-digit growth"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Lisa Su",
+      "text": "In server CPUs with very strong customer demand and improved supply, we now expect server revenue to grow more than 80% year-over-year in the second …",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "improved"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Lisa Su",
+      "text": "With Venice and MI455X now in production, initial Helios shipments set to begin this quarter, Ryzen Pro CPUs driving continued commercial share gains and our …",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "share gains"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Lisa Su",
+      "text": "In enterprise, we delivered record sales in our fourth consecutive quarter of record sell-through as on-prem adoption accelerated driven by the leadership performance and TCO …",
+      "polarity": 2,
+      "positives": [
+       "record",
+       "record",
+       "accelerated"
+      ],
+      "negatives": [],
+      "flags": [
+       "acceleration"
+      ]
+     }
+    ],
+    "topNegative": [
+     {
+      "speaker": "Lisa Su",
+      "text": "Gaming graphics revenue also declined year-over-year as higher industry-wide component costs contributed to higher graphics card prices and weighed on overall demand.",
+      "polarity": -2,
+      "positives": [],
+      "negatives": [
+       "declined",
+       "component costs"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Lisa Su",
+      "text": "Looking to the second half of the year, we are planning for a softer PC market as higher memory and component costs weigh on demand.",
+      "polarity": -2,
+      "positives": [],
+      "negatives": [
+       "softer",
+       "component costs"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Lisa Su",
+      "text": "In gaming, revenue declined 31% year-over-year to $779 million, primarily due to lower semi-custom sales at this stage of the console cycle.",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "declined"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Lisa Su",
+      "text": "We're all watching the component costs and how that will -- how that will play out over the next couple of quarters.",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "component costs"
+      ],
+      "flags": []
+     }
+    ],
+    "speakersSkipped": [
+     "Operator",
+     "Thomas O'Malley",
+     "Timothy Arcuri",
+     "Vivek Arya",
+     "Joshua Buchalter",
+     "Aaron Rakers",
+     "Stacy Rasgon",
+     "James Schneider",
+     "Christopher Muse",
+     "Joseph Moore",
+     "Atif Malik"
+    ],
+    "concerns": [
+     {
+      "analyst": "Vivek Arya",
+      "firm": "Bank of America Securities",
+      "text": "So how much of the benefit is because of having 50% more HBM and then doesn't that expose AMD more to memory cost inflation.",
+      "negatives": [
+       "inflation",
+       "cost inflation"
+      ]
+     },
+     {
+      "analyst": "Aaron Rakers",
+      "firm": "Wells Fargo",
+      "text": "But I think in the past, you've talked about the client business even with some pressures in the PC market growing this year for you …",
+      "negatives": [
+       "pressures"
+      ]
+     },
+     {
+      "analyst": "James Schneider",
+      "firm": null,
+      "text": "Any constraints that you see heading into the first half of '27 or even the back half of '27 that would give you pause about …",
+      "negatives": [
+       "constraints"
+      ]
+     },
+     {
+      "analyst": "Thomas O'Malley",
+      "firm": null,
+      "text": "You obviously have some headwinds in the -- on the GPU side as you're ramping Helios.",
+      "negatives": [
+       "headwinds"
+      ]
+     }
+    ],
+    "analysts": 10
+   }
+  },
+  {
+   "symbol": "ANET",
+   "period": "2026 Q2",
+   "date": "2026-08-04",
+   "reading": {
+    "score": 48,
+    "category": "positive",
+    "sentences": 102,
+    "positive": 13,
+    "negative": 3,
+    "flags": {
+     "acceleration": 1,
+     "capacityConstraint": 1,
+     "supplyShortage": 1,
+     "pricingPower": 2
+    },
+    "topPositive": [
+     {
+      "speaker": "Todd Nightingale",
+      "text": "We've improved our lead times and inventory management of thousands of component SKUs, improving subcomponent pipelining and multisourcing and providing increased flexibility with reduced inventory …",
+      "polarity": 2,
+      "positives": [
+       "improved",
+       "improving"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Chantelle Breithaupt",
+      "text": "Reflecting our strong momentum, we are raising our 2026 fiscal year outlook to 40% revenue growth, equating to approximately $12.6 billion.",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "momentum",
+       "raising"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Todd Nightingale",
+      "text": "On the silicon side, we have very, very tight relationships with our silicon vendors, and that goes to both how we work through all the …",
+      "polarity": 1,
+      "positives": [
+       "improved"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Chantelle Breithaupt",
+      "text": "This quarter-over-quarter increase is primarily influenced by strong organic growth across our international regions, combined with a shift in the geographic mix of sales to …",
+      "polarity": 1,
+      "positives": [
+       "strong"
+      ],
+      "negatives": [],
+      "flags": []
+     }
+    ],
+    "topNegative": [
+     {
+      "speaker": "Jayshree Ullal",
+      "text": "And probably from our perspective and the industry perspective with all the supply chain shortages, majority of the world will still remain pluggable optics and …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "shortages"
+      ],
+      "flags": [
+       "supplyShortage"
+      ]
+     },
+     {
+      "speaker": "Chantelle Breithaupt",
+      "text": "For gross margin, we are maintaining the range for the fiscal year of 62% to 64%, inclusive of mix and anticipated supply chain cost increases …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "cost increases"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Jayshree Ullal",
+      "text": "While the industry-wide supply tightness and rising component costs persist, Arista has taken individual and aggressive proactive steps.",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "component costs"
+      ],
+      "flags": []
+     }
+    ],
+    "speakersSkipped": [
+     "Operator",
+     "Amit Daryanani",
+     "David Vogt",
+     "Michael Ng",
+     "George Notter",
+     "Benjamin Reitzes",
+     "Aaron Rakers",
+     "Karl Ackerman",
+     "James Fish",
+     "Matthew Niknam",
+     "John Jeffrey Hopson",
+     "Antoine Chkaiban",
+     "Meta Marshall",
+     "Adrienne Colby",
+     "Simon Leopold"
+    ],
+    "concerns": [
+     {
+      "analyst": "Matthew Niknam",
+      "firm": null,
+      "text": "Or was there any sort of pricing relief that's flowing through to offset some of the higher costs?",
+      "negatives": [
+       "higher costs"
+      ]
+     }
+    ],
+    "analysts": 14
+   }
+  },
+  {
+   "symbol": "AVGO",
+   "period": "2026 Q3",
+   "date": "2026-09-02",
+   "reading": {
+    "score": 70,
+    "category": "strongly positive",
+    "sentences": 130,
+    "positive": 17,
+    "negative": 1,
+    "flags": {
+     "acceleration": 6
+    },
+    "topPositive": [
+     {
+      "speaker": "Hock Tan",
+      "text": "Operating income grew even faster at 92% year-on-year with operating margin at a record 68% of revenue, reflecting strong operating leverage.",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "record",
+       "grew"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Hock Tan",
+      "text": "We delivered an exceptional quarter with revenue, operating income and free cash flow all exceeding prior records.",
+      "polarity": 2,
+      "positives": [
+       "exceeding",
+       "records"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Hock Tan",
+      "text": "But the dollars per gigawatt will remain in the $20 billion to $30 billion level of our content, but we have seen and we expect …",
+      "polarity": 1,
+      "positives": [
+       "acceleration"
+      ],
+      "negatives": [],
+      "flags": [
+       "acceleration"
+      ]
+     },
+     {
+      "speaker": "Amie O'Toole",
+      "text": "Where necessary, we may provide modest residual value guarantees, which are contingent liabilities we view as low risk, supported by the strong profitability trajectory of …",
+      "polarity": 1,
+      "positives": [
+       "strong"
+      ],
+      "negatives": [],
+      "flags": []
+     }
+    ],
+    "topNegative": [
+     {
+      "speaker": "Amie O'Toole",
+      "text": "Even with the decline in gross margin due to revenue mix, operating margin increased 240 basis points year-over-year to 67.9% because of the phenomenal operating …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "decline"
+      ],
+      "flags": []
+     }
+    ],
+    "speakersSkipped": [
+     "Operator",
+     "Joseph Moore",
+     "Blayne Curtis",
+     "Harlan Sur",
+     "Stacy Rasgon",
+     "Jack Adair",
+     "Vivek Arya",
+     "Thomas O'Malley",
+     "William Stein",
+     "Joshua Buchalter",
+     "James Schneider",
+     "Vijay Rakesh"
+    ],
+    "concerns": [
+     {
+      "analyst": "James Schneider",
+      "firm": null,
+      "text": "And specifically, can you address any other supply chain constraints, whether it be memory substrates or other components that could be impacting your outlook?",
+      "negatives": [
+       "constraints"
+      ]
+     },
+     {
+      "analyst": "Vivek Arya",
+      "firm": "Bank of America",
+      "text": "And then, Hock, you mentioned the 2 frontier labs will be your largest AI customers, even though Google continues to say they are supply constrained.",
+      "negatives": [
+       "constrained"
+      ]
+     },
+     {
+      "analyst": "William Stein",
+      "firm": null,
+      "text": "You mentioned this a little bit earlier, but I wonder to what degree the outlook is sensitized to potential constraints in that area?",
+      "negatives": [
+       "constraints"
+      ]
+     },
+     {
+      "analyst": "William Stein",
+      "firm": null,
+      "text": "Hock, I hope you can tell us a little bit about the constraints as it relates to land, power, and shell.",
+      "negatives": [
+       "constraints"
+      ]
+     }
+    ],
+    "analysts": 11
+   }
+  },
+  {
+   "symbol": "ENPH",
+   "period": "2026 Q2",
+   "date": "2026-07-28",
+   "reading": {
+    "score": 0,
+    "category": "neutral",
+    "sentences": 149,
+    "positive": 6,
+    "negative": 6,
+    "flags": {
+     "acceleration": 1
+    },
+    "topPositive": [
+     {
+      "speaker": "Badrinarayanan Kothandaraman",
+      "text": "So just to recap, in Europe, we increased revenue by approximately 35% in the second quarter And more importantly, our sell through grew 30% with …",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "grew"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Badrinarayanan Kothandaraman",
+      "text": "Its combination of lower cost, flexible sizing, strong performance, high quality, high serviceability, should make it highly competitive across The US, Europe, and Australia.",
+      "polarity": 1,
+      "positives": [
+       "strong"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Badrinarayanan Kothandaraman",
+      "text": "Our newly established inside sales team supported by an improved lead management platform is helping convert this demand into revenue.",
+      "polarity": 1,
+      "positives": [
+       "improved"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Badrinarayanan Kothandaraman",
+      "text": "For batteries, we expect shipments between 130 to 150 megawatt hours as momentum continues to build in both the US and Europe.",
+      "polarity": 1,
+      "positives": [
+       "momentum"
+      ],
+      "negatives": [],
+      "flags": []
+     }
+    ],
+    "topNegative": [
+     {
+      "speaker": "Badrinarayanan Kothandaraman",
+      "text": "Distributors remain cautious amid broader macroeconomic uncertainty, including interest rates, and our guidance assumes modest under shipment relative to sell through.",
+      "polarity": -2,
+      "positives": [],
+      "negatives": [
+       "cautious",
+       "uncertainty"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Mandy Yang",
+      "text": "GAAP operating expenses for Q2 included $39.7 million of stock-based compensation expenses and $4 million of acquisition related expenses and amortization restructuring, and asset impairment …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "impairment"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Badrinarayanan Kothandaraman",
+      "text": "Higher electricity cost markets are performing better while several Sunbelt states remain under pressure.",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "pressure"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Badrinarayanan Kothandaraman",
+      "text": "As growth in Europe offset the softness in the US.",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "softness"
+      ],
+      "flags": []
+     }
+    ],
+    "speakersSkipped": [
+     "Operator",
+     "Praneeth Satish",
+     "Brian Lee",
+     "Eric Stine",
+     "Dylan Nassano",
+     "Vikram Bagri",
+     "Philip Shen",
+     "Corinne Blanchard"
+    ],
+    "concerns": [
+     {
+      "analyst": "Praneeth Satish",
+      "firm": "Wells Fargo",
+      "text": "So, like, should we interpret, you know, the relatively flat sequential trend there as a function of financing capacity or other supply side constraints?",
+      "negatives": [
+       "constraints"
+      ]
+     },
+     {
+      "analyst": "Philip Shen",
+      "firm": "ROTH Capital Partners",
+      "text": "And so the root cause of that is driven by tax equity, and their caution with the FIAC and effective control guidance.",
+      "negatives": [
+       "caution"
+      ]
+     }
+    ],
+    "analysts": 7
+   }
+  },
+  {
+   "symbol": "ETN",
+   "period": "2026 Q2",
+   "date": "2026-07-31",
+   "reading": {
+    "score": 77,
+    "category": "strongly positive",
+    "sentences": 178,
+    "positive": 55,
+    "negative": 5,
+    "flags": {
+     "acceleration": 10,
+     "pricingPower": 3,
+     "backlogIncrease": 1
+    },
+    "topPositive": [
+     {
+      "speaker": "Paulo Sternadt",
+      "text": "With the industry's best positioned portfolio, strong end market demand and significant secular tailwinds, we are confidently entering the back half of 2026 and very …",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "momentum",
+       "tailwinds"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "David Foster",
+      "text": "As you can see on the chart, demand in global increased, driven by our accelerating order growth, up 33% on a rolling 12-month basis with …",
+      "polarity": 2,
+      "positives": [
+       "accelerating",
+       "momentum"
+      ],
+      "negatives": [],
+      "flags": [
+       "acceleration"
+      ]
+     },
+     {
+      "speaker": "Paulo Sternadt",
+      "text": "And finally, when you put it all together, strong demand, improving execution, higher shipments and growing earnings, we feel confident in both the near-term outlook …",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "improving"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "David Foster",
+      "text": "Organic sales growth of 7% remained at a high level and resulted in record quarterly sales and Q2 record segment profit with particular strength in …",
+      "polarity": 2,
+      "positives": [
+       "record",
+       "record"
+      ],
+      "negatives": [],
+      "flags": []
+     }
+    ],
+    "topNegative": [
+     {
+      "speaker": "Paulo Sternadt",
+      "text": "We said in multiple events and calls that it's well known that the APAC team is a center of excellence for us in terms of …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "tough"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Paulo Sternadt",
+      "text": "Our total Electrical orders increased mid- to high teens for commercial, institutional, utility, industrial and even residential, which is a market that is not as …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "not strong"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "David Foster",
+      "text": "Operating margin of 19.8% was down 30 basis points over prior year, but about 1 point higher than we had expected for the quarter.",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "was down"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "David Foster",
+      "text": "In the quarter, the business declined by 2% organically, which was fully offset by positive foreign exchange impact.",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "declined"
+      ],
+      "flags": []
+     }
+    ],
+    "speakersSkipped": [
+     "Operator",
+     "Christopher Snyder",
+     "Scott Davis",
+     "Jeffrey Sprague",
+     "Nicole DeBlase",
+     "Andrew Kaplowitz",
+     "Charles Albert Dillard",
+     "Deane Dray",
+     "Andrew Obin",
+     "Nigel Coe"
+    ],
+    "concerns": [
+     {
+      "analyst": "Nicole DeBlase",
+      "firm": "Deutsche Bank",
+      "text": "Just curious if that could be some conservatism or if there is any sort of pull forward of demand?",
+      "negatives": [
+       "pull forward"
+      ]
+     }
+    ],
+    "analysts": 9
+   }
+  },
+  {
+   "symbol": "FCX",
+   "period": "2026 Q2",
+   "date": "2026-07-23",
+   "reading": {
+    "score": 25,
+    "category": "positive",
+    "sentences": 119,
+    "positive": 10,
+    "negative": 5,
+    "flags": {},
+    "topPositive": [
+     {
+      "speaker": "Kathleen Lynne Quirk",
+      "text": "As we look forward, it is clear the market will require additional copper supplies to meet growing demand And at Freeport, we have a valuable …",
+      "polarity": 1,
+      "positives": [
+       "expansion"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Kathleen Lynne Quirk",
+      "text": "As we speak with our customers across the US, they continue to report robust copper demand and order books associated with AI data centers and …",
+      "polarity": 1,
+      "positives": [
+       "robust",
+       "improved"
+      ],
+      "negatives": [
+       "weakness"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Richard Adkerson",
+      "text": "Freeport, our shareholders, continue to benefit from our long standing strategy centered on our leadership position in copper, and from our portfolio of long lived …",
+      "polarity": 1,
+      "positives": [
+       "records"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Maree E. Robertson",
+      "text": "With our strong balance sheet and significant cash flow generation, we have substantial resources to invest in future growth projects in a prudent manner whilst …",
+      "polarity": 1,
+      "positives": [
+       "strong"
+      ],
+      "negatives": [],
+      "flags": []
+     }
+    ],
+    "topNegative": [
+     {
+      "speaker": "Kathleen Lynne Quirk",
+      "text": "We use the long term markets for, for all the input costs and still have a very attractive project when you think about at $4 …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "input costs"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Kathleen Lynne Quirk",
+      "text": "We our and intentionally during the pandemic to because we did have a reduced work and did have constraints, we intentionally took down the mine …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "constraints"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Maree E. Robertson",
+      "text": "On last quarter's call, we discussed the cost pressures impacting our business in connection with the conflict in The Middle East.",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "pressures"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Kathleen Lynne Quirk",
+      "text": "In South America, performance was positive as the team effectively navigated mine and mill constraints.",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "constraints"
+      ],
+      "flags": []
+     }
+    ],
+    "speakersSkipped": [
+     "Lawson Winder",
+     "Katja Jancic",
+     "Timna Tanners",
+     "Nicklaus Cash",
+     "Liam Fitzpatrick",
+     "Bill Peterson",
+     "Bob Brackett",
+     "Daniel Major",
+     "Brian MacArthur"
+    ],
+    "concerns": [],
+    "analysts": 9
+   }
+  },
+  {
+   "symbol": "FORM",
+   "period": "2026 Q2",
+   "date": "2026-07-29",
+   "reading": {
+    "score": 60,
+    "category": "strongly positive",
+    "sentences": 142,
+    "positive": 32,
+    "negative": 6,
+    "flags": {
+     "acceleration": 3,
+     "pricingPower": 1,
+     "capacityConstraint": 1
+    },
+    "topPositive": [
+     {
+      "speaker": "Michael D. Slessor",
+      "text": "You know, in addition, when we look at expanding our HBM business, for example, coming back to DRAM, I made the point that we are …",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "share gains"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Michael D. Slessor",
+      "text": "So our differentiation, our share continue to be quite strong at these high value high speed final test insertions and we are continuing to partner …",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "stronger"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Aric McKinnis",
+      "text": "Product mix remained strong in Q2, driven by factors like record HBM revenue within DRAM.",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "record"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Aric McKinnis",
+      "text": "As it will enable our next phase of growth and gross margin expansion.",
+      "polarity": 2,
+      "positives": [
+       "expansion",
+       "margin expansion"
+      ],
+      "negatives": [],
+      "flags": []
+     }
+    ],
+    "topNegative": [
+     {
+      "speaker": "Michael D. Slessor",
+      "text": "Before turning the call over to Aric, I want to thank the global FormFactor team as they continue to demonstrate remarkable agility in navigating the …",
+      "polarity": -2,
+      "positives": [],
+      "negatives": [
+       "challenging",
+       "constraints"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Michael D. Slessor",
+      "text": "As you have heard recently from all our major DRAM customers, the supply environment continues to be extremely constrained.",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "constrained"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Michael D. Slessor",
+      "text": "The other reason it is gonna take a little while is because things are very capacity constrained across the industry.",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "constrained"
+      ],
+      "flags": [
+       "capacityConstraint"
+      ]
+     },
+     {
+      "speaker": "Michael D. Slessor",
+      "text": "Systems revenue nearly doubled sequentially in the second quarter albeit off an unusually weak first quarter.",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "weak"
+      ],
+      "flags": []
+     }
+    ],
+    "speakersSkipped": [
+     "Operator",
+     "Krish Sankar",
+     "Matthew Prisco",
+     "Elizabeth Sun",
+     "Dennis",
+     "Christian Schwab",
+     "Craig Ellis",
+     "David Duley"
+    ],
+    "concerns": [],
+    "analysts": 7
+   }
+  },
+  {
+   "symbol": "GEV",
+   "period": "2026 Q2",
+   "date": "2026-07-22",
+   "reading": {
+    "score": 69,
+    "category": "strongly positive",
+    "sentences": 190,
+    "positive": 50,
+    "negative": 7,
+    "flags": {
+     "acceleration": 6,
+     "backlogIncrease": 4,
+     "supplyShortage": 2
+    },
+    "topPositive": [
+     {
+      "speaker": "Ken Parks",
+      "text": "Year-over-year, free cash flow increased $4.9 billion, driven by higher positive benefits from working capital and stronger adjusted EBITDA, partially offset by higher taxes and …",
+      "polarity": 2,
+      "positives": [
+       "stronger",
+       "expansion"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Scott Strazik",
+      "text": "Around the world, electricity demand is accelerating, driven by economic growth, grid modernization, electrification, data center expansion, and the need for more reliable, resilient power.",
+      "polarity": 2,
+      "positives": [
+       "accelerating",
+       "expansion"
+      ],
+      "negatives": [],
+      "flags": [
+       "acceleration"
+      ]
+     },
+     {
+      "speaker": "Ken Parks",
+      "text": "We also expect strong year-over-year EBITDA margin expansion from higher volume, productivity, and favorable price, with a margin rate continuing to expand modestly above 2Q …",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "expansion",
+       "margin expansion"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Ken Parks",
+      "text": "In Electrification, we're raising our revenue expectations by $500 million to $14.5 billion-$15 billion due to accelerated output on our capacity plans and better Prolec …",
+      "polarity": 2,
+      "positives": [
+       "accelerated",
+       "raising"
+      ],
+      "negatives": [],
+      "flags": [
+       "acceleration"
+      ]
+     }
+    ],
+    "topNegative": [
+     {
+      "speaker": "Ken Parks",
+      "text": "It remains difficult to call an inflection point in U.S. orders as customers still face permitting delays and tariff uncertainty.",
+      "polarity": -2,
+      "positives": [],
+      "negatives": [
+       "uncertainty",
+       "difficult",
+       "delays"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Ken Parks",
+      "text": "Wind revenue decreased 11% in the quarter, given lower onshore equipment deliveries as a result of soft orders in the first half of 2025, partially …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "soft"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Scott Strazik",
+      "text": "While the U.S. market for new onshore equipment remains soft, we are monitoring the outcome of 2-3-2 tariffs that impact wind development, which could lead …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "soft"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Ken Parks",
+      "text": "We expect an EBITDA margin of approximately 17%-18% as volume price and productivity should more than offset inflation, as well as additional expenses to support …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "inflation"
+      ],
+      "flags": []
+     }
+    ],
+    "speakersSkipped": [
+     "Operator",
+     "Andrew Obin",
+     "David Arcaro",
+     "Julien Dumoulin-Smith",
+     "Chris Dendrinos",
+     "Sunaina Ocalan",
+     "Nicole DeBlase",
+     "Nigel Coe",
+     "Andrew Kaplowitz",
+     "Ameet Thakkar",
+     "Joe Ritchie"
+    ],
+    "concerns": [
+     {
+      "analyst": "Andrew Obin",
+      "firm": "Bank of America",
+      "text": "Because I would imagine in the U.S., we are constrained in terms of grid.",
+      "negatives": [
+       "constrained"
+      ]
+     }
+    ],
+    "analysts": 10
+   }
+  },
+  {
+   "symbol": "KLAC",
+   "period": "2026 Q4",
+   "date": "2026-07-28",
+   "reading": {
+    "score": 45,
+    "category": "positive",
+    "sentences": 170,
+    "positive": 28,
+    "negative": 9,
+    "flags": {
+     "acceleration": 14,
+     "supplyShortage": 2,
+     "pricingPower": 2
+    },
+    "topPositive": [
+     {
+      "speaker": "Bren Higgins",
+      "text": "Given the unprecedented visibility from customers, we continue to plan for significant growth in calendar 2027 as broad-based investment across leading-edge logic, foundry, DRAM, both …",
+      "polarity": 2,
+      "positives": [
+       "unprecedented",
+       "expansion"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Richard Wallace",
+      "text": "Specifically, revenue reached a record $3.66 billion, supported by accelerating investment tied to AI infrastructure, continued strength in leading-edge foundry/logic, and increasing process control intensity …",
+      "polarity": 2,
+      "positives": [
+       "record",
+       "accelerating"
+      ],
+      "negatives": [],
+      "flags": [
+       "acceleration"
+      ]
+     },
+     {
+      "speaker": "Richard Wallace",
+      "text": "Since our March Investor Day, demand signals across AI infrastructure have strengthened materially, supported by accelerating hyperscale data center investment, rising AI compute requirements and …",
+      "polarity": 2,
+      "positives": [
+       "accelerating",
+       "strengthened"
+      ],
+      "negatives": [],
+      "flags": [
+       "acceleration"
+      ]
+     },
+     {
+      "speaker": "Bren Higgins",
+      "text": "Against this backdrop, KLA's business momentum and critical role in leading-edge process control positions us to deliver accelerating growth in the second half of calendar …",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "accelerating",
+       "momentum"
+      ],
+      "negatives": [],
+      "flags": [
+       "acceleration"
+      ]
+     }
+    ],
+    "topNegative": [
+     {
+      "speaker": "Bren Higgins",
+      "text": "This was also at the upper end of our guidance range, driven by a more favorable services mix than model and manufacturing scale that served …",
+      "polarity": -2,
+      "positives": [],
+      "negatives": [
+       "headwinds",
+       "challenging"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Bren Higgins",
+      "text": "Well, I would say, certainly, the first half of '26 was slower from a sequential point of view given some of the lead time challenges …",
+      "polarity": -2,
+      "positives": [],
+      "negatives": [
+       "slower",
+       "constraints"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Bren Higgins",
+      "text": "Given how quickly the industry turned and started to ramp, we did, as we talked about in the past, deal with some supply chain shortages …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "shortages"
+      ],
+      "flags": [
+       "supplyShortage"
+      ]
+     },
+     {
+      "speaker": "Richard Wallace",
+      "text": "Just to give you an example of what we see for advanced compute in terms of the demand and talking to some of the players …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "shortage"
+      ],
+      "flags": [
+       "supplyShortage"
+      ]
+     }
+    ],
+    "speakersSkipped": [
+     "Operator",
+     "Christopher Muse",
+     "Harlan Sur",
+     "Vivek Arya",
+     "Sreekrishnan Sankarnarayanan",
+     "Blayne Curtis",
+     "Timothy Arcuri",
+     "Stacy Rasgon",
+     "Melissa Weathers",
+     "Shane Brett",
+     "Atif Malik"
+    ],
+    "concerns": [
+     {
+      "analyst": "Christopher Muse",
+      "firm": null,
+      "text": "And as you think about a greater mix shift to tools over other, coupled with, I imagine, at some point, you'll be able to pass …",
+      "negatives": [
+       "inflation"
+      ]
+     },
+     {
+      "analyst": "Timothy Arcuri",
+      "firm": "UBS",
+      "text": "So I would think you'd be able to at least offset the compute headwind, and it seems like you're struggling to do that.",
+      "negatives": [
+       "headwind"
+      ]
+     }
+    ],
+    "analysts": 10
+   }
+  },
+  {
+   "symbol": "LRCX",
+   "period": "2026 Q4",
+   "date": "2026-07-29",
+   "reading": {
+    "score": 53,
+    "category": "strongly positive",
+    "sentences": 159,
+    "positive": 32,
+    "negative": 8,
+    "flags": {
+     "capacityConstraint": 2,
+     "supplyShortage": 1,
+     "acceleration": 3
+    },
+    "topPositive": [
+     {
+      "speaker": "Douglas Bettinger",
+      "text": "We were pleased with our continued strong execution in the June quarter, resulting in our fourth consecutive quarter of record revenue, our highest quarterly gross …",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "record",
+       "record",
+       "record"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Timothy Archer",
+      "text": "So to sum up, this is an exciting time for the industry and for Lam, AI is driving unprecedented demand, greater technical requirements and accelerated …",
+      "polarity": 2,
+      "positives": [
+       "accelerated",
+       "unprecedented"
+      ],
+      "negatives": [],
+      "flags": [
+       "acceleration"
+      ]
+     },
+     {
+      "speaker": "Timothy Archer",
+      "text": "Our customer support business group also posted strong revenue growth driven by robust demand for upgrades Reliant and Equipment Intelligence enabled services.",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "robust"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Douglas Bettinger",
+      "text": "We're ahead of the profitability objectives we discussed at our 2025 Investor Day, delivered through robust top line growth and strong operational execution.",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "robust"
+      ],
+      "negatives": [],
+      "flags": []
+     }
+    ],
+    "topNegative": [
+     {
+      "speaker": "Douglas Bettinger",
+      "text": "Pricing is always a component of what's been going on in addition to operational efficiency, that close to customer strategy I talked about, all these …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "difficult"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Timothy Archer",
+      "text": "But it's the focus as you are getting to more and more difficult technologies, the need to control surfaces, the need to perform cleans, eliminate …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "difficult"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Timothy Archer",
+      "text": "From this point forward, as you said, lead times are challenging, but maybe referring back to the answer I gave about our strategic global manufacturing …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "challenging"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Timothy Archer",
+      "text": "I mean I know we were thinking one of the questions might be, how did you go from $140 billlion to $150 billion when you …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "constrained"
+      ],
+      "flags": [
+       "capacityConstraint"
+      ]
+     }
+    ],
+    "speakersSkipped": [
+     "Operator",
+     "Timothy Arcuri",
+     "Christopher Muse",
+     "Harlan Sur",
+     "James Schneider",
+     "Srinivas Pajjuri",
+     "Michael Mani",
+     "Melissa Weathers",
+     "Stacy Rasgon",
+     "Sreekrishnan Sankarnarayanan",
+     "Shane Brett",
+     "Atif Malik",
+     "Blayne Curtis",
+     "Vijay Rakesh"
+    ],
+    "concerns": [
+     {
+      "analyst": "Atif Malik",
+      "firm": "Citi",
+      "text": "There is a third-party trend forecasting a divergence in memory fundamentals next year, they're calling for an oversupply in NAND because of the NAND demand …",
+      "negatives": [
+       "weaker",
+       "oversupply",
+       "shortages"
+      ]
+     },
+     {
+      "analyst": "Michael Mani",
+      "firm": null,
+      "text": "But could you talk about your share opportunity in traditional conventional DRAM, especially as you move to new nodes like 1c and 1-gamma given that …",
+      "negatives": [
+       "constraints"
+      ]
+     },
+     {
+      "analyst": "Srinivas Pajjuri",
+      "firm": null,
+      "text": "Doug, pretty impressive gross margin performance despite the fact that China declined pretty meaningfully sequentially.",
+      "negatives": [
+       "declined"
+      ]
+     },
+     {
+      "analyst": "Sreekrishnan Sankarnarayanan",
+      "firm": null,
+      "text": "Or is this more supply chain being constrained on capacity?",
+      "negatives": [
+       "constrained"
+      ]
+     }
+    ],
+    "analysts": 13
+   }
+  },
+  {
+   "symbol": "MOD",
+   "period": "2027 Q1",
+   "date": "2026-07-30",
+   "reading": {
+    "score": -9,
+    "category": "neutral",
+    "sentences": 172,
+    "positive": 22,
+    "negative": 27,
+    "flags": {
+     "supplyShortage": 10,
+     "acceleration": 1,
+     "orderCancellation": 1
+    },
+    "topPositive": [
+     {
+      "speaker": "Michael Lucareli",
+      "text": "Overall, commercial HVAC is on track for the year, with great opportunities for this leadership team to drive both growth and margin expansion through new …",
+      "polarity": 2,
+      "positives": [
+       "expansion",
+       "margin expansion"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Michael Lucareli",
+      "text": "Heat Transfer Solutions sales improved 7% or 11 million with strong volume in North America coils supporting data center customers.",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "improved"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Michael Lucareli",
+      "text": "And from a sequential standpoint, we expect a step up in margins from Q1 to Q2, And for the remaining 3 quarters, we anticipate that …",
+      "polarity": 1,
+      "positives": [
+       "strong"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Neil D. Brinker",
+      "text": "We remain firmly focused on executing our expansion, securing critical components so that as a supply chain normalizes, our facilities are primed to effectively deliver …",
+      "polarity": 1,
+      "positives": [
+       "expansion"
+      ],
+      "negatives": [],
+      "flags": []
+     }
+    ],
+    "topNegative": [
+     {
+      "speaker": "Michael Lucareli",
+      "text": "Again, as I previously covered, we anticipated most of the change in margins This includes working through supply chain shortages in the data center segment, …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "shortages"
+      ],
+      "flags": [
+       "supplyShortage"
+      ]
+     },
+     {
+      "speaker": "Michael Lucareli",
+      "text": "So I will not go into details by month, but I can tell you the first month or 2 where we were really having the …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "shortage"
+      ],
+      "flags": [
+       "supplyShortage"
+      ]
+     },
+     {
+      "speaker": "Michael Lucareli",
+      "text": "Despite a few margin related headwinds in the first quarter, we remain confident that our strategy and investments will generate continued long term and sustainable …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "headwinds"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Neil D. Brinker",
+      "text": "As we discussed last quarter, we began experiencing supply chain shortages of certain key components that impacted production volumes in the quarter.",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "shortages"
+      ],
+      "flags": [
+       "supplyShortage"
+      ]
+     }
+    ],
+    "speakersSkipped": [
+     "Operator",
+     "Neal Burk",
+     "Jeff Van Sinderen",
+     "Noah Kaye",
+     "Matt Summerville",
+     "David Tarantino",
+     "Brian Drab"
+    ],
+    "concerns": [
+     {
+      "analyst": "Jeff Van Sinderen",
+      "firm": "B. Riley Securities",
+      "text": "Just regarding the customer driven delays that I think you mentioned in your prepared comments, Are there any other major delays or shifts in timing …",
+      "negatives": [
+       "delays",
+       "delays"
+      ]
+     }
+    ],
+    "analysts": 6
+   }
+  },
+  {
+   "symbol": "MRVL",
+   "period": "2027 Q2",
+   "date": "2026-08-27",
+   "reading": {
+    "score": 72,
+    "category": "strongly positive",
+    "sentences": 129,
+    "positive": 31,
+    "negative": 3,
+    "flags": {
+     "acceleration": 14,
+     "capacityConstraint": 1
+    },
+    "topPositive": [
+     {
+      "speaker": "Daniel Durn",
+      "text": "Consistent with the guidance we provided last quarter, as a reminder, these prepayments will be applied against future material purchases and will be funded through …",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "robust"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Matthew Murphy",
+      "text": "Looking further ahead, we expect our custom business to continue to deliver strong revenue growth as we see ongoing robust design activity with hyperscale customers.",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "robust"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Matthew Murphy",
+      "text": "On the optical DSP side, 800 gig demand remains strong, while our 1.6T business is ramping rapidly, a trend we expect to accelerate further in …",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "accelerate"
+      ],
+      "negatives": [],
+      "flags": [
+       "acceleration"
+      ]
+     },
+     {
+      "speaker": "Matthew Murphy",
+      "text": "We are seeing strong tailwinds across each of our data center businesses, including interconnect, switching and custom.",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "tailwinds"
+      ],
+      "negatives": [],
+      "flags": []
+     }
+    ],
+    "topNegative": [
+     {
+      "speaker": "Matthew Murphy",
+      "text": "Some are supply constraints, some are power constraints, some are architectural constraints, having our ability to very quickly execute custom and semi-custom designs or modify …",
+      "polarity": -2,
+      "positives": [],
+      "negatives": [
+       "constraints",
+       "constraints",
+       "constraints"
+      ],
+      "flags": [
+       "capacityConstraint"
+      ]
+     },
+     {
+      "speaker": "Matthew Murphy",
+      "text": "For the third fiscal quarter, we expect revenue to decline in the low to mid-teens percentage range both sequentially and year-over-year, followed by a solid …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "decline"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Matthew Murphy",
+      "text": "I think at the broadest level to start, it definitely -- this fungibility requirement, given the dynamic nature of the market and some of the …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "constraints"
+      ],
+      "flags": []
+     }
+    ],
+    "speakersSkipped": [
+     "Operator",
+     "Thomas O'Malley",
+     "Vivek Arya",
+     "Joseph Moore",
+     "Christopher Muse",
+     "James Schneider",
+     "Quinn Bolton",
+     "Harlan Sur",
+     "Aaron Rakers"
+    ],
+    "concerns": [],
+    "analysts": 8
+   }
+  },
+  {
+   "symbol": "MU",
+   "period": "2026 Q4 (post-earnings analyst call)",
+   "date": "2026-09-30",
+   "reading": {
+    "score": 10,
+    "category": "neutral",
+    "sentences": 72,
+    "positive": 9,
+    "negative": 7,
+    "flags": {
+     "supplyShortage": 1,
+     "capacityConstraint": 5,
+     "pricingPower": 6,
+     "acceleration": 2
+    },
+    "topPositive": [
+     {
+      "speaker": "Manish Bhatia",
+      "text": "And so as we've gone through working on our fiscal year '27 and we commented that we have more than 75% of our shipments committed …",
+      "polarity": 2,
+      "positives": [
+       "committed",
+       "strengthening"
+      ],
+      "negatives": [],
+      "flags": [
+       "supplyShortage"
+      ]
+     },
+     {
+      "speaker": "Mark Murphy",
+      "text": "Yes, Ben, I would maybe just add to Manish's comments that as you noted in '27, we had indicated for the balance of the year …",
+      "polarity": 2,
+      "positives": [
+       "expansion",
+       "margin expansion"
+      ],
+      "negatives": [],
+      "flags": [
+       "pricingPower"
+      ]
+     },
+     {
+      "speaker": "Manish Bhatia",
+      "text": "And as -- that does create latent demand for more memory to attach to those, which would then end up delivering higher system performance and …",
+      "polarity": 2,
+      "positives": [
+       "latent demand",
+       "improved"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Manish Bhatia",
+      "text": "But -- and so yes, that latent demand, I think, is aligned with your concept that were more memory to become available, it would have …",
+      "polarity": 1,
+      "positives": [
+       "latent demand"
+      ],
+      "negatives": [],
+      "flags": [
+       "acceleration"
+      ]
+     }
+    ],
+    "topNegative": [
+     {
+      "speaker": "Manish Bhatia",
+      "text": "And so that is driving higher logic silicon and into the overall demand for AI compute and frankly, creating more of a constraint on DRAM …",
+      "polarity": -2,
+      "positives": [],
+      "negatives": [
+       "constraint",
+       "constraint"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Christopher Caso",
+      "text": "But understand that there's the clean room space constraints are constraining the ability to bring in tools for this year.",
+      "polarity": -2,
+      "positives": [],
+      "negatives": [
+       "constraints",
+       "constraining"
+      ],
+      "flags": [
+       "capacityConstraint"
+      ]
+     },
+     {
+      "speaker": "Manish Bhatia",
+      "text": "And then on the supply side, there's still the same structural constraints on supply growth that we've talked about before, which is diminishing returns from …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "constraints"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Manish Bhatia",
+      "text": "And of course, the trade ratio, not just today's trade ratio for HBM, but future more complex HBM having higher trade ratios, that's also going …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "constraining"
+      ],
+      "flags": [
+       "capacityConstraint"
+      ]
+     }
+    ],
+    "speakersSkipped": [
+     "Melissa Weathers",
+     "Atif Malik",
+     "Karl Ackerman",
+     "James Schneider",
+     "Joseph Moore",
+     "Mehdi Hosseini"
+    ],
+    "concerns": [
+     {
+      "analyst": "Joseph Moore",
+      "firm": null,
+      "text": "So I just wonder if you could just kind of explain what the puts and takes are that supply would decelerate given the CapEx that …",
+      "negatives": [
+       "decelerate"
+      ]
+     },
+     {
+      "analyst": "Joseph Moore",
+      "firm": null,
+      "text": "In terms of supply growth decelerating next year, I guess that's a little surprising in the context of the CapEx.",
+      "negatives": [
+       "decelerating"
+      ]
+     }
+    ],
+    "analysts": 6
+   }
+  },
+  {
+   "symbol": "NVDA",
+   "period": "2027 Q2",
+   "date": "2026-08-26",
+   "reading": {
+    "score": 63,
+    "category": "strongly positive",
+    "sentences": 127,
+    "positive": 22,
+    "negative": 3,
+    "flags": {
+     "acceleration": 5,
+     "capacityConstraint": 2,
+     "pricingPower": 2
+    },
+    "topPositive": [
+     {
+      "speaker": "Colette Kress",
+      "text": "Hyperscale revenue of $49 billion grew 13% sequentially, driven by sustained strength in Blackwell, reinforcing that more compute drives more revenue as new GPU capacity …",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "accelerating",
+       "grew"
+      ],
+      "negatives": [],
+      "flags": [
+       "acceleration"
+      ]
+     },
+     {
+      "speaker": "Colette Kress",
+      "text": "Today, we are delighted to announce an expansion of our partnership with AWS, building on its already vast installed base of NVIDIA compute, AWS is …",
+      "polarity": 1,
+      "positives": [
+       "expansion"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Colette Kress",
+      "text": "At Hot Chips earlier this week, we announced that Groq 3 LPX, our first rack scale LPU system is in full production and already setting …",
+      "polarity": 1,
+      "positives": [
+       "records"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Colette Kress",
+      "text": "The surge in AI demand is driving a global infrastructure buildout, supported by an expanding and diverse set of growth opportunities, spanning hyperscalers, AI labs, …",
+      "polarity": 1,
+      "positives": [
+       "surge"
+      ],
+      "negatives": [],
+      "flags": []
+     }
+    ],
+    "topNegative": [
+     {
+      "speaker": "Colette Kress",
+      "text": "And given ongoing geopolitical uncertainty, there is no China data center compute revenue in our forward outlook.",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "uncertainty"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Colette Kress",
+      "text": "Many of you have expressed concerns regarding our gross margins as component costs have risen significantly.",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "component costs"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Colette Kress",
+      "text": "However, as I mentioned earlier, we expect to grow approximately 70% as we are supply constrained.",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "constrained"
+      ],
+      "flags": [
+       "capacityConstraint"
+      ]
+     }
+    ],
+    "speakersSkipped": [
+     "Operator",
+     "Joseph Moore",
+     "Christopher Muse",
+     "Stacy Rasgon",
+     "Timothy Arcuri",
+     "Benjamin Reitzes",
+     "James Schneider",
+     "Vivek Arya",
+     "Aaron Rakers"
+    ],
+    "concerns": [
+     {
+      "analyst": "Stacy Rasgon",
+      "firm": "Bernstein Research",
+      "text": "And I guess I'm also curious, maybe I'm squeezing too many questions in here, but I'm also curious just it's a constrained number.",
+      "negatives": [
+       "constrained"
+      ]
+     },
+     {
+      "analyst": "Joseph Moore",
+      "firm": "Morgan Stanley",
+      "text": "What is the kind of key constraint that separates those numbers?",
+      "negatives": [
+       "constraint"
+      ]
+     }
+    ],
+    "analysts": 8
+   }
+  },
+  {
+   "symbol": "NVT",
+   "period": "2026 Q2",
+   "date": "2026-07-31",
+   "reading": {
+    "score": 77,
+    "category": "strongly positive",
+    "sentences": 184,
+    "positive": 55,
+    "negative": 5,
+    "flags": {
+     "acceleration": 3
+    },
+    "topPositive": [
+     {
+      "speaker": "Gary Corona",
+      "text": "Moving to slide 10, As Beth shared earlier, we are significantly raising our full year sales and EPS guidance again due to our strong performance …",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "momentum",
+       "raising"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Beth A. Wozniak",
+      "text": "Now as we look ahead, given the strong orders, backlog, and visibility we have with our customers on liquid cooling demand, this expansion is not …",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "expansion"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Gary Corona",
+      "text": "Our healthy balance sheet and strong liquidity position gives us financial flexibility to support our disciplined capital allocation strategy.",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "healthy"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Beth A. Wozniak",
+      "text": "Well, Power Utilities grew double digits for us, in the quarter, so it was very, you know, strong growth.",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "grew"
+      ],
+      "negatives": [],
+      "flags": []
+     }
+    ],
+    "topNegative": [
+     {
+      "speaker": "Gary Corona",
+      "text": "We continue to expect to offset the impact of inflation including tariffs, through pricing supply chain productivity, and operational mitigating actions.",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "inflation"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Beth A. Wozniak",
+      "text": "I do not know to what extent there were any constraints in terms of taking orders in the near term before you get this capacity …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "constraints"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Gary Corona",
+      "text": "Price plus productivity offset inflation of more than $50 million including more than $30 million in tariff impact.",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "inflation"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Gary Corona",
+      "text": "Return on sales of 27.3%, was down 140 basis points year over year.",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "was down"
+      ],
+      "flags": []
+     }
+    ],
+    "speakersSkipped": [
+     "Operator",
+     "Deane Dray",
+     "Jeffrey Sprague",
+     "Jeffrey Hammond",
+     "Neil Burke",
+     "Vladimir Bystricky",
+     "Nicole DeBlase",
+     "Brian Drab",
+     "Nigel Coe",
+     "Scott Graham"
+    ],
+    "concerns": [
+     {
+      "analyst": "Scott Graham",
+      "firm": "Seaport",
+      "text": "And then the orders this past quarter were, you know, in your growth business of liquid cooling seemed like a little slower, and I understand …",
+      "negatives": [
+       "slower"
+      ]
+     },
+     {
+      "analyst": "Neil Burke",
+      "firm": "UBS",
+      "text": "But are you are you dealing more with like, data center customers directly given the power constraints to the industry?",
+      "negatives": [
+       "constraints"
+      ]
+     },
+     {
+      "analyst": "Scott Graham",
+      "firm": "Seaport",
+      "text": "I wanted to ask about the third quarter organic guidance, which is obviously slower than what we just saw.",
+      "negatives": [
+       "slower"
+      ]
+     }
+    ],
+    "analysts": 9
+   }
+  },
+  {
+   "symbol": "PWR",
+   "period": "2026 Q2",
+   "date": "2026-07-30",
+   "reading": {
+    "score": 59,
+    "category": "strongly positive",
+    "sentences": 100,
+    "positive": 15,
+    "negative": 2,
+    "flags": {
+     "backlogIncrease": 4,
+     "supplyShortage": 3
+    },
+    "topPositive": [
+     {
+      "speaker": "Earl Austin",
+      "text": "This morning, we reported second quarter results that meaningfully exceeded expectations with strong double-digit growth in revenues, adjusted EBITDA and adjusted earnings per share, robust …",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "robust",
+       "record",
+       "exceeded",
+       "double-digit growth"
+      ],
+      "negatives": [],
+      "flags": [
+       "backlogIncrease"
+      ]
+     },
+     {
+      "speaker": "Earl Austin",
+      "text": "Look, I -- we're not seeing any shortage of -- I mean, we're not seeing any oversupply of craft-skilled labor for the near future.",
+      "polarity": 2,
+      "positives": [
+       "not oversupply",
+       "not shortage"
+      ],
+      "negatives": [],
+      "flags": [
+       "supplyShortage"
+      ]
+     },
+     {
+      "speaker": "Jayshree Desai",
+      "text": "This morning, we reported historically strong second quarter results with revenues of $9.6 billion, net income attributable to common stock of $451 million or $2.96 …",
+      "polarity": 1,
+      "positives": [
+       "strong"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Earl Austin",
+      "text": "That certainty, quarter after quarter and year after year is what our customers count on, is what has produced record adjusted EPS for the last …",
+      "polarity": 1,
+      "positives": [
+       "record"
+      ],
+      "negatives": [],
+      "flags": []
+     }
+    ],
+    "topNegative": [
+     {
+      "speaker": "Earl Austin",
+      "text": "It is difficult to have the capacity to build combined cycles at the levels that everyone wants to build them at and as quick as …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "difficult"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Jayshree Desai",
+      "text": "And as you know, that has a slightly different working capital profile, and it can pressure free cash flow.",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "pressure"
+      ],
+      "flags": []
+     }
+    ],
+    "speakersSkipped": [
+     "Operator",
+     "Steven Fisher",
+     "Julien Dumoulin-Smith",
+     "Charles Albert Dillard",
+     "Justin Hauke",
+     "Sangita Jain",
+     "Nicholas Amicucci",
+     "Adam Thalhimer",
+     "Liam Burke",
+     "Philip Shen",
+     "Alexander Rygiel",
+     "Brian Brophy",
+     "Jamie Cook",
+     "Michael Dudas",
+     "Maheep Mandloi",
+     "Andrew Kaplowitz",
+     "Peiwu Tsung",
+     "Alexa Petrick",
+     "Joseph Osha"
+    ],
+    "concerns": [
+     {
+      "analyst": "Maheep Mandloi",
+      "firm": "Mizuho",
+      "text": "And is there a scenario where you foresee potential competition and oversupply on that aspect few years down the line and maybe labor or craftsman …",
+      "negatives": [
+       "oversupply"
+      ]
+     }
+    ],
+    "analysts": 18
+   }
+  },
+  {
+   "symbol": "ROK",
+   "period": "2026 Q3",
+   "date": "2026-08-04",
+   "reading": {
+    "score": 5,
+    "category": "neutral",
+    "sentences": 188,
+    "positive": 29,
+    "negative": 26,
+    "flags": {
+     "acceleration": 2,
+     "pricingPower": 3,
+     "supplyShortage": 3
+    },
+    "topPositive": [
+     {
+      "speaker": "Blake Moret",
+      "text": "This sustained momentum underscores Rockwell's strong position in North America and growing penetration in new end markets, an accelerated pace of new product introduction, our …",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "accelerated",
+       "momentum"
+      ],
+      "negatives": [],
+      "flags": [
+       "acceleration"
+      ]
+     },
+     {
+      "speaker": "Christian Rothe",
+      "text": "Combined with the core principles of the Rockwell operating model, these actions are driving double-digit year-over-year earnings growth and enterprise operating margin expansion of several …",
+      "polarity": 2,
+      "positives": [
+       "expansion",
+       "margin expansion"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Christian Rothe",
+      "text": "The team still delivered strong margins and healthy incremental conversion in the quarter, demonstrating the strength of our operating model.",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "healthy"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Blake Moret",
+      "text": "Our discrete sales grew high teens year-over-year, led by strong double-digit growth in Semiconductor, Data Center and E-com & Warehouse.",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "double-digit growth",
+       "grew"
+      ],
+      "negatives": [],
+      "flags": []
+     }
+    ],
+    "topNegative": [
+     {
+      "speaker": "Christian Rothe",
+      "text": "To summarize, while inflation remains a headwind, the Rockwell team has done a good job of managing through it by driving top line growth, securing …",
+      "polarity": -2,
+      "positives": [],
+      "negatives": [
+       "headwind",
+       "pressure",
+       "inflation"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Christian Rothe",
+      "text": "For Lifecycle Services, we expect reported revenue to decline about $150 million year-over-year, driven by the Sensia dissolution and some of the ongoing longer-cycle headwinds …",
+      "polarity": -2,
+      "positives": [],
+      "negatives": [
+       "decline",
+       "headwinds"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Blake Moret",
+      "text": "Mining sales were down mid-single digits, reflecting measured capital deployment across the industry and some project timing delays, specifically in Latin America.",
+      "polarity": -2,
+      "positives": [],
+      "negatives": [
+       "were down",
+       "delays"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Christian Rothe",
+      "text": "Now that being said, the cost side is -- again, the inflation continues to be an item that is a growing headwind for us.",
+      "polarity": -2,
+      "positives": [],
+      "negatives": [
+       "headwind",
+       "inflation"
+      ],
+      "flags": []
+     }
+    ],
+    "speakersSkipped": [
+     "Operator",
+     "Scott Davis",
+     "Andrew Obin",
+     "Andrew Kaplowitz",
+     "Christopher Snyder",
+     "Jeffrey Sprague",
+     "Andrew Buscaglia",
+     "Noah Kaye"
+    ],
+    "concerns": [
+     {
+      "analyst": "Andrew Obin",
+      "firm": "Bank of America",
+      "text": "So maybe your thoughts on inflation and what sort of structural countermeasures can you do because it seems like you guys are going to be …",
+      "negatives": [
+       "inflation"
+      ]
+     },
+     {
+      "analyst": "Andrew Buscaglia",
+      "firm": "BNP Paribas",
+      "text": "You've done a lot of good work this year and you get those margins up even higher and organic growth has really picked up, but …",
+      "negatives": [
+       "tough"
+      ]
+     },
+     {
+      "analyst": "Jeffrey Sprague",
+      "firm": null,
+      "text": "My question kind of rhymed a little bit with one you just answered, but I was wondering if we could maybe just put a finer …",
+      "negatives": [
+       "headwind"
+      ]
+     },
+     {
+      "analyst": "Christopher Snyder",
+      "firm": null,
+      "text": "And I was just wondering, are there headwinds coming through that we should be aware of?",
+      "negatives": [
+       "headwinds"
+      ]
+     }
+    ],
+    "analysts": 7
+   }
+  },
+  {
+   "symbol": "SCCO",
+   "period": "2026 Q2",
+   "date": "2026-07-22",
+   "reading": {
+    "score": 36,
+    "category": "positive",
+    "sentences": 60,
+    "positive": 5,
+    "negative": 1,
+    "flags": {},
+    "topPositive": [
+     {
+      "speaker": "Raul Jacob",
+      "text": "This improvement was attributable to a strong cash generation at our operations, which was driven by higher sales and a decrease of $719 million in …",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "improvement"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Raul Jacob",
+      "text": "Today, we will begin with an update on our view of the copper market and then review Southern Copper's key results related to production, sales, …",
+      "polarity": 1,
+      "positives": [
+       "expansion"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Raul Jacob",
+      "text": "The second quarter 2026 adjusted EBITDA hit a record high of $2,856 million, which represented an increase of 60% with regard to the $1,791 million …",
+      "polarity": 1,
+      "positives": [
+       "record"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Raul Jacob",
+      "text": "The second quarter of 2026 net income hit a record high of $1,670 million, up 72% versus the $973 million registered in the second quarter …",
+      "polarity": 1,
+      "positives": [
+       "record"
+      ],
+      "negatives": [],
+      "flags": []
+     }
+    ],
+    "topNegative": [
+     {
+      "speaker": "Raul Jacob",
+      "text": "Copper sales increased 38%, while the volume fell 1.5% in a scenario of the mentioned better prices.",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "fell"
+      ],
+      "flags": []
+     }
+    ],
+    "speakersSkipped": [
+     "Operator",
+     "Richard Garchitorena",
+     "Rafael Barcellos",
+     "Tingshuai Feng",
+     "Emerson Vieira",
+     "John Tumazos"
+    ],
+    "concerns": [],
+    "analysts": 5
+   }
+  },
+  {
+   "symbol": "SNDK",
+   "period": "2026 Q4",
+   "date": "2026-08-05",
+   "reading": {
+    "score": 57,
+    "category": "strongly positive",
+    "sentences": 164,
+    "positive": 21,
+    "negative": 4,
+    "flags": {
+     "pricingPower": 4,
+     "acceleration": 1,
+     "supplyShortage": 1
+    },
+    "topPositive": [
+     {
+      "speaker": "Luis Visoso",
+      "text": "Our revenue growth, margin expansion and asset efficiency enables us to deliver leading free cash flow per share and therefore, generate an attractive return to …",
+      "polarity": 2,
+      "positives": [
+       "expansion",
+       "margin expansion"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Luis Visoso",
+      "text": "We expect the NAND market to continue growing at an accelerated pace, supported by AI inference as a tailwind.",
+      "polarity": 2,
+      "positives": [
+       "accelerated",
+       "tailwind"
+      ],
+      "negatives": [],
+      "flags": [
+       "acceleration"
+      ]
+     },
+     {
+      "speaker": "Luis Visoso",
+      "text": "As you know, there is some upside as prices continue to go up, we'll capture some of that upside as well.",
+      "polarity": 2,
+      "positives": [
+       "upside",
+       "upside"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Luis Visoso",
+      "text": "These expansions reflect our customers strengthening demand exceeding their prior estimates.",
+      "polarity": 2,
+      "positives": [
+       "exceeding",
+       "strengthening"
+      ],
+      "negatives": [],
+      "flags": []
+     }
+    ],
+    "topNegative": [
+     {
+      "speaker": "David V. Goeckeler",
+      "text": "Just as important, we grow supply primarily through nodal transitions rather than wafer additions, delivering mid- to high teens bit growth from the productivity of …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "decline"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "David V. Goeckeler",
+      "text": "As I said earlier, the level of strategic engagement with our customers, it is difficult to comprehend how advanced it is versus where it was …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "difficult"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Luis Visoso",
+      "text": "We plan to operate at higher inventory days, consistent with current levels to support our NBMs and account for higher component costs.",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "component costs"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Luis Visoso",
+      "text": "And we're making some prudent assumptions, if you wish, on component costs and other things.",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "component costs"
+      ],
+      "flags": []
+     }
+    ],
+    "speakersSkipped": [
+     "Operator",
+     "David Gibson",
+     "James Schneider",
+     "Christopher Muse",
+     "Joseph Moore",
+     "Karl Ackerman",
+     "Michael Tsvetanov",
+     "Blayne Curtis",
+     "Wamsi Mohan",
+     "Asiya Merchant",
+     "Vijay Rakesh",
+     "Mark Newman"
+    ],
+    "concerns": [
+     {
+      "analyst": "Mark Newman",
+      "firm": "Bernstein",
+      "text": "I just wondered if that is volume related or if that is because the locking in of pricing and so less price upside or perhaps …",
+      "negatives": [
+       "not upside"
+      ]
+     },
+     {
+      "analyst": "Wamsi Mohan",
+      "firm": "Bank of America",
+      "text": "So just is the assumption that there is going to be any price normalization that we expect in 2027 or not?",
+      "negatives": [
+       "normalization"
+      ]
+     },
+     {
+      "analyst": "Blayne Curtis",
+      "firm": "Jefferies",
+      "text": "I'm trying to understand the margins are down modestly, but pricing is up.",
+      "negatives": [
+       "are down"
+      ]
+     },
+     {
+      "analyst": "Karl Ackerman",
+      "firm": "BNP Paribas",
+      "text": "Consumer revenue is down a bit this quarter.",
+      "negatives": [
+       "is down"
+      ]
+     }
+    ],
+    "analysts": 11
+   }
+  },
+  {
+   "symbol": "STX",
+   "period": "2026 Q4",
+   "date": "2026-07-28",
+   "reading": {
+    "score": 86,
+    "category": "strongly positive",
+    "sentences": 126,
+    "positive": 31,
+    "negative": 0,
+    "flags": {
+     "deceleration": 1,
+     "capacityConstraint": 1,
+     "acceleration": 1
+    },
+    "topPositive": [
+     {
+      "speaker": "Gianluca Romano",
+      "text": "We capped fiscal 2026 delivering strong sequential double-digit top and bottom line growth in the June quarter, supported by disciplined operational execution and both revenue …",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "expansion",
+       "margin expansion"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Gianluca Romano",
+      "text": "We remain confident in delivering sequential revenue growth and margin expansion through fiscal 2027, while creating long-term value for customers and shareholders.",
+      "polarity": 2,
+      "positives": [
+       "expansion",
+       "margin expansion"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "William Mosley",
+      "text": "Given our momentum and the improved visibility we have into demand, we expect fiscal 2027 revenue growth to outpace our performance in fiscal 2026.",
+      "polarity": 2,
+      "positives": [
+       "momentum",
+       "improved"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Gianluca Romano",
+      "text": "So I'm not guiding for the future, but the trend is, of course, to have a stronger and stronger gross margin.",
+      "polarity": 2,
+      "positives": [
+       "stronger",
+       "stronger"
+      ],
+      "negatives": [],
+      "flags": []
+     }
+    ],
+    "topNegative": [],
+    "speakersSkipped": [
+     "Operator",
+     "Aaron Rakers",
+     "Benjamin Reitzes",
+     "Christopher Muse",
+     "Thomas O'Malley",
+     "Wamsi Mohan",
+     "Joseph Cardoso",
+     "Karl Ackerman",
+     "Amit Daryanani",
+     "Steven Fox",
+     "Vijay Rakesh",
+     "Ananda Baruah",
+     "Erik Woodring",
+     "Asiya Merchant",
+     "Mark Newman"
+    ],
+    "concerns": [],
+    "analysts": 14
+   }
+  },
+  {
+   "symbol": "TER",
+   "period": "2026 Q2",
+   "date": "2026-07-29",
+   "reading": {
+    "score": 77,
+    "category": "strongly positive",
+    "sentences": 147,
+    "positive": 32,
+    "negative": 2,
+    "flags": {
+     "acceleration": 1
+    },
+    "topPositive": [
+     {
+      "speaker": "Michelle L. Turner",
+      "text": "The outlook for the second half has strengthened, and we have narrowed the range from three months ago with increased visibility and continued robust demand …",
+      "polarity": 2,
+      "positives": [
+       "robust",
+       "strengthened"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Michelle L. Turner",
+      "text": "Strong earnings results continued in the second quarter, driven by robust AI-driven volume and favorable product mix.",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "robust"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Michelle L. Turner",
+      "text": "We anticipate a resurgence in growth in 2027 driven by overall ATE TAM expansion and market share gains.",
+      "polarity": 2,
+      "positives": [
+       "share gains",
+       "expansion"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Michelle L. Turner",
+      "text": "Compute revenue grew nearly 600% year-over-year on strong AI-related demand.",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "grew"
+      ],
+      "negatives": [],
+      "flags": []
+     }
+    ],
+    "topNegative": [
+     {
+      "speaker": "Michelle L. Turner",
+      "text": "While sequentially, gross margins were down 110 basis points driven in part by one-time benefits in Q1.",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "were down"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Michelle L. Turner",
+      "text": "We expect this growth will be offset by softness in mobile and order timing in compute.",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "softness"
+      ],
+      "flags": []
+     }
+    ],
+    "speakersSkipped": [
+     "Operator",
+     "Timothy Michael Arcuri",
+     "Christopher James Muse",
+     "Vivek Arya",
+     "James Edward Schneider",
+     "Shane Brett",
+     "Mehdi Hosseini",
+     "Krish Sankar"
+    ],
+    "concerns": [
+     {
+      "analyst": "James Edward Schneider",
+      "firm": null,
+      "text": "Relative to your prior commentary on gross margins or variability, I just want to make sure that you do not see anything in 2027 whether …",
+      "negatives": [
+       "headwind"
+      ]
+     },
+     {
+      "analyst": "Vivek Arya",
+      "firm": "Bank of America Securities",
+      "text": "And then if I were to carry that argument into 2027, if WFE does not equal 30%, what scenarios would make you grow faster or …",
+      "negatives": [
+       "slower"
+      ]
+     },
+     {
+      "analyst": "Christopher James Muse",
+      "firm": null,
+      "text": "And I guess as a follow-up, if you could speak to gross margin in the guide and driving-- what is driving kind of the 130 …",
+      "negatives": [
+       "headwind"
+      ]
+     }
+    ],
+    "analysts": 7
+   }
+  },
+  {
+   "symbol": "VRT",
+   "period": "2026 Q2",
+   "date": "2026-07-29",
+   "reading": {
+    "score": 83,
+    "category": "strongly positive",
+    "sentences": 161,
+    "positive": 45,
+    "negative": 2,
+    "flags": {
+     "acceleration": 5
+    },
+    "topPositive": [
+     {
+      "speaker": "Giordano Albertazzi",
+      "text": "When it comes to some elements of congestion, elements of congestion, as Craig mentioned, we are prudent in our guidance, though we believe that there …",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "acceleration",
+       "improvement"
+      ],
+      "negatives": [],
+      "flags": [
+       "acceleration"
+      ]
+     },
+     {
+      "speaker": "Craig Chamberlin",
+      "text": "The improvement was driven by higher adjusted operating profit, strong working capital performance, including project milestone collections, is inclusive of initial advanced payments, and lower …",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "improvement"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Giordano Albertazzi",
+      "text": "As a result, we have raised our full year outlook Net sales were up 24% versus Q2 25 driven by continued strength in The Americas …",
+      "polarity": 2,
+      "positives": [
+       "raised",
+       "grew"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Craig Chamberlin",
+      "text": "The margin expansion was driven by strong operational execution, continued productivity gains, and favorable price cost execution, partially offset by tariff impacts.",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "expansion",
+       "margin expansion"
+      ],
+      "negatives": [],
+      "flags": []
+     }
+    ],
+    "topNegative": [
+     {
+      "speaker": "Giordano Albertazzi",
+      "text": "Whether that happens at the speed that is currently in our roadmaps and that you saw or something slower than that, you know, we will …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "slower"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Giordano Albertazzi",
+      "text": "It means that the sales cycle within the within the pipeline can be faster or slower.",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "slower"
+      ],
+      "flags": []
+     }
+    ],
+    "speakersSkipped": [
+     "Jeffrey Sprague",
+     "Amit Daryanani",
+     "Christopher Snyder",
+     "Amit Mehrotra",
+     "Noah Kaye"
+    ],
+    "concerns": [
+     {
+      "analyst": "Amit Daryanani",
+      "firm": null,
+      "text": "I guess, Giordano, if you just go back to the supply chain issues delays, can you just talk about how much revenues actually pushed out …",
+      "negatives": [
+       "delays"
+      ]
+     }
+    ],
+    "analysts": 5
+   }
+  }
+ ]
+}

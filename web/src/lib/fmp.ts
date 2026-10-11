@@ -142,6 +142,8 @@ const YEARS = 10;
 
 /** The most rows the filings search returns in one request. */
 export const SEC_FILINGS_CAP = 1000;
+/** Rows the Insider Trading tab asks for: about four years of filings at a large company. */
+export const INSIDER_HISTORY_CAP = 500;
 
 const isoDaysAgo = (n: number) => new Date(Date.now() - n * 864e5).toISOString().slice(0, 10);
 
@@ -198,6 +200,9 @@ export const FEEDS = {
   // of one is a separate request, made only when a reader opens it.
   transcriptDates:  { path: 'earning-call-transcript-dates',  params: (s) => ({ symbol: s }) },
   segProduct:       { path: 'revenue-product-segmentation',   params: (s) => segParams(s) },
+  // The same breakdown by quarter, for the Alpha Signal's mix reading: an
+  // annual split is up to a year old by the time the next 10-K lands.
+  segProductQ:      { path: 'revenue-product-segmentation',   params: (s) => ({ ...segParams(s), period: 'quarter' }), onDemand: true },
   // FMP names this pair inconsistently — one "segmentation", one "segments" —
   // and which spelling answers has moved between doc revisions. `altPath`
   // retries the other on a 404 rather than reporting a company as not
@@ -252,6 +257,14 @@ export const FEEDS = {
   // year-on-year comparisons plus the sequential ones.
   incomeQ:          { path: 'income-statement',               params: (s) => ({ symbol: s, period: 'quarter', limit: 12 }), onDemand: true },
   cashflowQ:        { path: 'cash-flow-statement',            params: (s) => ({ symbol: s, period: 'quarter', limit: 12 }), onDemand: true },
+  // Quarterly balance sheets, read only by Demand Discovery's live refresh:
+  // inventory and customer prepayments are two of its five shortage tests,
+  // and neither moves visibly in a once-a-year figure.
+  balanceQ:         { path: 'balance-sheet-statement',        params: (s) => ({ symbol: s, period: 'quarter', limit: 12 }), onDemand: true },
+  // The newest annual income statement as the filing tagged it — read for
+  // the tag names alone, which say whether the company files under US GAAP
+  // or IFRS. One row, fetched when a reader opens the Financials tab.
+  incomeAsReported: { path: 'income-statement-as-reported',   params: (s) => ({ symbol: s, period: 'annual', limit: 1 }), onDemand: true },
   // One row per month: how many analysts sat in each of the five rating
   // buckets on the first of that month. A **rating** history, not an estimate
   // history — FMP publishes no time series of consensus EPS.
@@ -273,6 +286,24 @@ export const FEEDS = {
   secFilings:       { path: 'sec-filings-search/symbol',
                       params: (s) => ({ symbol: s, from: isoDaysAgo(730), to: isoDaysAgo(0), page: 0, limit: SEC_FILINGS_CAP }),
                       onDemand: true },
+
+  // Daily market capitalisation over three years and a month — what the
+  // Shariah screens divide by: the index providers use 12-, 24- and 36-month
+  // averages, not today's figure. Fetched when a reader opens the Shariah
+  // Compliance tab.
+  marketCapHist:    { path: 'historical-market-capitalization',
+                      params: (s) => ({ symbol: s, from: isoDaysAgo(3 * 365 + 45), to: isoDaysAgo(0), limit: 1000 }),
+                      onDemand: true },
+
+  // The Insider Trading tab's two, fetched when a reader opens it. The Form 4
+  // list is the same feed as `insiderTrades` five times deeper: a hundred
+  // rows is a few months at a large company, where a chart needs years. The
+  // tab says how far back the 500 reach when the cap is hit.
+  insiderHistory:   { path: 'insider-trading/search',         params: (s) => ({ symbol: s, page: 0, limit: INSIDER_HISTORY_CAP }), onDemand: true },
+  // Every rating action a named firm has published on the stock — upgrade,
+  // downgrade or maintain, from what to what. The whole history comes back
+  // (well over a thousand rows for a large cap); the tab pages it.
+  gradeActions:     { path: 'grades',                         params: (s) => ({ symbol: s }), onDemand: true },
 } satisfies Record<string, FeedSpec>;
 
 export type FeedName = keyof typeof FEEDS;
@@ -661,8 +692,10 @@ const pool = mapLimited;
 export interface Snapshot {
   symbol: string;
   capturedAt?: string;
+  /** feeds refreshed after `capturedAt`, by name, with the day each was refreshed */
+  feedDates?: Record<string, string>;
   note?: string;
-  extras?: { peerRatios?: Record<string, any>; peerGrowth?: Record<string, any>; benchmarks?: Record<string, any> };
+  extras?: { peerRatios?: Record<string, any>; peerGrowth?: Record<string, any>; peerMetrics?: Record<string, any>; benchmarks?: Record<string, any> };
   feeds: Record<string, any>;
 }
 
@@ -694,11 +727,23 @@ export function loadSnapshot(symbol: string): Promise<Snapshot | null> {
 
 /* ---------- public API ----------------------------------------------------- */
 
-function lastCompleteQuarter(now = new Date()) {
-  // 13F filings lag by ~45 days; step back one quarter to be safe.
-  const d = new Date(now.getTime());
-  d.setMonth(d.getMonth() - 4);
-  return { year: d.getUTCFullYear(), quarter: Math.floor(d.getUTCMonth() / 3) + 1 };
+/**
+ * The newest quarter whose 13F filings are all in: filers have 45 days after
+ * the quarter end, so a quarter counts from day 47. Stepping back a fixed four
+ * months instead picked the June quarter from 1 August, while most of its
+ * filings were still a fortnight away, and read a few hundred early filers
+ * as the whole of institutional ownership.
+ */
+export function lastCompleteQuarter(now = new Date()) {
+  let year = now.getUTCFullYear();
+  let quarter = Math.floor(now.getUTCMonth() / 3) + 1;
+  for (let i = 0; i < 8; i += 1) {
+    quarter -= 1;
+    if (quarter === 0) { quarter = 4; year -= 1; }
+    const end = Date.UTC(year, quarter * 3, 0);
+    if (now.getTime() >= end + 47 * 864e5) break;
+  }
+  return { year, quarter };
 }
 
 function requestCtx(extra: Record<string, unknown> = {}): FeedCtx {

@@ -40,6 +40,7 @@ import { ShariahTab } from '@/components/report/tabs/shariah-tab';
 import { FinancialsTab } from '@/components/report/tabs/financials-tab';
 import { StatisticsTab } from '@/components/report/tabs/statistics-tab';
 import { ForecastTab } from '@/components/report/tabs/forecast-tab';
+import { InsiderTab } from '@/components/report/tabs/insider-tab';
 import { DividendsTab } from '@/components/report/tabs/dividends-tab';
 import { NewsTab } from '@/components/report/tabs/news-tab';
 import { TranscriptsTab } from '@/components/report/tabs/transcripts-tab';
@@ -61,6 +62,7 @@ const PLAIN_TABS: Record<PlainTab, React.ComponentType<PanelProps>> = {
   Financials: FinancialsTab,
   'Statistics & Metrics': StatisticsTab,
   'Analysts Forecast': ForecastTab,
+  'Insider Trading': InsiderTab,
   Dividends: DividendsTab,
   Transcripts: TranscriptsTab,
   News: NewsTab,

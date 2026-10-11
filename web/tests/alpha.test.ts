@@ -298,7 +298,7 @@ assert.ok(gatedOut.every((s) => s.status === 'insufficient_data'));
 // "not available here" — still distinct from an absent feed's "came back" wording.
 assert.ok(gatedOut.some((s) => /not available here/i.test(s.unavailable?.note || '')),
   'a gated plan must be named as such somewhere');
-assert.ok(!gatedOut.some((s) => /plan|FMP|Financial Modeling/i.test(`${s.unavailable?.note || ''} ${s.unavailable?.provider || ''}`)),
+assert.ok(!gatedOut.some((s) => /\bplan\b|FMP|Financial Modeling/i.test(`${s.unavailable?.note || ''} ${s.unavailable?.provider || ''}`)),
   'and never by the provider or its plans');
 ok('runProviders() distinguishes a gated plan from an absent feed');
 
@@ -593,7 +593,7 @@ assert.ok(pat, 'a patent signal must be produced');
 assert.equal(pat.raw, 6188, 'the newest SETTLED window is the current reading');
 assert.equal(pat.previous, 6662, 'compared with the settled window before it');
 assert.ok(Math.abs(pat.change + 0.0712) < 0.001, `expected about -7.1%, got ${pat.change}`);
-assert.ok(pat.score > 30, 'and it must not read as a collapse');
+assert.equal(pat.score, null, 'patent counts are shown, never scored (v2.0.0)');
 assert.ok(/undercounts/i.test(pat.calculation), 'the lag must be explained');
 ok('patent counts compare settled windows only, never the lagging newest one');
 

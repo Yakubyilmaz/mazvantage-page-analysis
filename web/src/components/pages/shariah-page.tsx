@@ -18,7 +18,7 @@
 
 import * as React from 'react';
 import { SHARIAH_IDEAS, SHARIAH_SCREENS, shariahScreenForSub } from '@/lib/shariah-screens';
-import { EXCLUDED_ACTIVITIES, SHARIAH_INFO, SHARIAH_STANDARDS } from '@/lib/shariah';
+import { EXCLUDED_ACTIVITIES, SHARIAH_INFO, SHARIAH_STANDARDS, basisLabel } from '@/lib/shariah';
 import { ScreenDesk } from '@/components/pages/screen-desk';
 import {
   ConnectionButton, Grid, MetaDivider, PageFrame, PageHero, Panel, Para, SectionBar, Warn, useQueryState,
@@ -44,13 +44,14 @@ function MethodologyTab() {
       <Panel title="The five published standards">
         <Para>{SHARIAH_INFO}</Para>
         <Grid heads={['Standard', 'Debt limit', 'Liquid assets limit', 'Divided by']}
-          rows={SHARIAH_STANDARDS.map((s) => [<b key="n">{s.name}</b>, percent(s.debt), percent(s.liquid), s.divisor === 'assets' ? 'Total assets' : 'Market capitalisation'])} />
+          rows={SHARIAH_STANDARDS.map((s) => [<b key="n">{s.fullName}</b>, percent(s.debt), percent(s.liquid), basisLabel(s)])} />
         <p className="max-w-[100ch] text-tiny leading-relaxed text-muted-foreground">
-          The divisor is not a detail. Two of these five divide by total assets rather than by market capitalisation, which is a different test on
-          the same company — a business trading well above book clears the market-cap version far more easily than the asset one. The screener
-          runs AAOIFI’s pair, the tightest of the market-cap set, so a company passing here clears S&amp;P’s and Dow Jones’s limits too. It says
-          nothing about the two asset-based standards, and nothing about whether a provider would include the company: each of them runs tests
-          this screen does not.
+          The divisor is not a detail. MSCI divides by total assets; the other four by an average of market capitalisation over 12,
+          24 or 36 months — a different test on the same company, and a business trading well above book clears the market-cap version
+          far more easily than the asset one. The screener runs AAOIFI’s pair on today&apos;s market cap, the tightest of the market-cap
+          set, so a company passing here clears S&amp;P’s, Dow Jones’s and FTSE’s limits too. It says nothing about MSCI&apos;s asset test,
+          and nothing about whether a provider would include the company: each of them runs tests this screen does not. A company&apos;s
+          Shariah tab runs all five on their own denominators.
         </p>
       </Panel>
       <Panel title="What the screen tests">

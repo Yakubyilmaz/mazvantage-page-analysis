@@ -73,50 +73,55 @@ import { CATEGORIES, CATEGORY_BY_ID, CONFIDENCE_ORDER } from './alpha-signals';
  * Without it, a weight edit silently rewrites the meaning of every score the
  * product has ever shown.
  */
-export const CALC_VERSION = '1.0.0';
+export const CALC_VERSION = '2.0.0';
 
 /**
  * The starting allocation. Sums to 1.
  *
  * The reasoning, category by category, so a future edit is an argument rather
- * than a nudge:
+ * than a nudge. Version 2.0.0 (2026-10-09) reweighted toward the three
+ * questions the page now asks — is the business changing, are expectations
+ * catching up, what has the market priced — and stopped scoring what never
+ * moved a stock:
  *
- *   fundamental   .20  the only category made entirely of filed figures about
+ *   fundamental   .22  the only category made entirely of filed figures about
  *                      the business itself. Everything else is either a
  *                      derivative of it or somebody's opinion about it.
- *   revisions     .14  the fastest-moving evidence that is still somebody's
- *                      professional judgement rather than a price.
- *   commercial    .12  revenue mix and announcement cadence — filed and
- *                      published, but coarser than the statements.
- *   institutional .10  large, informed, and 45 days late. The lag is what
- *                      keeps it from being worth more.
- *   insider       .10  small samples, but the only signal where somebody
- *                      spends their own money on the open market.
- *   catalysts     .09  dated and forthcoming. Weighted for being forward-
- *                      looking, capped for being scheduling rather than news.
- *   priceVolume   .08  confirmation, never cause. Low because a price that
- *                      has already moved is the thing this feature exists to
- *                      get ahead of.
- *   attention     .07  the undercoverage leg. Genuinely part of the thesis,
- *                      and genuinely not evidence about the business.
- *   product       .05  R&D and capital spend. Real, filed, and slow.
- *   hiring        .03  annual headcount off the 10-K. Almost a year stale by
- *                      construction; weighted accordingly.
- *   macro         .02  the sector underneath. Context, and context that
- *                      applies to every company in the sector equally.
+ *   revisions     .18  where expectations are moving: the rating mix and the
+ *                      targets. Up from .14, because expectations catching up
+ *                      with a business is most of what moves a stock.
+ *   commercial    .12  the revenue mix, quarterly where the split is filed.
+ *   catalysts     .10  how the last report landed against consensus. The
+ *                      calendar date itself is no longer scored.
+ *   priceVolume   .10  relative strength and the reaction to the last report:
+ *                      what the market has already priced.
+ *   institutional .10  large, informed, and 45 days late.
+ *   insider       .06  open-market buying only. Routine selling is neutral,
+ *                      so this mostly sits at 50 and was over-weighted at .10.
+ *   attention     .06  the undercoverage leg, for companies under $50bn only;
+ *                      above that it is not applicable and leaves the score.
+ *   product       .06  R&D intensity. Patents and launch counts are shown,
+ *                      not scored.
+ *   hiring        0    annual headcount off the 10-K: a year stale by
+ *                      construction. Shown as context.
+ *   macro         0    the sector underneath — true of every company in it,
+ *                      so not evidence about this one. Shown as context.
+ *
+ * Still not validated against forward returns: there is no stored history to
+ * test them on. The page leads with a direction rather than this number.
  */
 export const ALPHA_WEIGHTS = {
-  fundamental: 0.20,
-  revisions: 0.14,
+  fundamental: 0.22,
+  revisions: 0.18,
   commercial: 0.12,
   institutional: 0.10,
-  insider: 0.10,
-  catalysts: 0.09,
-  priceVolume: 0.08,
-  attention: 0.07,
-  product: 0.05,
-  hiring: 0.03,
-  macro: 0.02,
+  insider: 0.06,
+  catalysts: 0.10,
+  priceVolume: 0.10,
+  attention: 0.06,
+  product: 0.06,
+  hiring: 0,
+  macro: 0,
 };
 
 /** How much a signal's vote is scaled by how sure its provider is. */
@@ -145,6 +150,9 @@ export function scoreCategory(id: any, signals: any) {
 
   const mine = signals.filter((s: any) => s.category === id);
   const scored = mine.filter((s: any) => isNum(s.score));
+  // Every signal says the question does not apply to this company (attention
+  // on a large cap): the category leaves the composite and its coverage.
+  const notApplicable = mine.length > 0 && mine.every((s: any) => s.notApplicable);
 
   let weightSum = 0;
   let acc = 0;
@@ -173,6 +181,7 @@ export function scoreCategory(id: any, signals: any) {
     /* The freshest dated thing in the category, which is what the card prints
        — a category is exactly as current as its most recent evidence. */
     asOf: mine.map((s: any) => s.sourceDate).filter(Boolean).sort().slice(-1)[0] || null,
+    notApplicable,
   };
 }
 
@@ -207,9 +216,10 @@ function capConfidence(value: any, cap: any) {
 export function scoreAlpha(signals: any[] = []) {
   const categories = CATEGORIES.map((c) => scoreCategory(c.id, signals));
 
-  const live = categories.filter((c) => isNum(c.score));
+  // Context categories (weight 0) are shown with their reading but never vote.
+  const live = categories.filter((c) => isNum(c.score) && c.weight > 0);
   const liveWeight = live.reduce((sum, c) => sum + c.weight, 0);
-  const totalWeight = categories.reduce((sum, c) => sum + c.weight, 0);
+  const totalWeight = categories.filter((c) => !c.notApplicable).reduce((sum, c) => sum + c.weight, 0);
 
   // Redistribution, not zero-filling: the composite is the weighted mean of
   // what was measured, over the weight of what was measured.

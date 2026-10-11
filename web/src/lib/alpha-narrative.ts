@@ -245,7 +245,8 @@ export function narrate(result: any, classification: any, symbol = '') {
 
     /** What would settle each question the engine actually asked. */
     whatWouldConfirm: result.categories
-      .filter((c: any) => isNum(c.score) && (CONFIRMATIONS as any)[c.id])
+      // Only what the reading rests on: context categories carry no weight.
+      .filter((c: any) => isNum(c.score) && c.weight > 0 && (CONFIRMATIONS as any)[c.id])
       .sort((a: any, b: any) => b.weight - a.weight)
       .map((c: any) => ({ category: c.id, categoryTitle: c.title, text: (CONFIRMATIONS as any)[c.id] })),
 

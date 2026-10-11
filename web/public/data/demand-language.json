@@ -1,0 +1,499 @@
+{
+ "about": "Scores from the rule-based transcript reader. Snippets are at most 25 words; the transcripts are not stored.",
+ "calls": [
+  {
+   "symbol": "ALB",
+   "period": "2022 Q4",
+   "date": "2023-02-16",
+   "reading": {
+    "score": 0,
+    "category": "neutral",
+    "sentences": 37,
+    "positive": 3,
+    "negative": 3,
+    "flags": {
+     "deceleration": 1
+    },
+    "topPositive": [
+     {
+      "speaker": "Kent Masters",
+      "text": "Our contract customers are not slowing down their ordering patterns and early indications are both that cathode inventory and battery inventory in China are decreasing, …",
+      "polarity": 1,
+      "positives": [
+       "not slowing"
+      ],
+      "negatives": [],
+      "flags": [
+       "deceleration"
+      ]
+     },
+     {
+      "speaker": "Kent Masters",
+      "text": "EV subsidies have rolled off on schedule since 2013 with only brief declines in sales, continued municipal incentives and consumer preferences support a strong demand …",
+      "polarity": 1,
+      "positives": [
+       "strong"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Scott Tozier",
+      "text": "Again, it's really driven by that inventory lag that we're seeing ultimately as well as the strong prices in the fourth quarter that carry into …",
+      "polarity": 1,
+      "positives": [
+       "strong"
+      ],
+      "negatives": [],
+      "flags": []
+     }
+    ],
+    "topNegative": [
+     {
+      "speaker": "Eric Norris",
+      "text": "In the meantime, people are buying under contracts, but not venturing into the spot market and bringing their -- in China, bringing their inventories down …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "uncertainty"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Eric Norris",
+      "text": "I mean the virus spread quite rapidly, and it did staff consumer demand at a time when seasonally, it was weak anyway because of the …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "weak"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Scott Tozier",
+      "text": "Most of that roughly 20 percentage point decline is due to spodumene inventory lags.",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "decline"
+      ],
+      "flags": []
+     }
+    ],
+    "speakersSkipped": [
+     "Jeff Zekauskas",
+     "Stephen Richardson",
+     "Christopher Parkinson"
+    ]
+   }
+  },
+  {
+   "symbol": "ALB",
+   "period": "2026 Q2",
+   "date": "2026-08-06",
+   "reading": {
+    "score": 63,
+    "category": "strongly positive",
+    "sentences": 123,
+    "positive": 35,
+    "negative": 6,
+    "flags": {
+     "pricingPower": 6,
+     "acceleration": 2
+    },
+    "topPositive": [
+     {
+      "speaker": "Neal Sheorey",
+      "text": "This increase reflects strong year-to-date performance as our teams have worked to capture the upside of increased bromine pricing while mitigating Middle East-related supply chain …",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "upside"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Jerry Masters",
+      "text": "Second quarter net sales of $1.7 billion increased 31% year-over-year, driven by higher pricing in energy storage and both higher pricing and volumes in specialties.",
+      "polarity": 2,
+      "positives": [
+       "higher pricing",
+       "higher pricing"
+      ],
+      "negatives": [],
+      "flags": [
+       "pricingPower"
+      ]
+     },
+     {
+      "speaker": "Jerry Masters",
+      "text": "First, global electricity demand growth is accelerating, led by urbanization, AI and data centers and EVs.",
+      "polarity": 2,
+      "positives": [
+       "accelerating",
+       "demand growth"
+      ],
+      "negatives": [],
+      "flags": [
+       "acceleration"
+      ]
+     }
+    ],
+    "topNegative": [
+     {
+      "speaker": "Neal Sheorey",
+      "text": "Our second half outlook assumes stabilization of the bromine market as we've seen pricing normalize since reaching a peak in April, and it reflects continued …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "uncertainty"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Jerry Masters",
+      "text": "In oil and gas, clear brine fluid demand has remained stable in the Middle East, while geopolitical uncertainty has incentivized demand in other regions such …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "uncertainty"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Jerry Masters",
+      "text": "There's a bit -- it was -- EVs were weak in the first quarter, but they kind of trended back in the second quarter and …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "weak"
+      ],
+      "flags": []
+     }
+    ],
+    "speakersSkipped": [
+     "David Begleiter",
+     "John Ezekiel Roberts",
+     "Arun Viswanathan",
+     "Laurence Alexander",
+     "Evan McCaul",
+     "Vincent Andrews",
+     "Joshua Spector",
+     "Matthew DeYoe",
+     "Harris Fein",
+     "Mazahir Mammadli"
+    ]
+   }
+  },
+  {
+   "symbol": "ENPH",
+   "period": "2022 Q4",
+   "date": "2023-02-07",
+   "reading": {
+    "score": 15,
+    "category": "positive",
+    "sentences": 47,
+    "positive": 5,
+    "negative": 3,
+    "flags": {
+     "capacityConstraint": 1
+    },
+    "topPositive": [
+     {
+      "speaker": "Badri Kothandaraman",
+      "text": "As the system complexity increases with solar, batteries, EV chargers and dynamic rate structures such as NEM 3.0, the tight coupling of Solargraf and actual …",
+      "polarity": 1,
+      "positives": [
+       "tight"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Badri Kothandaraman",
+      "text": "In Europe, our revenue increased 21% sequentially and more than 130% year-on-year, led by strong demand in Netherlands, France, Germany, Belgium, Spain, Portugal and the …",
+      "polarity": 1,
+      "positives": [
+       "strong"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Badri Kothandaraman",
+      "text": "Our microinverter channel inventory was quite healthy at the end of the fourth quarter, while our storage channel inventory was a little elevated.",
+      "polarity": 1,
+      "positives": [
+       "healthy"
+      ],
+      "negatives": [],
+      "flags": []
+     }
+    ],
+    "topNegative": [
+     {
+      "speaker": "Philip Shen",
+      "text": "Badri, one thing that I noted in your prepared remarks was that you talked about how some of your customers are experiencing more caution or …",
+      "polarity": -2,
+      "positives": [],
+      "negatives": [
+       "cautious",
+       "caution"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Badri Kothandaraman",
+      "text": "All I said is basically – there are two things, which I said, we are seeing the distributor and installer partners a little more cautious …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "cautious"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Badri Kothandaraman",
+      "text": "We are seeing that our distributor and installer partners are a little more cautious in booking orders.",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "cautious"
+      ],
+      "flags": []
+     }
+    ],
+    "speakersSkipped": [
+     "Colin Rusch",
+     "Brian Lee",
+     "Mark Strouse",
+     "Eric Stine",
+     "Unidentified Analyst",
+     "Kashy Harrison",
+     "Praneeth Satish",
+     "Sophie Karp",
+     "Corinne Blanchard",
+     "Pavel Molchanov",
+     "Sean Milligan"
+    ]
+   }
+  },
+  {
+   "symbol": "FCX",
+   "period": "2026 Q2",
+   "date": "2026-07-23",
+   "reading": {
+    "score": 55,
+    "category": "strongly positive",
+    "sentences": 46,
+    "positive": 6,
+    "negative": 0,
+    "flags": {},
+    "topPositive": [
+     {
+      "speaker": "Kathleen Lynne Quirk",
+      "text": "And as I mentioned before, when you look at inventories outside of the US, it is created a very tight very tight market situation, particularly …",
+      "polarity": 2,
+      "positives": [
+       "tight",
+       "tight"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Richard Adkerson",
+      "text": "Freeport, our shareholders, continue to benefit from our long standing strategy centered on our leadership position in copper, and from our portfolio of long lived …",
+      "polarity": 1,
+      "positives": [
+       "allocation"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Kathleen Lynne Quirk",
+      "text": "We our and intentionally during the pandemic to because we did have a reduced work and did have constraints, we intentionally took down the mine …",
+      "polarity": 1,
+      "positives": [
+       "constraints"
+      ],
+      "negatives": [],
+      "flags": []
+     }
+    ],
+    "topNegative": [],
+    "speakersSkipped": [
+     "Lawson Winder",
+     "Katja Jancic",
+     "Timna Tanners",
+     "Nicklaus Cash",
+     "Liam Fitzpatrick",
+     "Bill Peterson",
+     "Bob Brackett",
+     "Daniel Major",
+     "Brian MacArthur"
+    ]
+   }
+  },
+  {
+   "symbol": "MU",
+   "period": "FY2026 Q4 (post-earnings analyst call)",
+   "date": "2026-09-30",
+   "reading": {
+    "score": 72,
+    "category": "strongly positive",
+    "sentences": 48,
+    "positive": 19,
+    "negative": 1,
+    "flags": {
+     "supplyShortage": 1,
+     "capacityConstraint": 5,
+     "pricingPower": 6,
+     "acceleration": 1
+    },
+    "topPositive": [
+     {
+      "speaker": "Manish Bhatia",
+      "text": "But I mean, that's exactly right, is that the principal constraint in the industry is on clean room space because we -- the strong growth …",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "constraint"
+      ],
+      "negatives": [],
+      "flags": [
+       "capacityConstraint"
+      ]
+     },
+     {
+      "speaker": "Manish Bhatia",
+      "text": "And so as we've gone through working on our fiscal year '27 and we commented that we have more than 75% of our shipments committed …",
+      "polarity": 2,
+      "positives": [
+       "allocation",
+       "committed",
+       "strengthening"
+      ],
+      "negatives": [],
+      "flags": [
+       "supplyShortage"
+      ]
+     },
+     {
+      "speaker": "Manish Bhatia",
+      "text": "And so that is driving higher logic silicon and into the overall demand for AI compute and frankly, creating more of a constraint on DRAM …",
+      "polarity": 2,
+      "positives": [
+       "constraint",
+       "constraint"
+      ],
+      "negatives": [],
+      "flags": []
+     }
+    ],
+    "topNegative": [
+     {
+      "speaker": "Manish Bhatia",
+      "text": "And with that wind at their back, we see the PC and mobile industry revenue to be growing even though we do see unit volumes …",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "declining"
+      ],
+      "flags": []
+     }
+    ],
+    "speakersSkipped": [
+     "Melissa Weathers",
+     "Atif Malik",
+     "Karl Ackerman",
+     "James Schneider",
+     "Joseph Moore",
+     "Mehdi Hosseini"
+    ]
+   }
+  },
+  {
+   "symbol": "VRT",
+   "period": "2026 Q2",
+   "date": "2026-07-29",
+   "reading": {
+    "score": 47,
+    "category": "positive",
+    "sentences": 58,
+    "positive": 10,
+    "negative": 2,
+    "flags": {
+     "acceleration": 4
+    },
+    "topPositive": [
+     {
+      "speaker": "Giordano Albertazzi",
+      "text": "We are executing on further acceleration in Q3 and Q4, on strong backlog.",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "acceleration"
+      ],
+      "negatives": [],
+      "flags": [
+       "acceleration"
+      ]
+     },
+     {
+      "speaker": "Giordano Albertazzi",
+      "text": "Our global pipeline momentum remains very strong.",
+      "polarity": 2,
+      "positives": [
+       "strong",
+       "momentum"
+      ],
+      "negatives": [],
+      "flags": []
+     },
+     {
+      "speaker": "Craig Chamberlin",
+      "text": "The margin expansion was driven by strong operational execution, continued productivity gains, and favorable price cost execution, partially offset by tariff impacts.",
+      "polarity": 1,
+      "positives": [
+       "strong"
+      ],
+      "negatives": [],
+      "flags": []
+     }
+    ],
+    "topNegative": [
+     {
+      "speaker": "Craig Chamberlin",
+      "text": "The margin expansion is driven by continued operational leverage and positive price cost execution which is offsetting some tariff headwinds.",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "headwinds"
+      ],
+      "flags": []
+     },
+     {
+      "speaker": "Giordano Albertazzi",
+      "text": "It means that the sales cycle within the within the pipeline can be faster or slower.",
+      "polarity": -1,
+      "positives": [],
+      "negatives": [
+       "slower"
+      ],
+      "flags": []
+     }
+    ],
+    "speakersSkipped": [
+     "Jeffrey Sprague",
+     "Amit Daryanani",
+     "Christopher Snyder",
+     "Amit Mehrotra",
+     "Noah Kaye"
+    ]
+   }
+  }
+ ]
+}

@@ -3,236 +3,291 @@
 /* ==========================================================================
    Maz Vantage — the Alpha Signal tab
 
-   One company, full depth: every provider, every signal, and the evidence
-   behind each. It fetches after it renders — five of its feeds are not in the
-   report's dataset, deliberately — and the report keeps a visited panel
-   mounted, so this happens on first visit and never again for that company.
+   One question: is something changing that the market has not priced yet?
+   The page answers it in the order a reader needs it (rebuilt 2026-10-09):
 
-   The order of the page is an argument: score, then what it is built on,
-   then what it could not see, then the evidence, then the timeline, then what
-   would settle it. The gaps come before the findings, because a list of
-   findings read first is very hard to un-believe afterwards.
+     1. The answer — a direction, a headline built from the facts, and the
+        dates the inputs are true as of.
+     2. Three blocks, one per part of the question: the business, the
+        expectations, the market. Each states its answer, the facts behind it,
+        and the signals behind those, every one opening its own evidence.
+     3. What management said and what the firms publish — outside the score.
+     4. What would confirm the reading.
+     5. How the reading is built, folded away: weights, every category, what
+        it could not see, and the sources.
+
+   It fetches after it renders — five of its feeds are not in the report's
+   dataset — and the report keeps a visited panel mounted, so this happens on
+   first visit and never again for that company.
    ========================================================================== */
 
 import * as React from 'react';
 import { fmtDate, isNum } from '@/lib/format';
 import { hasApiKey } from '@/lib/fmp';
 import { bagCapturedAt, loadAlphaBag, runProviders } from '@/lib/alpha-providers';
-import { classify, pairNote, scoreAlpha } from '@/lib/alpha-score';
+import { CALC_VERSION, classify, scoreAlpha } from '@/lib/alpha-score';
 import { narrate } from '@/lib/alpha-narrative';
-import { CATEGORY_BY_ID } from '@/lib/alpha-signals';
+import { buildBrief, DIRECTION_LABEL, type Block, type Brief, type Direction } from '@/lib/alpha-brief';
 import type { Analysis } from '@/lib/model';
-import {
-  ArchetypeBlock, Badge, CategoryCard, EvidenceHost, QualityBadge, ScoreBlock, SourceLine, StandingNotice, StatusDot,
-  badgeTone, useEvidence,
-} from '@/components/alpha/alpha-view';
+import { CategoryCard, EvidenceHost, SignalRow, SourceLine, StandingNotice, useEvidence } from '@/components/alpha/alpha-view';
+import { EventTag } from '@/components/report/tabs/news-tab';
+import { useNav } from '@/components/nav-context';
+import { FirmViews, ManagementVoice } from '@/components/alpha/outside-views';
 import { Notice, OCard, OHead } from '@/components/report/ui';
 import { Chevron } from '@/components/market/market-ui';
 import { Skeleton } from '@/components/ui/primitives';
-import { useNav } from '@/components/nav-context';
 import { cn } from '@/lib/cn';
 
-type Built = { result: any; classification: any; story: any; quant: number | null; capturedAt: string | null };
+type Built = { result: any; classification: any; story: any; brief: Brief; quant: number | null; capturedAt: string | null; bag: any };
 
 const SecTitle = ({ children }: { children: React.ReactNode }) => <h2 className="text-[19px] font-bold tracking-[-.02em]">{children}</h2>;
 const SecBody = ({ children }: { children: React.ReactNode }) => <p className="max-w-[100ch] text-13 leading-[1.7] text-muted-foreground">{children}</p>;
 const Fine = ({ children }: { children: React.ReactNode }) => <p className="max-w-[100ch] text-tiny italic leading-[1.7] text-muted-foreground">{children}</p>;
 
-/* ---- 1. the head ----------------------------------------------------------- */
+/* Direction words carry the colour; the number never does. */
+const DIRECTION_TONE: Record<Direction, string> = {
+  improving: 'bg-up/12 text-up border-up/40',
+  deteriorating: 'bg-down/10 text-down border-down/40',
+  mixed: 'bg-accent text-foreground border-border',
+  unmeasured: 'bg-muted text-muted-foreground border-dashed border-border',
+};
 
-function Head({ state }: { state: Built }) {
-  const nav = useNav();
-  const { result, classification, quant } = state;
+function DirectionChip({ direction, size = 'sm' }: { direction: Direction; size?: 'sm' | 'lg' }) {
   return (
-    <section className="grid gap-4">
-      <div className="grid items-stretch gap-5 lg:grid-cols-[minmax(320px,400px)_1fr]">
-        <ScoreBlock result={result} quantScore={quant} />
-        <ArchetypeBlock classification={classification} />
+    <span className={cn('inline-flex items-center whitespace-nowrap rounded-full border font-semibold', DIRECTION_TONE[direction],
+      size === 'lg' ? 'px-3.5 py-1 text-[15px]' : 'px-2.5 py-0.5 text-tiny')}>
+      {DIRECTION_LABEL[direction]}
+    </span>
+  );
+}
+
+/* ---- 1. the answer ---------------------------------------------------------- */
+
+function Answer({ state }: { state: Built }) {
+  const { brief, result, classification } = state;
+  const a = brief.asOf;
+  const dates = [
+    a.prices ? `prices to ${fmtDate(a.prices)}` : null,
+    a.statements ? `filings to ${fmtDate(a.statements)}` : null,
+    a.thirteenF ? `13F for the quarter to ${fmtDate(a.thirteenF)}` : null,
+  ].filter(Boolean).join(' · ');
+  return (
+    <section className="grid gap-4 rounded-[14px] border border-border px-6 py-5">
+      <div className="flex flex-wrap items-center gap-3">
+        <span className="text-micro font-bold uppercase tracking-[.1em] text-muted-foreground">Alpha Signal</span>
+        <DirectionChip direction={brief.direction} size="lg" />
+        <div className="ml-auto flex flex-wrap gap-1.5">
+          {brief.blocks.map((b) => (
+            <span key={b.id} className="inline-flex items-center gap-1.5 text-tiny text-muted-foreground">
+              {b.id === 'business' ? 'Business' : b.id === 'expectations' ? 'Expectations' : 'Market'}
+              <DirectionChip direction={b.direction} />
+            </span>
+          ))}
+        </div>
       </div>
-      <p className="max-w-[110ch] border-l-[3px] border-border bg-muted px-[18px] py-3.5 text-13 leading-[1.7]">
-        <b>Reading the two ratings together. </b>{pairNote(quant, result.score)}
-        {isNum(quant) ? (
-          <button type="button" onClick={() => nav.openAnalysis?.()} className="ml-2 inline-flex items-center gap-1 text-primary hover:underline">
-            See the quant rating <Chevron />
-          </button>
-        ) : null}
+      <p className="max-w-[90ch] text-[17px] font-medium leading-[1.6]">{brief.headline}</p>
+      {classification.primary.id !== 'none' ? (
+        <p className="text-13 text-muted-foreground">
+          Pattern: <b className="font-semibold text-foreground">{classification.primary.label}</b> — {classification.primary.blurb}
+        </p>
+      ) : null}
+      <p className="flex flex-wrap gap-x-3 gap-y-1 text-tiny text-muted-foreground">
+        <span title="The weighted reading the direction is cut from: improving at 58 and up, deteriorating at 42 and down. The weights are a stated allocation, not yet tested against returns.">
+          Reading {isNum(result.score) ? result.score : '—'}/100 · {result.coveragePct}% measured · v{result.version}
+        </span>
+        {dates ? <span>{dates}</span> : null}
       </p>
     </section>
   );
 }
 
-/* ---- 2. what it could not see, before the findings --------------------------- */
+/* ---- 2. the three blocks ------------------------------------------------------ */
 
-function Coverage({ result, story }: { result: any; story: any }) {
-  const gaps: any[] = story.unconfirmed;
-  const dark = result.categories.filter((c: any) => !isNum(c.score));
-  // Styled as a panel rather than a warning: this is information, not an
-  // error, and a red box would train readers to skip it.
+/**
+ * What happened, from the headlines: under the market block, because a market
+ * that sold a report usually sold it on something a headline named. Tagged by
+ * event, with an arrow only where the words carry one; not scored.
+ */
+function WhatHappened({ news, symbol }: { news: Brief['news']; symbol: string }) {
+  const nav = useNav();
+  if (!news.articles) return null;
   return (
-    <section className="grid gap-3.5 rounded-[14px] border border-dashed border-border bg-muted/70 px-6 py-5">
-      <SecTitle>What this score could not see</SecTitle>
-      <SecBody>
-        Read before the findings, not after them. {result.coveragePct}% of the model&apos;s weight was measurable for this company; the rest is
-        listed here. A category with no data is dropped from the score rather than scored zero, so the number above describes what was measured
-        and nothing else.
-      </SecBody>
-      {dark.length ? (
-        <div className="flex flex-wrap gap-[7px]">
-          {dark.map((c: any) => (
-            <span key={c.id} title={CATEGORY_BY_ID[c.id]?.question || ''} className="cursor-help rounded-[7px] border border-dashed border-border px-[11px] py-[5px] text-tiny text-muted-foreground">
-              {c.title} · {Math.round(c.weight * 100)}% weight unmeasured
-            </span>
-          ))}
-        </div>
-      ) : <SecBody>Every category returned at least one scoreable signal.</SecBody>}
-      {gaps.length ? (
-        <ul className="grid gap-3.5">
-          {gaps.map((g, i) => (
-            <li key={i} className="border-t border-border pt-3">
-              <div className="flex flex-wrap items-baseline gap-2.5">
-                <span className="text-sm font-semibold">{g.name}</span>
-                <span className="text-micro uppercase tracking-[.05em] text-muted-foreground">{g.categoryTitle}</span>
-              </div>
-              {g.note ? <p className="mt-1.5 max-w-[100ch] text-tiny leading-[1.65] text-muted-foreground">{g.note}</p> : null}
-              <p className="mt-1.5 text-tiny"><i className="not-italic text-muted-foreground">Would need: </i>{g.provider}</p>
+    <div className="mt-4 grid gap-2 border-t border-border pt-3">
+      <h4 className="text-micro font-semibold uppercase tracking-[.06em] text-muted-foreground">What happened recently, from the headlines</h4>
+      {news.stories.length ? (
+        <ul className="grid">
+          {news.stories.map((st) => (
+            <li key={st.lead.url || st.lead.title} className="grid gap-1 border-b border-border py-2 last:border-b-0">
+              <span className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+                <EventTag reading={st.reading} />
+                {fmtDate(st.lead.date)} · {st.lead.source}{st.outlets.length > 1 ? ` · reported by ${st.outlets.length} outlets` : ''}
+              </span>
+              {st.lead.url
+                ? <a href={st.lead.url} target="_blank" rel="noopener noreferrer" className="text-13 font-medium leading-snug hover:text-primary">{st.lead.title}</a>
+                : <span className="text-13 font-medium leading-snug">{st.lead.title}</span>}
             </li>
           ))}
         </ul>
-      ) : null}
-    </section>
-  );
-}
-
-/* ---- 5. the evidence, both ways -------------------------------------------- */
-
-function Evidence({ story, index }: { story: any; index: Map<string, any> }) {
-  const open = useEvidence();
-  const col = (title: string, items: any[], tone: 'up' | 'down', empty: string) => (
-    <div className="rounded-xl border border-border px-5 py-[18px]">
-      <h3 className={cn('mb-3 text-13 font-bold uppercase tracking-[.06em]', tone === 'up' ? 'text-up' : 'text-down')}>{title}</h3>
-      {items.length ? (
-        <ul className="grid gap-1">
-          {items.slice(0, 8).map((i, k) => (
-            <li key={k}>
-              <button type="button" onClick={() => { const sig = index.get(i.signalId); if (sig) open(sig); }}
-                className="grid w-full gap-[5px] rounded-[7px] px-2 py-[9px] text-left hover:bg-accent">
-                <span className="text-13 leading-[1.55]">{i.text}</span>
-                <span className="flex flex-wrap items-center gap-1.5">
-                  <span className="text-[10px] text-muted-foreground">{i.categoryTitle}</span>
-                  <Badge tone={badgeTone(i.quality)}>{i.qualityLabel}</Badge>
-                  {i.sourceDate ? <span className="text-[10px] text-muted-foreground">{i.freshness?.text || ''}</span> : null}
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : <p className="text-tiny italic text-muted-foreground">{empty}</p>}
+      ) : <p className="text-tiny italic text-muted-foreground">No headline in the newest month named an event — ratings, results, supply, products, deals, legal, management or capital returns.</p>}
+      <p className="text-[11px] text-muted-foreground">
+        From {news.articles} articles {news.from ? `between ${fmtDate(news.from)} and ${fmtDate(news.to)}` : ''}; holder filings, law-firm adverts, previews and price
+        recaps set aside. Tags read the headline&apos;s words by fixed rules and are not part of the reading above.{' '}
+        <button type="button" onClick={() => nav.goSymbolTab?.('News', symbol)} className="text-primary hover:underline">All news ›</button>
+      </p>
     </div>
   );
+}
+
+function BlockCard({ block, result, index, news, symbol }: { block: Block; result: any; index: Map<string, any>; news?: Brief['news']; symbol?: string }) {
+  const open = useEvidence();
+  const [more, setMore] = React.useState(false);
+  const cats = result.categories.filter((c: any) => block.categories.includes(c.id));
+  const signals = cats.flatMap((c: any) => c.signals).filter((s: any) => s.status !== 'insufficient_data');
+  const gaps = cats.flatMap((c: any) => c.signals).filter((s: any) => s.status === 'insufficient_data');
+  const byKey = (k?: string) => (k ? [...index.values()].find((s) => s.key === k) : null);
+  /* One row per question, full width: the answer on the left, the facts it
+     rests on to its right, so the three questions read down the page in the
+     same shape. The container, not the window, decides when it splits — the
+     market column takes a different share of the window on every page. */
   return (
-    <section className="grid gap-3.5">
-      <SecTitle>The evidence</SecTitle>
-      <SecBody>
-        Only source-backed items appear here, in both columns. There is no verdict under them: an early-stage reading that resolves to a word is a
-        word doing work the evidence has not done.
-      </SecBody>
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-[18px]">
-        {col('Improving', story.improving, 'up', 'No positive signal cleared the threshold.')}
-        {col('Deteriorating', story.deteriorating, 'down', 'No negative signal cleared the threshold.')}
+    <article className="@container rounded-xl border border-border px-5 py-[18px]">
+      <div className="grid gap-x-8 gap-y-3.5 @2xl:grid-cols-[minmax(220px,1fr)_minmax(0,1.5fr)]">
+      <header className="grid content-start gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <h3 className="text-[15px] font-bold leading-snug">{block.question}</h3>
+          <DirectionChip direction={block.direction} />
+        </div>
+        <p className="text-13 leading-relaxed">{block.answer}</p>
+        {block.asOf ? <p className="text-[11px] text-muted-foreground">As of {fmtDate(block.asOf)}</p> : null}
+      </header>
+      {block.facts.length ? (
+        <ul className="grid self-start border-t border-border @2xl:border-t-0">
+          {block.facts.map((f) => {
+            const sig = byKey(f.signalKey);
+            const body = (
+              <>
+                <span className="text-tiny text-muted-foreground">{f.label}</span>
+                <span className={cn('text-right text-13 font-semibold tnum', f.tone === 'up' && 'text-up', f.tone === 'down' && 'text-down')}>{f.value}</span>
+                {f.note ? <span className="col-span-2 text-[11px] leading-snug text-muted-foreground">{f.note}</span> : null}
+              </>
+            );
+            return (
+              <li key={f.label} className="border-b border-border last:border-b-0">
+                {sig ? (
+                  <button type="button" onClick={() => open(sig)} title="Open the evidence behind this figure"
+                    className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-3 gap-y-0.5 px-1 py-2 text-left hover:bg-accent">
+                    {body}
+                  </button>
+                ) : <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-3 gap-y-0.5 px-1 py-2">{body}</div>}
+              </li>
+            );
+          })}
+        </ul>
+      ) : <Fine>Nothing in this part of the question could be measured for this company.</Fine>}
       </div>
-      {story.risks.length ? (
-        <div className="rounded-xl border border-dashed border-border px-5 py-4">
-          <h3 className="mb-2 text-tiny font-semibold uppercase tracking-[.06em] text-muted-foreground">Read these with care</h3>
-          <ul className="grid list-disc gap-[5px] pl-[18px]">
-            {story.risks.slice(0, 6).map((r: any, i: number) => <li key={i} className="text-tiny leading-relaxed text-muted-foreground">{r.text}</li>)}
-          </ul>
+      <button type="button" aria-expanded={more} onClick={() => setMore((o) => !o)}
+        className="mt-3 inline-flex items-center gap-1 justify-self-start text-tiny text-primary">
+        {more ? 'Hide the signals' : `${signals.length} signal${signals.length === 1 ? '' : 's'} behind this`}
+        <Chevron className={cn('transition-transform', more && 'rotate-90')} />
+      </button>
+      {news && symbol ? <WhatHappened news={news} symbol={symbol} /> : null}
+      {more ? (
+        <div className="mt-2 grid gap-0.5 border-t border-border pt-1.5">
+          {signals.map((s: any) => <SignalRow key={s.id} sig={s} />)}
+          {gaps.length ? <p className="px-2 pt-1.5 text-[11px] text-muted-foreground">Not measured: {gaps.map((g: any) => g.name).join(', ')}.</p> : null}
         </div>
       ) : null}
-    </section>
+    </article>
   );
 }
 
-/* ---- 6. the timeline --------------------------------------------------------- */
+/* ---- 5. how it is built, folded away --------------------------------------------- */
 
-function Timeline({ result }: { result: any }) {
-  const open = useEvidence();
-  const dated = result.categories.flatMap((c: any) => c.signals)
-    .filter((s: any) => s.sourceDate && !Number.isNaN(new Date(s.sourceDate).getTime()))
-    .sort((x: any, y: any) => new Date(y.sourceDate).getTime() - new Date(x.sourceDate).getTime());
+function HowBuilt({ state }: { state: Built }) {
+  const { result, story } = state;
+  const gaps: any[] = story.unconfirmed;
+  const cats = result.categories.slice().sort((x: any, y: any) => y.weight - x.weight);
   return (
-    <section className="grid gap-3.5">
-      <SecTitle>Signal timeline</SecTitle>
-      {!dated.length ? <SecBody>No dated evidence was available for this company.</SecBody> : (
-        <>
+    <details className="group rounded-[14px] border border-border">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-4 text-[15px] font-bold">
+        How this reading is built
+        <Chevron className="transition-transform group-open:rotate-90" />
+      </summary>
+      <div className="grid gap-6 border-t border-border px-6 py-5">
+        <StandingNotice />
+        <section className="grid gap-3">
+          <h3 className="text-13 font-bold">Every category, by weight</h3>
           <SecBody>
-            Every dated signal, newest first, by the date of the filing or publication behind it rather than by when this page read it. A 13F sits
-            at its filing deadline, not at the quarter end it describes.
+            Version {CALC_VERSION}. The direction above is cut from the weighted mean of the categories that apply; the blocks group them by question.
+            Workforce and industry show their reading as context and carry no weight. A category that does not apply to this company — attention, above
+            $50bn — leaves the reading rather than counting as a gap.
           </SecBody>
-          <ol className="grid">
-            {dated.slice(0, 14).map((s: any) => (
-              <li key={s.id} className="grid grid-cols-[96px_20px_1fr] items-start gap-2.5 border-b border-border py-[11px]">
-                <span className="pt-[3px] text-micro text-muted-foreground tnum">{fmtDate(s.sourceDate)}</span>
-                <span className="flex justify-center pt-1.5"><StatusDot status={s.status} /></span>
-                <button type="button" onClick={() => open(s)} className="group grid gap-[3px] text-left">
-                  <span className="text-13 font-semibold group-hover:text-primary">{s.name}</span>
-                  <span className="text-tiny leading-normal text-muted-foreground">{s.interpretation || ''}</span>
-                  <span className="flex flex-wrap items-center gap-2">
-                    <QualityBadge sig={s} />
-                    <span className="text-[10px] text-muted-foreground">{s.source?.publisher || ''}</span>
-                  </span>
-                </button>
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-4 max-sm:grid-cols-1">
+            {cats.map((c: any) => <CategoryCard key={c.id} cat={c} />)}
+          </div>
+        </section>
+        <section className="grid gap-3">
+          <h3 className="text-13 font-bold">What it could not see</h3>
+          {gaps.length ? (
+            <ul className="grid gap-3">
+              {gaps.map((g, i) => (
+                <li key={i} className="border-t border-border pt-2.5 first:border-t-0 first:pt-0">
+                  <div className="flex flex-wrap items-baseline gap-2">
+                    <span className="text-13 font-semibold">{g.name}</span>
+                    <span className="text-micro uppercase tracking-[.05em] text-muted-foreground">{g.categoryTitle}</span>
+                  </div>
+                  {g.note ? <p className="mt-1 max-w-[100ch] text-tiny leading-[1.65] text-muted-foreground">{g.note}</p> : null}
+                  <p className="mt-1 text-tiny"><i className="not-italic text-muted-foreground">Would need: </i>{g.provider}</p>
+                </li>
+              ))}
+            </ul>
+          ) : <SecBody>Every measurement the engine looks for was available.</SecBody>}
+        </section>
+        <section className="grid gap-3">
+          <h3 className="text-13 font-bold">Sources</h3>
+          <ul className="grid">
+            {story.sources.map((s: any, i: number) => (
+              <li key={i} className="flex items-center justify-between gap-3 border-b border-border py-2 last:border-b-0">
+                <SourceLine src={s} />
+                <span className="flex-none text-micro text-muted-foreground">{s.uses} signal{s.uses === 1 ? '' : 's'}</span>
               </li>
             ))}
-          </ol>
-        </>
-      )}
-    </section>
+          </ul>
+          <Fine>A link appears only where a feed supplied one; this app does not construct filing URLs.</Fine>
+        </section>
+      </div>
+    </details>
   );
 }
 
 /* ---- the page ------------------------------------------------------------------ */
 
-function Page({ state }: { state: Built }) {
-  const { result, story, capturedAt } = state;
-  /* Narrative items carry a signal id, never a copy of the signal, so the
-     drawer opened from a summary line and from a category card show the same
-     object. The index is per render, not module scope. */
+function Page({ state, a }: { state: Built; a: Analysis }) {
+  const { result, story, brief, capturedAt } = state;
+  /* Facts and rows carry a signal key, never a copy of the signal, so the
+     drawer opened from a fact and from a signal row shows the same object. */
   const index = React.useMemo(
     () => new Map<string, any>(result.categories.flatMap((c: any) => c.signals).map((s: any) => [s.id, s])),
     [result],
   );
-  // Weight order, not score order: the page reads the same way for every
-  // company rather than arguing for whatever happens to be highest.
-  const cats = result.categories.slice().sort((x: any, y: any) => y.weight - x.weight);
 
   return (
     <div className="grid gap-[34px] pb-12">
-      <Head state={state} />
-      <Coverage result={result} story={story} />
-      <section className="grid gap-3.5">
-        <SecTitle>Summary</SecTitle>
-        <p className="max-w-[96ch] text-[15px] leading-[1.75]">{story.summary}</p>
-        <Fine>
-          Assembled from the structured signals below — every figure in it is a field on one of them, and no sentence here was written about this
-          company specifically. No language model is involved, which is why the prose is flat and why no value in it can be invented.
-        </Fine>
+      <Answer state={state} />
+      <section className="grid gap-[18px]">
+        {brief.blocks.map((b) => (
+          <BlockCard key={b.id} block={b} result={result} index={index}
+            news={b.id === 'market' ? brief.news : undefined} symbol={String(a.facts?.symbol || '')} />
+        ))}
       </section>
-      <section className="grid gap-3.5">
-        <SecTitle>The eleven categories</SecTitle>
-        <SecBody>In weight order, which is the same on every company. Open a category for its signals, and a signal for the arithmetic and the source behind it.</SecBody>
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(340px,1fr))] gap-4 max-sm:grid-cols-1">
-          {cats.map((c: any) => <CategoryCard key={c.id} cat={c} />)}
-        </div>
-      </section>
-      <Evidence story={story} index={index} />
-      <Timeline result={result} />
+      {/* Outside the score: what management and the firms say, each quoted
+          or named and dated. */}
+      <ManagementVoice a={a} />
+      <FirmViews a={a} bag={state.bag} capturedAt={capturedAt} />
       {story.whatWouldConfirm.length ? (
         <section className="grid gap-3.5">
           <SecTitle>What would confirm this</SecTitle>
-          <SecBody>
-            The measurements that would settle each question this engine asked. This is the closest the page comes to a conclusion, and it is on
-            purpose: an early reading is not an answer, it is a list of things about to become answerable.
-          </SecBody>
+          <SecBody>The measurement that would settle each question the reading rests on, and when it next arrives.</SecBody>
           <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-3">
             {story.whatWouldConfirm.map((w: any, i: number) => (
               <div key={i} className="rounded-xl border border-border px-4 py-3.5">
@@ -243,32 +298,14 @@ function Page({ state }: { state: Built }) {
           </div>
         </section>
       ) : null}
-      <section className="grid gap-3.5">
-        <SecTitle>Sources</SecTitle>
-        <SecBody>
-          {story.sources.length} distinct sources behind the signals above. A link appears only where a feed supplied one — this app will not
-          construct a plausible filing URL, because a citation that is usually right is not a citation.
-        </SecBody>
-        <ul className="grid">
-          {story.sources.map((s: any, i: number) => (
-            <li key={i} className="flex items-center justify-between gap-3 border-b border-border py-2 last:border-b-0">
-              <SourceLine src={s} />
-              <span className="flex-none text-micro text-muted-foreground">{s.uses} signal{s.uses === 1 ? '' : 's'}</span>
-            </li>
-          ))}
-        </ul>
-        <StandingNotice />
-        {/* The capture notice: the figures are real but frozen, while anything
-            measured against today (freshness, days until the next report)
-            moves on without them. */}
-        {hasApiKey() ? null : (
-          <Fine>
-            {capturedAt
-              ? `Live data is unavailable, so this reading was built from a saved copy of ${capturedAt}. Every figure in it is real filed or published data — the quarterly statements, the analyst grade history, the price-target summary and the 13F aggregate are all present, which is why coverage is high. What it is not is live: freshness and any days-until reading are measured against today, not against the date it was saved.`
-              : 'Live data is unavailable, so this reading was built from a saved copy.'}
-          </Fine>
-        )}
-      </section>
+      <HowBuilt state={state} />
+      {hasApiKey() ? null : (
+        <Fine>
+          Live data is unavailable, so this reading is built from a saved copy{capturedAt ? ` of ${capturedAt}` : ''}, with prices, the 13F
+          aggregate, ratings and the earnings calendar refreshed to the dates shown above. Every figure is real filed or published data; what it is
+          not is live.
+        </Fine>
+      )}
     </div>
   );
 }
@@ -295,7 +332,8 @@ export function AlphaTab({ a }: { a: Analysis }) {
         const result = scoreAlpha(signals);
         const classification = classify(result, quant);
         const story = narrate(result, classification, symbol);
-        setState({ result, classification, story, quant, capturedAt: bagCapturedAt(bag) });
+        const brief = buildBrief({ ...bag, __benchmarks: benchmarks || bag.__benchmarks }, result);
+        setState({ result, classification, story, brief, quant, capturedAt: bagCapturedAt(bag), bag });
       })
       .catch((err: any) => {
         console.error('alpha tab', err);
@@ -321,8 +359,8 @@ export function AlphaTab({ a }: { a: Analysis }) {
           <OHead title="Alpha Signal" />
           <p className="text-sm text-muted-foreground">Reading the evidence for {symbol}…</p>
           <p className="mt-1 text-tiny text-muted-foreground/80">
-            Eleven signal providers over quarterly statements, the analyst grade history, price targets, 13F aggregates and insider filings. Five of
-            these feeds are not part of a company report, so they are being fetched now.
+            Quarterly statements, the analyst grade history, price targets, 13F aggregates and insider filings. Some of these feeds are not part of a
+            company report, so they are being fetched now.
           </p>
           <Skeleton className="mt-4 h-24" />
           <Skeleton className="mt-2.5 h-3.5" />
@@ -331,5 +369,5 @@ export function AlphaTab({ a }: { a: Analysis }) {
       </div>
     );
   }
-  return <EvidenceHost><Page state={state} /></EvidenceHost>;
+  return <EvidenceHost><Page state={state} a={a} /></EvidenceHost>;
 }

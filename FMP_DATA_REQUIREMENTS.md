@@ -68,9 +68,10 @@ Ultimate today.
 | Endpoint | Rows / params | Used for | Tier |
 |---|---|---|---|
 | `profile` | 1 | Header, sector, logo, market cap | Starter |
-| `income-statement` | annual × 10 · quarterly × 12 | Five-factor model, financials, Alpha Signal | annual: Starter · quarterly: Premium |
-| `balance-sheet-statement` | annual × 10 | Financial health, Beneish M-Score | Starter |
-| `cash-flow-statement` | annual × 10 · quarterly × 12 | Cash-flow metrics, Alpha Signal | annual: Starter · quarterly: Premium |
+| `income-statement` | annual × 10 · quarterly × 12 | Five-factor model, financials, Alpha Signal, Demand Discovery live re-read; quarterly also joins adjusted EPS to filed EPS | annual: Starter · quarterly: Premium |
+| `balance-sheet-statement` | annual × 10 · quarterly × 12 | Financial health, Beneish M-Score; quarterly: Demand Discovery's live re-read (inventory, customer prepayments) | annual: Starter · quarterly: Premium |
+| `cash-flow-statement` | annual × 10 · quarterly × 12 | Cash-flow metrics, Alpha Signal, Demand Discovery live re-read | annual: Starter · quarterly: Premium |
+| `income-statement-as-reported` | annual × 1 | Financials tab: the accounting standard (US GAAP or IFRS), read off the filing's tag names | confirm |
 | `ratios` / `ratios-ttm` | annual × 10 / 1 | 115 ratios, peer comparison, screens | confirm |
 | `key-metrics` / `key-metrics-ttm` | annual × 10 / 1 | Valuation and statistics | confirm |
 | `financial-growth` | annual × 10 | Growth factor, peer growth | confirm |
@@ -105,11 +106,12 @@ Ultimate today.
 | `price-target-consensus` · `price-target-summary` | 1 | Price target, target momentum | confirm |
 | `grades-consensus` | 1 | Wall Street rating | confirm |
 | `historical-grades` | 24 months | Rating-mix shift | confirm |
+| `grades` | full history, on demand (about 1,800 rows for AAPL since 2012) | Insider Trading tab — each firm's upgrades, downgrades and restated ratings | confirm (read on Ultimate, 2026-10-07) |
 
 ### 3.4 Ownership and insiders
 | Endpoint | Rows / params | Used for | Tier |
 |---|---|---|---|
-| `insider-trading/search` | 100 | Insider table, chart markers | confirm |
+| `insider-trading/search` | 100 (report) · 500 on demand (Insider Trading tab, about four years at a large company) | Insider table, chart markers; Insider Trading tab chart and list | confirm |
 | `insider-trading/statistics` | all quarters | Insider conviction | confirm |
 | `institutional-ownership/extract-analytics/holder` | top 20 (report) · 100 × 8 quarters (history) | Ownership section | **Ultimate** |
 | `institutional-ownership/symbol-positions-summary` | 1 quarter | Alpha Signal; big-banks portfolio baseline | **Ultimate** |
@@ -119,7 +121,7 @@ Ultimate today.
 ### 3.5 Earnings, dividends, calendars, transcripts
 | Endpoint | Rows / params | Used for | Tier |
 |---|---|---|---|
-| `earnings` | 12 | Surprises, next date | confirm |
+| `earnings` | 12 | Surprises, next date; the adjusted (non-GAAP) EPS on the Financials tab | confirm |
 | `dividends` | 60 per symbol | Dividend module, ETF yields | confirm |
 | `earnings-calendar` (`includeReportTimes=true`) · `dividends-calendar` · `splits-calendar` · `ipos-calendar` | date ranges | Calendar page, earnings desk; split restatement for 13F | **Premium** (corporate calendars) |
 | `earning-call-transcript-dates` | all | Transcript index | **Ultimate** |
@@ -182,7 +184,7 @@ are proxied through our server and cached for a day.
 |---|---|
 | Open a company report | **up to 52**: 34 per-company feeds, up to 8 peers × 2, 2 benchmark price series |
 | …then open its Alpha Signal tab | +5 |
-| …open a transcript / the SEC filings list / the 13F history | +1 / +1 / +8 |
+| …open a transcript / the SEC filings list / the 13F history / the Insider Trading tab | +1 / +1 / +8 / +2 |
 | Change a chart range | +1 |
 | Side panel on every page (indices, watchlist, movers, earnings) | about 6–8, cached 10 minutes per browser |
 | Stock directory / a screener table | 1 (`company-screener`, up to 5,000 rows) |

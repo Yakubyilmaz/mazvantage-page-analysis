@@ -15,18 +15,20 @@ import { MARKET_ETF, SECTOR_ETF } from './nav';
 export interface Extras {
   peerRatios: Record<string, any>;
   peerGrowth: Record<string, any>;
+  peerMetrics: Record<string, any>;
   benchmarks: Record<string, any>;
 }
 
 /** Peer P/E ratios and benchmark price series — fetched after the main pass. */
 export async function loadExtras(ds: Dataset, facts: any): Promise<Extras> {
-  const out: Extras = { peerRatios: {}, peerGrowth: {}, benchmarks: {} };
+  const out: Extras = { peerRatios: {}, peerGrowth: {}, peerMetrics: {}, benchmarks: {} };
 
   // A snapshot can ship its own peer ratios and benchmark series so the
   // offline report is complete rather than half-empty.
   if (ds.snapshotExtras) {
     Object.assign(out.peerRatios, ds.snapshotExtras.peerRatios || {});
     Object.assign(out.peerGrowth, ds.snapshotExtras.peerGrowth || {});
+    Object.assign(out.peerMetrics, ds.snapshotExtras.peerMetrics || {});
     Object.assign(out.benchmarks, ds.snapshotExtras.benchmarks || {});
   }
 
@@ -48,6 +50,11 @@ export async function loadExtras(ds: Dataset, facts: any): Promise<Extras> {
       const row = gs[i]?.status === 'ok' ? (gs[i].data || [])[0] : null;
       if (row) out.peerGrowth[sym] = row;
     });
+
+    // A third: returns on capital and equity live in key-metrics, not the
+    // ratios feed, and the Research tab's peer comparison is built on them.
+    const ms = await mapLimited(peers, (sym) => fetchFor('metricsTtm', sym), 4);
+    peers.forEach((sym, i) => { if (ms[i]?.status === 'ok' && ms[i].data) out.peerMetrics[sym] = ms[i].data; });
   }
 
   const etf = SECTOR_ETF[facts.sector];
@@ -85,6 +92,6 @@ export async function loadReport(symbol: string): Promise<ReportLoad> {
   }
   let a = analyse(ds);
   const [extras, sectorStats] = await Promise.all([loadExtras(ds, a.facts), loadSectorStats()]);
-  a = analyse(ds, { peerRatios: extras.peerRatios, peerGrowth: extras.peerGrowth, sectorStats, benchmarks: extras.benchmarks });
+  a = analyse(ds, { peerRatios: extras.peerRatios, peerGrowth: extras.peerGrowth, peerMetrics: extras.peerMetrics, sectorStats, benchmarks: extras.benchmarks });
   return { status: 'ok', a, ds, extras };
 }

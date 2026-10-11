@@ -71,7 +71,7 @@ function RecordCard({ rows, result }: { rows: Filing[]; result: FeedResult }) {
   return (
     <OCard span={4} id="news-sec-record">
       <OHead title="Filing record"
-        info="Counts of filings, not of events: one Form 4 can report several trades, and one 8-K can carry results and a board change together. The trades themselves, with prices and codes, are in the Ownership section of the Analysis tab." />
+        info="Counts of filings, not of events: one Form 4 can report several trades, and one 8-K can carry results and a board change together. The trades themselves, with prices and codes, are on the Insider Trading tab." />
       <StatLines>
         <StatLine label="Filings returned" value={String(s.total)}
           note={s.oldest ? `since ${fmtDate(s.oldest)}` : ''} />

@@ -30,9 +30,12 @@ describe('AAPL, the bundled year of closes', () => {
       expect(p.change).toBeCloseTo(p.to!.price - p.from!.price, 9);
     }
     expect(of('ALL').window).toHaveLength(pts.length);
-    // The snapshot opens four days inside the year: the 90% allowance, said so.
-    expect(of('1Y').approx).toBe(true);
-    expect(of('1Y').from).toEqual(pts[0]);
+    // The prices were refreshed on 2026-10-09 with more than a year of closes
+    // (they used to open four days inside it), so a year is exact: the base is
+    // the last close on or before the same day a year earlier.
+    expect(of('1Y').approx).toBe(false);
+    const yearAgo = new Date(new Date(pts.at(-1)!.date).getTime() - 365 * 864e5).toISOString().slice(0, 10);
+    expect(of('1Y').from!.date <= yearAgo).toBe(true);
   });
   it('has nine periods in a fixed order', () => {
     expect(PERIODS.map((p) => p.key)).toEqual(['1W', '1M', '3M', '6M', 'YTD', '1Y', '3Y', '5Y', 'ALL']);

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { writeFileSync } from 'node:fs';
 import {
   CHECKED, FIRMS, FIRM_BY_KEY, KINDS, LETTERS, REGIONS, TOPICS,
   companyRows, dateLabel, facetCounts, firmOf, firmShelf, groupLetters, investorRows, isCurated, lettersForTicker,
@@ -144,7 +145,13 @@ describe('the indexed tier', () => {
   it('keeps crawled entries to what a crawler can know', () => {
     for (const l of INDEX_LETTERS.filter((x) => x.auto)) {
       expect(l.about, l.id).toBeUndefined();
-      expect(l.mentions, l.id).toBeUndefined();
+      // A crawled entry names a company only once someone has read the
+      // passage (tools/letters/scan_mentions.py, then a person): every such
+      // mention carries the stance and the view that reading produced.
+      for (const x of l.mentions || []) {
+        expect(x.stance, `${l.id} ${x.name}`).toBeDefined();
+        expect(x.view, `${l.id} ${x.name}`).toBeTruthy();
+      }
       expect(l.authors, l.id).toBeUndefined();
       expect(l.date.startsWith('2026'), l.id).toBe(true);
     }
@@ -187,3 +194,12 @@ describe('the Investors and Companies tables, and the counts', () => {
     expect(parseLetterQuery('tab=stocks').tab).toBeUndefined();
   });
 });
+
+/* With LETTERS_EXPORT=<path>, write the library as the app holds it, for
+   tools/letters/scan_mentions.py to read. Writes nothing otherwise. */
+if (process.env.LETTERS_EXPORT) {
+  writeFileSync(process.env.LETTERS_EXPORT, JSON.stringify({
+    letters: LETTERS.map((l) => ({ id: l.id, firm: l.firm, kind: l.kind, title: l.title, date: l.date, url: l.url, pdf: l.pdf || null, format: l.format, mentions: l.mentions || [] })),
+    firms: FIRMS.map((f) => ({ key: f.key, name: f.name })),
+  }, null, 1));
+}

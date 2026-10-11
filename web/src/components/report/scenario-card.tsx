@@ -102,7 +102,7 @@ function RangeStrip({ cases, targets, px, cur }: {
 }
 
 /** One sentence on where the price sits against the cases — the reading the strip is for. */
-function reading(cases: Record<CaseKey, CaseResult>, px: number | null, cur: string) {
+export function scenarioReading(cases: Record<CaseKey, CaseResult>, px: number | null, cur: string) {
   const [b, m, u] = [cases.bear.value, cases.base.value, cases.bull.value];
   if (!isNum(px) || !isNum(b) || !isNum(u)) return null;
   if (px > u) {
@@ -131,7 +131,7 @@ export function ScenarioCard({ a }: { a: Analysis }) {
     );
   }
   const targetFor: Record<CaseKey, number | null> = { bear: s.targets.low, base: s.targets.consensus, bull: s.targets.high };
-  const line = reading(s.cases, px, cur);
+  const line = scenarioReading(s.cases, px, cur);
   const spread = isNum(s.cases.bull.value) && isNum(s.cases.bear.value) && isNum(s.cases.base.value) && s.cases.base.value > 0
     ? (s.cases.bull.value - s.cases.bear.value) / s.cases.base.value : null;
 

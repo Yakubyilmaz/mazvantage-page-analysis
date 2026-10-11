@@ -54,7 +54,7 @@
       annual comparison as a quarterly one.
    ========================================================================== */
 
-import { isNum, mean, sum } from './format';
+import { isNum, sum } from './format';
 import { fetchFor, mapLimited, loadSnapshot } from './fmp';
 import { loadDisclosures, disclosuresFor, disclosureSignals } from './alpha-disclosures';
 import {
@@ -67,7 +67,7 @@ import {
 
 /** The five feeds nothing else in the app fetches. */
 export const ALPHA_ONLY_FEEDS = [
-  'incomeQ', 'cashflowQ', 'gradesHistorical', 'targetSummary', 'holdersSummary',
+  'incomeQ', 'cashflowQ', 'gradesHistorical', 'targetSummary', 'holdersSummary', 'segProductQ',
 ];
 
 /** Feeds a company report already has, reused from its dataset when present. */
@@ -153,10 +153,11 @@ export async function loadAlphaBag(symbol: any, { ds = null, feeds = null, onPro
     if (snap) {
       for (const name of unfilled) {
         if (snap.feeds?.[name] != null) {
-          bag[name] = { status: 'ok', data: snap.feeds[name], fromSnapshot: true };
+          // A feed refreshed after the capture carries its own date.
+          bag[name] = { status: 'ok', data: snap.feeds[name], fromSnapshot: true, date: snap.feedDates?.[name] || snap.capturedAt || null };
         }
       }
-      bag.__snapshot = { capturedAt: snap.capturedAt || null };
+      bag.__snapshot = { capturedAt: snap.capturedAt || null, feedDates: snap.feedDates || {} };
     }
   }
 
@@ -177,6 +178,13 @@ export const bagIsSnapshot = (bag: any) => Object.values(bag || {})
 
 /** The capture date of the bundled snapshot, when one was used. */
 export const bagCapturedAt = (bag: any) => bag?.__snapshot?.capturedAt || null;
+
+/** The day a feed in the bag is true as of: live is today, saved is its own refresh date or the capture's. */
+export const feedAsOf = (bag: any, feed: string): string | null => {
+  const r = bag?.[feed];
+  if (!r || r.status !== 'ok') return null;
+  return r.fromSnapshot ? (r.date || bagCapturedAt(bag)) : new Date().toISOString().slice(0, 10);
+};
 
 /* ==========================================================================
    Small shared arithmetic
@@ -661,14 +669,22 @@ const commercialProvider = {
   id: 'commercial',
   category: 'commercial',
   label: 'Commercial momentum',
-  feeds: ['segProduct', 'pressReleases'],
+  feeds: ['segProductQ', 'segProduct', 'pressReleases'],
   needs: [],
 
   build(bag: any, ctx: any) {
     const out = [];
 
-    /* ---- the revenue mix ---- */
-    const segs = byDateDesc(rowsOf(bag, 'segProduct'));
+    /* ---- the revenue mix ----
+       By quarter when the quarterly split is there — the newest quarter
+       against the same quarter a year earlier, for the same seasonal reason as
+       the statements — and by year only as the fallback. The annual split is
+       up to a year old by the time the next 10-K lands. */
+    const quarterly = byDateDesc(rowsOf(bag, 'segProductQ')).filter((r: any) => r?.data && Object.keys(r.data).length > 1);
+    const byQuarter = quarterly.length >= 5;
+    const segs = byQuarter ? [quarterly[0], quarterly[4]] : byDateDesc(rowsOf(bag, 'segProduct'));
+    const segFeed = byQuarter ? 'segProductQ' : 'segProduct';
+    const label = (r: any) => (byQuarter ? `${r.fiscalYear || String(r.date).slice(0, 4)} ${r.period || ''}`.trim() : String(r.date).slice(0, 4));
     const now = segs[0]?.data;
     const prior = segs[1]?.data;
     if (now && prior && typeof now === 'object' && typeof prior === 'object') {
@@ -697,21 +713,21 @@ const commercialProvider = {
             previous: top.was,
             change: top.delta,
             unit: 'share of revenue',
-            sourceRef: fmpSource('segProduct', { publicationDate: segs[0].date, title: 'Revenue by product segment' }),
+            sourceRef: fmpSource(segFeed, { publicationDate: segs[0].date, title: byQuarter ? 'Revenue by product segment, quarterly' : 'Revenue by product segment' }),
             sourceDate: segs[0].date,
             dataQuality: 'verified',
-            confidence: 'medium',
+            confidence: byQuarter ? 'high' : 'medium',
             calculation: `"${top.name}" moved from ${pctText(top.was)} of reported revenue in `
-              + `${String(segs[1].date).slice(0, 4)} to ${pctText(top.share)} in `
-              + `${String(segs[0].date).slice(0, 4)}, a shift of ${pp(top.delta)}. The largest `
-              + `absolute shift across ${moves.length} reported segments is the one shown.`,
+              + `${label(segs[1])} to ${pctText(top.share)} in ${label(segs[0])}, a shift of `
+              + `${pp(top.delta)}. The largest absolute shift across ${moves.length} reported `
+              + `segments is the one shown${byQuarter ? '; each quarter is compared with the same quarter a year earlier' : ''}.`,
             historical: moves.slice(0, 4)
               .map((m) => `${m.name}: ${pp(m.delta)}`).join(' · '),
             interpretation: top.delta > 0
               ? `The mix is moving toward "${top.name}".`
               : `The mix is moving away from "${top.name}".`,
             limitations: 'Segment definitions are the company\'s own and are re-cut without '
-              + 'notice; a renamed segment reads as a new one. Annual, so up to a year stale. '
+              + `notice; a renamed segment reads as a new one.${byQuarter ? '' : ' Annual, so up to a year stale.'} `
               + 'A mix shift is a fact about the mix, not a judgement that the new mix is better.',
           }));
         }
@@ -939,15 +955,18 @@ const insiderProvider = {
       const s = sum(sells);
       const total = b + s;
       const tilt = total > 0 ? (b - s) / total : 0;
-      // Asymmetric on purpose: insider selling is routine — diversification,
-      // tax, scheduled 10b5-1 plans — and insider buying is not. A quarter of
-      // selling should barely move this; any buying at all should.
-      const score = total === 0 ? 50 : bandScore(tilt, { mid: -0.6, span: 1.2 });
+      /* Only buying moves this. Selling is what insiders paid in stock do —
+         tax on vesting, diversification, scheduled 10b5-1 plans — so it reads
+         as the neutral midpoint, not as a vote against: scoring it down marked
+         every large company that pays in shares as distrusted by its own
+         management, every quarter. One purchase is a reading; three or more
+         in a year is a strong one. (v2.0.0; before, all-selling scored ~33.) */
+      const score = b === 0 ? 50 : Math.min(95, 62 + b * 11);
       out.push(signal({
         category: 'insider',
         name: 'Open-market insider activity',
         symbol: ctx.symbol,
-        status: total === 0 ? 'neutral' : statusFor(score),
+        status: b === 0 ? 'neutral' : statusFor(score),
         score,
         raw: b,
         previous: s,
@@ -959,15 +978,14 @@ const insiderProvider = {
         confidence: 'medium',
         calculation: `Over the last four reported quarters: ${b} open-market purchases (Form 4 `
           + `code P) and ${s} open-market sales (code S). Option exercises and vesting grants `
-          + 'are excluded — they are compensation, not a decision to buy. The scale is centred '
-          + 'at 60% selling rather than at parity, because routine selling is the normal state '
-          + 'and only buying is unusual.',
+          + 'are excluded — they are compensation, not a decision to buy. Sales leave the score '
+          + 'at the midpoint, 50; each purchase adds 11 points above 62, to a cap of 95.',
         historical: year.map((r: any) => `${r.year}Q${r.quarter}: ${r.totalPurchases ?? '?'}B/${r.totalSales ?? '?'}S`).join(' · '),
         interpretation: b === 0 && s === 0
           ? 'No open-market insider transactions in the last four quarters.'
           : b > 0
             ? 'Insiders bought on the open market in the last year.'
-            : 'Open-market activity was selling only.',
+            : 'No insider bought on the open market; the selling is routine and is not read as a signal.',
         limitations: 'Counts transactions, not dollars, and does not identify who traded. '
           + 'Insider selling is not evidence of a problem and insider buying is not evidence '
           + 'that a stock will rise; both are single data points about individual people.',
@@ -984,38 +1002,10 @@ const insiderProvider = {
       }));
     }
 
-    /* ---- the acquired/disposed tilt, as a coarse second read ---- */
-    const r0 = rows[0];
-    const priorRatios = rows.slice(1, 4).map((r: any) => r.acquiredDisposedRatio).filter(isNum);
-    if (isNum(r0?.acquiredDisposedRatio) && priorRatios.length >= 2) {
-      const base = mean(priorRatios);
-      const d = r0.acquiredDisposedRatio - base!;
-      const score = bandScore(d, { mid: 0, span: 1 });
-      out.push(signal({
-        category: 'insider',
-        name: 'Acquired-to-disposed tilt',
-        symbol: ctx.symbol,
-        status: statusFor(score),
-        score,
-        raw: r0.acquiredDisposedRatio,
-        previous: base,
-        change: d,
-        unit: 'ratio',
-        sourceRef: src,
-        sourceDate: asOf,
-        dataQuality: 'calculated',
-        confidence: 'low',
-        calculation: `${r0.year}Q${r0.quarter} acquired-to-disposed ratio is `
-          + `${r0.acquiredDisposedRatio}, against an average of ${base!.toFixed(2)} over the `
-          + `prior ${priorRatios.length} quarters.`,
-        interpretation: d > 0
-          ? 'Insiders acquired more relative to disposals than in recent quarters.'
-          : 'Insiders disposed more relative to acquisitions than in recent quarters.',
-        limitations: 'This ratio includes grants and option exercises, so it moves with the '
-          + 'compensation calendar as much as with anything else. It is scored at low '
-          + 'confidence and is a cross-check on the open-market signal above, not a second vote.',
-      }));
-    }
+    /* The acquired-to-disposed ratio was a second vote here until v2.0.0. It
+       counts grants and option exercises, so it moved with the compensation
+       calendar — Apple's swings from 0.2 to 1.5 every year with its October
+       vesting — and is no longer read. */
 
     return out;
   },
@@ -1175,9 +1165,16 @@ const hiringProvider = {
    8. Price and volume
    ========================================================================== */
 
-/** Return over `days` from a light EOD series, newest-first after sorting. */
-function returnOver(series: any, days: any) {
-  const pts = byDateDesc(series);
+/**
+ * Return over `days` from a light EOD series, newest-first after sorting.
+ *
+ * `end` pins the window's last day. Without it each series ends on its own
+ * newest close, and a stock series saved a month before its benchmark was
+ * compared with the market over a different month — which is how a saved
+ * copy once read "underperformed" for a stock that had beaten the market.
+ */
+export function returnOver(series: any, days: any, end: string | null = null) {
+  const pts = byDateDesc(series).filter((p) => !end || String(p.date) <= end);
   if (pts.length < 2) return null;
   const last = pts[0];
   const target = new Date(new Date(last.date).getTime() - days * 864e5);
@@ -1188,32 +1185,66 @@ function returnOver(series: any, days: any) {
   return growthOf(last.price ?? last.close, back.price ?? back.close);
 }
 
+/** The close on the last trading day at or before `day`, or null. */
+function closeOn(series: any, day: string) {
+  const p = byDateDesc(series).find((r) => String(r.date) <= day);
+  return p ? (p.price ?? p.close ?? null) : null;
+}
+
+/** The first trading day after `day` in a series, or null. */
+function dayAfter(series: any, day: string) {
+  const later = byDateDesc(series).filter((r) => String(r.date) > day);
+  return later.length ? String(later[later.length - 1].date) : null;
+}
+
+/**
+ * How the stock took a report: the close the day before it against the close
+ * the trading day after, so the window holds the news whether the company
+ * reported before the open or after the close — the calendar does not say
+ * which. Market-relative when a benchmark covers the same days.
+ */
+export function reportReaction(series: any, bench: any, reportDate: string) {
+  const before = new Date(new Date(reportDate).getTime() - 864e5).toISOString().slice(0, 10);
+  const after = dayAfter(series, reportDate);
+  if (!after) return null;
+  const mine = growthOf(closeOn(series, after), closeOn(series, before));
+  if (!isNum(mine)) return null;
+  const theirs = bench ? growthOf(closeOn(bench, after), closeOn(bench, before)) : null;
+  return { from: before, to: after, mine, theirs, rel: isNum(theirs) ? mine - theirs : null };
+}
+
 const priceVolumeProvider = {
   id: 'priceVolume',
   category: 'priceVolume',
   label: 'Price and volume',
-  feeds: ['prices', 'quote'],
+  feeds: ['prices', 'earnings'],
   needs: [],
 
   build(bag: any, ctx: any) {
     const out = [];
     const series = rowsOf(bag, 'prices');
     const bench = ctx.benchmarks?.market || bag.__benchmarks?.market || null;
+    const asOf = byDateDesc(series)[0]?.date || null;
 
-    /* ---- relative strength, three windows ---- */
+    /* ---- relative strength, three windows, ending on the same day ---- */
     if (series.length > 30) {
-      const asOf = byDateDesc(series)[0]?.date || null;
       for (const [label, days, span] of [['3-month', 92, 0.15], ['6-month', 183, 0.22], ['12-month', 365, 0.30]]) {
         const mine = returnOver(series, days);
         if (!isNum(mine)) continue;
-        const theirs = bench ? returnOver(bench, days) : null;
+        // The benchmark must cover the stock's last day, or the windows differ.
+        const covered = bench && byDateDesc(bench)[0]?.date >= asOf;
+        const theirs = covered ? returnOver(bench, days, asOf) : null;
         const rel = isNum(theirs) ? mine - theirs : null;
-        const score = bandScore(isNum(rel) ? rel : mine, { mid: 0, span });
+        /* Twelve months is shown, not scored (v2.0.0): most of a year-long
+           window is the run-up to the newest report, so it outvoted the
+           market's verdict on that report. Three and six months do the voting. */
+        const voting = label !== '12-month';
+        const score = voting ? bandScore(isNum(rel) ? rel : mine, { mid: 0, span }) : null;
         out.push(signal({
           category: 'priceVolume',
           name: `${label} relative strength`,
           symbol: ctx.symbol,
-          status: statusFor(score),
+          status: voting ? statusFor(score) : 'neutral',
           score,
           raw: mine,
           previous: theirs,
@@ -1239,31 +1270,41 @@ const priceVolumeProvider = {
       }
     }
 
-    /* ---- participation ---- */
-    const quote = oneOf(bag, 'quote');
-    if (quote && isNum(quote.volume) && isNum(quote.avgVolume) && quote.avgVolume > 0) {
-      const rel = quote.volume / quote.avgVolume;
-      const score = bandScore(rel, { mid: 1, span: 1.5 });
+    /* ---- how it took the last report ----
+       The one price fact that is about the company rather than the tape: what
+       the market did with the newest set of numbers. A beat that sells off is
+       a report the market had already priced past. (Replaced the one-day
+       relative volume in v2.0.0, which a partial session read low by
+       construction and a saved copy froze on a random day.) */
+    const reported = byDateDesc(rowsOf(bag, 'earnings')).filter((r: any) => isNum(r.epsActual) && String(r.date) <= (asOf || ''));
+    const last = reported[0];
+    const react = last && series.length > 30 ? reportReaction(series, bench, String(last.date)) : null;
+    if (react) {
+      const v = isNum(react.rel) ? react.rel : react.mine;
+      const score = bandScore(v, { mid: 0, span: 0.10 });
       out.push(signal({
         category: 'priceVolume',
-        name: 'Relative volume',
+        name: 'Reaction to the last report',
         symbol: ctx.symbol,
         status: statusFor(score),
         score,
-        raw: quote.volume,
-        previous: quote.avgVolume,
-        change: rel - 1,
-        unit: 'shares',
-        sourceRef: fmpSource('quote', { title: 'Quote' }),
-        sourceDate: ctx.today,
+        raw: react.mine,
+        previous: react.theirs,
+        change: react.rel,
+        unit: 'return',
+        sourceRef: fmpSource('prices', { publicationDate: react.to, title: 'Daily closing prices' }),
+        sourceDate: react.to,
         dataQuality: 'calculated',
-        confidence: 'low',
-        calculation: `Today's volume ${quote.volume.toLocaleString('en-US')} against the average `
-          + `${quote.avgVolume.toLocaleString('en-US')} — ${rel.toFixed(2)}×.`,
-        interpretation: rel > 1 ? 'Trading above its average volume.' : 'Trading below its average volume.',
-        limitations: 'One day against an average. A single session is noise on its own, and a '
-          + 'partial session during market hours reads low by construction. Low confidence, and '
-          + 'it is here because participation qualifies the return signals above it.',
+        confidence: isNum(react.rel) ? 'high' : 'medium',
+        calculation: `Close on ${react.from} to close on ${react.to}, around the report of ${last.date}: `
+          + `${pctText(react.mine)}${isNum(react.rel) ? ` against the market's ${pctText(react.theirs)}, a relative ${pp(react.rel)}` : ''}. `
+          + 'Two days, so the window holds the news whether it came before the open or after the close. '
+          + 'The full scale is ±10 points.',
+        interpretation: v >= 0
+          ? 'The market took the last report well.'
+          : 'The market sold the last report.',
+        limitations: 'Two days of trading also carry whatever else happened on them. A reaction says '
+          + 'what the market expected, not whether the report was good.',
       }));
     }
 
@@ -1293,16 +1334,15 @@ const catalystProvider = {
 
     if (upcoming) {
       const days = Math.round((+new Date(upcoming.date) - ctx.now) / 864e5);
-      // Nearer is higher, but a date is not good news. The band tops out at 70
-      // rather than 100 so a company with nothing but a calendar entry cannot
-      // reach a strong category score.
-      const score = Math.max(30, Math.min(70, 70 - (days / 90) * 40));
+      /* Described, not scored (v2.0.0). It used to score 30–70 by nearness,
+         which made a calendar entry count as evidence: every company read
+         better in the fortnight before it reported, whatever it reported. */
       out.push(signal({
         category: 'catalysts',
         name: 'Next earnings date',
         symbol: ctx.symbol,
         status: 'neutral',
-        score,
+        score: null,
         raw: upcoming.date,
         previous: null,
         change: days,
@@ -1311,9 +1351,10 @@ const catalystProvider = {
         sourceDate: ctx.today,
         dataQuality: 'verified',
         confidence: 'medium',
-        calculation: `The next scheduled report is ${upcoming.date}, ${days} days away. `
-          + 'Proximity scores between 30 and 70 — near the top when a date is imminent, never '
-          + 'at the top, because a scheduled event is an opportunity for news and not news.',
+        calculation: `The next scheduled report is ${upcoming.date}, ${days} days away`
+          + `${isNum(upcoming.epsEstimated) ? `, with consensus EPS of ${upcoming.epsEstimated}` : ''}`
+          + `${isNum(upcoming.revenueEstimated) ? ` and revenue of ${(upcoming.revenueEstimated / 1e9).toFixed(1)}bn` : ''}. `
+          + 'A date is an opportunity for news, not news, so it is not scored.',
         interpretation: days <= 21
           ? 'A scheduled report is close, which is when the other signals in this engine get tested.'
           : 'The next scheduled report is some way off.',
@@ -1391,6 +1432,9 @@ const COVERAGE_BRACKETS = [
   { floor: 0, expect: 6, label: 'micro cap (<$2bn)' },
 ];
 
+/** Above this market capitalisation, the attention category does not apply. */
+export const ATTENTION_CAP_LIMIT = 50e9;
+
 const attentionProvider = {
   id: 'attention',
   category: 'attention',
@@ -1412,6 +1456,36 @@ const attentionProvider = {
       title: 'Attention and coverage measures',
       publicationDate: ctx.today,
     });
+
+    /* ---- not a question for a large company ----
+       Undercoverage is the small- and mid-cap leg of the thesis. At $50bn and
+       up a company is followed by dozens of analysts and owned by thousands of
+       funds; reading it against a bracket called Apple — 30 analysts, the
+       ceiling of the whole market — "undercovered" and filed it as
+       undercovered growth. So the category is marked not applicable and leaves
+       the composite and its coverage alike, rather than scoring a neutral 50
+       or reading as a gap. (v2.0.0) */
+    if (isNum(cap) && cap >= ATTENTION_CAP_LIMIT) {
+      const na: any = signal({
+        category: 'attention',
+        name: 'Coverage relative to size',
+        symbol: ctx.symbol,
+        status: 'neutral',
+        score: null,
+        raw: cap,
+        unit: 'market cap',
+        sourceRef: attentionSource,
+        sourceDate: ctx.today,
+        dataQuality: 'attention',
+        confidence: 'medium',
+        calculation: `Market capitalisation is ${(cap / 1e9).toFixed(0)}bn, above the `
+          + `${ATTENTION_CAP_LIMIT / 1e9}bn line where undercoverage stops being a question.`,
+        interpretation: 'Not applicable: a company this size is not short of attention.',
+        limitations: 'The line is a stated assumption, not a fitted one.',
+      });
+      na.notApplicable = true;
+      return [na];
+    }
 
     /* ---- analyst coverage against size ---- */
     const est = rowsOf(bag, 'estimates');
@@ -1460,7 +1534,9 @@ const attentionProvider = {
 
     /* ---- how much has been written ---- */
     const news = byDateDesc(rowsOf(bag, 'news'), 'publishedDate');
-    if (news.length && bracket) {
+    // A saved copy holds a handful of articles from its capture day, not
+    // ninety days of them, so counting it against today means nothing.
+    if (news.length && bracket && !bag.news?.fromSnapshot) {
       const cut = new Date(ctx.now.getTime() - 90 * 864e5);
       const recent = news.filter((r) => new Date(r.publishedDate) >= cut).length;
       // The news feed is capped at 100 rows, so a saturated count means "at
@@ -1573,8 +1649,10 @@ const macroProvider = {
       })];
     }
 
-    const sec = returnOver(industry, 183);
-    const mkt = returnOver(market, 183);
+    // Both windows end on the day both series reach.
+    const end = [byDateDesc(industry)[0]?.date, byDateDesc(market)[0]?.date].filter(Boolean).sort()[0] || null;
+    const sec = returnOver(industry, 183, end);
+    const mkt = returnOver(market, 183, end);
     if (!isNum(sec) || !isNum(mkt)) {
       return [unavailableSignal({
         category: 'macro',
@@ -1699,7 +1777,21 @@ export function runProviders(bag: any, ctx: any = {}) {
     const dropped = new Set(superseded.map((sig) => sig.id));
     const kept = out.filter((sig) => !dropped.has(sig.id));
     kept.push(...disclosureSignals(disc, full));
-    return kept;
+    return notApplicableCategories(kept);
   }
-  return out;
+  return notApplicableCategories(out);
+}
+
+/* A category the provider ruled out for this company (attention on a large
+   cap) stays out even when the hand capture has a reading for it: the search
+   interest is still shown, but cannot bring the category back into the score. */
+function notApplicableCategories(signals: any[]) {
+  const ruledOut = new Set(signals.filter((s) => s.notApplicable).map((s) => s.category));
+  if (!ruledOut.size) return signals;
+  return signals
+    // A gap in a question that does not apply is not a gap.
+    .filter((s) => !(ruledOut.has(s.category) && s.status === 'insufficient_data'))
+    .map((s) => (ruledOut.has(s.category) && !s.notApplicable
+      ? { ...s, score: null, status: 'neutral', notApplicable: true }
+      : s));
 }

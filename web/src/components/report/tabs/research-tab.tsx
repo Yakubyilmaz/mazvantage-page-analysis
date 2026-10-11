@@ -3,225 +3,218 @@
 /* ==========================================================================
    Maz Vantage — the Research tab
 
-   An equity research report in the Morningstar house shape: a rating band
-   across the top, a price-against-fair-value chart, an analyst note, then
-   moat, fair value, risk, capital allocation and the financials.
+   An equity research report, set as a document rather than a dashboard: a
+   running head, a strip of ratings across the top, a contents column on
+   the left, and long-form sections down the right, each argued in prose and
+   supported by numbered exhibits. The shape is Morningstar's Equity Analyst
+   Report; the rule for this page is more text, fewer controls.
 
    **The layout is theirs. The ratings are ours.** The headline is the quant
    rating `gradeAll` already computes; the valuation zone beside it is the only
    place a fair value estimate is used, and no fair value ever feeds a grade.
    The ratings model and the generated prose live in `lib/research-model.ts`;
-   this file lays them out.
+   this file sets them in type.
    ========================================================================== */
 
 import * as React from 'react';
-import { clamp, curSymbol, dec, fmtDate, isNum, money, mult, num, pct, price, yearOf } from '@/lib/format';
-import { MAX_SCORE, toneForLetter } from '@/lib/grading';
+import { curSymbol, dec, fmtDate, isNum, money, mult, num, pct, price, yearOf } from '@/lib/format';
 import { buildPrompt, fetchNarrative } from '@/lib/narrative';
 import {
   SAFETY_BANDS, analystNote, capitalProse, fairValueProse, moatProse, researchRatings, riskProse, strategyProse,
 } from '@/lib/research-model';
-import { getApiKey, logoUrl } from '@/lib/fmp';
+import { getApiKey } from '@/lib/fmp';
 import type { Analysis } from '@/lib/model';
-import { priceTimeline, type PeriodChange, type PeriodKey } from '@/lib/price-timeline';
-import { LineChart } from '@/components/charts/charts';
-import { DataTable, FeedGate, KeyInfo, Notice, OCard, OHead, Pill, toneClass } from '@/components/report/ui';
-import { GradeBar, GradePill, OSub } from '@/components/report/grade-parts';
-import { usePings } from '@/components/report/pings';
-import { ScenarioCard } from '@/components/report/scenario-card';
+import { ColumnChart, LineChart, MultiLineChart, WaterfallChart } from '@/components/charts/charts';
+import { ValuationRangeChart } from '@/components/charts/diagrams';
+import { scenarioReading } from '@/components/report/scenario-card';
+import { buildScenarios } from '@/lib/scenarios';
+import { parameterProse, profitDriverProse, profitDrivers, valuationParameters } from '@/lib/research-valuation';
+import { FACTOR_TITLES, comparison, quantPeerParas } from '@/lib/research-peers';
+import { KIND_LABEL, RELATION_LABEL, VOICES, linkOf, voicesFor, type Voice, type VoiceSection } from '@/lib/research-voices';
+import { CONFIDENCE_LABEL, KIND_LABEL as EVENT_KIND, dealMath, eventsFor, type CorpEvent, type EventParty } from '@/lib/events';
+import { GradeBar, GradePill } from '@/components/report/grade-parts';
+import { toneForLetter } from '@/lib/grading';
 import { Button } from '@/components/ui/button';
-import { useNav } from '@/components/nav-context';
 import { cn } from '@/lib/cn';
 
 type Ratings = ReturnType<typeof researchRatings>;
 type Narrative = { sections: Record<string, any>; model?: string; generatedAt?: string; source?: string } | null;
 
-const Tiny = ({ children, className }: { children: React.ReactNode; className?: string }) =>
-  <p className={cn('mt-2 text-tiny text-muted-foreground/80', className)}>{children}</p>;
+const SEG_COLORS = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)', 'var(--chart-5)', 'var(--chart-6)', 'var(--muted-foreground)'];
+
+/* ---------- type ------------------------------------------------------------------ */
+
 const Para = ({ children }: { children: React.ReactNode }) =>
-  <p className="mb-3 max-w-[80ch] text-sm leading-[1.7] last:mb-0">{children}</p>;
+  <p className="mb-3.5 text-[14.5px] leading-[1.75] text-foreground/90 last:mb-0">{children}</p>;
+
+const Small = ({ children, className }: { children: React.ReactNode; className?: string }) =>
+  <p className={cn('text-tiny leading-relaxed text-muted-foreground', className)}>{children}</p>;
+
 const Signed = ({ v }: { v: number | null | undefined }) =>
   <span className={isNum(v) ? (v >= 0 ? 'text-up' : 'text-down') : ''}>{isNum(v) ? pct(v, { sign: true }) : 'n/a'}</span>;
 
-/**
- * One section's paragraphs: the narrative if it has this section, else the
- * generated form. The fallback is not a placeholder — it is complete prose.
- */
-function Prose({ nar, k, fallback }: { nar: Narrative; k: string; fallback: string[] }) {
+/** The paragraphs of one section: the narrative's if it wrote this section, else the generated form, which is complete prose. */
+function Prose({ a, nar, k, fallback }: { a: Analysis; nar: Narrative; k: VoiceSection; fallback: string[] }) {
   const paras = nar?.sections?.[k];
-  const use: string[] = Array.isArray(paras) && paras.length ? paras : fallback;
-  return <div className="mt-2">{use.map((p, i) => <Para key={i}>{p}</Para>)}</div>;
+  const written = Array.isArray(paras) && paras.length > 0;
+  const use: string[] = written ? paras : fallback;
+  // Quotes are anchored to the written narrative's paragraphs; over the generated form they gather at the end.
+  return <WithVoices items={use.map((p, i) => ({ key: i, node: <Para key={i}>{p}</Para> }))} voices={voicesFor(a.facts.symbol, k)} anchored={written} />;
+}
+
+const REL_RULE: Record<string, string> = { confirms: 'border-up', challenges: 'border-down', adds: 'border-muted-foreground/40' };
+const REL_TEXT: Record<string, string> = { confirms: 'text-up', challenges: 'text-down', adds: 'text-muted-foreground' };
+
+/** `2026-07-30` → 30 Jul 2026; a month-only `2026-01` → Jan 2026. */
+const voiceDate = (d: string) => (d.length === 7 ? fmtDate(`${d}-01`, { month: 'short', year: 'numeric' }) : fmtDate(d));
+
+/*
+  One outside voice, set as a pull quote under the paragraph it bears on:
+  whether it confirms, challenges or adds context, who said it and where,
+  then one line of ours on why it is there.
+*/
+function VoiceQuote({ v }: { v: Voice }) {
+  const link = linkOf(v);
+  return (
+    <blockquote className={cn('my-4 ml-1 border-l-[3px] py-0.5 pl-4', REL_RULE[v.relation])}>
+      <p className="text-micro font-semibold uppercase tracking-[.06em] text-muted-foreground">
+        <span className={REL_TEXT[v.relation]}>{RELATION_LABEL[v.relation]}</span> · {KIND_LABEL[v.kind]}
+      </p>
+      <p className="mt-1 font-serif text-[15.5px] italic leading-[1.6] text-foreground">“{v.quote}”</p>
+      <p className="mt-1.5 text-tiny text-muted-foreground">
+        — <span className="font-semibold text-foreground">{v.speaker}</span>{v.role ? `, ${v.role}` : ''} ·{' '}
+        {link ? <a href={link} target="_blank" rel="noopener noreferrer" className="underline decoration-border underline-offset-2 hover:text-foreground">{v.source}</a> : v.source}, {voiceDate(v.date)}
+      </p>
+      <p className="mt-1 text-tiny leading-relaxed text-muted-foreground">{v.note}</p>
+    </blockquote>
+  );
+}
+
+/** Paragraphs with their quotes between them; anything unanchored, or anchored past the end, closes the run. */
+function WithVoices({ items, voices, anchored }: { items: { key: number | string; node: React.ReactNode }[]; voices: Voice[]; anchored: boolean }) {
+  const keys = new Set(items.map((x) => x.key));
+  const placed = anchored ? voices.filter((v) => keys.has(v.after)) : [];
+  const tail = voices.filter((v) => !placed.includes(v));
+  return (
+    <>
+      {items.map((x) => (
+        <React.Fragment key={x.key}>
+          {x.node}
+          {placed.filter((v) => v.after === x.key).map((v, i) => <VoiceQuote key={i} v={v} />)}
+        </React.Fragment>
+      ))}
+      {tail.map((v, i) => <VoiceQuote key={`t${i}`} v={v} />)}
+    </>
+  );
 }
 
 /*
-  The byline. A Morningstar note is signed by a named analyst, and signing a
-  generated report with anything resembling a name would be the one genuinely
-  misleading thing this page could do — so it says what it is, and a model's
-  byline carries its date, because prose written weeks ago beside a price that
-  moves every day is the one way this page can mislead.
+  Who wrote it, where an analyst report puts the analyst's name. A Morningstar
+  section is signed by a named person; signing generated prose with anything
+  resembling a name would be the one genuinely misleading thing this page
+  could do, so it names the model and the date it wrote.
 */
-function Byline({ a, nar }: { a: Analysis; nar: Narrative }) {
-  const src = a.ds.source === 'snapshot' ? 'a saved copy of the data' : 'live market data';
+const authorOf = (nar: Narrative) => (nar?.model ? `${nar.model}, for Maz Vantage` : 'Maz Vantage model');
+const dateOf = (a: Analysis, nar: Narrative) => fmtDate(nar?.generatedAt || a.ds.asOf);
+
+/** A section: the title on a rule, the byline beside it, then the argument. */
+function Section({ id, title, a, nar, signed = true, children }: {
+  id: string; title: string; a: Analysis; nar: Narrative; signed?: boolean; children: React.ReactNode;
+}) {
   return (
-    <p className="mb-3 text-tiny text-muted-foreground">
-      {nar ? (
-        <>
-          <b className="font-semibold text-foreground">Written by {nar.model}</b>
-          {nar.generatedAt ? ` · ${fmtDate(nar.generatedAt)}` : ''}
-          {nar.source === 'live' ? ' · generated on demand' : ' · pre-generated'}
-          {` · figures from ${src}, quoted as they stood when it was written · not an analyst opinion`}
-        </>
-      ) : (
-        <>
-          <b className="font-semibold text-foreground">Maz Vantage model</b>
-          {` · assembled ${fmtDate(a.ds.asOf)} from ${src} · no narrative model for this company · no analyst opinion`}
-        </>
-      )}
+    <section id={id} className="mt-10 scroll-mt-24 border-t border-foreground/80 pt-3 first:mt-0">
+      <h2 className="mb-3 flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
+        <span className="text-[17px] font-bold tracking-[-.01em]">{title}</span>
+        {signed ? <span className="text-tiny text-muted-foreground">{authorOf(nar)}, {dateOf(a, nar)}</span> : null}
+      </h2>
+      {children}
+    </section>
+  );
+}
+
+/** A numbered exhibit, the way broker research carries its charts: title above, source below. */
+function Exhibit({ n, title, source, children }: { n?: number; title: string; source: string; children: React.ReactNode }) {
+  return (
+    <figure className="my-5 border-y border-border py-3">
+      <figcaption className="mb-2 text-13 font-semibold">{n ? `Exhibit ${n}: ` : ''}{title}</figcaption>
+      {children}
+      <Small className="mt-2">Source: {source}</Small>
+    </figure>
+  );
+}
+
+/** A report table: hairline rules, figures right-aligned, no card around it. */
+function DocTable({ head, rows, first = 'Figure' }: { head: string[]; rows: React.ReactNode[][]; first?: string }) {
+  return (
+    <div className="scroll-none overflow-x-auto">
+      <table className="w-full border-collapse text-13 tnum">
+        <thead>
+          <tr className="border-b border-foreground/70">
+            {[first, ...head].map((h, i) => (
+              <th key={i} className={cn('px-2 py-1.5 text-tiny font-semibold text-muted-foreground', i ? 'text-right' : 'text-left')}>{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r, i) => (
+            <tr key={i} className="border-b border-border last:border-foreground/70">
+              {r.map((c, j) => <td key={j} className={cn('px-2 py-1.5', j ? 'whitespace-nowrap text-right' : 'text-left')}>{c}</td>)}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/* ---------- the head of the report ---------------------------------------------- */
+
+function RunningHead({ a }: { a: Analysis }) {
+  const f = a.facts;
+  return (
+    <p className="border-b border-border pb-2 text-micro text-muted-foreground">
+      Maz Vantage Equity Research Report | Report as of {fmtDate(a.ds.asOf)} | Reporting currency: {f.currency || 'n/a'} | Exchange: {f.exchange || 'n/a'}
     </p>
   );
 }
 
-/* ---------- the rating band ---------------------------------------------------- */
-
-const QTONE: Record<string, string> = {
-  good: 'border-up/30 bg-up/10 text-up',
-  warn: 'border-grade-mid/30 bg-grade-mid/10 text-grade-mid',
-  bad: 'border-down/30 bg-down/10 text-down',
-  muted: 'border-border bg-accent text-muted-foreground',
-};
-
-/** Verdict word, letter and score together: the word alone is too coarse, the number alone meaningless without the scale. */
-function QuantBadge({ q, size }: { q: Ratings['quant']; size?: 'lg' }) {
-  if (!isNum(q.score)) return <span className="text-tiny text-muted-foreground">Not rated</span>;
-  return (
-    <span title={`${dec(q.score, 2)} out of ${q.max}, grade ${q.letter}, from ${q.graded} ranked ratios`}
-      className={cn('inline-flex items-center gap-2.5 rounded-lg border px-3 py-1.5', QTONE[q.tone] || QTONE.muted, size === 'lg' && 'px-4 py-2')}>
-      <b className={cn('font-bold', size === 'lg' ? 'text-lg' : 'text-sm')}>{q.verdict}</b>
-      <span className="flex items-baseline gap-1.5 text-foreground">
-        <i className="text-13 font-bold not-italic">{q.letter}</i>
-        <em className="text-tiny not-italic text-muted-foreground tnum">{dec(q.score, 2)}/{q.max}</em>
-      </span>
-    </span>
-  );
-}
-
-/** A 0–5 score as a filled track — the scale drawn rather than stated. */
-function ScoreBar({ score, letter, label }: { score: number | null; letter: string | null; label: string }) {
-  return (
-    <div className="grid grid-cols-[130px_minmax(0,1fr)_40px] items-center gap-3 text-13">
-      <span className="truncate text-muted-foreground">{label}</span>
-      <GradeBar tone={toneForLetter(letter)} share={isNum(score) ? clamp((score / MAX_SCORE) * 100, 0, 100) : 0} className="mt-0" />
-      <span className="text-right font-semibold tnum">{isNum(score) ? dec(score, 2) : 'n/a'}</span>
-    </div>
-  );
-}
-
-function BandCell({ label, value, note }: { label: string; value: React.ReactNode; note?: React.ReactNode }) {
-  return (
-    <div className="bg-background p-3">
-      <div className="text-micro font-medium uppercase tracking-[.05em] text-muted-foreground">{label}</div>
-      <div className="mt-1 text-[15px] font-bold tnum">{value}</div>
-      {note ? <div className="mt-0.5 text-micro text-muted-foreground">{note}</div> : null}
-    </div>
-  );
-}
-
-/** The nine-box grid with the company's cell lit. */
-function StyleGrid({ style }: { style: Ratings['style'] }) {
-  const sizes = ['Large', 'Mid', 'Small'];
-  const styles = ['Value', 'Blend', 'Growth'];
-  return (
-    <div className="flex items-center gap-4">
-      <div className="grid grid-cols-3 gap-0.5">
-        {sizes.flatMap((s) => styles.map((t) => (
-          <i key={`${s}${t}`} title={`${s} ${t}`}
-            className={cn('size-5 rounded-[3px] bg-accent', s === style.size && t === style.style && 'bg-primary')} />
-        )))}
-      </div>
-      <div className="grid gap-0.5">
-        <span className="text-13 font-semibold">{style.label}</span>
-        <span className="text-tiny text-muted-foreground">
-          {isNum(style.valuationScore) && isNum(style.growthScore) ? `valuation ${dec(style.valuationScore, 1)} vs growth ${dec(style.growthScore, 1)}` : ''}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-const ZONE: Record<string, string> = { good: 'text-up', bad: 'text-down', neutral: 'text-grade-mid', muted: 'text-muted-foreground' };
-
-function RatingBandCard({ a, r }: { a: Analysis; r: Ratings }) {
+function HeadStrip({ a, r }: { a: Analysis; r: Ratings }) {
   const f = a.facts;
   const cur = curSymbol(f.currency);
-  const [logoOk, setLogoOk] = React.useState(true);
-  const logo = f.image || logoUrl(f.symbol);
+  const q = r.quant;
+  const cells: [string, React.ReactNode, string?][] = [
+    ['Last Price', price(f.price, cur), fmtDate(f.quoteTime || a.ds.asOf)],
+    ['Fair Value Estimate', isNum(r.fve.value) ? price(r.fve.value, cur) : 'n/a', r.fve.count ? `median of ${r.fve.count} models` : 'not modelled'],
+    ['Price/FVE', isNum(r.zone.ratio) ? dec(r.zone.ratio, 2) : 'n/a', r.zone.label || ''],
+    ['Market Cap', money(f.marketCap, { currency: cur })],
+    ['Economic Moat', r.moat.label, r.moat.key ? `${r.moat.positive} of ${r.moat.years} years` : ''],
+    ['Equity Style', r.style.label],
+    ['Uncertainty', r.unc.label],
+    ['Capital Allocation', r.capital.label],
+  ];
   return (
-    <OCard span={12} id="rsr-band">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          {logo && logoOk ? <img src={logo} alt="" loading="lazy" onError={() => setLogoOk(false)} className="size-11 rounded-lg bg-white object-contain p-1" /> : null}
-          <div>
-            <h2 className="text-xl font-bold tracking-[-.02em]">{f.name}</h2>
-            <p className="text-13 text-muted-foreground">{[f.symbol, f.exchange, f.sector, f.industry].filter(Boolean).join(' · ')}</p>
-          </div>
-        </div>
-        <div className="grid justify-items-end gap-1">
-          <QuantBadge q={r.quant} size="lg" />
-          <p className="text-tiny text-muted-foreground">{r.quant.verdict ? `Maz Vantage Quant Rating · ${fmtDate(a.ds.asOf)}` : 'Not rated'}</p>
-        </div>
+    <>
+      <div className="mt-4 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+        <h1 className="text-[26px] font-bold tracking-[-.02em]">
+          {f.name} <span className="font-normal text-muted-foreground">{f.symbol}</span>
+        </h1>
+        <p className="text-13">
+          <span className="text-muted-foreground">Maz Vantage Quant Rating </span>
+          <b>{isNum(q.score) ? `${q.verdict} · ${q.letter} · ${dec(q.score, 2)} of ${q.max}` : 'Not rated'}</b>
+        </p>
       </div>
-
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(130px,1fr))] gap-px overflow-hidden rounded-[10px] border border-border bg-border">
-        <BandCell label="Quant Rating" value={r.quant.verdict || 'n/a'} note={isNum(r.quant.score) ? `${r.quant.letter} · ${dec(r.quant.score, 2)} of ${r.quant.max}` : 'not rated'} />
-        <BandCell label="Last Price" value={price(f.price, cur)} note={fmtDate(f.quoteTime || a.ds.asOf)} />
-        <BandCell label="Fair Value Estimate" value={isNum(r.fve.value) ? price(r.fve.value, cur) : 'n/a'} note={r.fve.count ? `median of ${r.fve.count} models` : 'not modelled'} />
-        <BandCell label="Price/FVE" value={isNum(r.zone.ratio) ? dec(r.zone.ratio, 2) : 'n/a'} note={r.zone.label || ''} />
-        <BandCell label="Market Cap" value={money(f.marketCap, { currency: cur })} />
-        <BandCell label="Economic Moat" value={r.moat.label} note={r.moat.key ? `${r.moat.positive}/${r.moat.years} years` : 'not rated'} />
-        <BandCell label="Uncertainty" value={r.unc.label} note={r.unc.key ? `${r.unc.measured}/${r.unc.of} drivers` : ''} />
-        <BandCell label="Capital Allocation" value={r.capital.label} note={isNum(r.capital.total) ? `${dec(r.capital.total, 1)}/6` : ''} />
-      </div>
-
-      <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-        <div>
-          <OSub className="mt-0">Quant rating — the company against its sector</OSub>
-          <div className="mb-4 flex items-center gap-3">
-            <QuantBadge q={r.quant} />
-            <GradePill score={r.quant.score} letter={r.quant.letter} size="lg" />
+      <dl className="mt-3 grid grid-cols-2 border-y border-foreground/80 @xl:grid-cols-4 @4xl:grid-cols-8">
+        {cells.map(([k, v, note]) => (
+          <div key={k} className="border-b border-border px-1 py-2.5 @4xl:border-b-0">
+            <dt className="text-micro text-muted-foreground">{k}</dt>
+            <dd className="mt-0.5 text-[15px] font-bold tnum">{v}</dd>
+            {note ? <dd className="text-micro text-muted-foreground">{note}</dd> : null}
           </div>
-          <div className="grid gap-2.5">
-            {r.quant.factors.map((x: any) => <ScoreBar key={x.key} score={x.score} letter={x.letter} label={x.title} />)}
-          </div>
-          <Tiny className="mt-3">
-            {r.quant.graded} of {r.quant.of} ratios ranked, each as a percentile against the sector, averaged within a factor and then across
-            the five. Price multiples count here, inside the Valuation factor; no fair value estimate does.
-          </Tiny>
-        </div>
-        <div>
-          <OSub className="mt-0">Valuation — the price against the estimate</OSub>
-          <p className={cn('text-2xl font-bold', ZONE[r.zone.tone || 'muted'] || ZONE.muted)}>{r.zone.label || 'Not rated'}</p>
-          <Tiny>
-            {isNum(r.zone.low)
-              ? `Undervalued below ${price(r.zone.low, cur)}, overvalued above ${price(r.zone.high, cur)}, on the ${r.unc.label} uncertainty band around a ${price(r.fve.value, cur)} estimate.`
-              : 'No fair value estimate, so no valuation zone.'}
-          </Tiny>
-          <OSub>Style</OSub>
-          <StyleGrid style={r.style} />
-        </div>
-      </div>
-
-      <Notice className="mt-6">
-        The <b>quant rating</b> is the rating on this report: every ratio that could be ranked, scored as a percentile against the sector.
-        Price multiples are part of it, inside the Valuation factor. The <b>valuation zone</b> beside it is a separate reading and the only
-        place a fair value estimate is used — the price against thirteen models of what the business is worth. One asks whether the
-        multiples are dear against peers, the other whether the price is above intrinsic value; they can and do disagree.
-      </Notice>
-    </OCard>
+        ))}
+      </dl>
+    </>
   );
 }
-
-/* ---------- price vs fair value ------------------------------------------------ */
 
 /** Calendar-year price return; each year opens on the previous year's close. */
 function yearlyReturns(pts: any[]) {
@@ -240,427 +233,627 @@ function yearlyReturns(pts: any[]) {
   }).slice(-6);
 }
 
-/** A signed price move in the report's currency: +US$12.40, -US$3.10 — the same sign glyphs `pct` prints beside it. */
-const signedPrice = (v: number, cur: string) => `${v > 0 ? '+' : v < 0 ? '-' : ''}${price(Math.abs(v), cur)}`;
-
-/**
- * The quote's price change over each period, as a strip of tabs: each shows
- * its own change, and the selected one is what the chart draws. A period the
- * loaded closes cannot reach is disabled rather than quietly shortened.
- */
-function PriceTimeline({ periods, value, onChange, firstDate }: {
-  periods: PeriodChange[]; value: PeriodKey; onChange: (k: PeriodKey) => void; firstDate: string | null;
-}) {
-  return (
-    <div role="tablist" aria-label="Price change by period"
-      // One row that scrolls on a phone, rather than wrapping into ragged rows.
-      className="scroll-none mb-3 flex gap-px overflow-x-auto rounded-[10px] border border-border bg-border">
-      {periods.map((p) => {
-        const on = p.key === value;
-        return (
-          <button key={p.key} type="button" role="tab" aria-selected={on} disabled={!p.available} onClick={() => onChange(p.key)}
-            title={p.available
-              ? `${p.long}: ${p.from!.date.slice(0, 10)} to ${p.to!.date.slice(0, 10)}${p.approx ? ' (from the first close loaded)' : ''}`
-              : `Not enough history: the loaded closes start ${firstDate ? fmtDate(firstDate) : 'too late'}`}
-            className={cn('grid min-w-[58px] flex-1 gap-0.5 bg-background px-1 py-2 text-center transition-colors enabled:hover:bg-accent disabled:cursor-not-allowed',
-              on && 'bg-accent shadow-[inset_0_-2px_0_var(--primary)]')}>
-            <span className={cn('text-micro font-semibold uppercase tracking-[.04em]', on ? 'text-foreground' : 'text-muted-foreground')}>{p.label}</span>
-            <span className={cn('text-13 font-semibold tnum', !p.available ? 'text-muted-foreground/50'
-              : (p.pct as number) > 0 ? 'text-up' : (p.pct as number) < 0 ? 'text-down' : 'text-muted-foreground')}>
-              {p.available ? pct(p.pct, { sign: true }) : '—'}
-            </span>
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-const PF_TONE: Record<string, string> = {
-  good: 'text-up', bad: 'text-down', anchor: 'text-primary', self: 'text-foreground', '': 'text-muted-foreground',
-};
-
 /*
-  One fair value estimate — today's — drawn across the whole window. The
-  source reports carry the estimate as it stood each year; this report has no
+  One fair value estimate, today's, drawn across the whole window. The source
+  reports carry the estimate as it stood each year; this report has no
   archive of past estimates and does not invent one.
 */
-function PriceVsFairValueCard({ a, r }: { a: Analysis; r: Ratings }) {
+function PriceVsFairValue({ a, r }: { a: Analysis; r: Ratings }) {
   const f = a.facts;
   const cur = curSymbol(f.currency);
   const pts: any[] = a.momentum?.points || [];
   const years = yearlyReturns(pts);
-  const pings = usePings(a);
-  const periods = React.useMemo(() => priceTimeline(pts), [pts]);
-  // A year by default, the window this card always drew; everything loaded when a year is not there.
-  const [period, setPeriod] = React.useState<PeriodKey>('1Y');
-  const sel = periods.find((p) => p.key === period && p.available) || periods.find((p) => p.key === 'ALL')!;
-  const short = sel.available && sel.window.length > 1
-    && new Date(sel.window[sel.window.length - 1].date).getTime() - new Date(sel.window[0].date).getTime() < 200 * 864e5;
-  const cell = (label: string, value: string, tone: string) => (
-    <div key={label} className="bg-background p-3 text-center">
-      <div className={cn('text-[15px] font-bold tnum', PF_TONE[tone])}>{value}</div>
-      <div className="mt-0.5 text-micro text-muted-foreground">{label}</div>
+  return (
+    <div className="mt-5">
+      <p className="mb-1 text-13 font-semibold">Price vs. Fair Value</p>
+      {pts.length > 1 ? (
+        <LineChart height={240} series={pts.map((p) => ({ date: p.date, value: p.price }))} valueFmt={(v) => price(v, cur)}
+          labelFmt={(d) => fmtDate(d, { month: 'short', year: '2-digit' })}
+          refLine={isNum(r.fve.value) ? { value: r.fve.value, label: `Fair value ${price(r.fve.value, cur)}` } : null} />
+      ) : <Small>No price history was loaded.</Small>}
+      {years.length ? (
+        <div className="mt-2">
+          <DocTable first="" head={years.map((y) => String(y.year))} rows={[
+            ['Total Return %', ...years.map((y) => <Signed key={y.year} v={y.ret} />)],
+          ]} />
+          <Small className="mt-1.5">
+            Price return by calendar year, dividends excluded; the current year is year to date. The fair value line is today’s estimate
+            drawn across the window: there is no archive of past estimates, and the report does not invent one.
+          </Small>
+        </div>
+      ) : null}
     </div>
   );
-  return (
-    <OCard span={12} id="rsr-pfv">
-      <OHead title="Price vs. Fair Value" info="One fair value estimate — today’s — drawn across the whole window. Morningstar’s version of this chart carries the estimate as it stood in each year; this report has no archive of past estimates and does not invent one." />
-      {pts.length > 1 && sel.available ? (
-        <>
-          {/* The quote over the chosen period: the last close, and the change since the period's base close. */}
-          <div className="mb-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <span className="text-2xl font-bold tracking-[-.02em] tnum">{price(sel.to!.price, cur)}</span>
-            <span className={cn('text-[15px] font-semibold tnum', sel.change! > 0 ? 'text-up' : sel.change! < 0 ? 'text-down' : 'text-muted-foreground')}>
-              {signedPrice(sel.change!, cur)} ({pct(sel.pct, { sign: true })})
-            </span>
-            <span className="text-13 text-muted-foreground">
-              {sel.long} · since {fmtDate(sel.from!.date)}{sel.approx ? ', the first close loaded' : ''} · close of {fmtDate(sel.to!.date)}
-            </span>
-          </div>
-          <PriceTimeline periods={periods} value={sel.key} onChange={setPeriod} firstDate={pts[0]?.date ?? null} />
-          <LineChart height={300} series={sel.window.map((p) => ({ date: p.date, value: p.price }))} valueFmt={(v) => price(v, cur)}
-            labelFmt={(d) => fmtDate(d, short ? { day: 'numeric', month: 'short' } : { month: 'short', year: '2-digit' })} markers={pings.markers}
-            refLine={isNum(r.fve.value) ? { value: r.fve.value, label: `Fair value ${price(r.fve.value, cur)}` } : null} />
-        </>
-      ) : a.ds.status('prices') !== 'ok' ? <FeedGate a={a} feed="prices" what="Price history" /> : <Notice>No price history was returned.</Notice>}
-      {pings.legend}
-      {pings.note}
-      {years.length ? (
-        <div className="mt-4">
-          <DataTable headers={[{ label: '' }, ...years.map((y) => ({ label: String(y.year), num: true }))]}
-            rows={[['Total Return %', ...years.map((y) => <Signed key={y.year} v={y.ret} />)]]} />
-          <Tiny>Price return by calendar year from the closing series, dividends excluded. The current year is year to date.</Tiny>
-        </div>
-      ) : null}
-      {/* Reference prices, not a ladder: nothing guarantees they stay in this
-          order, so each cell says what it is rather than relying on position. */}
-      <div className="mt-4 grid grid-cols-[repeat(auto-fit,minmax(120px,1fr))] gap-px overflow-hidden rounded-[10px] border border-border bg-border">
-        {cell('Model low', isNum(r.fve.low) ? price(r.fve.low, cur) : 'n/a', '')}
-        {cell('Undervalued below', isNum(r.zone.low) ? price(r.zone.low, cur) : 'n/a', 'good')}
-        {cell('Fair value estimate', isNum(r.fve.value) ? price(r.fve.value, cur) : 'n/a', 'anchor')}
-        {cell('Overvalued above', isNum(r.zone.high) ? price(r.zone.high, cur) : 'n/a', 'bad')}
-        {cell('Last price', price(f.price, cur), 'self')}
-      </div>
-      <Tiny>
-        {isNum(r.zone.low) && r.unc.band
-          ? `The undervalued and overvalued thresholds are the ${r.unc.label} uncertainty band — a ${pct(1 - r.unc.band.lo)} discount and a ${pct(r.unc.band.hi - 1)} premium — applied to the fair value estimate. A wider uncertainty rating widens both, because a less reliable estimate earns less confidence that any given price is wrong.`
-          : 'No fair value estimate could be produced, so no thresholds are drawn.'}
-      </Tiny>
-    </OCard>
-  );
 }
 
-/* ---------- the narrative sections ------------------------------------------------ */
+/* ---------- the left column ----------------------------------------------------- */
 
-function AnalystNoteCard({ a, r, nar }: { a: Analysis; r: Ratings; nar: Narrative }) {
-  const gen = analystNote(a, r);
-  const n = nar?.sections?.note;
-  const headline = n?.headline || gen.headline;
-  const bullets: string[] = (n?.why?.length ? n.why : gen.bullets) || [];
-  const bottom = n?.bottomLine || gen.bottom;
-  return (
-    <OCard span={12} id="rsr-note">
-      <OHead title="Analyst Note" />
-      <Byline a={a} nar={nar} />
-      <h3 className="mb-3 text-lg font-bold leading-snug tracking-[-.01em]">{headline}</h3>
-      {bullets.length ? (
-        <div className="mb-3">
-          <p className="mb-1 text-13 font-semibold">Why it matters:</p>
-          <ul className="grid max-w-[80ch] list-disc gap-1.5 pl-5 text-sm leading-relaxed">{bullets.map((b, i) => <li key={i}>{b}</li>)}</ul>
-        </div>
-      ) : null}
-      <p className="max-w-[80ch] text-sm leading-relaxed"><b>The bottom line: </b>{bottom}</p>
-    </OCard>
-  );
-}
+const CONTENTS: [string, string][] = [
+  ['rsr-note', 'Analyst Note'], ['rsr-dev', 'Recent Developments'], ['rsr-strategy', 'Business Strategy & Outlook'], ['rsr-bullbear', 'Bulls Say / Bears Say'], ['rsr-quant', 'Quant Rating and Peers'],
+  ['rsr-moat', 'Economic Moat'], ['rsr-fv', 'Fair Value and Profit Drivers'], ['rsr-risk', 'Risk and Uncertainty'],
+  ['rsr-capital', 'Capital Allocation'], ['rsr-fin', 'Financials'], ['rsr-method', 'Research Methodology'],
+];
 
-function BusinessCard({ a }: { a: Analysis }) {
+function Sidebar({ a, nar }: { a: Analysis; nar: Narrative }) {
   const f = a.facts;
+  const go = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   return (
-    <OCard span={12} id="rsr-business">
-      <OHead title="Business Description" />
-      {f.description ? <Para>{f.description}</Para> : <Notice>No business description was returned for this company.</Notice>}
-      <div className="mt-3">
-        <KeyInfo items={[
-          ['Sector', f.sector || 'n/a'],
-          ['Industry', f.industry || 'n/a'],
+    <aside className="text-13 @3xl:sticky @3xl:top-20 @3xl:self-start">
+      <p className="border-t border-foreground/80 pt-2 text-13 font-bold">Contents</p>
+      <ol className="mt-1.5 grid gap-1">
+        {CONTENTS.filter(([id]) => id !== 'rsr-dev' || eventsFor(f.symbol).length).map(([id, label]) => (
+          <li key={id}>
+            <button type="button" onClick={() => go(id)} className="text-left hover:text-primary hover:underline">{label}</button>
+          </li>
+        ))}
+      </ol>
+      <p className="mt-5 border-t border-foreground/80 pt-2 font-bold">Sector · Industry</p>
+      <p className="mt-1">{f.sector || 'n/a'} · {f.industry || 'n/a'}</p>
+      <p className="mt-5 border-t border-foreground/80 pt-2 font-bold">Business Description</p>
+      <p className="mt-1 leading-relaxed text-foreground/85">{f.description || 'No business description was returned for this company.'}</p>
+      <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-tiny">
+        {([
           ['Employees', isNum(f.employees) ? num(f.employees, 0) : 'n/a'],
           ['Country', f.country || 'n/a'],
-          f.ipoDate ? ['Listed', fmtDate(f.ipoDate)] : null,
-          ['CEO', f.ceo || 'n/a'],
-        ]} />
-      </div>
-    </OCard>
+          ['Chief executive', f.ceo || 'n/a'],
+          ['Listed', f.ipoDate ? fmtDate(f.ipoDate) : 'n/a'],
+        ] as [string, string][]).map(([k, v]) => (
+          <React.Fragment key={k}><dt className="text-muted-foreground">{k}</dt><dd className="text-right">{v}</dd></React.Fragment>
+        ))}
+      </dl>
+      <Small className="mt-5 border-t border-border pt-2">
+        {nar
+          ? `The prose in this report was written by ${nar.model} from a brief of pre-computed figures and was not reviewed by a person before publication. Where prose and tables disagree, the tables are right.`
+          : 'The prose in this report is assembled from the figures shown in it. No analyst opinion is expressed.'}
+        {' '}This is not investment advice.
+      </Small>
+    </aside>
   );
 }
 
-function StrategyCard({ a, r, nar }: { a: Analysis; r: Ratings; nar: Narrative }) {
-  return (
-    <OCard span={12} id="rsr-strategy">
-      <OHead title="Business Strategy & Outlook" />
-      <Byline a={a} nar={nar} />
-      <Prose nar={nar} k="strategy" fallback={strategyProse(a, r)} />
-    </OCard>
-  );
-}
+/* ---------- the sections -------------------------------------------------------- */
 
-/** Bulls Say / Bears Say, off the graded ratios furthest either side of the sector median. */
-function BullsBearsCard({ a, nar }: { a: Analysis; nar: Narrative }) {
-  const bulls: string[] = nar?.sections?.bulls?.length ? nar.sections.bulls : (a.rewards || []);
-  const bears: string[] = nar?.sections?.bears?.length ? nar.sections.bears : (a.risks || []);
-  const side = (title: string, items: string[], kind: 'bull' | 'bear', empty: string) => (
-    <div className={cn('rounded-[10px] border-t-[3px] bg-muted p-4', kind === 'bull' ? 'border-up' : 'border-down')}>
-      <p className={cn('mb-2 text-13 font-bold', kind === 'bull' ? 'text-up' : 'text-down')}>{title}</p>
-      {items.length
-        ? <ul className="grid list-disc gap-1.5 pl-5 text-13 leading-relaxed">{items.map((t, i) => <li key={i}>{t}</li>)}</ul>
-        : <p className="text-tiny text-muted-foreground">{empty}</p>}
-    </div>
-  );
+function AnalystNote({ a, r, nar }: { a: Analysis; r: Ratings; nar: Narrative }) {
+  const gen = analystNote(a, r);
+  const n = nar?.sections?.note;
+  const bullets: string[] = (n?.why?.length ? n.why : gen.bullets) || [];
   return (
-    <OCard span={12} id="rsr-bullbear">
-      <OHead title="Bulls Say / Bears Say" info={nar?.sections?.bulls
-        ? 'The case each way, written from the ranked ratios and the filed run. Three points a side, because a list that runs to ten is not an argument.'
-        : 'The graded ratios that sit furthest above and furthest below the sector median, with the sentence each carries elsewhere in the report. Not a summary of the investment case — a list of what the numbers are strongest and weakest on.'} />
-      <Byline a={a} nar={nar} />
-      <div className="grid gap-4 md:grid-cols-2">
-        {side('Bulls Say', bulls, 'bull', 'No ratio grades far enough above its sector median to list.')}
-        {side('Bears Say', bears, 'bear', 'No ratio grades far enough below its sector median to list.')}
-      </div>
-    </OCard>
-  );
-}
-
-const gradedCount = (a: Analysis) => (['valuation', 'growth', 'health', 'profitability', 'momentum'] as const)
-  .reduce((t, k) => t + ((a.scores as any)[k]?.graded || 0), 0);
-
-function CompetitorsCard({ a }: { a: Analysis }) {
-  const f = a.facts;
-  const cur = curSymbol(f.currency);
-  const peers: any[] = a.peers?.peers || [];
-  if (!peers.length) {
-    return (
-      <OCard span={12} id="rsr-peers">
-        <OHead title="Competitors" />
-        {a.ds.status('peers') !== 'ok' ? <FeedGate a={a} feed="peers" what="Peer companies" /> : <Notice>No peer companies were returned.</Notice>}
-      </OCard>
-    );
-  }
-  const rows = [{ ...f, self: true, pe: f.pe, score: a.peers.self?.score ?? null, scoredOn: a.peers.self?.scoredOn ?? null }, ...peers];
-  // The per-peer `ratios-ttm` row is the only place a peer's book value or
-  // yield exists; a peer whose request failed prints n/a, not a sector fill.
-  const ratioOf = (sym: string) => (sym === f.symbol ? a.ds.get('ratiosTtm') : a.peerRatios?.[sym]) || null;
-  return (
-    <OCard span={12} id="rsr-peers">
-      <OHead title="Competitors" info={`The published peer list. The composite column is scored only on the ratios every row has in common, so it is a like-for-like comparison between these companies and will not tie to the ${gradedCount(a)}-ratio grade at the top of this page.`} />
-      <DataTable
-        headers={[{ label: 'Company' }, { label: 'Ticker' }, { label: 'Market Cap', num: true }, { label: 'P/E', num: true }, { label: 'P/B', num: true }, { label: 'Dividend Yield', num: true }, { label: 'Composite', num: true }]}
-        rows={rows.map((p: any) => {
-          const rt = ratioOf(p.symbol);
-          const pb = rt?.priceToBookRatioTTM ?? null;
-          const dy = rt?.dividendYieldTTM ?? null;
-          return [
-            <span key="n" className={p.self ? 'font-bold text-primary' : ''}>{p.name || p.symbol}</span>,
-            p.symbol || '—',
-            isNum(p.marketCap) ? money(p.marketCap, { currency: cur }) : 'n/a',
-            isNum(p.pe) ? mult(p.pe) : 'n/a',
-            isNum(pb) ? mult(pb) : 'n/a',
-            isNum(dy) ? pct(dy) : 'n/a',
-            // The ratio count is not decoration: a 5-ratio score and a
-            // 40-ratio score are not the same measurement.
-            <span key="s" className="inline-flex items-baseline gap-1.5">
-              <b className="tnum">{isNum(p.score) ? dec(p.score, 2) : 'n/a'}</b>
-              {isNum(p.scoredOn) && p.scoredOn > 0 ? <i className="text-micro not-italic text-muted-foreground">on {p.scoredOn}</i> : null}
-            </span>,
-          ];
-        })} />
-      {isNum(a.peers.self?.score) && a.peers.self.score !== a.scores.overall?.score ? (
-        <Tiny>
-          {f.symbol} scores {dec(a.peers.self.score, 2)} in this column against {dec(a.scores.overall?.score, 2)} at the top of the page. Both are
-          right: the column grades it on the ratios shared with these peers, the headline grades it on every ratio the report could fill. Where the
-          shared set is mostly valuation lines, a company that is expensive and excellent will score low here and high there.
-        </Tiny>
+    <Section id="rsr-note" title="Analyst Note" a={a} nar={nar}>
+      <h3 className="mb-3 text-[20px] font-bold leading-snug tracking-[-.01em]">{n?.headline || gen.headline}</h3>
+      {bullets.length ? (
+        <>
+          <p className="mb-1.5 text-[14.5px] font-semibold">Why it matters:</p>
+          <WithVoices items={bullets.map((b, i) => ({ key: i, node: <Para key={i}>{b}</Para> }))}
+            voices={voicesFor(a.facts.symbol, 'note')} anchored={!!n?.why?.length} />
+        </>
       ) : null}
-      <Tiny>
-        Morningstar’s equivalent table carries a fair value and a star rating for every peer, because an analyst covers each one. Producing those
-        here would mean running all thirteen valuation models against every peer, so the peer columns stay factual.
-      </Tiny>
-    </OCard>
+      <p className="mt-1 text-[14.5px] leading-[1.75]"><b>The bottom line: </b>{n?.bottomLine || gen.bottom}</p>
+    </Section>
   );
 }
 
-function MoatCard({ a, r, nar }: { a: Analysis; r: Ratings; nar: Narrative }) {
-  const m = r.moat;
-  const rows = (a.series?.rows || []).filter((x: any) => isNum(x.spread));
+/* ---------- recent developments ------------------------------------------------ */
+
+const ROLE_TITLE: Record<string, string> = {
+  maker: 'the maker', customer: 'the customer', 'design partner': 'the design partner', 'co-developer': 'a co-developer',
+  competitor: 'a competitor', supplier: 'the supplier', partner: 'a partner', acquirer: 'the acquirer', target: 'the target',
+};
+
+const STAGE_LABEL: Record<string, string> = {
+  reported: 'Reported', agreed: 'Agreed', filed: 'Filed', regulatory: 'Regulators', vote: 'Shareholder vote', closed: 'Closed', terminated: 'Terminated',
+};
+
+const usd = (v: number) => (v >= 1e12 ? `US$${dec(v / 1e12, 2)}t` : v >= 1e9 ? `US$${dec(v / 1e9, 2)}b` : `US$${dec(v / 1e6, 1)}m`);
+
+/*
+  A deal's terms beside the figures derived from them, its stages as a dated
+  timeline, and what it does to the Shariah screen. The terms are the
+  parties'; premium, today's value, spread and size are ours (`dealMath`),
+  from prices captured on the date shown.
+*/
+function DealBlock({ e }: { e: CorpEvent }) {
+  const d = e.deal!;
+  const m = dealMath(d);
+  const src = (i: number) => e.sources[i];
+  const rows: React.ReactNode[][] = [
+    ['Payment', d.consideration === 'undisclosed' ? 'Not stated' : `${d.consideration[0].toUpperCase()}${d.consideration.slice(1)}${d.exchangeRatio ? `, ${d.exchangeRatio} acquirer share per target share` : ''}`],
+    ['Stated value', `${usd(d.value)} (${d.valueBasis})`],
+  ];
+  if (d.perShare) rows.push(['Per target share, as announced', price(d.perShare, 'US$')]);
+  if (isNum(m.premium) && d.unaffected) rows.push(['Premium (ours)', <span key="p">{pct(m.premium, { dp: 1 })} over the {price(d.unaffected.price, 'US$')} close of {fmtDate(d.unaffected.date)}, the last before the news</span>]);
+  if (isNum(m.offerNow) && d.latest) rows.push(['Offer value today (ours)', <span key="o">{price(m.offerNow, 'US$')} a share at the acquirer’s {price(d.latest.acquirer!, 'US$')} on {fmtDate(d.latest.date)}{isNum(m.valueNow) ? `; ${usd(m.valueNow)} in all` : ''}</span>]);
+  if (isNum(m.spread) && d.latest) rows.push(['Spread (ours)', <span key="s">{pct(m.spread, { dp: 1, sign: true })} against the target’s {price(d.latest.target!, 'US$')}{isNum(m.spreadAnnual) ? `; ${pct(m.spreadAnnual, { dp: 1 })} a year if it closes by ${fmtDate(d.expectedBy)}` : ''}</span>]);
+  if (isNum(m.materiality) && d.acquirerMarketCap) rows.push(['Size against the acquirer (ours)', <span key="z">{pct(m.materiality, { dp: 2 })} of its {usd(d.acquirerMarketCap.value)} market value on {fmtDate(d.acquirerMarketCap.date)}</span>]);
+  if (d.breakFee) rows.push(['Termination fee', `${usd(d.breakFee.amount)}, ${d.breakFee.note}`]);
+  rows.push(['Expected close', `${d.expectedLabel}${d.outsideDate ? `; outside date ${fmtDate(d.outsideDate)}` : ''}`]);
+  rows.push(['Approvals needed', d.approvals.join('; ')]);
   return (
-    <OCard span={12} id="rsr-moat">
-      <OHead title="Economic Moat" aside={<Pill tone={m.key === 'wide' ? 'good' : m.key === 'narrow' ? 'gold' : 'muted'}>{m.label}</Pill>}
-        info="Return on invested capital against the weighted average cost of capital, year by year. A moat is a forecast; this is the record it would be forecast from." />
-      <Byline a={a} nar={nar} />
-      <Prose nar={nar} k="moat" fallback={moatProse(a, r)} />
-      {rows.length ? (
-        <div className="mt-4">
-          <OSub>Return on invested capital against its cost</OSub>
-          <DataTable headers={[{ label: 'Year' }, { label: 'ROIC', num: true }, { label: 'WACC', num: true }, { label: 'Spread', num: true }, { label: '' }]}
-            rows={rows.map((x: any) => [
-              String(x.year), pct(x.roic), pct(x.wacc),
-              <Signed key="s" v={x.spread} />,
-              <span key="n" className="text-tiny text-muted-foreground">{x.spread >= 0 ? 'earns its cost' : 'below cost'}</span>,
-            ])} />
-          <Tiny>
-            The cost of equity leg is CAPM on today’s beta and today’s rates, because neither is published per historical year — so the hurdle is
-            “what this mix would cost at today’s prices”, not what it cost at the time. The mix, the tax rate and the cost of debt are each year’s own.
-          </Tiny>
-        </div>
-      ) : null}
-    </OCard>
+    <>
+      <Exhibit title="The deal, and what we derive from it" source={`the parties’ filings and releases; figures marked “ours” are Maz Vantage arithmetic on market prices${d.latest ? ` captured ${fmtDate(d.latest.date)}` : ''}.`}>
+        <DocTable first="Term" head={['Detail']} rows={rows.map(([k, v]) => [<span key="k" className="font-semibold">{k}</span>, <span key="v" className="whitespace-normal">{v}</span>])} />
+      </Exhibit>
+      <p className="mb-1.5 text-[14.5px] font-semibold">Where the deal stands{m.stage ? `: ${STAGE_LABEL[m.stage].toLowerCase()}` : ''}</p>
+      <ol className="mb-4 grid gap-1 text-13 leading-relaxed">
+        {d.steps.map((s, i) => (
+          <li key={i} className={cn('grid grid-cols-[96px_118px_minmax(0,1fr)] gap-2', !s.done && 'text-muted-foreground')}>
+            <span className="tnum">{s.done ? fmtDate(s.date) : `by ${fmtDate(s.date)}`}</span>
+            <span className="font-semibold">{s.done ? '✓' : '○'} {STAGE_LABEL[s.stage]}</span>
+            <span>{s.what} <span className="text-tiny text-muted-foreground">({src(s.source).publisher})</span></span>
+          </li>
+        ))}
+      </ol>
+      <Para><b>Shariah, pro forma.</b> {d.shariah}</Para>
+    </>
   );
 }
 
-function FairValueCard({ a, r, nar }: { a: Analysis; r: Ratings; nar: Narrative }) {
-  const nav = useNav();
+/** A party named with its role, linked to its own report where it has a US listing. */
+function PartyName({ p }: { p: EventParty }) {
+  return p.symbol
+    ? <a href={`/stock/${p.symbol}/research`} className="underline decoration-border underline-offset-2 hover:text-primary">{p.name}</a>
+    : <>{p.name}</>;
+}
+
+/*
+  One event, from this company's side: what happened, what it means here,
+  the facts with their sources, the vendors' claims kept apart, and every
+  other company it touches. The record is in `lib/events.ts`.
+*/
+function EventEntry({ event: e, party }: { event: CorpEvent; party: EventParty }) {
+  const others = e.parties.filter((p) => p !== party);
+  const src = (i: number) => e.sources[i];
+  const SrcLink = ({ i }: { i: number }) => (
+    <a href={src(i).url} target="_blank" rel="noopener noreferrer" className="underline decoration-border underline-offset-2 hover:text-foreground">{src(i).publisher}</a>
+  );
+  return (
+    <article className="mt-5 first:mt-0">
+      <p className="text-micro font-semibold uppercase tracking-[.06em] text-muted-foreground">
+        {fmtDate(e.date)} · {EVENT_KIND[e.kind]} · <span className={e.confidence === 'confirmed' ? 'text-up' : 'text-grade-mid'}>{CONFIDENCE_LABEL[e.confidence]}</span>
+      </p>
+      <h3 className="mb-2.5 mt-1 text-[18px] font-bold leading-snug tracking-[-.01em]">{e.title}</h3>
+      <Para>{e.summary}</Para>
+      <Para><b>What it means for {party.name}, as {ROLE_TITLE[party.role] || party.role}.</b> {party.why}</Para>
+      {e.deal ? <DealBlock e={e} /> : null}
+      {e.quotes?.map((q, i) => (
+        <VoiceQuote key={i} v={{
+          symbol: '', section: 'note', after: 0, relation: 'adds',
+          kind: src(q.source).kind === 'press' ? 'press' : q.org === party.name ? 'management' : party.role === 'competitor' ? 'competitor' : 'company',
+          quote: q.text, speaker: q.speaker, role: q.role, source: src(q.source).title, date: src(q.source).date, url: src(q.source).url,
+          note: src(q.source).kind === 'press' ? 'Independent reporting.' : `From ${src(q.source).publisher}’s own announcement${q.org && q.org !== src(q.source).publisher ? `, quoting ${q.org}` : ''}.`,
+        }} />
+      ))}
+      <Exhibit title="The facts, and where each comes from" source="the companies’ own announcements, read in full; Maz Vantage.">
+        <DocTable first="Fact" head={['Source']} rows={e.facts.map((f) => [
+          <span key="f"><span className="font-semibold">{f.label}.</span> {f.value}</span>, <SrcLink key="s" i={f.source} />,
+        ])} />
+      </Exhibit>
+      {e.claims?.length ? (
+        <>
+          <p className="mb-1.5 text-[14.5px] font-semibold">Claims made by the companies, not tested here</p>
+          <ul className="mb-4 grid list-disc gap-2 pl-5 text-[14.5px] leading-[1.7]">
+            {e.claims.map((c, i) => (
+              <li key={i}>{c.claim} <span className="text-tiny text-muted-foreground">{c.by}: {c.basis} (<SrcLink i={c.source} />)</span></li>
+            ))}
+          </ul>
+        </>
+      ) : null}
+      {others.length ? (
+        <p className="mb-3 text-13 leading-relaxed text-muted-foreground">
+          <span className="font-semibold text-foreground">Also affects: </span>
+          {others.map((p, i) => <React.Fragment key={p.name}>{i ? '; ' : ''}<PartyName p={p} /> ({p.role})</React.Fragment>)}.
+        </p>
+      ) : null}
+      <p className="text-tiny leading-relaxed text-muted-foreground">
+        Sources:{' '}
+        {e.sources.map((x, i) => (
+          <React.Fragment key={x.url}>
+            {i ? ' · ' : ''}
+            <a href={x.url} target="_blank" rel="noopener noreferrer" className="underline decoration-border underline-offset-2 hover:text-foreground">{x.publisher}, {x.title}</a>
+            {` (${x.kind === 'primary' ? 'company' : 'press'}, ${fmtDate(x.date)})`}
+          </React.Fragment>
+        ))}
+      </p>
+    </article>
+  );
+}
+
+function RecentDevelopments({ a, nar }: { a: Analysis; nar: Narrative }) {
+  const list = eventsFor(a.facts.symbol);
+  if (!list.length) return null;
+  return (
+    <Section id="rsr-dev" title="Recent Developments" a={a} nar={nar} signed={false}>
+      <p className="mb-4 text-13 leading-relaxed text-muted-foreground">
+        Events that touch {a.facts.name}, each followed to the companies’ own announcements and written from {a.facts.symbol}’s side.
+        Facts carry their source; the companies’ performance claims are kept apart and are not tested here.
+      </p>
+      {list.map(({ event, party }) => <EventEntry key={event.id} event={event} party={party} />)}
+    </Section>
+  );
+}
+
+function Strategy({ a, r, nar, ex }: { a: Analysis; r: Ratings; nar: Narrative; ex: number }) {
+  const seg = a.segments?.product;
   const cur = curSymbol(a.facts.currency);
   return (
-    <OCard span={12} id="rsr-fv">
-      <OHead title="Fair Value and Profit Drivers" aside={isNum(r.fve.value) ? <Pill tone="gold">{price(r.fve.value, cur)}</Pill> : null}
-        info="The median of every valuation model that produced a number, with the range they span." />
-      <Byline a={a} nar={nar} />
-      <Prose nar={nar} k="fairValue" fallback={fairValueProse(a, r)} />
-      {r.fve.models.length ? (
-        <div className="mt-4">
-          <OSub>The {r.fve.count} models behind the estimate</OSub>
-          <DataTable headers={[{ label: 'Model' }, { label: 'Family' }, { label: 'Fair value', num: true }, { label: 'vs price', num: true }]}
-            rows={r.fve.models.map((m: any) => {
-              const gap = isNum(a.facts.price) && a.facts.price > 0 ? m.value / a.facts.price - 1 : null;
-              return [m.full || m.label, m.family === 'dcf' ? 'Discounted cash flow' : 'Relative multiple', price(m.value, cur), <Signed key="g" v={gap} />];
-            })} />
-        </div>
+    <Section id="rsr-strategy" title="Business Strategy & Outlook" a={a} nar={nar}>
+      <Prose a={a} nar={nar} k="strategy" fallback={strategyProse(a, r)} />
+      {seg?.available && seg.rows.length > 1 ? (
+        <Exhibit n={ex} title="Revenue by product line" source="company filings, segment disclosure as reported; Maz Vantage.">
+          <ColumnChart height={240} stacked categories={seg.rows.map((x: any) => x.year)}
+            series={seg.names.map((nm: string, i: number) => ({ name: nm, color: SEG_COLORS[i % SEG_COLORS.length], values: seg.rows.map((x: any) => x.values[nm]) }))}
+            valueFmt={(v) => money(v, { currency: cur })} />
+        </Exhibit>
       ) : null}
-      {nav.openFactor ? (
-        <Button variant="ghost" size="sm" className="mt-3 self-start" onClick={() => nav.openFactor?.('valuation')}>Open the Valuation factor →</Button>
-      ) : null}
-    </OCard>
+    </Section>
   );
 }
 
-const DOT: Record<string, string> = { lo: 'text-up', mid: 'text-grade-mid', hi: 'text-down', na: 'text-muted-foreground' };
-const Dot = ({ kind, children }: { kind: 'lo' | 'mid' | 'hi' | 'na'; children: React.ReactNode }) => (
-  <span className={cn('inline-flex items-center gap-1.5 text-13 font-semibold', DOT[kind])}>
-    <i className="size-2 rounded-full bg-current" />{children}
-  </span>
-);
-
-function RiskCard({ a, r, nar }: { a: Analysis; r: Ratings; nar: Narrative }) {
-  const u = r.unc;
+function BullsBears({ a, nar }: { a: Analysis; nar: Narrative }) {
+  const bulls: string[] = nar?.sections?.bulls?.length ? nar.sections.bulls : (a.rewards || []);
+  const bears: string[] = nar?.sections?.bears?.length ? nar.sections.bears : (a.risks || []);
+  const list = (title: string, items: string[], empty: string) => (
+    <>
+      <p className="mb-1.5 mt-1 text-[14.5px] font-semibold">{title}</p>
+      {items.length
+        ? <ul className="mb-4 grid list-disc gap-2 pl-5 text-[14.5px] leading-[1.7]">{items.map((t, i) => <li key={i}>{t}</li>)}</ul>
+        : <Small className="mb-4">{empty}</Small>}
+    </>
+  );
   return (
-    <OCard span={12} id="rsr-risk">
-      <OHead title="Risk and Uncertainty" aside={<Pill tone={!u.key ? 'muted' : u.key === 'low' ? 'good' : u.key === 'medium' ? 'gold' : 'bad'}>{u.label}</Pill>}
-        info="Six measurable drivers of how wide the range of plausible values is. The rating is the mean of the ones that could be measured, so a missing input does not read as certainty." />
-      <Byline a={a} nar={nar} />
-      <Prose nar={nar} k="risk" fallback={riskProse(a, r)} />
-      <OSub>What the rating is built from</OSub>
-      <DataTable headers={[{ label: 'Driver' }, { label: 'Reading', num: true }, { label: 'Contribution' }, { label: 'What it measures' }]}
-        rows={u.drivers.map((d: any) => [
-          d.label,
-          isNum(d.value) ? d.fmt(d.value) : 'n/a',
-          <Dot key="d" kind={d.points === 0 ? 'lo' : d.points === 1 ? 'mid' : d.points === 2 ? 'hi' : 'na'}>
-            {d.points === 0 ? 'Contained' : d.points === 1 ? 'Moderate' : d.points === 2 ? 'Wide' : 'Not measured'}
-          </Dot>,
-          <span key="b" className="text-tiny text-muted-foreground">{d.basis}</span>,
-        ])} />
-      <OSub>The margin of safety each rating demands</OSub>
-      <DataTable headers={[{ label: 'Uncertainty' }, { label: 'Undervalued below', num: true }, { label: 'Overvalued above', num: true }]}
-        rows={Object.entries(SAFETY_BANDS).map(([k, b]: [string, any]) => [
-          <span key="l" className={k === u.key ? 'font-bold text-primary' : ''}>{b.label}</span>, pct(1 - b.lo), pct(b.hi - 1),
-        ])} />
-      <Tiny>
-        A discount and a premium against the fair value estimate, widening as the estimate becomes less reliable. The ladder is Morningstar’s
-        published margin-of-safety table, used unchanged — it is a sensible scale and there is no reason to invent another. What differs is how
-        the row is chosen: theirs from an analyst’s scenario analysis, this one from the six drivers above. These bands set the valuation zone
-        only. They do not touch the quant rating.
-      </Tiny>
-    </OCard>
+    <Section id="rsr-bullbear" title="Bulls Say / Bears Say" a={a} nar={nar}>
+      {list('Bulls Say', bulls, 'No ratio grades far enough above its sector median to list.')}
+      {list('Bears Say', bears, 'No ratio grades far enough below its sector median to list.')}
+    </Section>
   );
 }
 
-function CapitalCard({ a, r, nar }: { a: Analysis; r: Ratings; nar: Narrative }) {
-  const c = r.capital;
+function Moat({ a, r, nar, ex }: { a: Analysis; r: Ratings; nar: Narrative; ex: number }) {
+  const rows = (a.series?.rows || []).filter((x: any) => isNum(x.roic));
+  const pts = (k: string) => rows.map((x: any) => ({ date: String(x.year), value: x[k] }));
   return (
-    <OCard span={12} id="rsr-capital">
-      <OHead title="Capital Allocation" aside={<Pill tone={!c.key ? 'muted' : c.key === 'exemplary' ? 'good' : c.key === 'poor' ? 'bad' : 'neutral'}>{c.label}</Pill>}
-        info="The three legs Morningstar names — balance sheet, investment, shareholder distributions — each scored from figures already in this report." />
-      <Byline a={a} nar={nar} />
-      <Prose nar={nar} k="capital" fallback={capitalProse(a, r)} />
-      <div className="mt-4">
-        <DataTable headers={[{ label: 'Leg' }, { label: 'Assessment' }, { label: 'On what' }]}
-          rows={c.legs.map((l: any) => [
-            l.label,
-            <Dot key="d" kind={l.points === 2 ? 'lo' : l.points === 1 ? 'mid' : l.points === 0 ? 'hi' : 'na'}>{l.verdict}</Dot>,
-            <span key="w" className="text-tiny text-muted-foreground">{l.detail || 'not measured'}</span>,
+    <Section id="rsr-moat" title="Economic Moat" a={a} nar={nar}>
+      <Prose a={a} nar={nar} k="moat" fallback={moatProse(a, r)} />
+      {rows.length > 1 ? (
+        <Exhibit n={ex} title="Return on invested capital against the cost of capital"
+          source="company filings; Maz Vantage. The cost of equity uses today’s beta and rates for every year.">
+          <MultiLineChart height={230} labelFmt={(d) => d} valueFmt={(v) => pct(v)} series={[
+            { name: 'ROIC', color: 'var(--primary)', points: pts('roic') },
+            { name: 'WACC', color: 'var(--down)', points: pts('wacc') },
+          ]} />
+          <Small className="mt-1">
+            ROIC in blue, WACC in red. {r.moat.key ? `${r.moat.positive} of the ${r.moat.years} filed years earned more on capital than that capital cost.` : ''}
+          </Small>
+        </Exhibit>
+      ) : null}
+    </Section>
+  );
+}
+
+function FairValue({ a, r, nar, ex }: { a: Analysis; r: Ratings; nar: Narrative; ex: number }) {
+  const cur = curSymbol(a.facts.currency);
+  const hist: any[] = (a.series?.rows || []).slice(-6);
+  const fc: any[] = (a.forecast?.rows || []).filter((x: any) => isNum(x.year) && x.year > (hist.at(-1)?.year ?? 0)).slice(0, 3);
+  const cats = [...hist.map((x) => x.year), ...fc.map((x) => `${x.year}E`)];
+  const drv = React.useMemo(() => profitDrivers(a), [a]);
+  const drvParas = React.useMemo(() => profitDriverProse(a, drv), [a, drv]);
+  const params = React.useMemo(() => valuationParameters(a, r.fve), [a, r]);
+  const paramParas = parameterProse(a, params, r.fve);
+  const m = (v: number) => money(v, { currency: cur });
+  const Sub = ({ children }: { children: React.ReactNode }) => <h3 className="mb-2 mt-6 text-[15px] font-bold">{children}</h3>;
+  return (
+    <Section id="rsr-fv" title="Fair Value and Profit Drivers" a={a} nar={nar}>
+      <Prose a={a} nar={nar} k="fairValue" fallback={fairValueProse(a, r)} />
+
+      {drv.available ? (
+        <>
+          <Sub>Profit drivers, FY{drv.from} to FY{drv.to}</Sub>
+          {drvParas.map((p, i) => <Para key={i}>{p}</Para>)}
+          <Exhibit n={ex} title={`Operating profit, FY${drv.from} to FY${drv.to}: growth against margin`}
+            source="company filings; Maz Vantage. Growth is the revenue added at the starting margin; margin is the change in margin on the latest revenue.">
+            <WaterfallChart height={240} valueFmt={m} steps={[
+              { label: `FY${drv.from}`, value: drv.opIncome[0], kind: 'total' },
+              { label: 'Growth', value: drv.volume, kind: 'delta' },
+              { label: 'Margin', value: drv.marginEffect, kind: 'delta' },
+              { label: `FY${drv.to}`, value: drv.opIncome[1], kind: 'total' },
+            ]} />
+          </Exhibit>
+          {drv.segments.length ? (
+            <Exhibit n={ex + 1} title="Where the revenue came from" source="company filings, segment disclosure as reported; Maz Vantage.">
+              <DocTable first="Segment" head={[`FY${drv.from}`, `FY${drv.to}`, 'Added', `Share FY${drv.from}`, `Share FY${drv.to}`]}
+                rows={drv.segments.map((sg) => [
+                  sg.name,
+                  isNum(sg.from) ? m(sg.from) : 'n/a',
+                  isNum(sg.to) ? m(sg.to) : 'n/a',
+                  isNum(sg.added) ? m(sg.added) : 'n/a',
+                  isNum(sg.shareFrom) ? pct(sg.shareFrom, { dp: 0 }) : 'n/a',
+                  isNum(sg.shareTo) ? pct(sg.shareTo, { dp: 0 }) : 'n/a',
+                ])} />
+            </Exhibit>
+          ) : null}
+        </>
+      ) : null}
+
+      <Sub>The fair value, and what it is built on</Sub>
+      {hist.length > 1 ? (
+        <Exhibit n={ex + 2} title="Revenue, filed and consensus" source="company filings; consensus estimates as published; Maz Vantage.">
+          <ColumnChart height={230} categories={cats} forecastFrom={fc.length ? hist.length : null}
+            series={[{ name: 'Revenue', color: 'var(--chart-1)', values: [...hist.map((x) => x.revenue), ...fc.map((x) => x.revenue)] }]}
+            valueFmt={m} legend={false} />
+        </Exhibit>
+      ) : null}
+      {paramParas.map((p, i) => <Para key={i}>{p}</Para>)}
+      {params.rows.length ? (
+        <Exhibit n={ex + 3} title={`The ${r.fve.count} models in the ${price(r.fve.value, cur)} estimate, and their key input`}
+          source="Maz Vantage valuation models on consensus estimates; the estimate is their median and never reaches the quant rating.">
+          <DocTable first="Model" head={['Value', 'Key input', 'Terminal share']} rows={params.rows.map((x) => [
+            x.label,
+            price(x.value, cur),
+            <span key="k" className="whitespace-normal text-left text-muted-foreground">{x.key}</span>,
+            isNum(x.terminalShare) ? pct(x.terminalShare, { dp: 0 }) : '—',
           ])} />
-      </div>
-    </OCard>
+        </Exhibit>
+      ) : null}
+      {r.fve.setAside?.length ? (
+        <>
+          <p className="mb-1.5 text-[14.5px] font-semibold">Set aside, and why</p>
+          <ul className="mb-4 grid list-disc gap-2 pl-5 text-[14.5px] leading-[1.7]">
+            {r.fve.setAside.map((x: any) => (
+              <li key={x.id}><b>{x.full || x.label}</b> ({price(x.value, cur)}): {x.why}</li>
+            ))}
+          </ul>
+        </>
+      ) : null}
+      {r.fve.models.length ? (
+        <Exhibit n={ex + 4} title={`The ${r.fve.count} models against the price`}
+          source="Maz Vantage valuation models on consensus estimates.">
+          <ValuationRangeChart currency={cur} current={a.facts.price}
+            rows={r.fve.models.map((x: any) => ({ label: x.label, full: x.full, value: x.value }))} />
+        </Exhibit>
+      ) : null}
+      <Cases a={a} />
+    </Section>
   );
 }
 
-/** Filed years beside the consensus years, with the boundary marked E. */
-function FinancialsCard({ a }: { a: Analysis }) {
+/*
+  Bull and bear cases: the six DCFs rerun at the lowest and the highest
+  revenue any analyst publishes, margins held at consensus. The Fair Value
+  section's paragraph form of the scenario card, which stays the model.
+*/
+function Cases({ a }: { a: Analysis }) {
+  const s = React.useMemo(() => buildScenarios(a), [a]);
+  const cur = curSymbol(a.facts.currency);
+  const px = isNum(a.facts.price) ? a.facts.price : null;
+  if (!s.available || !s.cases) return null;
+  const line = scenarioReading(s.cases, px, cur);
+  const target = { bear: s.targets.low, base: s.targets.consensus, bull: s.targets.high } as const;
+  return (
+    <>
+      <p className="mb-1.5 mt-5 text-[14.5px] font-semibold">Bull case and bear case</p>
+      <Para>
+        The estimate above runs every model on the consensus revenue path. Rerunning the six discounted cash flows on the lowest and the
+        highest revenue any analyst publishes, with margins held at consensus, gives the range of values the published forecasts support.
+        {line ? ` ${line}` : ''}
+      </Para>
+      <DocTable first="Case" head={['Revenue path', 'Growth a year', 'Fair value', 'vs price', 'Street target']}
+        rows={(['bear', 'base', 'bull'] as const).map((k) => {
+          const c = s.cases![k];
+          return [
+            k === 'bear' ? 'Bear: lowest published revenue' : k === 'bull' ? 'Bull: highest published revenue' : 'Consensus',
+            `FY${c.fromYear ?? '—'} ${money(c.revenueFrom)} → FY${c.toYear ?? '—'} ${money(c.revenueTo)}`,
+            isNum(c.growth) ? pct(c.growth) : 'n/a',
+            isNum(c.value) ? price(c.value, cur) : 'n/a',
+            <Signed key="u" v={c.upside} />,
+            isNum(target[k]) ? price(target[k], cur) : 'n/a',
+          ];
+        })} />
+      <Small className="mt-1.5">A range of published outcomes, not anyone’s forecast. Like every fair value here, none of it reaches the quant rating.</Small>
+    </>
+  );
+}
+
+function Risk({ a, r, nar }: { a: Analysis; r: Ratings; nar: Narrative }) {
+  const u = r.unc;
+  const read = (p: number | null) => (p === 0 ? 'Contained' : p === 1 ? 'Moderate' : p === 2 ? 'Wide' : 'Not measured');
+  const bands = Object.entries(SAFETY_BANDS) as [string, any][];
+  return (
+    <Section id="rsr-risk" title="Risk and Uncertainty" a={a} nar={nar}>
+      <Prose a={a} nar={nar} k="risk" fallback={riskProse(a, r)} />
+      <div className="mt-4">
+        <DocTable first="Driver of the uncertainty rating" head={['Reading', 'Contribution']}
+          rows={u.drivers.map((d: any) => [d.label, isNum(d.value) ? d.fmt(d.value) : 'n/a', read(d.points)])} />
+        <Small className="mt-1.5">
+          The rating is the mean of the drivers that could be measured: <b>{u.label}</b>. It chooses the margin of safety the valuation zone
+          demands, from the published ladder — {bands.map(([, b]) => `${b.label} ${pct(1 - b.lo)} / ${pct(b.hi - 1)}`).join(', ')} — as a
+          discount below and a premium above the fair value estimate. It does not touch the quant rating.
+        </Small>
+      </div>
+    </Section>
+  );
+}
+
+function Capital({ a, r, nar, ex }: { a: Analysis; r: Ratings; nar: Narrative; ex: number }) {
+  const c = r.capital;
+  const cur = curSymbol(a.facts.currency);
+  const rows: any[] = (a.series?.rows || []).slice(-6).filter((x: any) => isNum(x.fcf));
+  return (
+    <Section id="rsr-capital" title="Capital Allocation" a={a} nar={nar}>
+      <Prose a={a} nar={nar} k="capital" fallback={capitalProse(a, r)} />
+      {rows.length > 1 ? (
+        <Exhibit n={ex} title="Free cash flow and what was returned to shareholders" source="company cash flow statements; Maz Vantage.">
+          <ColumnChart height={230} categories={rows.map((x) => x.year)} valueFmt={(v) => money(v, { currency: cur })} series={[
+            { name: 'Free cash flow', color: 'var(--chart-1)', values: rows.map((x) => x.fcf) },
+            { name: 'Dividends', color: 'var(--chart-2)', values: rows.map((x) => x.dividends) },
+            { name: 'Buybacks', color: 'var(--chart-4)', values: rows.map((x) => x.buybacks) },
+          ]} />
+        </Exhibit>
+      ) : null}
+      <DocTable first="Leg" head={['Assessment', 'On what']}
+        rows={c.legs.map((l: any) => [l.label, l.verdict, <span key="w" className="text-muted-foreground">{l.detail || 'not measured'}</span>])} />
+    </Section>
+  );
+}
+
+/*
+  Our quant rating and the peer comparison, in one section: what the rating
+  is made of, then a dozen chosen ratios read against the sector (as graded)
+  and against the named peers (one TTM definition for every company). The
+  model and the sentences live in `lib/research-peers.ts`.
+*/
+function QuantPeers({ a, nar, ex }: { a: Analysis; nar: Narrative; ex: number }) {
+  const f = a.facts;
+  const cur = curSymbol(f.currency);
+  const cmp = React.useMemo(() => comparison(a), [a]);
+  const paras = React.useMemo(() => quantPeerParas(a, cmp), [a, cmp]);
+  const factors = Object.entries(FACTOR_TITLES).filter(([k]) => isNum((a.scores as any)[k]?.score));
+  const cos = cmp.companies;
+  const caps = new Map<string, number>([[f.symbol, f.marketCap], ...(a.peers?.peers || []).map((p: any) => [p.symbol, p.marketCap] as [string, number])]);
+  const roic = cmp.rows.find((r) => r.pick.id === 'returnOnInvestedCapital');
+  const pe = cmp.rows.find((r) => r.pick.id === 'peGaapTtm');
+  // Sentences 0–1 describe the rating; the factor paragraphs follow the factor chart; the last paragraph closes on the peers.
+  const voices = voicesFor(f.symbol, 'quant');
+  const run = (keys: string[]) => (
+    <WithVoices anchored voices={voices.filter((v) => keys.includes(String(v.after)))}
+      items={paras.filter((p) => keys.includes(p.key)).map((p) => ({ key: p.key, node: <Para key={p.key}>{p.text}</Para> }))} />
+  );
+  const FACTOR_KEYS_P = ['valuation', 'profitability', 'growth', 'health'];
+  const peerDate: string | null = (a.ds as any).snapshotExtras?.peersCapturedAt || null;
+  return (
+    <Section id="rsr-quant" title="Quant Rating and Peer Comparison" a={a} nar={nar} signed={false}>
+      {run(['lead', 'factors'])}
+      {factors.length ? (
+        <Exhibit n={ex} title="The quant rating’s five factors against the sector"
+          source="Maz Vantage quant rating; each factor is the mean percentile of its ratios against the sector, on a 0–5 scale where 2.5 is the sector median.">
+          <div className="grid gap-2.5 py-1">
+            {factors.map(([k, t]) => {
+              const fs = (a.scores as any)[k];
+              return (
+                <div key={k} className="grid grid-cols-[130px_minmax(0,1fr)_auto] items-center gap-3 text-13">
+                  <span className="font-medium">{t}</span>
+                  <div className="relative">
+                    <GradeBar score={fs.score} letter={fs.letter} className="mt-0" />
+                    <i className="absolute inset-y-[-3px] left-1/2 w-px bg-foreground/40" title="Sector median" />
+                  </div>
+                  <GradePill score={fs.score} letter={fs.letter} />
+                </div>
+              );
+            })}
+            <div className="grid grid-cols-[130px_minmax(0,1fr)_auto] items-center gap-3 border-t border-border pt-2 text-13">
+              <span className="font-semibold">Quant rating</span>
+              <GradeBar score={(a.scores as any).overall?.score} letter={(a.scores as any).overall?.letter} className="mt-0" />
+              <GradePill score={(a.scores as any).overall?.score} letter={(a.scores as any).overall?.letter} size="lg" />
+            </div>
+          </div>
+          <Small className="mt-1">The thin line marks the sector median, 2.5 of 5.</Small>
+        </Exhibit>
+      ) : null}
+      {run(FACTOR_KEYS_P)}
+      <Exhibit n={ex + 1} title={`Selected ratios: ${f.symbol} against its sector and its peers`}
+        source="Maz Vantage sector distributions and quant grades; peer figures as published, trailing twelve months.">
+        <DocTable first="Ratio" head={[f.symbol, 'Sector median', 'Sector percentile', 'Grade', 'Peer median', 'Rank in peers']}
+          rows={cmp.rows.map((r) => [
+            r.pick.label,
+            <b key="v">{r.pick.fmt(r.graded.value)}</b>,
+            r.pick.fmt(r.graded.median),
+            isNum(r.graded.pctile) ? (
+              <span key="p" className="inline-flex w-full min-w-[110px] items-center gap-2">
+                <GradeBar className="mt-0 flex-1" tone={toneForLetter(r.graded.letter)} share={r.graded.pctile * 100} />
+                <span className="tnum">{pct(r.graded.pctile, { dp: 0 })}</span>
+              </span>
+            ) : 'n/a',
+            <GradePill key="g" score={r.graded.grade} letter={r.graded.letter} />,
+            r.pick.fmt(r.peerMedian),
+            isNum(r.rank) ? `${r.rank} of ${r.ranked}` : 'n/a',
+          ])} />
+        <Small className="mt-1.5">
+          Percentiles are turned so that higher is always better: a P/E in the 20th percentile is dearer than four-fifths of the sector. The
+          first three columns are the figures the quant rating graded; the last two put the company among its peers on the TTM figures below.
+        </Small>
+      </Exhibit>
+      {cos.length > 1 ? (
+        <Exhibit n={ex + 2} title="Peer comparison, trailing twelve months" source={`company filings via published TTM ratios${peerDate ? `; peer rows captured ${fmtDate(peerDate)}, ${f.symbol}’s with the rest of this report` : ''}; Maz Vantage.`}>
+          <DocTable first="" head={[...cos.map((c) => c.symbol), 'Peer median']} rows={[
+            ['Market cap', ...cos.map((c) => (isNum(caps.get(c.symbol)) ? money(caps.get(c.symbol)!, { currency: cur }) : 'n/a')), '—'],
+            ...cmp.rows.map((r) => [
+              r.pick.label,
+              ...r.values.map((v, i) => (i === 0 ? <b key={i}>{r.pick.fmt(v)}</b> : r.pick.fmt(v))),
+              r.pick.fmt(r.peerMedian),
+            ]),
+          ]} />
+          <Small className="mt-1.5">
+            One definition for every company, {f.symbol} included, so a figure here can differ from the graded one in Exhibit {ex + 1}. A
+            negative P/E is shown as n/a, not as a cheap one. Growth is each company’s last fiscal year, and fiscal years end on different dates.
+          </Small>
+        </Exhibit>
+      ) : null}
+      {roic && roic.values.filter(isNum).length >= 3 ? (
+        <Exhibit n={ex + 3} title="Return on invested capital and P/E across the peer set" source="published TTM ratios; Maz Vantage.">
+          <ColumnChart height={220} categories={cos.map((c) => c.symbol)} valueFmt={(v) => pct(v, { dp: 0 })} legend={false}
+            series={[{ name: 'ROIC', color: 'var(--chart-2)', values: roic.values, colors: cos.map((c) => (c.self ? 'var(--primary)' : null)) }]} />
+          {pe ? (
+            <ColumnChart height={180} categories={cos.map((c) => c.symbol)} valueFmt={(v) => mult(v)} legend={false}
+              series={[{ name: 'P/E', color: 'var(--chart-4)', values: pe.values, colors: cos.map((c) => (c.self ? 'var(--primary)' : null)) }]} />
+          ) : null}
+          <Small className="mt-1">Return on invested capital above, P/E below; {f.symbol} in blue.</Small>
+        </Exhibit>
+      ) : null}
+      {run(['closing'])}
+    </Section>
+  );
+}
+
+/** Filed years beside the consensus years, marked E. */
+function Financials({ a, nar, ex }: { a: Analysis; nar: Narrative; ex: number }) {
   const rows: any[] = (a.series?.rows || []).slice(-5);
   const fc: any[] = (a.forecast?.rows || []).filter((x: any) => isNum(x.year) && x.year > (rows.at(-1)?.year ?? 0)).slice(0, 3);
   const cur = curSymbol(a.facts.currency);
-  if (!rows.length) {
-    return (
-      <OCard span={12} id="rsr-fin">
-        <OHead title="Financials" />
-        {a.ds.status('income') !== 'ok' ? <FeedGate a={a} feed="income" what="Annual financial statements" /> : <Notice>No annual statements were returned.</Notice>}
-      </OCard>
-    );
-  }
-  const dash = <span className="text-muted-foreground">—</span>;
-  const line = (label: string, pick: (x: any) => unknown, fmt: (v: unknown) => string, fcPick?: (x: any) => unknown): React.ReactNode[] => [
-    label, ...rows.map((x) => fmt(pick(x))), ...fc.map((x) => (fcPick ? fmt(fcPick(x)) : dash)),
-  ];
+  if (!rows.length) return <Section id="rsr-fin" title="Financials" a={a} nar={nar} signed={false}><Small>No annual statements were returned.</Small></Section>;
+  const dash = '—';
   const m = (v: unknown) => (isNum(v) ? money(v, { currency: cur }) : 'n/a');
   const p = (v: unknown) => (isNum(v) ? pct(v) : 'n/a');
-  const e = (v: unknown) => (isNum(v) ? price(v, cur) : 'n/a');
+  const line = (label: string, pick: (x: any) => unknown, fmt: (v: unknown) => string, fcPick?: (x: any) => unknown): React.ReactNode[] =>
+    [label, ...rows.map((x) => fmt(pick(x))), ...fc.map((x) => (fcPick ? fmt(fcPick(x)) : dash))];
   const growth = (x: any, prev: any) => (prev && prev.revenue > 0 && isNum(x.revenue) ? x.revenue / prev.revenue - 1 : null);
+  const margins = (a.series?.rows || []).slice(-10);
+  const mp = (k: string) => margins.map((x: any) => ({ date: String(x.year), value: x[k] }));
   return (
-    <OCard span={12} id="rsr-fin">
-      <OHead title="Financials" info="Annual, as filed, with the consensus years marked E. The report’s trailing-twelve ratios will not tie to the last filed column." />
-      <DataTable
-        headers={[{ label: '' }, ...rows.map((x) => ({ label: String(x.year), num: true })), ...fc.map((x) => ({ label: `${x.year}E`, num: true }))]}
-        rows={[
-          line('Revenue', (x) => x.revenue, m, (x) => x.revenue),
-          ['Revenue growth %',
-            ...rows.map((x, i) => <Signed key={`h${i}`} v={growth(x, rows[i - 1])} />),
-            ...fc.map((x, i) => <Signed key={`f${i}`} v={growth(x, i > 0 ? fc[i - 1] : rows.at(-1))} />)],
-          line('Gross profit', (x) => x.grossProfit, m),
-          line('Operating income', (x) => x.ebit, m, (x) => x.ebit),
-          line('Operating margin %', (x) => x.operatingMargin, p),
-          line('EBITDA', (x) => x.ebitda, m, (x) => x.ebitda),
-          line('Net income', (x) => x.netIncome, m, (x) => x.netIncome),
-          line('Net margin %', (x) => x.netMargin, p),
-          line('EPS (diluted)', (x) => x.eps, e, (x) => x.eps),
-          line('Free cash flow', (x) => x.fcf, m),
-          line('Return on invested capital %', (x) => x.roic, p),
-          line('Return on equity %', (x) => x.roe, p),
-          line('Debt / equity', (x) => x.debtToEquity, (v) => (isNum(v) ? dec(v, 2) : 'n/a')),
-        ]} />
-      <Tiny>
+    <Section id="rsr-fin" title="Financials" a={a} nar={nar} signed={false}>
+      <DocTable first="Fiscal year" head={[...rows.map((x) => String(x.year)), ...fc.map((x) => `${x.year}E`)]} rows={[
+        line('Revenue', (x) => x.revenue, m, (x) => x.revenue),
+        ['Revenue growth %', ...rows.map((x, i) => <Signed key={`h${i}`} v={growth(x, rows[i - 1])} />),
+          ...fc.map((x, i) => <Signed key={`f${i}`} v={growth(x, i > 0 ? fc[i - 1] : rows.at(-1))} />)],
+        line('Gross margin %', (x) => x.grossMargin, p),
+        line('Operating income', (x) => x.ebit, m, (x) => x.ebit),
+        line('Operating margin %', (x) => x.operatingMargin, p),
+        line('Net income', (x) => x.netIncome, m, (x) => x.netIncome),
+        line('EPS (diluted)', (x) => x.eps, (v) => (isNum(v) ? price(v, cur) : 'n/a'), (x) => x.eps),
+        line('Free cash flow', (x) => x.fcf, m),
+        line('Return on invested capital %', (x) => x.roic, p),
+        line('Debt / equity', (x) => x.debtToEquity, (v) => (isNum(v) ? dec(v, 2) : 'n/a')),
+      ]} />
+      <Small className="mt-1.5">
         {fc.length
-          ? `Estimate columns are the consensus from ${a.forecast.analystCount || 'the'} contributing analysts, used as filed. The outer years wobble as coverage thins; they are not smoothed here, on purpose.`
+          ? `Columns marked E are the consensus of ${a.forecast.analystCount || 'the'} contributing analysts, used as published and not smoothed.`
           : 'No consensus estimates were returned, so every column is a filed year.'}
-      </Tiny>
-    </OCard>
+      </Small>
+      {margins.length > 1 ? (
+        <Exhibit n={ex} title="Margins over the filed record" source="company filings; Maz Vantage.">
+          <MultiLineChart height={220} labelFmt={(d) => d} valueFmt={(v) => pct(v)} series={[
+            { name: 'Gross', color: 'var(--chart-2)', points: mp('grossMargin') },
+            { name: 'Operating', color: 'var(--primary)', points: mp('operatingMargin') },
+            { name: 'Net', color: 'var(--chart-4)', points: mp('netMargin') },
+          ]} />
+        </Exhibit>
+      ) : null}
+    </Section>
   );
 }
 
-/* ---------- methodology ------------------------------------------------------------- */
+/* ---------- methodology --------------------------------------------------------- */
 
 /*
   The developer's way in: the exact payload `narrative.ts` would POST to a
-  narrative service, for this company. `buildPrompt` makes no network call, so
-  this reveals nothing and costs nothing.
+  narrative service, for this company. `buildPrompt` makes no network call.
 */
 function PromptTools({ a, r }: { a: Analysis; r: Ratings }) {
   const [status, setStatus] = React.useState('');
@@ -685,15 +878,13 @@ function PromptTools({ a, r }: { a: Analysis; r: Ratings }) {
   };
   if (!operator) return null;
   return (
-    <div className="mt-6 border-t border-border pt-4">
-      <OSub className="mt-0">For the developer</OSub>
-      <p className="max-w-[90ch] text-tiny leading-relaxed text-muted-foreground">
-        The narrative is loaded by <code>src/lib/narrative.ts</code>, which tries a configured endpoint first, then the bundled{' '}
-        <code>/data/research.json</code>, then falls back to the generated prose. To make it live, stand up a service that accepts the payload
-        below, forwards <code>system</code> and <code>user</code> to a model, and returns <code>{'{ sections: … }'}</code>; then set{' '}
-        <code>localStorage[&quot;mazvantage.narrative.endpoint&quot;]</code> to its URL. The key stays on your server — the browser never holds one.
-      </p>
-      <div className="mt-3 flex flex-wrap items-center gap-3">
+    <div className="mt-6 border-t border-border pt-3">
+      <Small>
+        For the developer: the narrative is loaded by <code>src/lib/narrative.ts</code>, which tries a configured endpoint, then the bundled{' '}
+        <code>/data/research.json</code>, then the generated prose. A service that accepts the payload below and returns{' '}
+        <code>{'{ sections: … }'}</code> makes it live; set <code>localStorage[&quot;mazvantage.narrative.endpoint&quot;]</code> to its URL.
+      </Small>
+      <div className="mt-2 flex flex-wrap items-center gap-3">
         <Button variant="outline" size="sm" onClick={copy}>Copy the model prompt for this company</Button>
         <span className="text-tiny text-muted-foreground">{status}</span>
       </div>
@@ -701,58 +892,81 @@ function PromptTools({ a, r }: { a: Analysis; r: Ratings }) {
   );
 }
 
-function MethodologyCard({ a, r, nar }: { a: Analysis; r: Ratings; nar: Narrative }) {
+/** How the quotes were chosen, and every source quoted, once each. */
+function OutsideVoices({ a }: { a: Analysis }) {
+  const vs = VOICES.filter((v) => v.symbol === a.facts.symbol);
+  if (!vs.length) return null;
+  const sources = [...new Map(vs.map((v) => [`${v.source}|${v.date}`, v])).values()]
+    .sort((x, y) => y.date.localeCompare(x.date));
+  const count = (k: string) => vs.filter((v) => v.relation === k).length;
   return (
-    <OCard span={12} id="rsr-method">
-      <OHead title="Research Methodology" />
-      <p className="-mt-1 mb-4 max-w-[90ch] text-13 leading-relaxed text-muted-foreground">
-        This report follows the layout and the section order of a Morningstar equity analyst report because that is a good structure for the
-        argument. What sits inside the sections is arrived at differently, and the difference is worth being explicit about.
-      </p>
-      <DataTable headers={['Element', 'How a house like Morningstar arrives at it', 'How this report does']} rows={[
-        ['The headline rating',
-          'A star rating: the analyst’s price against the analyst’s own fair value, with a margin of safety that widens as their uncertainty rating rises.',
-          `The Maz Vantage quant rating. ${r.quant.graded} ratios ranked as percentiles against the sector, averaged into five factor scores and then across them. Price multiples count, inside the Valuation factor; no fair value estimate does. It answers a different question from a star rating — how the company ranks against peers, not whether it is below intrinsic value.`],
-        ['Fair value estimate',
-          'One discounted cash flow, built and maintained by a named analyst who sets the revenue, margin and terminal assumptions.',
-          `The median of ${r.fve.count || 'up to thirteen'} models — six DCFs, six relative multiples and a published levered DCF — run on consensus estimates. No assumption is set by hand, and it feeds the valuation zone only, never the rating.`],
-        ['Uncertainty rating',
-          'An analyst’s scenario analysis of the business, expressed as the interquartile range of possible intrinsic values.',
-          'Six measured drivers — model spread, volatility, beta, leverage, margin variability and consensus dispersion — averaged. Catches a volatile, geared, hard-to-forecast company; misses a contingent risk not yet in the numbers.'],
-        ['Economic moat',
-          'A forecast that excess returns on capital persist ten years (narrow) or twenty (wide), reasoned from a named source of advantage.',
-          'A measurement of how many of the last ten filed years earned more on capital than that capital cost. Backward-looking by construction, and it names no source of advantage.'],
-        ['Capital allocation',
-          'An analyst’s assessment of the balance sheet, investment record and distribution policy, including judgement on management.',
-          'The same three legs, each scored from filed figures. No assessment of management is made or implied.'],
-        ['The narrative',
-          'Written by a named analyst who follows the company and signs the note.',
-          nar
-            ? `Written by ${nar.model} from a brief of pre-computed figures, under instructions to quote them verbatim and invent nothing. The model was given numbers and asked for prose; it was never asked for a number. No person reviewed it before publication.`
-            : 'Assembled from the numbers on this page. Every sentence is built from a figure shown here, and a sentence whose inputs are missing is not written.'],
-      ]} />
-      <Notice className="mt-4">
-        <b>This is not investment advice.</b> The ratings are arithmetic over filed accounts and published consensus, and each is reproducible from
-        the table beside it — which is the one thing this report can offer that a signed analyst note cannot. What it cannot offer in return is
-        the analyst’s judgement: no one here has met the management, read the contracts, or formed a view the numbers do not already contain.
-      </Notice>
-      {nar ? (
-        <Notice className="mt-3">
-          The prose on this page was <b>written by a language model</b>, not by a person, and was not reviewed by one. It is constrained to the
-          figures in the tables and instructed to add no facts of its own, and the sections are rejected rather than shown if they come back
-          malformed — but a model that follows those instructions perfectly is still summarising, and a summary can mislead by emphasis without
-          stating anything false. Where the prose and the tables disagree, the tables are right.
-        </Notice>
-      ) : null}
+    <>
+      <Para>
+        <b>Outside voices.</b> The {vs.length} quotes set beside the paragraphs come from the company’s management on its earnings call,
+        from fund managers’ letters to their investors, from published investment research, and from the sell-side analysts’ questions
+        on the call. Each is verbatim, a sentence or less, attributed and dated, with any cut marked by an ellipsis. Each is labelled as
+        confirming the paragraph ({count('confirms')}), challenging it ({count('challenges')}) or adding context the figures cannot carry
+        ({count('adds')}). Which quotes appear is our choice and ours alone; no firm quoted has reviewed this report, and a quote is not an
+        endorsement of the rating.
+      </Para>
+      <p className="mb-1 mt-4 text-13 font-semibold">Sources quoted</p>
+      <ul className="mb-3 grid gap-1 text-tiny text-muted-foreground">
+        {sources.map((v) => {
+          const link = linkOf(v);
+          return (
+            <li key={`${v.source}${v.date}`}>
+              <span className="text-foreground">{v.kind === 'management' || v.kind === 'analyst' ? `${a.facts.name}` : v.role || v.speaker}</span>
+              {' · '}{link ? <a href={link} target="_blank" rel="noopener noreferrer" className="underline decoration-border underline-offset-2 hover:text-foreground">{v.source}</a> : v.source}
+              {', '}{voiceDate(v.date)}
+            </li>
+          );
+        })}
+      </ul>
+    </>
+  );
+}
+
+function Methodology({ a, r, nar }: { a: Analysis; r: Ratings; nar: Narrative }) {
+  return (
+    <Section id="rsr-method" title="Research Methodology" a={a} nar={nar} signed={false}>
+      <Para>
+        This report follows the section order of a sell-side or independent equity analyst report because it is a good structure for an
+        argument. What sits inside each section is arrived at differently from a house with named analysts, and the difference matters.
+      </Para>
+      <Para>
+        <b>The headline rating</b> is the Maz Vantage quant rating: {r.quant.graded} ratios ranked as percentiles against the sector, averaged
+        into five factor scores and then across them. Price multiples count, inside the Valuation factor; no fair value estimate does. It asks
+        how the company ranks against its peers, not whether the price sits below intrinsic value.
+      </Para>
+      <Para>
+        <b>The fair value estimate</b> is the median of {r.fve.count || 'up to thirteen'} models (six discounted cash flows, six relative
+        multiples and a published levered DCF) run on consensus estimates, with no assumption set by hand. It sets the valuation zone, through
+        the margin of safety the uncertainty rating chooses, and never the quant rating.
+      </Para>
+      <Para>
+        <b>The moat and capital allocation ratings</b> are measurements, not forecasts. The moat counts how many of the last ten filed years
+        earned more on capital than that capital cost, and names no source of advantage. Capital allocation scores the balance sheet,
+        investment record and distributions from filed figures, and makes no judgement of management.
+      </Para>
+      <Para>
+        <b>The prose</b>{' '}
+        {nar
+          ? `was written by ${nar.model} from a brief of pre-computed figures, under instructions to quote them verbatim and invent nothing. The model was given numbers and asked for prose; it was never asked for a number, and no person reviewed it before publication. A summary can still mislead by emphasis without stating anything false; where the prose and the tables disagree, the tables are right.`
+          : 'is assembled from the numbers in this report. Every sentence is built from a figure shown here, and a sentence whose inputs are missing is not written.'}
+      </Para>
+      <OutsideVoices a={a} />
       {a.sectorTable?.quality === 'seed' ? (
-        <Notice error className="mt-3">
-          The sector distributions behind the <b>quant rating</b> are <b>modelled, not measured</b> — see the sector-statistics builder. The
-          rating, its factor scores and the ranked ratios all inherit that. The fair value, the uncertainty rating and the moat rating do not:
-          none of them touches the sector table.
-        </Notice>
+        <Para>
+          <b>A data caveat.</b> The sector distributions behind the quant rating are modelled rather than measured, so the rating, its factor
+          scores and the ranked ratios inherit that. The fair value, uncertainty and moat ratings do not touch the sector table.
+        </Para>
       ) : null}
+      <Small className="mt-4 border-t border-border pt-2">
+        This report is not investment advice. The ratings are arithmetic over filed accounts and published consensus, and each can be
+        reproduced from the figures beside it. No one has met the management or formed a view the numbers do not already contain.
+      </Small>
       <PromptTools a={a} r={r} />
-    </OCard>
+    </Section>
   );
 }
 
@@ -764,8 +978,8 @@ export function ResearchTab({ a }: { a: Analysis }) {
   const r = React.useMemo(() => researchRatings(a), [a]);
   const [nar, setNar] = React.useState<Narrative>(null);
 
-  /* The generated short form renders first; the narrative swaps in when it
-     lands. A failure is silent: the short form is a complete report. */
+  /* The generated prose renders first; the narrative swaps in when it lands.
+     A failure is silent: the generated form is a complete report. */
   React.useEffect(() => {
     let live = true;
     setNar(null);
@@ -773,22 +987,28 @@ export function ResearchTab({ a }: { a: Analysis }) {
     return () => { live = false; };
   }, [a, r]);
 
+  // Exhibits are numbered in reading order; Exhibit 1 would be the price chart in the head, which carries its own title instead.
   return (
-    <div className="grid grid-cols-12 gap-6 max-lg:grid-cols-1">
-      <RatingBandCard a={a} r={r} />
-      <PriceVsFairValueCard a={a} r={r} />
-      <AnalystNoteCard a={a} r={r} nar={nar} />
-      <BusinessCard a={a} />
-      <StrategyCard a={a} r={r} nar={nar} />
-      <BullsBearsCard a={a} nar={nar} />
-      <ScenarioCard a={a} />
-      <CompetitorsCard a={a} />
-      <MoatCard a={a} r={r} nar={nar} />
-      <FairValueCard a={a} r={r} nar={nar} />
-      <RiskCard a={a} r={r} nar={nar} />
-      <CapitalCard a={a} r={r} nar={nar} />
-      <FinancialsCard a={a} />
-      <MethodologyCard a={a} r={r} nar={nar} />
-    </div>
+    <article className="@container mx-auto max-w-[1180px] bg-background px-1 pb-10">
+      <RunningHead a={a} />
+      <HeadStrip a={a} r={r} />
+      <PriceVsFairValue a={a} r={r} />
+      <div className="mt-8 grid gap-8 @3xl:grid-cols-[230px_minmax(0,1fr)] @3xl:gap-10">
+        <Sidebar a={a} nar={nar} />
+        <div className="min-w-0">
+          <AnalystNote a={a} r={r} nar={nar} />
+          <RecentDevelopments a={a} nar={nar} />
+          <Strategy a={a} r={r} nar={nar} ex={1} />
+          <BullsBears a={a} nar={nar} />
+          <QuantPeers a={a} nar={nar} ex={2} />
+          <Moat a={a} r={r} nar={nar} ex={6} />
+          <FairValue a={a} r={r} nar={nar} ex={7} />
+          <Risk a={a} r={r} nar={nar} />
+          <Capital a={a} r={r} nar={nar} ex={12} />
+          <Financials a={a} nar={nar} ex={13} />
+          <Methodology a={a} r={r} nar={nar} />
+        </div>
+      </div>
+    </article>
   );
 }

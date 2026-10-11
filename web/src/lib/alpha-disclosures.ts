@@ -319,14 +319,16 @@ export function patentSignals(disc: any, ctx: any) {
   if (!isNum(g)) return [];
 
   const partial = windows.find((w: any) => !w.settled);
-  const score = bandScore(g, { mid: 0, span: 0.25 });
 
+  /* Shown, not scored (v2.0.0). A count of patents granted from filings made
+     years ago says nothing about the business this quarter, and it moved the
+     product category more than R&D spending did. */
   return [signal({
     category: 'product',
     name: 'Granted patent output',
     symbol: ctx.symbol,
-    status: statusFor(score),
-    score,
+    status: 'neutral',
+    score: null,
     raw: now.count,
     previous: prior.count,
     change: g,
@@ -337,7 +339,7 @@ export function patentSignals(disc: any, ctx: any) {
     confidence: 'medium',
     calculation: `${now.count.toLocaleString('en-US')} granted US patents published between `
       + `${now.from} and ${now.to}, against ${prior.count.toLocaleString('en-US')} in the `
-      + `12 months before that — ${pctText(g)}, on a full scale of ±25%. `
+      + `12 months before that — ${pctText(g)}. Described, not scored. `
       + (partial
         ? `The most recent window (${partial.from} to ${partial.to}) shows `
           + `${partial.count.toLocaleString('en-US')} and is deliberately NOT used: patents `
@@ -379,16 +381,16 @@ export function launchSignals(disc: any, ctx: any) {
 
   const recent = within(30);
   const products = recent.filter((e: any) => e.kind === 'product').length;
-  // Three or more shipped products in a month is the top of the scale. Set
-  // from what a launch cadence looks like, not fitted to anything.
-  const score = bandScore(products, { mid: 1, span: 2 });
 
+  /* Shown, not scored (v2.0.0): a month of announcements is seasonal — a
+     hardware company launches in September — and counting them read Apple's
+     autumn as an acceleration every year. */
   return [signal({
     category: 'product',
     name: 'Product launch cadence',
     symbol: ctx.symbol,
-    status: statusFor(score),
-    score,
+    status: 'neutral',
+    score: null,
     raw: products,
     previous: null,
     change: null,
@@ -399,7 +401,7 @@ export function launchSignals(disc: any, ctx: any) {
     confidence: 'medium',
     calculation: `${products} dated product announcement${products === 1 ? '' : 's'} in the 30 `
       + `days to ${disc.capturedAt}, out of ${recent.length} company announcements of any kind. `
-      + 'One a month sits at the midpoint; three or more saturates the scale.',
+      + 'Described, not scored.',
     historical: recent.slice(0, 6).map((e: any) => `${e.date} — ${e.title}`).join(' · '),
     interpretation: products > 1
       ? 'Shipping more often than a once-a-month cadence.'

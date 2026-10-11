@@ -15,10 +15,11 @@ export const FMP_BASE = 'https://financialmodelingprep.com/stable';
 export const FEED_PATHS = [
   'quote', 'profile', 'ratios-ttm', 'key-metrics-ttm', 'financial-scores',
   'income-statement', 'balance-sheet-statement', 'cash-flow-statement',
+  'income-statement-as-reported',
   'ratios', 'key-metrics', 'financial-growth', 'owner-earnings',
   'historical-employee-count', 'ratings-snapshot', 'earning-call-transcript-dates',
   'revenue-product-segmentation', 'revenue-geographic-segments', 'revenue-geographic-segmentation',
-  'analyst-estimates', 'price-target-consensus', 'grades-consensus',
+  'analyst-estimates', 'price-target-consensus', 'grades-consensus', 'grades',
   'discounted-cash-flow', 'levered-discounted-cash-flow',
   'historical-price-eod/light', 'historical-price-eod/full', 'historical-chart/5min',
   'dividends', 'stock-peers', 'key-executives', 'governance-executive-compensation',
@@ -27,7 +28,7 @@ export const FEED_PATHS = [
   'news/stock', 'news/press-releases', 'earnings',
   'historical-grades', 'price-target-summary',
   'institutional-ownership/symbol-positions-summary',
-  'sec-filings-search/symbol',
+  'sec-filings-search/symbol', 'historical-market-capitalization',
 ] as const;
 
 /** Market-wide reads outside the per-symbol catalogue. */

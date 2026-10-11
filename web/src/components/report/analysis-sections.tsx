@@ -20,7 +20,8 @@ import { MAX_SCORE } from '@/lib/grading';
 import { stockHref } from '@/lib/routes';
 import { ColumnChart, Donut, LineChart, WaterfallChart } from '@/components/charts/charts';
 import { Gauge, VolatilityStrip } from '@/components/charts/diagrams';
-import { Block, Card, CardHead, CmpBars, DataTable, FeedGate, KeyInfo, Notice, Pill, SectionIntro, toneClass } from '@/components/report/ui';
+import { Block, Card, CardHead, CmpBars, DataTable, FeedGate, KeyInfo, Notice, OMore, Pill, SectionIntro, toneClass } from '@/components/report/ui';
+import { useNav } from '@/components/nav-context';
 import { GradePill } from '@/components/report/grade-parts';
 import { usePings } from '@/components/report/pings';
 import { cn } from '@/lib/cn';
@@ -409,6 +410,7 @@ export function ManagementSection({ a }: { a: Analysis }) {
    ========================================================================== */
 
 export function OwnershipSection({ a }: { a: Analysis }) {
+  const nav = useNav();
   const f = a.facts;
   const ins = a.insiders;
   const trades = ins.trades;
@@ -450,6 +452,7 @@ export function OwnershipSection({ a }: { a: Analysis }) {
             })}
           />
         ) : gate(a, 'insiderTrades', 'Insider transactions', 'No insider transactions reported.')}
+        <OMore onClick={() => nav.goSymbolTab('Insider Trading')}>Every filing, charted, with each firm’s rating changes</OMore>
       </Block>
       <Block title="Ownership Breakdown" desc="Free float against closely held stock.">
         {isNum(freeFloat) && isNum(outstanding) && outstanding > 0 ? (

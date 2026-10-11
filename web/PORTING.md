@@ -64,7 +64,7 @@ became; add to it in the same change as any new feature.
 | market rail | shell/market-rail.tsx |
 | footer | shell/site-footer.tsx |
 
-### The stock report — `/stock/[symbol]/[[...tab]]` ✅ all 17 tabs (plus Technicals, port-only — see below)
+### The stock report — `/stock/[symbol]/[[...tab]]` ✅ all 17 tabs (plus Technicals and Insider Trading, port-only — see below)
 
 | Tab | Legacy | Port |
 |---|---|---|
@@ -77,6 +77,7 @@ became; add to it in the same change as any new feature.
 | Statistics & Metrics | statistics.js | tabs/statistics-tab.tsx |
 | Valuation … Momentum | gradeview.js factor tabs | factor-view.tsx (FactorTab) |
 | Analysts Forecast | forecast.js | tabs/forecast-tab.tsx |
+| Insider Trading | — (port-only, 2026-10-07) | tabs/insider-tab.tsx, charts/flow-chart.tsx, lib/insider-trading.ts |
 | Dividends | dividends.js, dividendscores.js | tabs/dividends-tab.tsx, dividend-grades.tsx |
 | Transcripts | transcripts.js | tabs/transcripts-tab.tsx |
 | News | news.js | tabs/news-tab.tsx |
@@ -154,6 +155,7 @@ stub that stored nothing and sent nothing.
 | Private notes on a company | Notes in the report head; Home | `notes-button.tsx`, `lib/notes.ts` | none | — |
 | CSV export | every `DataTable` / `DenseTable`, both screeners | `csv-button.tsx`, `lib/csv.ts` | none | csv-watchlists ✅ |
 | Technicals tab (summary, pivots, patterns, seasonality, indicators, drawings) | report, after Momentum — the report now has **18 tabs** | `tabs/technicals-tab.tsx`, `charts/study-chart.tsx`, `lib/technicals.ts`, `lib/price-history.ts` | prices already loaded | technicals ✅ |
+| Insider Trading tab: monthly Form 4 flows over the share price, every filing with name, role, code, size and a sec.gov link, and each firm's dated rating actions (2026-10-07) | report, after Analysts Forecast — the report now has **19 tabs** | `tabs/insider-tab.tsx`, `charts/flow-chart.tsx`, `lib/insider-trading.ts` | 2 on demand: `insider-trading/search` (500 rows) and `grades` (new path, full history); AAPL snapshot carries both | insider-trading ✅ |
 | Compare 2–5 stocks, saved comparisons; SA's order (chart, table, profile cards) and a Wall Street row in the rating block | `/stocks/compare` | `pages/compare-page.tsx`, `market/compare-chart.tsx` | 7 a company + 1 batch quote | — |
 | Portfolio tracking: lots, cost basis, CSV import, time-weighted return vs S&P 500, risk | Watchlist page | `lib/portfolio.ts`, `portfolio/portfolio-blocks.tsx` | 1 + holdings, on a click | portfolio ✅ |
 | Saved screens, send results to a list | both screeners, Investment Ideas, Home | `market/screen-actions.tsx` | none | — |
@@ -366,6 +368,177 @@ by firm). Every filter shows how many documents it leaves.
 - **The page code-splits**: `research-page.tsx` loads `letters-page.tsx` with
   `next/dynamic`, so the library's data only downloads when the section opens.
 
+## Financials: GAAP and non-GAAP (2026-10-07)
+
+The Financials tab has a **GAAP | Non-GAAP** switch beside the Income /
+Balance sheet / Cash flow strip, and it applies to all three statements.
+
+| Piece | File |
+|---|---|
+| Standard detection, quarter join, fiscal-year sums, calculated measures, loader | `lib/gaap.ts` |
+| GAAP panels, the switch, the basis line and card | `components/report/tabs/financials-tab.tsx` |
+| Non-GAAP panels | `components/report/tabs/financials-non-gaap.tsx` |
+| Statement table, run badges, reconciliation line, basis names | `components/report/tabs/financials-parts.tsx` |
+| New feed `incomeAsReported` (`income-statement-as-reported`, 1 row, on demand) | `lib/fmp.ts`, `lib/fmp/paths.ts` |
+| Tests | `tests/gaap.test.ts` (23) |
+
+- **GAAP is filed lines only**, plus ratios of two filed lines marked as
+  calculated. EBITDA, free cash flow, net debt and tangible book value moved
+  out: each is a non-GAAP measure under the SEC's Regulation G. The consensus
+  tail on "Revenue and earnings" was removed: consensus earnings are adjusted,
+  so it was adjusted figures drawn on the end of filed ones. Operating income
+  growth is now the filed line's own change, not the growth feed's EBIT.
+- **The standard is read off the filing's XBRL tag names**, not assumed:
+  `NetIncomeLoss`-type tags are US GAAP, `ProfitLossAttributableToOwnersOfParent`-type
+  tags are IFRS (`ProfitLoss` counts for neither — US GAAP has it too). For an
+  IFRS filer the switch reads **IFRS | Non-IFRS**. With no tagged filing (most
+  non-SEC listings) it says "Standard not confirmed" rather than guessing.
+- **Non-GAAP is two kinds, labelled apart.** *Reported by the company*:
+  adjusted EPS, the earnings calendar's `epsActual` — checked live on
+  2026-10-07: Salesforce Q1 FY26 $2.58 against $1.59 filed, Apple Q4 FY24
+  $1.64 against $0.97 filed. *Calculated here*: one formula per measure,
+  printed under each row (`FORMULA` in `lib/gaap.ts`). Every figure sits
+  beside the GAAP line it starts from.
+- **The quarter join** matches a release to the filed quarter it covers:
+  revenue within 0.5% first, else the latest quarter 7–120 days before the
+  release whose 10-Q was not filed more than 45 days before it. A fiscal year
+  of adjusted EPS needs all four quarters; its GAAP side is the four filed
+  quarters summed too, so a share-count cent is not called an adjustment.
+- **Not compared across units**: where the listing currency differs from the
+  statements' (ADRs such as SAP, TSMC), adjusted and filed EPS are not set
+  side by side.
+- **Cost**: the as-reported row on opening the tab (1 request); the quarterly
+  income statement on first opening Non-GAAP (1, shared with the dividend and
+  Alpha Signal loads). The AAPL capture gained `incomeAsReported`,
+  `stockBasedCompensation` and goodwill / intangibles (dated in its note).
+
+## Shariah tab: the full v5.0 screen, per issuer (2026-10-07)
+
+The Shariah Compliance tab now opens with a **researched screen** wherever one
+exists — Apple only, so far — and keeps the mechanical five-index screen below
+it as the cross-check. It follows `Shariah_Screening_Master_Methodology_v5_0.md`
+(repo root) and Part XIV of it: Gate-4 attribution is per-issuer research, shown
+only where a report exists, with its date and version.
+
+- **`lib/shariah-v5.ts` is the arithmetic, `lib/shariah-issuers.ts` the inputs.**
+  The engine holds the §3 threshold table (nowhere else), the per-lens market-cap
+  window and debt track (D16, Δ37), the Δ22 Watch zone at Sc A/B only, D9 sizing
+  (point at Sc A/B, conservative edge at Sc C/Strictest), open elections kept out
+  of the total, and Δ6 v5.0 purification. A record carries filed figures, banded
+  estimates with their basis, the Gate-1 walk, standards, flags and sources; an
+  unsettled reading is a set of replacement lines the engine prices.
+- **`AAPL_Shariah_Screening_v5_0.md`** (repo root) is the long-form report for
+  the same numbers; `tests/shariah-v5.test.ts` pins them (Sc A PASS 2.61%; Sc B
+  FAIL on cash + securities 38.2% of total assets; Sc C 5.58%; Strictest 5.99%;
+  purification $0.38–0.69).
+- **Inputs came from SEC filings, not the page's data**: the reference data has
+  Apple's interest income as $0 and its cash as cash plus short-term only
+  ($62.4b of $146.5b). Both are logged in the record's reconciliation table.
+- The mechanical screen's footnote claimed its cash figure was "the stricter
+  one"; it is the laxer one for any company holding long-dated bonds, and now
+  says so. Its arithmetic is unchanged.
+- No request is spent: the screen is static data. Adding an issuer is a record in
+  `SHARIAH_ISSUERS` plus its report.
+- **Reader-facing naming (user's call, same day):** scenarios, never schools of
+  law — "Scenario A", "Scenario B · AAOIFI" (the preferred one, highlighted and
+  driving the headline), "Scenario C", "Strictest"; the methodology's own label is
+  "Maz Vantage", never "Platform". The tab opens with the five index families
+  (`INDEX_RULES` / `indexScreen` in `shariah-v5.ts`, each on its own denominator and
+  revenue test) beside Maz Vantage's Scenario B; national standards follow under
+  "Other standards". No sources list on the tab (the filing links in the period
+  line stay). Where a researched screen exists, the quick screen folds into a
+  closed `<details>` — its cash figure and spot market cap would otherwise
+  contradict the table at the top.
+- **The quick screen now runs what it used to list as untested** (user's ask,
+  same day). `lib/shariah.ts` holds the one definition of the five standards
+  (window, receivables test, revenue test) that `shariah-v5.ts`'s `INDEX_RULES`
+  now derives from. It divides by each provider's own 12/24/36-month average
+  market cap from a new on-demand feed, `marketCapHist`
+  (`historical-market-capitalization`, daily, three years; one request, made when
+  the Shariah tab opens; today's market cap stands in, and says so, when it does
+  not load). It tests trade receivables (`accountsReceivables`) where a provider
+  does, interest income over revenue (a zero in the statement is "not reported",
+  never a pass), and works out purification for one share and its dividend —
+  interest after tax per share, the payout share of it, and the retail shortcut.
+  Cash is now cash + short- + long-term investments (long-dated bonds belong in
+  the test; equity stakes there overstate it, and the tab says so). Dow Jones is
+  30% and FTSE divides by market cap (IdealRatings) everywhere these standards
+  appear, including the Overview count and the Shariah desk. The AAPL capture
+  gained month-end `marketCapHist` and the statement fields these need (dated in
+  its note). `tests/shariah-quick.test.ts`.
+
+## Alpha Signal → Demand Discovery (2026-10-08)
+
+The user's Demand Discovery brief, built with the changes argued in `MAZ_DEMAND_DISCOVERY_SPEC.md` (repo root; the
+brief is its Appendix A) and tested in `DEMAND_DISCOVERY_PILOT_REPORT.md`. Nothing in the Alpha Signal was changed;
+the desk is a new tab at `/alpha/demand` (`sub: 'demand'`, in the Alpha Signal menu).
+
+| File | What |
+|---|---|
+| `lib/demand-data.ts` | Quarter/company shape, capture reader, live-statement adapter, `pointInTime`, calendar-quarter alignment |
+| `lib/demand-metrics.ts` | TTM/YoY with gap guards, growth profile, margins, inventory days, prepayments, capex, cash margins |
+| `lib/demand-signals.ts` | Data types (ACTUAL/ESTIMATE/FORECAST/INFERRED/AI_DERIVED), source quality, evidence confidence |
+| `lib/demand-cycle.ts` | Shortage signature, glut warning, capex floors, supply discipline, phases |
+| `lib/demand-cohort.ts` | Layer cohorts (exposure-weighted), breadth, `scanCohorts` |
+| `lib/demand-chains.ts` | Five hand-written chains (two are controls), exposures with their basis, lags, lead times |
+| `lib/demand-pricedin.ts` | Reverse DCF and the priced-in gate |
+| `lib/demand-score.ts` | Quality proxy, geometric opportunity score, confidence, `DEMAND_CALC_VERSION` |
+| `lib/demand-language.ts` | Rule-based earnings-call reader (shown, not scored) |
+| `lib/demand-engine.ts` | `analyseChain` / `analyseAll` → the brief's §45 JSON, with assembled thesis and bear text |
+| `lib/demand-backtest.ts` | Point-in-time backtest, buckets, rank correlation |
+| `components/pages/demand-page.tsx` | The desk: themes, backtest, evidence, method & limits |
+
+- **Data:** `public/data/demand-capture.json` (16 companies captured 2026-10-08, 29 from 2026-10-09), `demand-evidence.json` (27 hand-read
+  figures, 12 sources), `demand-language.json` (six calls, scores and ≤25-word snippets), `demand-backtest.json`
+  (both periods summarised). `tests/fixtures/demand-history.json` holds 1996–2018 for the out-of-sample test.
+  Built by `tools/capture/build_demand_capture.py`; see `tools/capture/README.md` §3.
+- **Request cost:** none on the bundled reading. With live data, "Re-read with live filings" costs four requests per
+  chain company (`incomeQ`, the new on-demand `balanceQ`, `cashflowQ`, `prices`) — 64 for the 16 companies.
+- **Tests:** `tests/demand.test.ts` (33 checks: point in time, gap guards, reverse DCF, the AND property of the score,
+  indirect members, evidence independence, the transcript reader, no look-ahead) and `tests/demand-pilot.test.ts`
+  (5 checks on the real capture; writes the outputs with `DEMAND_PILOT=1`).
+- **Not verified in the browser:** the live re-read path (no key in this environment). The bundled reading,
+  every section, row expansion, and a 375px width were checked.
+
+### Alpha Signal tab: management's words and the firms' views (2026-10-08)
+
+Demand Discovery's management quotes, extended to every company with a transcript and placed on the company's own
+Alpha Signal tab, plus what outside firms publish about it and its industry. Neither enters the score.
+
+| File | What it does |
+| --- | --- |
+| `lib/management-voice.ts` | `readCall`: the bull and bear case in management's words, analysts' pushback with their firm, tone and its shift between calls |
+| `lib/demand-language.ts` | `parseCall` and `ReaderOptions` added; Demand Discovery's defaults unchanged |
+| `lib/firm-views.ts` | Consensus years (growth from the filed year), price-target windows, peers' consensus, chain membership, letters for a company |
+| `components/alpha/outside-views.tsx` | `ManagementVoice` and `FirmViews`, rendered by `report/tabs/alpha-tab.tsx` after "The evidence" |
+
+- **Data:** live, the two newest transcripts (`fetchTranscript`, +2 requests on opening the tab) and `gradeActions`
+  (+1, shared with Insider Trading); `estimates`, `targetSummary`, `peers` and `income` are already loaded. Peers'
+  consensus is a button: one `estimates` request per peer, up to eight. Without live data: `management-voice.json`
+  (AAPL only), the AAPL snapshot's `gradeActions`, `demand-evidence.json` and the letters library.
+- **Reader differences from Demand Discovery:** wider business topic; supply constraints count against a company's
+  own case; analysts found by the operator's introduction as well as by question share (the demand reader can read
+  an analyst's preamble as management — its stored readings were made that way and are unchanged); safe-harbour
+  sentences skipped; near-repeat quotes dropped.
+- **Tests:** `tests/management-voice.test.ts` (10) and `tests/firm-views.test.ts` (8).
+- **Verified in the browser:** AAPL (saved reading) at desktop and 375px; the Demand Discovery row link. **Not
+  verified:** the live transcript path, peers' consensus and the industry-figures list for a chain member (no key
+  in this environment; the last is unit-tested).
+
 `marketpages.js` is not ported: its four sections were only reachable through
 `markets.js`'s `SECTIONS` table, which the dispatch resolved overview, stocks,
 ETFs and economy ahead of, so none of it ever rendered in the legacy app.
+
+### Demand Discovery: a wider AI chain and a bull and bear case per company (2026-10-09)
+
+- **Chain:** thirteen companies added to the AI compute layers (see the pilot report §8); two layers renamed
+  ("Memory and storage", "Chip-making equipment and test"); a memory → equipment edge.
+- **Bull and bear case:** `lib/demand-case.ts` (`latestQuarterCase`, `CASE_BANDS`) reads the newest filed quarter
+  both ways; `components/pages/demand-page.tsx` opens each company's detail with it, beside management's quotes and
+  the analysts' pushback from the newest call (saved, or read live with two requests when data is connected) and the
+  engine's own thesis and bear lines. The open detail is pinned to the table's visible width on narrow screens.
+- **Reader:** firms with initials kept whole; a negation window option (four words in the business reader).
+- **Tests:** `tests/demand-case.test.ts` (5); `tests/management-voice.test.ts` now 12; pilot and demand suites
+  unchanged and passing on 29 companies.
+- **Verified in the browser:** the AI chain's 19 company rows, NVDA's and MOD's bull and bear blocks, 375px.
+  **Not verified:** the live call read (no key here).

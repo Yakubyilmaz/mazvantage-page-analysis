@@ -64,6 +64,12 @@ non-obvious choices were made; that is the main design documentation.
   file comes from. Repo only; it is not served.
 - [`MAZ_DIVIDEND_SPEC_FULL.md`](MAZ_DIVIDEND_SPEC_FULL.md): the dividend
   module's specification.
+- [`MAZ_DEMAND_DISCOVERY_SPEC.md`](MAZ_DEMAND_DISCOVERY_SPEC.md): Demand
+  Discovery (Alpha Signal → Demand Discovery) — the engine as built, what changed
+  from the original brief and why, with the brief verbatim as Appendix A.
+- [`DEMAND_DISCOVERY_PILOT_REPORT.md`](DEMAND_DISCOVERY_PILOT_REPORT.md): the pilot
+  run and its backtest (1999–2017 out of sample, 2019–2026 in sample), with deep
+  dives on Micron, Vertiv, Freeport-McMoRan and Albemarle.
 - [`MAZ_ALPHA_SIGNAL_SPEC.md`](MAZ_ALPHA_SIGNAL_SPEC.md): the Alpha Signal's
   logic, how to replicate it, the model prompt and the original master prompt.
 - [`MAZ_ETF_SCORING_SPEC.md`](MAZ_ETF_SCORING_SPEC.md): the five ETF grades.

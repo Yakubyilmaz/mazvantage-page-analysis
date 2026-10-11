@@ -67,6 +67,7 @@ Dividends · Transcripts · News · Shariah Compliance. URL slug = `slugify(tab)
 | Fair values | `valuation-models.ts`, `scenarios.ts` (bull/bear = the six DCFs rerun on analyst high/low revenue) |
 | Dividends | `dividend-model.ts`, `dividend-lines.ts`, `dividend-score.ts`, `dividend-grades.ts` (spec: `MAZ_DIVIDEND_SPEC_FULL.md`) |
 | Alpha Signal | `alpha-*.ts` (spec: `MAZ_ALPHA_SIGNAL_SPEC.md`) |
+| Demand Discovery | `demand-*.ts` (spec: `MAZ_DEMAND_DISCOVERY_SPEC.md`; results: `DEMAND_DISCOVERY_PILOT_REPORT.md`) |
 | ETFs | `etf-grades.ts`, `etf-tables.ts`, `etf-collections.ts`, `fund-xray.ts` (spec: `MAZ_ETF_SCORING_SPEC.md`) |
 | Screens and portfolios | `ideas.ts` (all Investment Ideas; read-only), `screener-filters.ts` (245 metrics), `screener-presets.ts`, `stock-collections.ts` |
 | 13F | `institutions.ts` (big-banks portfolio), `superinvestors.ts` |
@@ -169,6 +170,7 @@ Stub tickers must be letters only, five or fewer. When the stub receives a `URL`
 |---|---|
 | **Sector distributions** | `public/data/sector-stats.json` and `dividend-stats.json` are **modelled seeds**, not measured. Every sector-relative grade ranks against them. Run `python tools/build_sector_stats.py` with a key to replace them with measured data, ideally as a scheduled job |
 | Snapshot | One company (AAPL), dated 2026-09-22. Fine for development; date-relative readings drift |
+| Demand Discovery | Five hand-written chains, 16 companies captured 2026-10-08. Backtested point in time (1999–2017 and 2019–2026): the shortage signal did not predict returns; supply cuts, overbuilding and the priced-in gate held up better. No full-universe scan yet (needs a server job) |
 | Alpha Signal | Weights are **unvalidated** (no history exists to backtest). 6 of 11 categories have gaps FMP cannot fill; AAPL has hand-captured disclosures for some |
 | Research narrative | `lib/narrative.ts` tries a configured model endpoint (`mazvantage.narrative.endpoint`), then `public/data/research.json` (AAPL), then generated prose. No model service exists |
 | Research feed | 30 sample articles in `public/data/articles.json`, labelled as samples |

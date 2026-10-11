@@ -195,11 +195,24 @@ export const FIRM_BY_KEY: Record<string, Firm> = Object.fromEntries(FIRMS.map((f
 
 export type MentionAction = 'bought' | 'sold' | 'discussed';
 
+/**
+ * Which way the document leans on the company, as we read it. Not the trade:
+ * a fund can sell a company it still admires (to fund a better idea), or hold
+ * one it now doubts. Set only when someone has read the passage.
+ */
+export type Stance = 'positive' | 'negative' | 'mixed' | 'neutral';
+
 export interface Mention {
   name: string;
   /** US listing only; a company without one is named and not linked. */
   ticker?: string;
   action: MentionAction;
+  stance?: Stance;
+  /**
+   * Ours: one sentence on what the document says about the company, written
+   * from reading it — never a quote, for the same reason `about` is not one.
+   */
+  view?: string;
 }
 
 export interface Letter {
@@ -230,7 +243,8 @@ export interface Letter {
   mentions?: Mention[];
 }
 
-const m = (action: MentionAction) => (name: string, ticker?: string): Mention => (ticker ? { name, ticker, action } : { name, action });
+const m = (action: MentionAction) => (name: string, ticker?: string, read?: { stance: Stance; view: string }): Mention =>
+  ({ name, ...(ticker ? { ticker } : {}), action, ...(read || {}) });
 const bought = m('bought');
 const sold = m('sold');
 const discussed = m('discussed');
@@ -252,10 +266,16 @@ const CURATED_LETTERS: Letter[] = [
     topics: ['equities'],
     regions: ['us'],
     mentions: [
-      bought('Visa', 'V'), bought('Mastercard', 'MA'), bought('Netflix', 'NFLX'), bought('S&P Global', 'SPGI'),
-      bought('Alcon', 'ALC'), bought('Intercontinental Exchange', 'ICE'),
+      bought('Visa', 'V', { stance: 'positive', view: 'Bought in the market dislocation at a price they judge well below intrinsic value.' }),
+      bought('Mastercard', 'MA', { stance: 'positive', view: 'Bought in the market dislocation at a price they judge well below intrinsic value.' }),
+      bought('Netflix', 'NFLX', { stance: 'positive', view: 'Bought in the market dislocation at a price they judge well below intrinsic value.' }),
+      bought('S&P Global', 'SPGI', { stance: 'positive', view: 'Bought in the market dislocation at a price they judge well below intrinsic value.' }),
+      bought('Alcon', 'ALC', { stance: 'positive', view: 'Bought in the market dislocation at a price they judge well below intrinsic value.' }),
+      bought('Intercontinental Exchange', 'ICE', { stance: 'positive', view: 'Bought in the market dislocation at a price they judge well below intrinsic value.' }),
       sold('Alphabet', 'GOOGL'), sold('Hertz Global', 'HTZ'), sold('Universal Music Group'),
-      discussed('Microsoft', 'MSFT'), discussed('Amazon', 'AMZN'), discussed('Restaurant Brands International', 'QSR'),
+      discussed('Microsoft', 'MSFT', { stance: 'positive', view: 'Held as one of the dominant, fast-growing businesses they expect to deliver strong returns.' }),
+      discussed('Amazon', 'AMZN', { stance: 'positive', view: 'Held as one of the dominant, fast-growing businesses they expect to deliver strong returns.' }),
+      discussed('Restaurant Brands International', 'QSR', { stance: 'positive', view: 'Held as one of the dominant, fast-growing businesses they expect to deliver strong returns.' }),
       discussed('Howard Hughes Holdings', 'HHH'), discussed('Fannie Mae'), discussed('Freddie Mac'),
     ],
   },
@@ -274,12 +294,31 @@ const CURATED_LETTERS: Letter[] = [
     topics: ['equities', 'ai'],
     regions: ['global'],
     mentions: [
-      bought('AppLovin', 'APP'), bought('GE Vernova', 'GEV'), bought('Legrand'), bought('Mastercard', 'MA'), bought('Netflix', 'NFLX'),
-      bought('Nextpower'), bought('Sage Group'), bought('TJX Companies', 'TJX'), bought('TSMC', 'TSM'), bought('Uber', 'UBER'),
-      bought('Veeva Systems', 'VEEV'), bought('Yum! Brands', 'YUM'),
-      sold('Atlas Copco'), sold('Coloplast'), sold('EssilorLuxottica'), sold('Intuit', 'INTU'), sold('LVMH'), sold('Magnum Ice Cream'),
-      sold('Mettler-Toledo', 'MTD'), sold('Nike', 'NKE'), sold('Novo Nordisk', 'NVO'), sold('Otis', 'OTIS'), sold('Unilever', 'UL'),
-      sold('Wolters Kluwer'), sold('Zoetis', 'ZTS'),
+      bought('AppLovin', 'APP', { stance: 'positive', view: 'Bought for its AI ad-matching engine, which they expect to lift revenue about 20% a year from better targeting alone.' }),
+      bought('GE Vernova', 'GEV', { stance: 'positive', view: 'Bought: installed turbines tie customers to decades of proprietary service, and a $163bn backlog plus grid and data-centre demand make growth visible.' }),
+      bought('Legrand', undefined, { stance: 'positive', view: 'Bought for its hold on electricians and a product range running from wall sockets to data-centre power busways.' }),
+      bought('Mastercard', 'MA', { stance: 'positive', view: 'Bought alongside Visa: payments should grow whatever AI does, with the unbanked and business-to-business payments still ahead.' }),
+      bought('Netflix', 'NFLX', { stance: 'positive', view: 'Bought: its scale pays for a content budget smaller rivals cannot match, with advertising, password sharing and local content still to come.' }),
+      bought('Nextpower', undefined, { stance: 'positive', view: 'Bought: solar trackers with sticky software, increasingly built next to data centres.' }),
+      bought('Sage Group', undefined, { stance: 'positive', view: 'Bought as a switch out of Intuit: less share-based pay, a lower rating and no record of damaging acquisitions.' }),
+      bought('TJX Companies', 'TJX', { stance: 'positive', view: 'Bought: a buying network that turns brands’ excess stock into an in-store treasure hunt online sellers struggle to copy.' }),
+      bought('TSMC', 'TSM', { stance: 'positive', view: 'Bought: an unmatched lead in the smallest chips, protected by what a new fab costs, with AI demand behind it.' }),
+      bought('Uber', 'UBER', { stance: 'positive', view: 'Bought: the network effect has won, cash flow has turned strongly positive, and they expect robotaxi makers to use Uber rather than replace it.' }),
+      bought('Veeva Systems', 'VEEV', { stance: 'positive', view: 'Bought: switching away is too risky in regulated drug trials, and AI agents could take over the trial paperwork.' }),
+      bought('Yum! Brands', 'YUM', { stance: 'positive', view: 'Bought: franchise scale and steady openings in emerging markets, with the Pizza Hut drag being sold.' }),
+      sold('Atlas Copco', undefined, { stance: 'negative', view: 'Sold: two years of thin organic growth no longer justify the valuation after the shares’ run.' }),
+      sold('Coloplast', undefined, { stance: 'negative', view: 'Sold: organic growth has slowed and acquisitions have gone wrong.' }),
+      sold('EssilorLuxottica', undefined, { stance: 'mixed', view: 'Sold after thinner smart-glasses margins forced it to drop its profit targets, though they still find the company interesting.' }),
+      sold('Intuit', 'INTU', { stance: 'negative', view: 'Sold again, soon after rebuying: they distrust how management has handled the Mailchimp acquisition.' }),
+      sold('LVMH', undefined, { stance: 'negative', view: 'Sold: China is unlikely to recover before its property market does, and succession is a growing worry.' }),
+      sold('Magnum Ice Cream', undefined, { stance: 'neutral', view: 'Sold: too small and illiquid to build a meaningful position.' }),
+      sold('Mettler-Toledo', 'MTD', { stance: 'negative', view: 'Sold: about 1% underlying growth does not justify its premium valuation.' }),
+      sold('Nike', 'NKE', { stance: 'negative', view: 'Sold: the turnaround under chief executive Elliott Hill will take longer than they expected, with China and Converse still problems.' }),
+      sold('Novo Nordisk', 'NVO', { stance: 'negative', view: 'Sold: it turned leadership of the biggest drug discovery in decades into an investment disaster.' }),
+      sold('Otis', 'OTIS', { stance: 'negative', view: 'Sold: service and modernisation growth has not offset falling new-build demand from China.' }),
+      sold('Unilever', 'UL', { stance: 'negative', view: 'Sold: they object to the break-up — the ice-cream spin-off, then food to McCormick — after being told the disposals were done.' }),
+      sold('Wolters Kluwer', undefined, { stance: 'mixed', view: 'Sold for better value elsewhere, though they think AI will hurt it less than its price implies.' }),
+      sold('Zoetis', 'ZTS', { stance: 'negative', view: 'Sold: unimpressed with how management has answered generic competition to its main drugs.' }),
     ],
   },
   {
@@ -311,6 +350,9 @@ const CURATED_LETTERS: Letter[] = [
       + 'in the operating and insurance businesses, and the succession of the chief financial officer.',
     topics: ['equities'],
     regions: ['us'],
+    mentions: [
+      discussed('Apple', 'AAPL', { stance: 'positive', view: 'Named among the few large holdings Berkshire understands well, rates its leaders highly and expects to compound for decades.' }),
+    ],
   },
 
   /* ---------- memos & commentary -------------------------------------------- */
@@ -686,6 +728,12 @@ export function lettersForTicker(ticker: string | null | undefined, list: Letter
   if (!t) return [];
   return queryLetters({ ticker: t, sort: 'latest' }, list);
 }
+
+/** What a letter says about one company, when it names it. */
+export const mentionOf = (l: Letter, ticker: string): Mention | null =>
+  (l.mentions || []).find((x) => x.ticker === ticker.toUpperCase()) || null;
+
+export const STANCE_LABEL: Record<Stance, string> = { positive: 'Positive', negative: 'Negative', mixed: 'Mixed', neutral: 'Neutral' };
 
 export interface Overlap {
   ticker: string;

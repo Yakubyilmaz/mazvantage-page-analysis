@@ -52,6 +52,32 @@ documents, after eight firms were struck by hand (and one webcast later).
 - **Politeness:** robots.txt is honoured, one firm's requests are spaced, and no
   site gets more than ~15 requests.
 
+## Which documents discuss which companies
+
+`mentions` used to come only from titles and trade lists, so a letter that
+spends paragraphs on a company without trading it never reached that
+company's page. `scan_mentions.py` reads each document's own text and lists the
+passages that name a company on its watch list; a person reads them and writes
+the mention by hand.
+
+1. **Export the library** as the app holds it:
+   `LETTERS_EXPORT=../tools/letters/work/library.json npx vitest run tests/letters.test.ts` (in `web/`).
+2. **Fetch the text:** `python tools/letters/scan_mentions.py fetch` — every
+   document once, robots.txt honoured, one request per site every two seconds,
+   kept in `work/text/` (git-ignored; about 15 minutes for 350 documents).
+3. **Scan:** `python tools/letters/scan_mentions.py scan [--ticker AAPL]` writes
+   `work/mentions-scan.txt`, one block per document and company.
+4. **Read and write.** Most hits are passing ("the Magnificent 7 are…"), false
+   ("Apple Valley", "Apple Podcasts") or a firm naming itself. For the ones that
+   say something, add a mention with a `stance` — which way the document leans
+   on the company, not the trade: a fund can sell on success — and a `view`:
+   one sentence of our own, never a quote. A crawled (`auto`) entry may carry a
+   mention only with both; the letters suite checks it.
+
+First run (2026-10-09): 337 of 352 documents read (UBS, the IMF and the OECD
+refuse scripts; DWS pages build in the browser), 648 document–company pairs,
+of which six discuss Apple.
+
 ## Keeping links alive
 
 `python tools/letters/check_links.py` before a release. **Dead** (404, gone)

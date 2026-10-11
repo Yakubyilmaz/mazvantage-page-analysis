@@ -46,7 +46,7 @@ export interface Analysis {
   peers: any; val: any; growth: any; momentum: any; segments: any; opex: any; ownerEarnings: any; series: any;
   beneish: import('./beneish').Beneish;
   employees: any; shareholder: any; yieldHistory: any; ratings: any; surprises: any; transcripts: any; news: any;
-  insiderMarkers: any; peerRatios: any; peerGrowth: any; benchmarks: any;
+  insiderMarkers: any; peerRatios: any; peerGrowth: any; peerMetrics: any; benchmarks: any;
   fairValue: number | null; discount: number | null; fairPe: number | null;
   rewards: any[]; risks: any[];
   sectorTable: { available: boolean; quality: string | null; generatedAt: string | null; count: number | null; overall: any };
@@ -2510,11 +2510,12 @@ function deriveRewards(scores: any) {
 export interface AnalyseOptions {
   peerRatios?: Record<string, any> | null;
   peerGrowth?: Record<string, any> | null;
+  peerMetrics?: Record<string, any> | null;
   sectorStats?: any;
   benchmarks?: Record<string, any> | null;
 }
 
-export function analyse(ds: any, { peerRatios = null, peerGrowth = null, sectorStats = null, benchmarks = null }: AnalyseOptions = {}): Analysis {
+export function analyse(ds: any, { peerRatios = null, peerGrowth = null, peerMetrics = null, sectorStats = null, benchmarks = null }: AnalyseOptions = {}): Analysis {
   const bm = loadBenchmarks();
 
   const facts = deriveFacts(ds, bm);
@@ -2572,6 +2573,8 @@ export function analyse(ds: any, { peerRatios = null, peerGrowth = null, sectorS
     peerRatios,
     /** Latest annual growth row per peer, for the "vs peers" comparisons. */
     peerGrowth,
+    /** Key metrics per peer (returns on capital, yields): read by the Research tab's peer comparison, graded nowhere. */
+    peerMetrics,
     /* The sector and market benchmark price series, as handed in. Kept on the
        result rather than only passed to `deriveMomentum`, because the Alpha
        Signal tab needs the same two series for its relative-strength reading

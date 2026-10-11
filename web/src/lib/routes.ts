@@ -27,11 +27,15 @@ import { NAV_VIEWS, defaultSub, hasSub } from './nav';
  * describing what the company *is* and starts describing what has recently
  * happened to it — deliberately not beside the five factor tabs, because it
  * is not a factor and does not grade on the 0-5 scale.
+ *
+ * `Insider Trading` sits after `Analysts Forecast` because it holds the other
+ * half of the sell side's record — each firm's dated upgrades and downgrades —
+ * beside the Form 4s.
  */
 export const TABS = [
   'Overview', 'Analysis', 'Research', 'Ratings', 'Alpha Signal', 'Financials',
   'Statistics & Metrics', 'Valuation', 'Growth', 'Financial Health',
-  'Profitability', 'Momentum', 'Technicals', 'Analysts Forecast', 'Dividends', 'Transcripts', 'News',
+  'Profitability', 'Momentum', 'Technicals', 'Analysts Forecast', 'Insider Trading', 'Dividends', 'Transcripts', 'News',
   'Shariah Compliance',
 ] as const;
 

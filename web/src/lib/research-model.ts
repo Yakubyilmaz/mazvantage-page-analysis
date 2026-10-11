@@ -122,8 +122,59 @@ import { FACTOR_KEYS, FACTOR_BY_KEY } from './factors';
  * measurement of how much the estimate should be trusted, and it feeds the
  * uncertainty rating directly.
  */
+/*
+  Which models fit the company. A sector multiple carries the sector's
+  economics inside it, and two of them stop measuring anything when the
+  company's economics are far from the sector's:
+
+  - price / book, when book value is a small part of what the business earns
+    on (return on equity above 30%, or a price/book more than three times the
+    sector's): the multiple then prices the balance sheet, not the business;
+  - price / sales and EV / revenue, when the company's margin is more than
+    double the sector median's (or under half of it): a sector sales multiple
+    pays sector margins for every dollar of sales.
+
+  A model set aside is still shown, with its value and the reason, and the
+  estimate falls back to every model if fewer than three fit.
+*/
+const ROE_BOOK_LIMIT = 0.30;
+
+export function modelFit(a: any, id: string): { fit: boolean; why: string | null } {
+  const r = a.ds?.get?.('ratiosTtm') || {};
+  const km = a.ds?.get?.('metricsTtm') || {};
+  const med = (k: string) => a.lookup?.medianFor?.(k) ?? null;
+  if (id === 'priceBookMultiple') {
+    const roe = isNum(km.returnOnEquityTTM) ? km.returnOnEquityTTM : a.facts?.roe;
+    const pb = r.priceToBookRatioTTM;
+    const pbMed = med('priceToBookTtm');
+    if (isNum(roe) && roe > ROE_BOOK_LIMIT) {
+      return { fit: false, why: `Return on equity is ${pct(roe, { dp: 0 })}: book value is a small part of what the business earns on, so a sector book multiple prices the balance sheet rather than the business.` };
+    }
+    if (isNum(pb) && isNum(pbMed) && pbMed > 0 && pb > 3 * pbMed) {
+      return { fit: false, why: `The shares trade at ${mult(pb)} book against a sector median of ${mult(pbMed)}; the sector’s book multiple does not describe this company.` };
+    }
+  }
+  if (id === 'priceSalesMultiple' || id === 'evRevenueMultiple') {
+    const margin = r.netProfitMarginTTM ?? a.facts?.netMargin;
+    const mMed = med('netMargin');
+    if (isNum(margin) && isNum(mMed) && mMed > 0.02) {
+      if (margin > 2 * mMed) {
+        return { fit: false, why: `A sector sales multiple assumes sector margins; this company keeps ${pct(margin, { dp: 0 })} of sales as profit against a sector median of ${pct(mMed, { dp: 0 })}, so the multiple undervalues every dollar of its sales.` };
+      }
+      if (margin < 0.5 * mMed) {
+        return { fit: false, why: `A sector sales multiple assumes sector margins; this company keeps ${pct(margin, { dp: 0 })} of sales as profit against a sector median of ${pct(mMed, { dp: 0 })}, so the multiple overvalues its sales.` };
+      }
+    }
+  }
+  return { fit: true, why: null };
+}
+
 export function fairValueEstimate(a: any) {
-  const models = allFairValues(a);
+  const all = allFairValues(a).map((m) => ({ ...m, ...modelFit(a, m.id) }));
+  const fitting = all.filter((m) => m.fit);
+  const useFit = fitting.length >= 3;
+  const models = useFit ? fitting : all;
+  const setAside = useFit ? all.filter((m) => !m.fit) : [];
   const vals = models.map((m) => m.value).filter((v) => isNum(v) && v > 0);
 
   if (!vals.length) {
@@ -131,8 +182,8 @@ export function fairValueEstimate(a: any) {
     // consensus of them, which the caller is told about.
     const v = a.fairValue;
     return isNum(v) && v > 0
-      ? { value: v, models: [], count: 0, low: null, high: null, spread: null, sole: true }
-      : { value: null, models: [], count: 0, low: null, high: null, spread: null, sole: false };
+      ? { value: v, models: [], setAside: [], count: 0, low: null, high: null, spread: null, sole: true }
+      : { value: null, models: [], setAside: [], count: 0, low: null, high: null, spread: null, sole: false };
   }
 
   const value = median(vals);
@@ -156,6 +207,8 @@ export function fairValueEstimate(a: any) {
   return {
     value,
     models,
+    /** models that ran but were set aside as not describing this company, each with its reason */
+    setAside,
     count: vals.length,
     low,
     high,
@@ -660,6 +713,17 @@ function shortName(f: any) {
  * reported quarter, so the note leads with that where there is one and with
  * the valuation where there is not.
  */
+/**
+ * Consensus growth as a true compound rate from the base year to the target
+ * year. The forecast's own headline is the median year-on-year step (robust to
+ * one bad year), which is not a compound rate and must not be called one.
+ */
+const consensusCagr = (fc: any, field: 'revenue' | 'eps') => {
+  const b = fc?.base?.[field];
+  const t = fc?.target?.[field];
+  return isNum(b) && isNum(t) && b > 0 && t > 0 && fc.span > 0 ? cagr(b, t, fc.span) : null;
+};
+
 export function analystNote(a: any, r: any) {
   const f = a.facts;
   const q = a.quarter;
@@ -707,9 +771,9 @@ export function analystNote(a: any, r: any) {
       a.forecast.analystCount
         ? `The ${a.forecast.analystCount} analysts covering the company expect`
         : 'Consensus expects',
-      isNum(a.forecast.revenueGrowth) ? `revenue to compound at ${pct(a.forecast.revenueGrowth)} a year` : null,
-      (isNum(a.forecast.revenueGrowth) && isNum(a.forecast.epsGrowth)) ? 'and' : null,
-      isNum(a.forecast.epsGrowth) ? `earnings per share at ${pct(a.forecast.epsGrowth)}` : null,
+      isNum(consensusCagr(a.forecast, 'revenue')) ? `revenue to compound at ${pct(consensusCagr(a.forecast, 'revenue'))} a year` : null,
+      (isNum(consensusCagr(a.forecast, 'revenue')) && isNum(consensusCagr(a.forecast, 'eps'))) ? 'and' : null,
+      isNum(consensusCagr(a.forecast, 'eps')) ? `earnings per share at ${pct(consensusCagr(a.forecast, 'eps'))}` : null,
       a.forecast.span ? `over the ${a.forecast.span} years to ${a.forecast.target?.year}.` : '.',
     ]).replace(/ \./, '.'));
   }
@@ -810,10 +874,10 @@ export function strategyProse(a: any, r: any) {
   if (a.forecast.available && (isNum(a.forecast.revenueGrowth) || isNum(a.forecast.epsGrowth))) {
     paras.push(join([
       'Looking forward, we take the consensus path as filed rather than substituting a house view:',
-      isNum(a.forecast.revenueGrowth)
-        ? `revenue compounding at ${pct(a.forecast.revenueGrowth)} a year` : null,
-      isNum(a.forecast.epsGrowth)
-        ? `and earnings per share at ${pct(a.forecast.epsGrowth)}` : null,
+      isNum(consensusCagr(a.forecast, 'revenue'))
+        ? `revenue compounding at ${pct(consensusCagr(a.forecast, 'revenue'))} a year` : null,
+      isNum(consensusCagr(a.forecast, 'eps'))
+        ? `and earnings per share at ${pct(consensusCagr(a.forecast, 'eps'))}` : null,
       a.forecast.target?.year ? `through ${a.forecast.target.year}.` : '.',
       a.forecast.analystCount ? `That is the median of ${a.forecast.analystCount} contributing analysts,` : null,
       'and the outer years of any consensus thin out as coverage does.',
@@ -896,7 +960,7 @@ export function fairValueProse(a: any, r: any) {
 
   if (!isNum(fve.value)) {
     return ['None of the valuation models produced a usable fair value for this company, so no '
-      + 'fair value estimate and no star rating are published.'];
+      + 'fair value estimate and no valuation zone are published.'];
   }
 
   paras.push(join([
@@ -906,7 +970,10 @@ export function fairValueProse(a: any, r: any) {
         + 'not be run — so it is a single view rather than a consensus of them.'
       : `It is the median of ${fve.count} independent models — ${fve.models.filter((m: any) => m.family === 'dcf').length} `
         + `discounted cash flow and ${fve.models.filter((m: any) => m.family === 'multiple').length} relative multiples — `
-        + `which span ${price(fve.low, cur)} to ${price(fve.high, cur)}.`,
+        + `which span ${price(fve.low, cur)} to ${price(fve.high, cur)}`
+        + (fve.setAside?.length
+          ? `; ${fve.setAside.map((m: any) => m.label).join(', ')} ${fve.setAside.length === 1 ? 'was' : 'were'} run but set aside as not describing this company.`
+          : '.'),
     isNum(fve.iqr)
       ? `The middle half of them sits between ${price(fve.q1, cur)} and ${price(fve.q3, cur)}, a `
         + `band ${pct(fve.iqr)} wide against the estimate; that band, rather than the full span, `
@@ -930,9 +997,15 @@ export function fairValueProse(a: any, r: any) {
   if (fc.available) {
     paras.push(join([
       'The drivers behind it are the consensus path:',
-      isNum(fc.revenueGrowth) ? `revenue compounding at ${pct(fc.revenueGrowth)} a year` : null,
-      isNum(fc.epsGrowth) ? `and earnings per share at ${pct(fc.epsGrowth)}` : null,
-      fc.target?.year ? `through ${fc.target.year},` : null,
+      isNum(fc.base?.revenue) && isNum(fc.target?.revenue) && fc.target?.year
+        ? `revenue from ${money(fc.base.revenue, { currency: cur })} in ${fc.base.year} to ${money(fc.target.revenue, { currency: cur })} in ${fc.target.year},`
+        : null,
+      isNum(fc.base?.revenue) && isNum(fc.target?.revenue) && fc.span > 0
+        ? `a compound ${pct(cagr(fc.base.revenue, fc.target.revenue, fc.span))} a year,`
+        : isNum(fc.revenueGrowth) ? `a median step of ${pct(fc.revenueGrowth)} a year,` : null,
+      isNum(fc.base?.eps) && isNum(fc.target?.eps) && fc.base.eps > 0 && fc.span > 0
+        ? `with earnings per share compounding at ${pct(cagr(fc.base.eps, fc.target.eps, fc.span))},`
+        : null,
       isNum(f.operatingMargin) ? `off a ${pct(f.operatingMargin)} operating margin today.` : '.',
       isNum(fc.futureRoe) ? `The path implies a ${pct(fc.futureRoe)} return on equity at the end of it.` : null,
     ]).replace(/ ,/g, ',').replace(/ \./g, '.'));
@@ -963,8 +1036,8 @@ export function fairValueProse(a: any, r: any) {
   paras.push('No fair value on this page feeds any letter grade anywhere in this report. That is '
     + 'a deliberate separation: a valuation is a set of assumptions the reader chooses, and '
     + 'letting a chosen assumption move a sector-relative grade would make the grade mean '
-    + 'something different for every reader. The star rating is the one rating built from it, '
-    + 'and it is labelled as such.');
+    + 'something different for every reader. The valuation zone at the top of the report is the '
+    + 'one reading built from it, and it is labelled as such.');
 
   return paras;
 }

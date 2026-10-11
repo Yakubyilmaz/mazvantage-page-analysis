@@ -20,8 +20,8 @@ import { ArrowUpRight } from 'lucide-react';
 import {
   CHECKED, FIRMS, FIRM_BY_KEY, FIRM_TYPES, KINDS, REGIONS, SORTS, TABS, TOPICS,
   activeLetterChips, companyRows, dateLabel, facetCounts, firmOf, firmTypeOne, groupLetters, hostOf, investorRows, kindLabel,
-  mergeLetterQuery, monthLabel, overlaps, parseLetterQuery, queryLetters, topicLabel,
-  type CompanyRow, type Firm, type InvestorRow, type Letter, type LetterQuery, type Mention, type TabKey,
+  mergeLetterQuery, monthLabel, overlaps, parseLetterQuery, queryLetters, STANCE_LABEL, topicLabel,
+  type CompanyRow, type Firm, type InvestorRow, type Letter, type LetterQuery, type Mention, type Stance, type TabKey,
 } from '@/lib/letters';
 import { Field, FilterText, ResearchHero, ResearchStrip, RsPill, inputCls } from '@/components/research/feed-parts';
 import { InstrumentMark } from '@/components/market/market-ui';
@@ -96,8 +96,15 @@ function MentionChip({ x }: { x: Mention }) {
 
 const ACTION_LABEL: Record<Mention['action'], string> = { bought: 'Opened', sold: 'Exited', discussed: 'Discussed' };
 
-function Mentions({ list }: { list: Mention[] }) {
+const STANCE_TEXT: Record<Stance, string> = { positive: 'text-up', negative: 'text-down', mixed: 'text-foreground', neutral: 'text-muted-foreground' };
+
+function Mentions({ list, focus = null }: { list: Mention[]; focus?: string | null }) {
+  const [open, setOpen] = React.useState(false);
+  // On a page filtered to one company, its line is shown without a click.
+  const focused = focus ? list.find((x) => x.ticker === focus && x.view) || null : null;
   const groups = (['bought', 'sold', 'discussed'] as const).map((a) => [a, list.filter((x) => x.action === a)] as const).filter(([, xs]) => xs.length);
+  // What the letter says about each company, where someone has read it.
+  const read = list.filter((x) => x.view);
   return (
     <div className="grid gap-1.5 rounded-lg bg-muted px-3 py-2.5">
       {groups.map(([action, xs]) => (
@@ -107,11 +114,41 @@ function Mentions({ list }: { list: Mention[] }) {
           <span className="flex flex-wrap gap-1.5">{xs.map((x) => <MentionChip key={x.name} x={x} />)}</span>
         </div>
       ))}
+      {focused ? (
+        <p className="grid grid-cols-[130px_minmax(0,1fr)] gap-x-3 border-t border-border pt-2 text-tiny leading-relaxed">
+          <span className="font-semibold">
+            {focused.ticker}
+            {focused.stance ? <span className={cn('ml-1.5 font-normal', STANCE_TEXT[focused.stance])}>{STANCE_LABEL[focused.stance]}</span> : null}
+          </span>
+          <span className="text-foreground">{focused.view}</span>
+        </p>
+      ) : null}
+      {read.length ? (
+        <>
+          <button type="button" aria-expanded={open} onClick={() => setOpen((o) => !o)}
+            className="justify-self-start pt-0.5 text-tiny font-semibold text-primary hover:underline">
+            {open ? 'Hide what they said' : `What they said about ${read.length === 1 ? read[0].name : `${read.length} companies`}`}
+          </button>
+          {open ? (
+            <ul className="grid gap-1.5 border-t border-border pt-2">
+              {read.map((x) => (
+                <li key={x.name} className="grid grid-cols-[130px_minmax(0,1fr)] gap-x-3 text-tiny leading-relaxed">
+                  <span className="font-semibold">
+                    {x.ticker || x.name}
+                    {x.stance ? <span className={cn('ml-1.5 font-normal', STANCE_TEXT[x.stance])}>{STANCE_LABEL[x.stance]}</span> : null}
+                  </span>
+                  <span className="text-muted-foreground">{x.view}</span>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </>
+      ) : null}
     </div>
   );
 }
 
-function LetterRow({ l, go }: { l: Letter; go: Go }) {
+function LetterRow({ l, go, focus = null }: { l: Letter; go: Go; focus?: string | null }) {
   const firm = firmOf(l);
   const where = hostOf(l.url);
   return (
@@ -133,7 +170,7 @@ function LetterRow({ l, go }: { l: Letter; go: Go }) {
         </h3>
         {l.authors?.length ? <p className="text-tiny text-muted-foreground">By {l.authors.join(', ')}</p> : null}
         {l.about ? <p className="max-w-[78ch] text-13 leading-relaxed text-muted-foreground">{l.about}</p> : null}
-        {l.mentions?.length ? <Mentions list={l.mentions} /> : null}
+        {l.mentions?.length ? <Mentions list={l.mentions} focus={focus} /> : null}
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-0.5 text-13">
           <OutLink href={l.url}>
             {l.rolling ? 'Current edition' : 'Read'} at {where}{l.format === 'pdf' ? ` · PDF${l.pages ? `, ${l.pages} pp` : ''}` : ''}
@@ -486,7 +523,7 @@ export function LettersPage() {
                 <h2 id={`lg-${g.key}`} className="border-b border-border py-2 text-micro font-semibold uppercase tracking-[.1em] text-muted-foreground">
                   {g.label}
                 </h2>
-                {g.letters.map((l) => <LetterRow key={l.id} l={l} go={go} />)}
+                {g.letters.map((l) => <LetterRow key={l.id} l={l} go={go} focus={query.ticker || null} />)}
               </section>
             ))}
           </div>

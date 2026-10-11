@@ -361,6 +361,7 @@ export const NAV: NavMenu[] = [
        real section rather than a footnote — the weights are unvalidated. */
     items: [
       { label: 'Alpha Scanner', sub: 'scan' },
+      { label: 'Demand Discovery', sub: 'demand' },
       { label: 'Method & Weights', sub: 'method' },
       { label: 'Limits & Validation', sub: 'limits' },
       { label: 'On a company', symbolTab: 'Alpha Signal' },
