@@ -41,6 +41,7 @@ import { HoldingsBlock, PerformanceBlock } from '@/components/portfolio/portfoli
 import {
   cleanSymbol, isSymbol, sharesHeld, useWatchlists, writeStore, type Holding, type WatchList, type WatchStore,
 } from '@/lib/watchlists';
+import { autoImpure } from '@/lib/purification';
 import { cn } from '@/lib/cn';
 
 /* ---------- the store ------------------------------------------------------------- */
@@ -531,23 +532,16 @@ function CalendarBlock({ list, rows, onOpen, onLoaded }: { list: List; rows: any
 }
 
 /* ==========================================================================
-   Purification — the arithmetic around whichever impure fraction the reader
-   supplies. FMP's `interestIncome` is populated for some filers and zero for
-   others (a parsing gap, not a finding), so it is offered as a starting figure
-   where the filing reports one, and the cell is editable. A calculation, not
-   a ruling.
+   Purification — the impure share of each dividend is filled in for the
+   reader (`lib/purification.ts`): the researched screen where there is one,
+   else after-tax interest over net income from the newest filing. The cell
+   stays editable, and a reader's own figure always wins. The vendor's
+   `interestIncome` is populated for some filers and zero for others (a
+   parsing gap, not a finding), so a company without it gets no figure rather
+   than a zero. A calculation, not a ruling.
    ========================================================================== */
 
 const PURIFY_BAGS = ['ratios', 'income'];
-
-function reportedInterestShare(row: any) {
-  const income = row.bags?.income;
-  if (!income) return null;
-  const interest = Number(income.interestIncome);
-  const revenue = Number(income.revenue);
-  if (!Number.isFinite(interest) || !Number.isFinite(revenue) || revenue <= 0) return null;
-  return { share: (interest / revenue) * 100, reported: interest > 0, year: income.fiscalYear || income.date };
-}
 
 function NumCell({ value, label, max, onChange }: { value: number | null | undefined; label: string; max?: number; onChange: (v: number | null) => void }) {
   const [text, setText] = React.useState(value != null ? String(value) : '');
@@ -567,7 +561,7 @@ function PurificationBlock({ list, rows, onOpen, onShariah, setHolding, onLoaded
   const needsFill = rows.some((r) => PURIFY_BAGS.some((b) => !r.bags?.[b]));
   const payers = rows.filter((r) => isNum(dividendPerShare(r)));
   const toggle = <Toggle value={period} onChange={setPeriod} items={[{ id: 'annual', label: 'Annual' }, { id: 'monthly', label: 'Monthly' }]} />;
-  const intro = <Desc>The share of a dividend that convention says is given away rather than kept. This page does the arithmetic — dividend per share, shares held, annually or by the month. The impure fraction itself is yours to set: the authoritative source is the company’s annual report or the purification ratio an index provider publishes, and neither is in this data plan.</Desc>;
+  const intro = <Desc>The share of a dividend that convention says is given away rather than kept. The impure share is filled in where it can be worked out — from a researched screen, or from the interest the company earned after tax as a share of its earnings — and you can overwrite it with your own, for example the purification ratio an index provider publishes.</Desc>;
 
   if (needsFill) {
     return <Block id="watchlist-purification" title="Purification" aside={toggle}>{intro}<Consent label={`Load dividends and income lines for these ${rows.length}`} bags={PURIFY_BAGS} rows={rows} onDone={onLoaded} /></Block>;
@@ -579,15 +573,15 @@ function PurificationBlock({ list, rows, onOpen, onShariah, setHolding, onLoaded
   let counted = 0;
   const lines = payers.map((row) => {
     const held = list.holdings[row.symbol] || {};
-    const reported = reportedInterestShare(row);
-    // The filing's interest share is the starting figure, where it reports one.
-    const impure = held.impure ?? (reported?.reported ? Number(reported.share.toFixed(3)) : null);
+    const auto = autoImpure(row.symbol, row.bags?.income);
+    // The worked-out share is the starting figure; the reader's own always wins.
+    const impure = held.impure ?? (auto ? Number(auto.percent.toFixed(3)) : null);
     const dps = dividendPerShare(row);
     const shares = sharesOf(list, row.symbol);
     const received = isNum(dps) && isNum(shares) ? dps * shares * per : null;
     const owed = received != null && isNum(impure) && impure > 0 ? received * (impure / 100) : null;
     if (owed != null) { total += owed; counted += 1; }
-    return { row, held, reported, impure, dps, received, owed };
+    return { row, held, auto, impure, dps, received, owed };
   });
   return (
     <Block id="watchlist-purification" title="Purification" aside={toggle}>
@@ -614,8 +608,8 @@ function PurificationBlock({ list, rows, onOpen, onShariah, setHolding, onLoaded
                 <td className="px-3 py-2">
                   <div className="grid justify-items-end gap-0.5">
                     <NumCell value={l.impure} max={100} label={`Impure fraction for ${l.row.symbol}, per cent`} onChange={(v) => setHolding(l.row.symbol, { impure: v })} />
-                    <span className="text-[10px] text-muted-foreground" title={l.reported ? `Interest income ÷ revenue, ${l.reported.year}` : 'The income statement for this company is not loaded'}>
-                      {l.reported ? (l.reported.reported ? `filing: ${l.reported.share.toFixed(2)}%` : 'filing reports none') : ''}
+                    <span className="text-[10px] text-muted-foreground" title={l.auto?.detail || 'The newest filing reports no interest income, so no share could be worked out'}>
+                      {l.auto ? `${l.auto.source === 'researched' ? 'researched' : 'interest'}: ${l.auto.percent.toFixed(2)}%` : 'none reported'}
                     </span>
                   </div>
                 </td>
@@ -633,9 +627,9 @@ function PurificationBlock({ list, rows, onOpen, onShariah, setHolding, onLoaded
       <button type="button" onClick={onShariah} className="justify-self-start text-13 font-semibold text-primary hover:underline">Check these against the compliance screen ›</button>
       <p className="max-w-[100ch] text-tiny leading-relaxed text-muted-foreground">
         The dividend is the trailing twelve months as reported, not a forecast, and the monthly view is that year divided by twelve rather than a
-        schedule of payments. Where a filing reports an interest-income line, its share of revenue is offered as a starting figure — it covers interest only, not
-        revenue from non-compliant activities, so it is a floor rather than the full fraction, and a company whose filing reports none is a gap in the data rather
-        than a company with nothing to purify. This is a calculation, not a ruling.
+        schedule of payments. The impure share is worked out on earnings, not revenue, because a dividend is paid out of earnings. Where a researched screen
+        exists it covers impure revenue as well as interest; elsewhere it is interest only, so a floor rather than the full fraction, and a company whose filing
+        reports no interest is a gap in the data rather than a company with nothing to purify. This is a calculation, not a ruling.
       </p>
     </Block>
   );

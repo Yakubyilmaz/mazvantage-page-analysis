@@ -142,7 +142,7 @@ Stub tickers must be letters only, five or fewer. When the stub receives a `URL`
    settings. Keys in use: `theme`, `watchlists`, `watchlists.unified`, `watchlist` (legacy),
    `notes`, `comparisons`, `screens.saved`, `home.layout`, `lastSymbol`, `market.country`,
    `rail.closed`, `rail.collapsed`, `chart.layout`, `chart.drawings`, `benchmarks`, `data.key`,
-   `fmp.key` (migrated once), `narrative.endpoint`.
+   `fmp.key` (migrated once), `narrative.endpoint`, `zakat`.
 10. **Every new feature gets a section in `web/PORTING.md`** (files, request cost, tests) in the
     same commit.
 11. **Before deleting a function, grep for every caller.** A removed helper broke three pages once.

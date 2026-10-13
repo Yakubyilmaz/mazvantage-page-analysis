@@ -392,6 +392,7 @@ export const NAV: NavMenu[] = [
       { label: 'Compliance Changes', sub: 'changes' },
       { label: 'Shariah Methodology', sub: 'methodology' },
       { label: 'Purification', sub: 'purification' },
+      { label: 'Zakat Calculator', sub: 'zakat' },
       /* Funds, which none of the screens above can reach: a fund has no
          balance sheet of its own. */
       { label: 'Shariah ETFs & Funds', view: 'markets', sub: 'etfs', params: { board: 'tables', table: 'shariah' } },

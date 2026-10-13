@@ -632,3 +632,21 @@ up the fund's weight.
 - **Verified in the browser:** with live data stubbed in memory (a five-company fund plus cash, using the AAPL and NVDA
   captures and made-up rows for the rest; nothing stored or sent): the run, the bar, the table, 0 errors. **Not verified:**
   a real fund's holdings (no key in this environment).
+
+### 5. Purification worked out automatically, and a zakat calculator
+
+| File | What it does |
+| --- | --- |
+| `lib/purification.ts` | `autoImpure`: the impure share of a dividend — the researched v5.0 screen's Δ6 (interest and impure revenue after tax, over earnings) where one exists, else after-tax interest over net income from the newest annual statement; null, never zero, without an interest line or in a loss year |
+| `pages/watchlist-page.tsx` | The Purification block fills each holding's impure share from `autoImpure` and labels its source ("researched" / "interest"); a reader's own figure still wins. The old hint divided interest by **revenue**, which understated the share of a dividend several times over |
+| `lib/zakat.ts` | `zakatLine` / `zakatTotal`: held to trade → 2.5% of market value; held long term → 2.5% of the company's cash, receivables and inventory per share (current liabilities deducted only when the reader asks); lunar 2.5% or solar 2.577%; a line that cannot be read is left out and says why |
+| `components/pages/zakat-page.tsx` | Shariah → Zakat (`/shariah/zakat`): the reader's list (kept in this browser, **new storage key `mazvantage.zakat`**), filled by hand or from the active watchlist's holdings |
+| `pages/shariah-page.tsx`, `lib/nav.ts` | The Zakat tab and menu item; the Purification tab now says what is worked out and links to the watchlist |
+
+- **Request cost:** purification, unchanged (the income bag it already loaded). Zakat: one batch quote, then a balance
+  sheet and an income statement per long-term line, on the button; cached and shared with the reports.
+- **Not decided here:** the nisab (needs all of a reader's wealth) and whether a company already pays zakat. The page
+  says both.
+- **Tests:** `tests/zakat-purification.test.ts` (7).
+- **Verified in the browser** with stubbed live data (AAPL and NVDA captures, made-up rows for the rest; nothing stored
+  or sent): the zakat table, both methods, a line left out, the total; the watchlist's purification shares and labels.
