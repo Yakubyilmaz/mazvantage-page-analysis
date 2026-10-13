@@ -8,7 +8,9 @@ import { loadUniverse } from '@/lib/server/universe';
    page is never listed under two addresses), then each company's report and
    its "Is <company> halal?" tab — the page people search for by name. */
 
-export const revalidate = 86_400;
+// Read per request, so a build made without the key never freezes a two-company sitemap;
+// the screener read behind it is cached for a day (`lib/server/universe.ts`).
+export const dynamic = 'force-dynamic';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
