@@ -542,3 +542,28 @@ ETFs and economy ahead of, so none of it ever rendered in the legacy app.
   unchanged and passing on 29 companies.
 - **Verified in the browser:** the AI chain's 19 company rows, NVDA's and MOD's bull and bear blocks, 375px.
   **Not verified:** the live call read (no key here).
+
+## Launch focus: halal stock picking (2026-10-13)
+
+Six changes from the product review of 2026-10-13, which set the positioning as research for the halal stock
+picker: the halal label free, the analysis paid. Each has its own section below.
+
+### 1. Demand Discovery out of the menu; "What the price assumes" on every Valuation tab
+
+Demand Discovery's own pilot report found its headline signal (the shortage signature) did not predict returns
+(rank correlation −0.10 out of sample), and it covers 29 hand-picked companies. Its reverse DCF — one of the parts
+that held up — answers a question every stock picker asks, so it moved to every company.
+
+| File | What it does |
+| --- | --- |
+| `lib/implied-growth.ts` | `priceImpliedGrowth`: the ten-year revenue growth the enterprise value implies, on the newest year's free-cash margin and the median across the years on file; the midpoint is read; past five-year revenue growth beside it. Refuses, with the reason, for financials, for statements reported in another currency than the price, and without positive free cash |
+| `lib/demand-pricedin.ts` | `pricedInLevel` exported, so both readings share one set of cut points |
+| `lib/model.ts` | `deriveImpliedGrowth` reads the annual statements (the vendor fields stay in this file) into `a.impliedGrowth`, after the grades: never an input to one |
+| `components/report/implied-growth-card.tsx` | The card, first on the Valuation tab's detail; `impliedSentence` and `impliedTone` are reused by the verdict card |
+| `lib/nav.ts`, `pages/alpha-page.tsx`, `alpha/outside-views.tsx` | Demand Discovery `hidden` (routable, labelled "Lab"), off the Alpha section bar, and no longer linked from non-member companies |
+
+- **Request cost:** none — annual income, balance and cash-flow statements are already loaded.
+- **Tests:** `tests/implied-growth.test.ts` (7): agreement with the gate's solver, the midpoint, the four-year
+  minimum, the no-cycle-cash floor, every refusal, past growth, and the AAPL and NVDA captures.
+- **Verified in the browser:** AAPL's saved report, Valuation tab (15.8% asked against 8.7% delivered, "Priced in");
+  the Alpha Signal page without the Demand Discovery section. `/alpha/demand` still opens.

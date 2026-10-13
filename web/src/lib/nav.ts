@@ -361,7 +361,11 @@ export const NAV: NavMenu[] = [
        real section rather than a footnote — the weights are unvalidated. */
     items: [
       { label: 'Alpha Scanner', sub: 'scan' },
-      { label: 'Demand Discovery', sub: 'demand' },
+      // Out of the menu since 2026-10-13: its own backtest found the headline
+      // signal did not predict returns, and it covers 29 hand-picked names.
+      // The route stays alive as a lab page; its reverse DCF moved to every
+      // company's Valuation tab (`lib/implied-growth.ts`).
+      { label: 'Demand Discovery', sub: 'demand', hidden: true },
       { label: 'Method & Weights', sub: 'method' },
       { label: 'Limits & Validation', sub: 'limits' },
       { label: 'On a company', symbolTab: 'Alpha Signal' },

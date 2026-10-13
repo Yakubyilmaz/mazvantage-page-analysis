@@ -20,6 +20,7 @@ import { GradeBar, GradePill, MedianCell, OSub, RankBar } from '@/components/rep
 import { GradeTable, SubtopicSummary } from '@/components/report/grade-table';
 import { EXTRAS, GROUP_PANELS } from '@/components/report/factor-panels';
 import { FairValuePanel } from '@/components/report/fair-value';
+import { ImpliedGrowthCard } from '@/components/report/implied-growth-card';
 import { TickIcon } from '@/components/shell/icons';
 import { useNav } from '@/components/nav-context';
 import { cn } from '@/lib/cn';
@@ -443,7 +444,8 @@ const FACTOR_TAB_DETAIL: Partial<Record<FactorKey, (a: Analysis) => React.ReactN
   growth: () => [],
   // The three that keep something keep what exists nowhere else in the
   // product: the thirteen fair-value models, and the two Sankeys.
-  valuation: (a) => [fairValueCard(a)],
+  // What the price assumes, from Demand Discovery's reverse DCF, before the models it sits beside.
+  valuation: (a) => [<ImpliedGrowthCard key="ig" a={a} />, fairValueCard(a)],
   profitability: onlyGroups('profitability', ['flow', 'costofcapital']),
   health: onlyGroups('health', ['sheet']),
 };

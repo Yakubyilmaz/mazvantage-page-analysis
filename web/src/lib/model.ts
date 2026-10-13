@@ -23,6 +23,7 @@ import { logoUrl } from './fmp';
 import { sectorLookup } from './grading';
 import { gradeAll, FACTOR_KEYS, FACTORS, METRICS } from './factors';
 import { beneishFrom } from './beneish';
+import { priceImpliedGrowth, type ImpliedGrowth } from './implied-growth';
 
 /* ==========================================================================
    Benchmarks
@@ -51,6 +52,7 @@ export interface Analysis {
   rewards: any[]; risks: any[];
   sectorTable: { available: boolean; quality: string | null; generatedAt: string | null; count: number | null; overall: any };
   verdict: string;
+  impliedGrowth: import('./implied-growth').ImpliedGrowth;
   [k: string]: any;
 }
 
@@ -2594,6 +2596,9 @@ export function analyse(ds: any, { peerRatios = null, peerGrowth = null, peerMet
     ...context,
     scores,
     rewards, risks,
+    /* After the grades on purpose, like the fair values: printed beside the
+       Valuation grade, never read by it. */
+    impliedGrowth: deriveImpliedGrowth(facts),
     sectorTable: {
       available: lookup.available,
       quality: lookup.quality,
@@ -2605,6 +2610,36 @@ export function analyse(ds: any, { peerRatios = null, peerGrowth = null, peerMet
     /** headline sentence under the company name */
     verdict: verdictLine(scores, facts),
   };
+}
+
+/**
+ * The reverse DCF's inputs, read from the annual statements: the one place
+ * vendor field names meet `implied-growth.ts`, which only does arithmetic.
+ */
+function deriveImpliedGrowth(facts: any): ImpliedGrowth {
+  const { income = [], balance = [], cash = [] } = facts.statements || {};
+  const sector = String(facts.sector || '');
+  const industry = String(facts.industry || '');
+  const reported = income.at(-1)?.reportedCurrency;
+  let refuse: string | null = null;
+  if (/financial/i.test(sector) || /bank|insurance|capital markets|asset management|credit services|mortgage/i.test(industry)) {
+    refuse = 'Not run for banks, insurers and other financials: their cash flows and debt are the business itself, so free cash flow and enterprise value do not describe it.';
+  } else if (reported && facts.currency && reported !== facts.currency) {
+    refuse = `The statements are reported in ${reported} and the price in ${facts.currency}, so market value and revenue are not in the same unit.`;
+  }
+  const byDate = new Map(cash.map((c: any) => [c.date, c]));
+  const fcfOf = (c: any) => (!c ? null
+    : isNum(c.freeCashFlow) ? c.freeCashFlow
+      : isNum(c.operatingCashFlow) && isNum(c.capitalExpenditure) ? c.operatingCashFlow - Math.abs(c.capitalExpenditure) : null);
+  const b = balance.at(-1);
+  return priceImpliedGrowth({
+    marketCap: facts.marketCap ?? null,
+    cash: b ? (b.cashAndShortTermInvestments ?? b.cashAndCashEquivalents ?? null) : null,
+    debt: b ? (b.totalDebt ?? null) : null,
+    revenue: income.map((r: any) => (isNum(r.revenue) ? r.revenue : null)),
+    fcf: income.map((r: any) => fcfOf(byDate.get(r.date))),
+    refuse,
+  });
 }
 
 function verdictLine(scores: any, facts: any) {

@@ -87,6 +87,9 @@ function levelOf(g: number): Exclude<PricedInLevel, 'unknown'> {
   return ORDER.find((k) => g <= PRICED_IN_LEVELS[k].upTo)!;
 }
 
+/** The level an implied growth falls in; shared with the Valuation tab's reading (`implied-growth.ts`). */
+export const pricedInLevel = levelOf;
+
 export interface PricedIn {
   level: PricedInLevel;
   factor: number;

@@ -455,7 +455,6 @@ function IndustryFigures({ a }: { a: Analysis }) {
           Demand Discovery chains — AI compute, copper and electrification, robotics and lithium — read by hand from WSTS, the IEA, USGS, IFR
           and the companies.
         </Fine>
-        <More onClick={() => nav.goView('alpha', 'demand')}>Demand Discovery ›</More>
       </Box>
     );
   }
