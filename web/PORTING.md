@@ -590,3 +590,22 @@ people search for — "is <company> halal?" — now answers in the server HTML.
   AAPL and NVDA copies, and the summary's snapshot fallback (and refusal of a symbol without one).
 - **Verified:** the served HTML of `/stock/AAPL/shariah-compliance` (title, description, canonical, JSON-LD, the summary
   heading), `/robots.txt`, `/sitemap.xml` (88 URLs without a key), and the NVDA Shariah tab in the browser.
+
+### 3. The verdict card, and the seam for plans
+
+A reader arriving from a search lands on eighteen tabs. The Overview now opens with the two questions they came with.
+
+| File | What it does |
+| --- | --- |
+| `components/report/verdict-card.tsx` | Four cells over the chart: **Is it halal?** (free; `halalLabel` on the averaged market cap), **Maz grade**, **What the price assumes** and **Watch out for** (the first sentence of the two weakest ratios), each linking to the tab that explains it |
+| `lib/access.ts` | `FEATURE_PLAN` (the halal surfaces free, the analysis Pro, score history Pro+), `canUse`, `planFor`. Gating is **off** unless `NEXT_PUBLIC_PLAN_GATING=on` |
+| `components/access-context.tsx` | `AccessContext` / `useAccess`: the back end provides the reader's plan here once accounts exist |
+| `components/report/use-mcap-history.ts` | The Shariah tab's market-cap history hook, shared so the card and the tab print the same label |
+
+- **Gated:** a paid cell says what it holds and links to the plans. It never shows a blurred or invented figure. The
+  check is presentation only; once there are accounts, the server must withhold the paid figures too.
+- **Ungated (today):** every cell shows its figures with a small "Pro" or "Free" mark.
+- **Request cost:** +1 on opening a report (`marketCapHist`, which the Shariah tab already read; cached, so opening the
+  tab afterwards costs nothing).
+- **Tests:** `tests/access.test.ts` (2).
+- **Verified in the browser:** NVDA and AAPL at 1400px and 390px, ungated and with `NEXT_PUBLIC_PLAN_GATING=on`.

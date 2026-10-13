@@ -12,7 +12,6 @@ import {
   EXCLUDED_ACTIVITIES, INCOME_CAP, SHARIAH_INFO, SHARIAH_STANDARDS, basisLabel, quickInputs, quickPurification, quickScreen,
   type QuickResult, type QuickState, type QuickTest,
 } from '@/lib/shariah';
-import { fetchFor, loadSnapshot } from '@/lib/fmp';
 import type { Analysis } from '@/lib/model';
 import { CheckRow, DataTable, Notice, OCard, OHead, Pill, StatLine, StatLines } from '@/components/report/ui';
 import { OSub } from '@/components/report/grade-parts';
@@ -21,6 +20,7 @@ import { cn } from '@/lib/cn';
 import { issuerRecord } from '@/lib/shariah-issuers';
 import { labelFromQuick } from '@/lib/halal-label';
 import { ShariahIssuerReport } from './shariah-issuer';
+import { useMcapHistory } from '@/components/report/use-mcap-history';
 
 const VERDICT_TONE: Record<string, string> = { good: 'text-up', bad: 'text-down', warn: 'text-grade-mid', muted: 'text-muted-foreground' };
 const stateText = (s: QuickState) => (s === 'pass' ? 'Pass' : s === 'fail' ? 'Fail' : 'n/a');
@@ -39,32 +39,6 @@ export function ShariahTab({ a }: { a: Analysis }) {
       {record ? <ShariahIssuerReport record={record} /> : <QuickScreen a={a} />}
     </div>
   );
-}
-
-/**
- * The daily market-cap history the averages need, loaded when the tab opens
- * rather than with every report: live where the data is available, else the
- * bundled capture, else nothing — and the screen then says it fell back to
- * today's market cap.
- */
-function useMcapHistory(a: Analysis) {
-  const [got, setGot] = React.useState<{ for: Analysis; rows: any[] | null } | null>(null);
-  React.useEffect(() => {
-    let live = true;
-    (async () => {
-      const res = await fetchFor('marketCapHist', a.facts.symbol).catch(() => null);
-      let rows: any[] | null = res?.status === 'ok' && Array.isArray(res.data) && res.data.length ? res.data : null;
-      if (!rows) {
-        const snap = await loadSnapshot(a.facts.symbol).catch(() => null);
-        const cap = (snap as any)?.feeds?.marketCapHist;
-        rows = Array.isArray(cap) ? cap : null;
-      }
-      if (live) setGot({ for: a, rows });
-    })();
-    return () => { live = false; };
-  }, [a]);
-  const mine = got?.for === a ? got : null;
-  return { loading: !mine, rows: mine?.rows ?? null };
 }
 
 function Cell({ t }: { t: QuickTest | undefined }) {
