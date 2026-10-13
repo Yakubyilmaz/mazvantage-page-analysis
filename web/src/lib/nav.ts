@@ -387,6 +387,8 @@ export const NAV: NavMenu[] = [
       { label: 'Halal Dividend Stocks', sub: 'dividend' },
       { label: 'Halal Growth Stocks', sub: 'growth' },
       { label: 'Halal Value Stocks', sub: 'value' },
+      // A fund's holdings through the company screen: the answer to "my Shariah ETF holds non-compliant names".
+      { label: 'ETF Halal Check', sub: 'etf' },
       { label: 'Compliance Changes', sub: 'changes' },
       { label: 'Shariah Methodology', sub: 'methodology' },
       { label: 'Purification', sub: 'purification' },

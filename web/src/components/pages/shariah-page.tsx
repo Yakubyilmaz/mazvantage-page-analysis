@@ -3,9 +3,10 @@
 /* ==========================================================================
    Maz Vantage — the Shariah desk (`/shariah/<sub>`)
 
-   One canvas, four tabs:
+   One canvas, five tabs:
 
      screener      the five compliance screens, in one table
+     etf           a fund's holdings through the company screen
      methodology   the five published standards and what they measure
      purification  what to do with the income the screen cannot remove
      changes       why a compliance-change list needs a database
@@ -20,6 +21,7 @@ import * as React from 'react';
 import { SHARIAH_IDEAS, SHARIAH_SCREENS, shariahScreenForSub } from '@/lib/shariah-screens';
 import { EXCLUDED_ACTIVITIES, SHARIAH_INFO, SHARIAH_STANDARDS, basisLabel } from '@/lib/shariah';
 import { ScreenDesk } from '@/components/pages/screen-desk';
+import { EtfHalalCheck } from '@/components/pages/etf-halal-page';
 import {
   ConnectionButton, Grid, MetaDivider, PageFrame, PageHero, Panel, Para, SectionBar, Warn, useQueryState,
 } from '@/components/pages/page-parts';
@@ -28,9 +30,10 @@ import { useNav } from '@/components/nav-context';
 
 const IDEA_BY_ID: Record<string, any> = Object.fromEntries((SHARIAH_IDEAS as any[]).map((idea) => [idea.key, idea]));
 
-type TabId = 'screener' | 'methodology' | 'purification' | 'changes';
+type TabId = 'screener' | 'etf' | 'methodology' | 'purification' | 'changes';
 const TABS: { id: TabId; label: string }[] = [
   { id: 'screener', label: 'Halal Screener' },
+  { id: 'etf', label: 'ETF Halal Check' },
   { id: 'methodology', label: 'Methodology' },
   { id: 'purification', label: 'Purification' },
   { id: 'changes', label: 'Compliance Changes' },
@@ -169,7 +172,7 @@ export function ShariahPage({ sub }: { sub: string | null }) {
       {tab === 'screener' ? (
         <ScreenDesk screens={SHARIAH_SCREENS} ideaFor={(id) => IDEA_BY_ID[id] || null} label="Shariah screens" coreRules={3}
           lede="Five screens over the same compliance universe. The first three rules are the compliance test and never change; each screen adds its own on top, so the funnel under the table reads “this many were compliant, then this many of those were also cheap”." />
-      ) : tab === 'methodology' ? <MethodologyTab /> : tab === 'purification' ? <PurificationTab /> : <ChangesTab />}
+      ) : tab === 'etf' ? <EtfHalalCheck /> : tab === 'methodology' ? <MethodologyTab /> : tab === 'purification' ? <PurificationTab /> : <ChangesTab />}
     </PageFrame>
   );
 }

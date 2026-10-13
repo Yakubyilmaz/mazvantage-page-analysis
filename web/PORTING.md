@@ -609,3 +609,26 @@ A reader arriving from a search lands on eighteen tabs. The Overview now opens w
   tab afterwards costs nothing).
 - **Tests:** `tests/access.test.ts` (2).
 - **Verified in the browser:** NVDA and AAPL at 1400px and 390px, ungated and with `NEXT_PUBLIC_PLAN_GATING=on`.
+
+### 4. ETF Halal Check (`/shariah/etf?fund=SPUS`)
+
+Readers say Shariah ETFs hold companies that are not compliant. Often both sides are right: the fund follows one
+provider's rules and the reader another's. This tab puts every holding of a fund through the company screen and adds
+up the fund's weight.
+
+| File | What it does |
+| --- | --- |
+| `lib/etf-halal.ts` | `loadFund` (record and holdings), `checkFund` (one screener read for sector, industry and market cap, then each holding's annual balance sheet — a profile too for holdings the screener does not list — largest first, up to the cap), `checkHolding` and `summariseFund` (pure): weight by label, and pass / fail / not measured under each of the five standards |
+| `components/pages/etf-halal-page.tsx` | Ticker field, suggested funds, cap (50 / 100 / 250), a button that states the request count; the weight bar, the per-standard table, and every holding with its label and a link to its Shariah tab (CSV export) |
+| `pages/shariah-page.tsx`, `lib/nav.ts` | The tab and its menu item |
+
+- **Each holding's label** is `halalLabel`, as on its report, but on **today's market cap** (the averages would cost a
+  request per holding) and without the interest-income test. The page says both. Lines with no ticker, holdings with no
+  balance sheet and holdings past the cap are reported as "not screened", never as a pass or a fail.
+- **Request cost:** 2 on choosing a fund; then 1 screener read plus 1 per holding screened (2 for a holding outside the
+  screener's US list). About 53 for the default cap of 50. Balance sheets are cached and shared with the reports.
+- **Tests:** `tests/etf-halal.test.ts` (8): pass, fail, excluded activity, mixed standards, never-screened lines, the
+  weight sums by label and per standard, the cost.
+- **Verified in the browser:** with live data stubbed in memory (a five-company fund plus cash, using the AAPL and NVDA
+  captures and made-up rows for the rest; nothing stored or sent): the run, the bar, the table, 0 errors. **Not verified:**
+  a real fund's holdings (no key in this environment).
