@@ -567,3 +567,26 @@ that held up — answers a question every stock picker asks, so it moved to ever
   minimum, the no-cycle-cash floor, every refusal, past growth, and the AAPL and NVDA captures.
 - **Verified in the browser:** AAPL's saved report, Valuation tab (15.8% asked against 8.7% delivered, "Priced in");
   the Alpha Signal page without the Demand Discovery section. `/alpha/demand` still opens.
+
+### 2. Search: server-rendered halal summary, per-tab titles, structured data, sitemap and robots
+
+The report renders in the browser, so the HTML a search engine fetched for `/stock/AAPL` held a skeleton. The page
+people search for — "is <company> halal?" — now answers in the server HTML.
+
+| File | What it does |
+| --- | --- |
+| `lib/halal-label.ts` | `halalLabel`: the one label every free surface prints — the researched v5.0 screen where one exists (preferred scenario), else the quick screen's count. The Shariah tab's headline now comes from it too (which fixes "Passes all 5" when a standard could not be measured) |
+| `lib/server/stock-summary.ts` | Server only: five reads (profile, balance, income, dividends, market-cap history) through the browser's own `FEEDS` specs, cached a day by the framework; the bundled snapshot without a key; null rather than an invented summary |
+| `lib/server/universe.ts` | The sitemap's companies: one screener read (US, largest first, up to 5,000), cached a day; the bundled reports without a key |
+| `components/report/stock-summary.tsx` | `StockSummaryBlock` (shown while the report loads) and `StockJsonLd` (an FAQ "Is X halal?" and the company), both streamed behind Suspense |
+| `app/stock/[symbol]/layout.tsx`, `[[...tab]]/page.tsx` | The summary as the report's `preface`; per-tab titles, descriptions and canonical links ("Is Apple Inc. (AAPL) halal? Shariah compliance check") |
+| `app/sitemap.ts`, `app/robots.ts`, `lib/site.ts` | Every visible menu section, then each company's report and Shariah tab; `/api/` disallowed; absolute URLs from `NEXT_PUBLIC_SITE_URL` (documented in `.env.example`) |
+| `report/report-shell.tsx` | Takes `preface`; no longer overwrites the server's title on load |
+
+- **Request cost:** five reads per company per day on the server, however many readers and crawlers open it, plus one
+  screener read a day for the sitemap. Nothing new in the browser.
+- **Before launch:** set `NEXT_PUBLIC_SITE_URL`, or the sitemap and canonical links point at localhost.
+- **Tests:** `tests/halal-label.test.ts` (5): the count rules, the excluded activity, the researched-first order on the
+  AAPL and NVDA copies, and the summary's snapshot fallback (and refusal of a symbol without one).
+- **Verified:** the served HTML of `/stock/AAPL/shariah-compliance` (title, description, canonical, JSON-LD, the summary
+  heading), `/robots.txt`, `/sitemap.xml` (88 URLs without a key), and the NVDA Shariah tab in the browser.

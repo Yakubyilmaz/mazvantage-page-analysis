@@ -243,7 +243,11 @@ function activeTabFrom(pathname: string): TabLabel | null {
   return tabFromSlug(slug ? decodeURIComponent(slug) : null);
 }
 
-export function ReportShell({ symbol }: { symbol: string }) {
+/**
+ * `preface` is server-rendered (`report/stock-summary.tsx`): the halal
+ * summary a search engine can read, shown while the report loads.
+ */
+export function ReportShell({ symbol, preface = null }: { symbol: string; preface?: React.ReactNode }) {
   const sym = symbol.toUpperCase();
   const router = useRouter();
   const pathname = usePathname() || '';
@@ -270,7 +274,6 @@ export function ReportShell({ symbol }: { symbol: string }) {
       if (r.status === 'ok') {
         rememberSymbol(sym);
         setReport({ ds: r.ds, extras: r.extras });
-        document.title = `${sym} — Maz Vantage Stock Analysis`;
       }
     }).catch((err) => {
       if (live) setLoad({ status: 'error', title: `Could not build a report for ${sym}`, message: `Unexpected error: ${err?.message || err}`, details: [String(err?.stack || '')] });
@@ -309,7 +312,7 @@ export function ReportShell({ symbol }: { symbol: string }) {
   const refresh = React.useCallback(() => { clearCache(); reload(); }, [reload]);
 
   if (!load) {
-    return <SkeletonReport symbol={sym} />;
+    return <>{preface}<SkeletonReport symbol={sym} /></>;
   }
   if (load.status === 'error') {
     return (

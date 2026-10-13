@@ -19,6 +19,7 @@ import { OSub } from '@/components/report/grade-parts';
 import { TickIcon } from '@/components/shell/icons';
 import { cn } from '@/lib/cn';
 import { issuerRecord } from '@/lib/shariah-issuers';
+import { labelFromQuick } from '@/lib/halal-label';
 import { ShariahIssuerReport } from './shariah-issuer';
 
 const VERDICT_TONE: Record<string, string> = { good: 'text-up', bad: 'text-down', warn: 'text-grade-mid', muted: 'text-muted-foreground' };
@@ -95,12 +96,9 @@ function QuickScreen({ a }: { a: Analysis }) {
 
   // The headline is a count rather than a word: the five providers can and do
   // disagree on identical financials, so "compliant" would be true of some
-  // readers' standard and false of others'.
-  const tone = excluded ? 'bad' : unknown === rows.length ? 'muted' : failed === 0 ? 'good' : passed === 0 ? 'bad' : 'warn';
-  const headline = excluded ? 'Excluded on activity'
-    : unknown === rows.length ? 'Cannot be screened'
-      : failed === 0 ? `Passes all ${rows.length}`
-        : passed === 0 ? `Fails all ${rows.length}` : `Passes ${passed} of ${rows.length}`;
+  // readers' standard and false of others'. The same label as the verdict
+  // card and the server summary (`lib/halal-label.ts`).
+  const { tone, headline } = labelFromQuick(rows, f.name);
 
   const limits = [
     { label: 'Income from excluded activities', detail: 'Interest income is tested above wherever the company reports it. Income from alcohol, gambling, music and film, conventional finance and the like needs a revenue breakdown by activity that no statement line carries; where a researched screen exists it is at the top of this tab. Elsewhere, a company clearing everything here could still fail on this test.' },
