@@ -36,12 +36,14 @@ import { PageFrame, useHasKey } from '@/components/pages/page-parts';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/primitives';
 import { useNav } from '@/components/nav-context';
-import { newId } from '@/lib/local-store';
+import { newId, readJson, useStoredJson, writeJson } from '@/lib/local-store';
 import { HoldingsBlock, PerformanceBlock } from '@/components/portfolio/portfolio-blocks';
 import {
   cleanSymbol, isSymbol, sharesHeld, useWatchlists, writeStore, type Holding, type WatchList, type WatchStore,
 } from '@/lib/watchlists';
 import { autoImpure } from '@/lib/purification';
+import { halalLabel } from '@/lib/halal-label';
+import { diffLabels, recordOf, type LabelRecord } from '@/lib/compliance-changes';
 import { cn } from '@/lib/cn';
 
 /* ---------- the store ------------------------------------------------------------- */
@@ -532,6 +534,98 @@ function CalendarBlock({ list, rows, onOpen, onLoaded }: { list: List; rows: any
 }
 
 /* ==========================================================================
+   Compliance — every holding's halal label (`lib/halal-label.ts`, the same
+   one the report prints), the share of the list's value in each, and what
+   changed since the reader last looked (`lib/compliance-changes.ts`). The
+   last-seen labels stay in this browser (`mazvantage.halal.seen`) until a
+   server keeps them and sends alerts (BACKEND_CONTRACT.md §2).
+   ========================================================================== */
+
+const COMPLIANCE_BAGS = ['profile', 'balance'];
+const SEEN_KEY = 'mazvantage.halal.seen';
+const LABEL_CHIP: Record<string, string> = { good: 'bg-up/12 text-up', warn: 'bg-warning/12 text-warning', bad: 'bg-down/12 text-down', muted: 'bg-accent text-muted-foreground' };
+
+function labelForRow(row: any) {
+  const p = row.bags?.profile || {};
+  return halalLabel({
+    facts: { symbol: row.symbol, name: row.companyName || p.companyName || row.symbol, sector: p.sector, industry: p.industry, marketCap: row.marketCap ?? p.marketCap ?? null },
+    ds: { get: (n: string) => (n === 'balance' && row.bags?.balance ? [row.bags.balance] : null) },
+  });
+}
+
+function ComplianceBlock({ list, rows, onOpen, onLoaded }: { list: List; rows: any[]; onOpen: (s: string) => void; onLoaded: () => void }) {
+  const seen = useStoredJson<Record<string, LabelRecord>>(SEEN_KEY, {});
+  const needsFill = rows.some((r) => COMPLIANCE_BAGS.some((b) => !r.bags?.[b]));
+  const today = new Date().toISOString().slice(0, 10);
+  const lines = needsFill ? [] : rows.map((row) => ({ row, label: labelForRow(row), value: valueOf(list, row) }));
+  const now: Record<string, LabelRecord> = Object.fromEntries(lines.map((l) => [l.row.symbol, recordOf(l.row.symbol, l.label, today)]));
+  const changes = diffLabels(seen, now);
+  // A holding screened for the first time has nothing to change from; remember it quietly.
+  const fresh = lines.filter((l) => !seen[l.row.symbol]).map((l) => l.row.symbol);
+  React.useEffect(() => {
+    if (fresh.length) writeJson(SEEN_KEY, { ...readJson<Record<string, LabelRecord>>(SEEN_KEY, {}), ...Object.fromEntries(fresh.map((sym) => [sym, now[sym]])) });
+  }, [fresh.join(',')]); // eslint-disable-line react-hooks/exhaustive-deps
+  const intro = <Desc>Each holding’s halal label — the same one its report prints, against the five published standards on the latest balance sheet — and how much of the list’s value sits in each. Today’s market cap here; a company’s own Shariah tab uses the providers’ averages, so a holding near a limit can read differently there.</Desc>;
+  if (needsFill) {
+    return <Block id="watchlist-compliance" title="Compliance">{intro}<Consent label={`Screen these ${rows.length} for compliance`} bags={COMPLIANCE_BAGS} rows={rows} onDone={onLoaded} /></Block>;
+  }
+  const sized = lines.every((l) => isNum(l.value));
+  const weightOf = (l: typeof lines[number]) => (sized ? l.value as number : 1);
+  const total = lines.reduce((t, l) => t + weightOf(l), 0) || 1;
+  const by = (tone: string) => lines.filter((l) => l.label.tone === tone).reduce((t, l) => t + weightOf(l), 0) / total;
+  return (
+    <Block id="watchlist-compliance" title="Compliance">
+      {intro}
+      {changes.length ? (
+        <div className="grid gap-2 rounded-xl border border-warning/40 bg-warning/8 px-4 py-3">
+          <p className="text-13 font-semibold">Changed since you last looked</p>
+          <ul className="grid gap-1 text-13">
+            {changes.map((c) => (
+              <li key={c.symbol}>
+                <button type="button" onClick={() => onOpen(c.symbol)} className="font-bold hover:text-primary">{c.symbol}</button>{' '}
+                <span className={cn(c.direction === 'worse' ? 'text-down' : c.direction === 'better' ? 'text-up' : 'text-muted-foreground')}>
+                  {c.from.word} → {c.to.word}
+                </span>
+                <span className="text-tiny text-muted-foreground"> · last seen {c.from.at}</span>
+              </li>
+            ))}
+          </ul>
+          <div><Button size="sm" variant="outline" onClick={() => writeJson(SEEN_KEY, { ...seen, ...now })}>Mark as seen</Button></div>
+          <p className="text-tiny text-muted-foreground">Kept in this browser and checked when you open this page. Alerts by email need an account.</p>
+        </div>
+      ) : null}
+      <div className="grid grid-cols-3 gap-px overflow-hidden rounded-xl border border-border bg-border max-sm:grid-cols-1">
+        {[['good', 'Passes all five standards'], ['warn', 'Passes some'], ['bad', 'Fails or excluded']].map(([tone, label]) => (
+          <div key={tone} className="bg-background p-4">
+            <div className="text-tiny text-muted-foreground">{label}</div>
+            <div className={cn('text-2xl font-bold tnum', tone === 'good' ? 'text-up' : tone === 'bad' ? 'text-down' : 'text-warning')}>{pctText(by(tone), 0)}</div>
+          </div>
+        ))}
+      </div>
+      <p className="text-tiny text-muted-foreground">{sized ? 'Of the list’s market value.' : 'Of the holdings, counted equally: enter the shares you hold for every company to weight by value.'}{by('muted') > 0 ? ` ${pctText(by('muted'), 0)} could not be screened.` : ''}</p>
+      <div className="overflow-x-auto scroll-thin">
+        <table className="w-full border-collapse text-13 tnum">
+          <thead><tr className="border-b border-border text-micro uppercase tracking-[.05em] text-muted-foreground">
+            <th className="py-2 text-left font-medium">Company</th><th className="px-3 py-2 text-left font-medium">Halal label</th>
+            <th className="px-3 py-2 text-right font-medium">Value</th><th className="py-2 pl-3 text-left font-medium">Why</th>
+          </tr></thead>
+          <tbody>
+            {lines.map((l) => (
+              <tr key={l.row.symbol} className="border-b border-border align-top">
+                <td className="py-2"><Ticker row={l.row} onOpen={onOpen} /></td>
+                <td className="px-3 py-2"><span className={cn('whitespace-nowrap rounded-md px-2 py-[3px] text-micro font-semibold', LABEL_CHIP[l.label.tone])}>{l.label.word}</span></td>
+                <td className="px-3 py-2 text-right">{money2(l.value)}</td>
+                <td className="py-2 pl-3 text-tiny leading-relaxed text-muted-foreground">{l.label.sentence}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </Block>
+  );
+}
+
+/* ==========================================================================
    Purification — the impure share of each dividend is filled in for the
    reader (`lib/purification.ts`): the researched screen where there is one,
    else after-tax interest over net income from the newest filing. The cell
@@ -756,6 +850,7 @@ export function WatchlistPage() {
         <AllocationBlock list={list} rows={rows} onOpen={open} setShares={(s, v) => setHolding(s, { shares: v })} />
         <DividendsBlock list={list} rows={rows} onOpen={open} />
         <CalendarBlock list={list} rows={rows} onOpen={open} onLoaded={bump} />
+        <ComplianceBlock list={list} rows={rows} onOpen={open} onLoaded={bump} />
         <PurificationBlock list={list} rows={rows} onOpen={open} onShariah={() => nav.goView('shariah', 'screener')} setHolding={setHolding} onLoaded={bump} />
       </div>
     );

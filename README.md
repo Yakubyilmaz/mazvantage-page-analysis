@@ -73,6 +73,8 @@ non-obvious choices were made; that is the main design documentation.
 - [`MAZ_ALPHA_SIGNAL_SPEC.md`](MAZ_ALPHA_SIGNAL_SPEC.md): the Alpha Signal's
   logic, how to replicate it, the model prompt and the original master prompt.
 - [`MAZ_ETF_SCORING_SPEC.md`](MAZ_ETF_SCORING_SPEC.md): the five ETF grades.
+- [`BACKEND_CONTRACT.md`](BACKEND_CONTRACT.md): what the back end must serve —
+  plans, daily halal labels and alerts, the Ideas track record, score history.
 - [`FMP_DATA_REQUIREMENTS.md`](FMP_DATA_REQUIREMENTS.md): every market-data
   endpoint the app uses, for a vendor quote.
 - [`tools/capture/README.md`](tools/capture/README.md): how the hand-captured

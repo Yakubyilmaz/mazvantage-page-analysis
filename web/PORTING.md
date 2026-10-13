@@ -650,3 +650,25 @@ up the fund's weight.
 - **Tests:** `tests/zakat-purification.test.ts` (7).
 - **Verified in the browser** with stubbed live data (AAPL and NVDA captures, made-up rows for the rest; nothing stored
   or sent): the zakat table, both methods, a line left out, the total; the watchlist's purification shares and labels.
+
+### 6. Portfolio compliance, compliance changes, the Ideas track record — and the back-end contract
+
+Alerts and a track record need memory across days, which needs the back end being built separately. What could be
+built without it is built; the rest is a seam and a contract (`BACKEND_CONTRACT.md` at the repository root).
+
+| File | What it does |
+| --- | --- |
+| `pages/watchlist-page.tsx` → `ComplianceBlock` | Every holding's `halalLabel` (profile and balance bags, on a click), the share of the list's value passing / mixed / failing (counted equally until every holding has shares), and **"Changed since you last looked"** with "Mark as seen" |
+| `lib/compliance-changes.ts` | `recordOf`, `diffLabels`, `direction`: what counts as a change and which way. The browser uses it today against `mazvantage.halal.seen` (**new storage key**); the nightly job should import it |
+| `lib/track-record.ts` | `trackRecord`: equal-weight price return chained over published lists, the benchmark over the same dates, annualised after a full year, members with no end price counted in `missing`, never dropped silently |
+| `lib/backend.ts` | `NEXT_PUBLIC_BACKEND_URL` and `fetchTrackRecord`; no request at all while it is unset |
+| `components/ideas/track-record-card.tsx` | On every portfolio page; renders nothing until the back end serves a record |
+| `BACKEND_CONTRACT.md` | Plans and `AccessContext`; the daily `halal_labels` table, changes and email alerts; the track-record endpoint and its JSON; score history; storage keys to migrate; costs |
+| `.env.example` | `NEXT_PUBLIC_BACKEND_URL`, `NEXT_PUBLIC_PLAN_GATING` |
+
+- **Request cost:** the Compliance block, a profile and a balance sheet per holding on the button (both shared with
+  other blocks and the reports). The track record: none until the back end exists.
+- **Tests:** `tests/track-and-changes.test.ts` (4).
+- **Verified in the browser** with stubbed live data (two captures, three made-up companies; nothing stored or sent but
+  the in-browser last-seen labels): the labels, the value split, two changes (one worse, one better). **Not verified:**
+  the track-record card with a real back end (none exists yet; the arithmetic is unit-tested).

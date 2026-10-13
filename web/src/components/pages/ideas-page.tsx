@@ -38,6 +38,7 @@ import { writeJson } from '@/lib/local-store';
 import {
   AddToListButton, SAVED_SCREENS_KEY, describeScreen, readSavedScreens, useOpenSaved, useSavedScreens,
 } from '@/components/market/screen-actions';
+import { TrackRecordCard } from '@/components/ideas/track-record-card';
 import { cn } from '@/lib/cn';
 import { SuperinvestorsPage } from '@/components/pages/superinvestors-page';
 
@@ -311,6 +312,7 @@ function PortfolioPage({ idea }: { idea: any }) {
         </OCard>
 
         <RulesStrip idea={idea} has={has} busy={!!progress} onRun={run} />
+        <TrackRecordCard ideaKey={idea.key} />
 
         {!has ? (
           <OCard span={12} id="pf-nokey">
