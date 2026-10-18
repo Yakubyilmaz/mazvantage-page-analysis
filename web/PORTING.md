@@ -672,3 +672,27 @@ built without it is built; the rest is a seam and a contract (`BACKEND_CONTRACT.
 - **Verified in the browser** with stubbed live data (two captures, three made-up companies; nothing stored or sent but
   the in-browser last-seen labels): the labels, the value split, two changes (one worse, one better). **Not verified:**
   the track-record card with a real back end (none exists yet; the arithmetic is unit-tested).
+
+### 7. The halal FAQ on each Shariah tab, and the most-searched halal checks in the footer
+
+Modelled on the "Is <company> halal?" pages competing screeners rank with, but every answer is the company's own
+figures rather than the same paragraph on every page.
+
+| File | What it does |
+| --- | --- |
+| `lib/halal-faq.ts` | `halalFaq`: up to eight questions from the label and the quick screen's five rows. Is it halal (answered in the first word), which standards it passes (each with its ratios and limits), why they disagree, **how close it is to the line** (the tightest test and how far the market value would have to fall) or **what it would take to pass**, purification (as a share of each dividend; in money only when a dividend is on record), how often it is checked, and "Is this a fatwa?". An excluded business gets its reason; a company that cannot be screened gets nothing invented. `faqJsonLd` builds the structured data from the same items |
+| `components/report/halal-faq.tsx` | `StockHalalFaq`: server-rendered under the Shariah tab, native `<details>` (no script), the first answer open, with the FAQ structured data |
+| `app/stock/[symbol]/[[...tab]]/page.tsx` | Renders the FAQ on the Shariah tab only |
+| `components/report/stock-summary.tsx` | The FAQ structured data moved out of `StockJsonLd`, so it is only on the page that prints the questions |
+| `lib/server/stock-summary.ts` | The summary also carries the quick screen's `inputs` and `rows` |
+| `lib/popular-halal.ts`, `shell/site-footer.tsx` | "Is it halal? Most searched stocks": 20 US companies, each linking to its Shariah tab, on every page |
+
+- **Request cost:** none new; the FAQ reads the same five cached server reads as the summary.
+- **Tests:** `tests/halal-faq.test.ts` (9): a passing, a split, an excluded and an unscreenable company; purification
+  without interest income or a dividend on record; the structured data matching the page; the NVDA (quick) and AAPL
+  (researched) copies; the footer links.
+- **Verified:** the served HTML of `/stock/NVDA/shariah-compliance` (FAQ and one FAQPage block) and `/stock/NVDA` (neither),
+  the AAPL researched answer, and both at 390px and 1280px in the browser.
+- **Not built:** per-country and per-sector halal collections and per-ETF answer pages (the screener takes no sector
+  parameter yet, and the ETF check runs in the browser on a button).
+

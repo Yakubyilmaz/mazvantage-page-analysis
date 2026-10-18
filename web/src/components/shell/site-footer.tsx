@@ -13,6 +13,10 @@
    item in the rail's flyout goes. About, Careers, Terms, Privacy, social
    accounts and app badges are absent on purpose — none of those exist, and a
    link to nothing is worse than no link.
+
+   Under them, "Is it halal?": the companies people ask about most, each
+   linking to its Shariah tab (`lib/popular-halal.ts`). On every page, so
+   every page passes a crawler to the answers people search for.
    ========================================================================== */
 
 import Link from 'next/link';
@@ -21,6 +25,7 @@ import { NavItemLink } from '@/components/shell/side-nav';
 import { useNav } from '@/components/nav-context';
 import { BrandMark, Slogan, Wordmark } from '@/components/shell/brand';
 import { BRAND_NAME } from '@/lib/brand';
+import { POPULAR_HALAL_CHECKS, halalCheckHref, halalCheckLabel } from '@/lib/popular-halal';
 
 const link = 'text-left text-[14px] leading-4 text-white hover:underline hover:underline-offset-[3px]';
 
@@ -64,6 +69,17 @@ export function SiteFooter() {
           <li><Link href="/pricing" className={link}>Plans &amp; pricing</Link></li>
           <li><button type="button" className={link} onClick={nav.openSettings}>Settings</button></li>
         </Column>
+      </nav>
+
+      <div className="my-8 h-px bg-[#2c3032] max-[700px]:my-6" role="presentation" />
+
+      <nav aria-labelledby="footer-halal">
+        <h2 id="footer-halal" className="mb-4 text-tiny font-normal uppercase leading-[14px] tracking-[.04em] text-[#acacac]">Is it halal? Most searched stocks</h2>
+        <ul className="[column-gap:40px] [columns:220px] max-[700px]:[column-gap:24px] max-[700px]:[columns:160px] [&>li]:mb-3">
+          {POPULAR_HALAL_CHECKS.map((c) => (
+            <li key={c.symbol}><Link href={halalCheckHref(c)} className={link}>{halalCheckLabel(c)}</Link></li>
+          ))}
+        </ul>
       </nav>
 
       <div className="my-8 h-px bg-[#2c3032] max-[700px]:my-6" role="presentation" />

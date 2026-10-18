@@ -25,7 +25,8 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { FEEDS, makeDataset, type FeedCtx, type FeedResult } from '../fmp';
 import { ALLOWED_PATHS, FMP_BASE } from '../fmp/paths';
-import { halalLabel, type HalalLabel } from '../halal-label';
+import { halalLabel, quickRows, type HalalLabel } from '../halal-label';
+import { quickInputs, type QuickInputs, type QuickResult } from '../shariah';
 
 /** A day: statements change quarterly, prices daily; the label is a daily reading. */
 export const SUMMARY_REVALIDATE = 86_400;
@@ -42,6 +43,9 @@ export interface StockSummary {
   label: HalalLabel;
   /** the newest balance sheet the label read */
   asOf: string | null;
+  /** The quick screen behind the FAQ: its inputs and the five standards' rows. */
+  inputs: QuickInputs;
+  rows: QuickResult[];
   source: 'live' | 'snapshot';
 }
 
@@ -119,10 +123,11 @@ export async function loadStockSummary(raw: string): Promise<StockSummary | null
   const facts = factsFrom(symbol, ds.get('profile'));
   const mcap = Array.isArray(ds.get('marketCapHist')) ? ds.get('marketCapHist') : null;
   const label = halalLabel({ facts, ds }, mcap);
+  const inputs = quickInputs({ facts, ds }, mcap);
   const balance = ds.get('balance');
   const newest = Array.isArray(balance) ? balance.reduce((m: any, r: any) => (!m || String(r?.date) > String(m.date) ? r : m), null) : null;
   return {
     symbol, name: facts.name, sector: facts.sector, industry: facts.industry, exchange: facts.exchange,
-    description: facts.description, label, asOf: newest?.date ?? null, source,
+    description: facts.description, label, asOf: newest?.date ?? null, inputs, rows: quickRows(inputs), source,
   };
 }

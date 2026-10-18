@@ -8,9 +8,11 @@
      company is. It is in the HTML a search engine fetches, and it is the
      same reading the verdict card prints once the report is up, so the page
      never says one thing to a crawler and another to a reader.
-   - `StockJsonLd` is the structured data: an FAQ answering "Is <company>
-     halal?" and the company as an organisation. Rendered outside the report
-     so it stays in the page after the report replaces the summary.
+   - `StockJsonLd` is the structured data for the company as an
+     organisation. Rendered outside the report so it stays in the page after
+     the report replaces the summary. The FAQ markup lives with the FAQ
+     itself (`halal-faq.tsx`, Shariah tab only), so it is only ever on a page
+     that prints the same questions.
 
    No logo, no data-provider name, no figure the label did not read.
    ========================================================================== */
@@ -60,15 +62,6 @@ export async function StockJsonLd({ symbol }: { symbol: string }) {
   const s = await getStockSummary(symbol);
   if (!s) return null;
   const data = [
-    {
-      '@context': 'https://schema.org',
-      '@type': 'FAQPage',
-      mainEntity: [{
-        '@type': 'Question',
-        name: halalQuestion(s),
-        acceptedAnswer: { '@type': 'Answer', text: `${s.label.headline}. ${s.label.sentence}` },
-      }],
-    },
     {
       '@context': 'https://schema.org',
       '@type': 'WebPage',
