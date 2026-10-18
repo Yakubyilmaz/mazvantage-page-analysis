@@ -3,11 +3,12 @@
 /* ==========================================================================
    Maz Vantage — the Shariah desk (`/shariah/<sub>`)
 
-   One canvas, four tabs:
+   One canvas, five tabs:
 
      screener      the five compliance screens, in one table
      methodology   the five published standards and what they measure
      purification  what to do with the income the screen cannot remove
+     zakat         the calculator: shares by intention, the nisab, the rate
      changes       why a compliance-change list needs a database
 
    The five screens are the same three compliance rules with something on
@@ -25,14 +26,16 @@ import {
 } from '@/components/pages/page-parts';
 import { Button } from '@/components/ui/button';
 import { useNav } from '@/components/nav-context';
+import { ZakatCalculator } from '@/components/pages/zakat-calculator';
 
 const IDEA_BY_ID: Record<string, any> = Object.fromEntries((SHARIAH_IDEAS as any[]).map((idea) => [idea.key, idea]));
 
-type TabId = 'screener' | 'methodology' | 'purification' | 'changes';
+type TabId = 'screener' | 'methodology' | 'purification' | 'zakat' | 'changes';
 const TABS: { id: TabId; label: string }[] = [
   { id: 'screener', label: 'Halal Screener' },
   { id: 'methodology', label: 'Methodology' },
   { id: 'purification', label: 'Purification' },
+  { id: 'zakat', label: 'Zakat' },
   { id: 'changes', label: 'Compliance Changes' },
 ];
 
@@ -169,7 +172,7 @@ export function ShariahPage({ sub }: { sub: string | null }) {
       {tab === 'screener' ? (
         <ScreenDesk screens={SHARIAH_SCREENS} ideaFor={(id) => IDEA_BY_ID[id] || null} label="Shariah screens" coreRules={3}
           lede="Five screens over the same compliance universe. The first three rules are the compliance test and never change; each screen adds its own on top, so the funnel under the table reads “this many were compliant, then this many of those were also cheap”." />
-      ) : tab === 'methodology' ? <MethodologyTab /> : tab === 'purification' ? <PurificationTab /> : <ChangesTab />}
+      ) : tab === 'methodology' ? <MethodologyTab /> : tab === 'purification' ? <PurificationTab /> : tab === 'zakat' ? <ZakatCalculator /> : <ChangesTab />}
     </PageFrame>
   );
 }

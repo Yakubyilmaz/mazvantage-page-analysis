@@ -200,7 +200,7 @@ function ChartSection({ a }: { a: Analysis }) {
       {hasApiKey() ? (
         <div className="rounded-[14px] border border-border px-4">
           <MarketChart height={380} meta={{
-            symbol: f.symbol, name: f.name, shortName: f.name, kind: 'stock', currency: f.currency,
+            symbol: f.symbol, name: f.name, shortName: f.name, kind: 'stock', currency: f.currency, report: false,
             quote: { price: f.price, previousClose: f.previousClose },
           }} />
         </div>

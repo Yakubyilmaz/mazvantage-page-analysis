@@ -175,7 +175,7 @@ export const VOICES: Voice[] = [
   {
     symbol: 'AAPL', section: 'fairValue', after: 3, kind: 'management', relation: 'challenges', ...PAREKH, ...CALL,
     quote: 'We expect gross margin to be between 47%-48%. This includes an expected benefit of approximately one percentage point related to tariff refunds.',
-    note: 'The consensus path holds margins; the company’s own guide has them stepping down, before a one-off benefit.',
+    note: 'The consensus path has the margin widening; the company’s own guide has gross margin stepping down once a one-off benefit is taken out.',
   },
 
   /* ---------- Risk and Uncertainty ---------------------------------------- */

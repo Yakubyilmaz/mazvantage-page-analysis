@@ -443,8 +443,8 @@ function CompanyDetail({ c, company, voice, asOf }: { c: CompanyResult; company:
       {c.price ? <p className="text-tiny text-muted-foreground">Price {c.price.close.toFixed(2)} on {c.price.date}.</p> : null}
       {/* The company's own page holds the newest call against the one
           before, and what the firms publish about it and its industry. */}
-      <button type="button" onClick={() => nav.goSymbolTab('Alpha Signal', c.symbol)} className="justify-self-start text-tiny font-semibold text-primary hover:underline">
-        {c.symbol}&apos;s Alpha Signal: the newest call against the one before, and what the firms are publishing ›
+      <button type="button" onClick={() => nav.goSymbolTab('Research', c.symbol)} className="justify-self-start text-tiny font-semibold text-primary hover:underline">
+        {c.symbol}&apos;s Research report: the Alpha Signal reading, the newest call against the one before, and what the firms are publishing ›
       </button>
     </div>
   );

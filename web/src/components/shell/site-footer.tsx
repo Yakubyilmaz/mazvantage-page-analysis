@@ -16,7 +16,7 @@
    ========================================================================== */
 
 import Link from 'next/link';
-import { NAV, menuItems } from '@/lib/nav';
+import { RAIL_NAV, menuItems } from '@/lib/nav';
 import { NavItemLink } from '@/components/shell/side-nav';
 import { useNav } from '@/components/nav-context';
 import { BrandMark, Slogan, Wordmark } from '@/components/shell/brand';
@@ -51,7 +51,7 @@ export function SiteFooter() {
           (Watchlist) to eighteen (ETF Screener), and in rows every short
           group sat over a hole the height of the longest one. */}
       <nav aria-label="All sections" className="[column-gap:40px] [columns:176px] max-[700px]:[column-gap:24px] max-[700px]:[columns:140px]">
-        {NAV.map((menu) => (
+        {RAIL_NAV.map((menu) => (
           <Column key={menu.view} title={menu.label}>
             {menuItems(menu).map((item, i) => (
               <li key={i}><NavItemLink menu={menu} item={item} className={link}>{item.label}</NavItemLink></li>

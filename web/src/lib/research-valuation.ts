@@ -213,7 +213,7 @@ export function profitDriverProse(a: any, d = profitDrivers(a)): string[] {
   const [r0, r1] = d.rndShare;
   if (isNum(g0) && isNum(g1) && isNum(r0) && isNum(r1)) {
     out.push(
-      `Gross margin moved from ${pc(g0!, 1)} to ${pc(g1!, 1)}, while research and development fell from ${pc(r0!, 1)} of revenue to `
+      `Gross margin moved from ${pc(g0!, 1)} to ${pc(g1!, 1)}, while research and development ${r1! < r0! ? 'fell' : 'rose'} from ${pc(r0!, 1)} of revenue to `
       + `${pc(r1!, 1)}${r1! < r0! ? ': the spending rose, but revenue rose faster' : ''}. ${r1! < r0! && g1! >= g0!
         ? 'A richer gross margin and a lighter cost base on top of it is operating leverage working in both directions at once.'
         : g1! < g0! ? 'The margin gain came below the gross line, from spreading fixed costs over more revenue, not from pricing.' : ''}`.trim(),

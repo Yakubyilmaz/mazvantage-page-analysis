@@ -13,3 +13,9 @@ tools/letters/work/
 
 # Document corpus: raw filings and the SQLite store are rebuilt from the sources
 tools/corpus/work/
+
+# Narrative briefs written for in-session drafting
+tools/narrative/work/
+
+# Research playbook: connector replies, call texts and saved pages (copyrighted sources stay local)
+tools/research/work/

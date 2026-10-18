@@ -297,7 +297,7 @@ export function EconomyIndicators({ data, status, loadRange }: { data: SeriesMap
     (e.currentTarget.parentElement?.children[next] as HTMLElement | undefined)?.focus();
   };
   return (
-    <section id="economy-chart" aria-label="United States indicator charts" className="grid scroll-mt-[126px] gap-5">
+    <section id="economy-chart" aria-label="United States indicator charts" className="grid min-w-0 scroll-mt-[126px] grid-cols-[minmax(0,1fr)] gap-5">
       <Carousel label="United States indicator series" className="gap-2">
         {list.map((entry, i) => {
           const on = entry.name === chosen.name;

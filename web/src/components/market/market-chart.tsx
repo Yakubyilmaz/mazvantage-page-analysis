@@ -18,6 +18,7 @@ import { Maximize2, Minimize2 } from 'lucide-react';
 import { fetchFor, getApiKey, type FeedResult } from '@/lib/fmp';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { useDataEpoch } from '@/components/providers';
+import { useNav } from '@/components/nav-context';
 import { cn } from '@/lib/cn';
 
 export const RANGES = ['1D', '1M', '3M', '6M', 'YTD', '1Y', '5Y', 'ALL'] as const;
@@ -31,7 +32,13 @@ export interface ChartMeta {
   currency?: string;
   quote?: { price?: number | null; previousClose?: number | null };
   onOpen?: (symbol: string) => void;
+  /** false where the chart already sits on the instrument's own page */
+  report?: boolean;
 }
+
+/** Instruments with a page of their own: companies and funds. Indices, futures, bonds and currencies have none. */
+const REPORT_KINDS = new Set(['stock', 'equity', 'etf', 'fund']);
+const hasReport = (m: ChartMeta) => m.report !== false && REPORT_KINDS.has(String(m.kind || '').toLowerCase());
 
 interface Row { date: string; startDate?: string; close: number; open: number | null; high: number | null; low: number | null }
 
@@ -252,13 +259,17 @@ function ChartBody({
   const lastClose = rows[rows.length - 1]?.close;
   const gid = React.useId().replace(/:/g, '');
 
+  const nav = useNav();
+  // A company or fund opens its page from the chart: the name is a link, and so is the button beside the tools.
+  const open = meta.onOpen || (hasReport(meta) ? (sym: string) => nav.goSymbol(sym) : null);
+  const fund = ['etf', 'fund'].includes(String(meta.kind || '').toLowerCase());
   const tools = 'inline-flex size-[34px] items-center justify-center rounded-md p-2 text-muted-foreground hover:bg-foreground/[.07] hover:text-foreground disabled:opacity-35 disabled:hover:bg-transparent max-sm:size-[29px] max-sm:p-1.5';
 
   return (
     <div className="w-full min-w-0 tnum">
       <div className="flex items-start justify-between gap-4 px-0.5 pt-[21px] max-sm:gap-2 max-sm:pt-4">
         <div>
-          <button type="button" disabled={!meta.onOpen} onClick={() => meta.onOpen?.(meta.symbol)}
+          <button type="button" disabled={!open} onClick={() => open?.(meta.symbol)}
             className="text-left text-sm font-semibold leading-normal enabled:hover:text-primary max-sm:text-tiny">
             {meta.name || meta.symbol}{meta.name && meta.name !== meta.symbol ? ` · ${meta.symbol}` : ''}
           </button>
@@ -273,6 +284,12 @@ function ChartBody({
           </div>
         </div>
         <div className="flex items-center gap-1" role="group" aria-label="Chart appearance">
+          {open && hasReport(meta) ? (
+            <button type="button" onClick={() => open(meta.symbol)} aria-label={`Open the ${meta.symbol} ${fund ? 'fund' : 'stock'} page`}
+              className="mr-2 inline-flex h-[34px] items-center gap-1 whitespace-nowrap rounded-md border border-border px-3 text-13 font-semibold text-primary hover:bg-primary/[.06] max-sm:mr-1 max-sm:h-[29px] max-sm:px-2 max-sm:text-tiny">
+              {meta.symbol} {fund ? 'fund' : 'stock'} page <span aria-hidden="true">›</span>
+            </button>
+          ) : null}
           <button type="button" title="Area chart" aria-label="Area chart" aria-pressed={effectiveStyle === 'area'} onClick={() => setStyle('area')}
             className={cn(tools, effectiveStyle === 'area' && 'bg-foreground/[.07] text-foreground')}>
             <svg viewBox="0 0 24 24" className="size-[19px]" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round"><path d="M3 17l5-6 4 3 8-10M3 21h18" /></svg>

@@ -52,7 +52,7 @@ export const useDataEpoch = () => React.useContext(EpochContext);
 
 export interface LoadedReport {
   ds: Dataset;
-  extras: { peerRatios?: Record<string, any>; peerGrowth?: Record<string, any>; benchmarks?: Record<string, any> } | null;
+  extras: { peerRatios?: Record<string, any>; peerGrowth?: Record<string, any>; peerMetrics?: Record<string, any>; benchmarks?: Record<string, any> } | null;
 }
 
 const ReportContext = React.createContext<{

@@ -542,3 +542,16 @@ ETFs and economy ahead of, so none of it ever rendered in the legacy app.
   unchanged and passing on 29 companies.
 - **Verified in the browser:** the AI chain's 19 company rows, NVDA's and MOD's bull and bear blocks, 375px.
   **Not verified:** the live call read (no key here).
+
+## Why it's moving, and the zakat calculator (2026-10-17)
+
+| Feature | Where | Logic | Tests |
+|---|---|---|---|
+| **Why it's moving**: one line under the price on every report tab. The session's move, set against the market fund and the sector fund and the stock's own typical day (60 sessions); then what was published between the last two closes: results, the ex-dividend date, rating changes, the company's releases and the press (read by `news-events.ts`). "What we matched" lists each item with its source. | `components/report/why-moving.tsx`, mounted in `report-shell.tsx` | `lib/why-moving.ts` | `tests/why-moving.test.ts` (15, including AAPL on 9 Oct 2026 from the bundled copy) |
+| **Zakat calculator**: Shariah → Zakat (`/shariah/zakat`, menu item "Zakat Calculator"). Holdings from a watchlist's share counts or added on the page; each marked Keep or Sell; long-term holdings counted by the company's zakatable assets, 30% of market value, or dividends only; other wealth less debts due now; nisab on 85 g gold or 595 g silver; lunar 2.5% or solar 2.5% × 365 ÷ 354. Settings stay in the browser (`mazvantage.zakat`). | `components/pages/zakat-calculator.tsx`, a tab in `shariah-page.tsx` | `lib/zakat.ts` | `tests/zakat.test.ts` (9, including NVIDIA's look-through share) |
+
+Rules both keep:
+- **Why it's moving matches dates; it never claims a cause.** It leads with results, then a dividend that accounts for most of a fall, then a rating change or story whose verb points the way the price went. A story pointing the other way is listed, never led with. A feed that did not load is named ("Not read"), never read as "no news". When the saved quote is older than the daily closes (AAPL's is 21 Aug), the line reads the closes and says so.
+- **Rating changes are an on-demand feed**: the strip fetches them once (live, else the saved copy). Intraday, the two fund quotes are one batch request.
+- **The zakat methods are the published rulings', and the page picks none**: the International Islamic Fiqh Academy's Resolution 28 (3/4), 1988, and the Fiqh Council of North America's ruling on stocks, both linked on the page. A balance-sheet line the data lacks counts as zero and is named, so a look-through share is a floor. Without a metal price, the nisab is untested and no amount is shown. The gold and silver price per gram comes from the futures quote per troy ounce when live, and is otherwise typed.
+- The model-written version of the line (Haiku, from the same matched items) is not built: there is no model service. The rule-based line stands on its own.

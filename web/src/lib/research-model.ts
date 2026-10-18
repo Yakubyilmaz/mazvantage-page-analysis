@@ -91,6 +91,7 @@ import { isNum, money, num, pct, mult, price, dec, mean, median, stdev, cagr, cu
 import { allFairValues } from './valuation-models';
 import { MAX_SCORE, verdictWord, verdictTone } from './grading';
 import { FACTOR_KEYS, FACTOR_BY_KEY } from './factors';
+import { valuationParameters } from './research-valuation';
 
 /* ==========================================================================
    1. THE RATINGS MODEL
@@ -718,7 +719,7 @@ function shortName(f: any) {
  * year. The forecast's own headline is the median year-on-year step (robust to
  * one bad year), which is not a compound rate and must not be called one.
  */
-const consensusCagr = (fc: any, field: 'revenue' | 'eps') => {
+export const consensusCagr = (fc: any, field: 'revenue' | 'eps') => {
   const b = fc?.base?.[field];
   const t = fc?.target?.[field];
   return isNum(b) && isNum(t) && b > 0 && t > 0 && fc.span > 0 ? cagr(b, t, fc.span) : null;
@@ -761,10 +762,9 @@ export function analystNote(a: any, r: any) {
     ]).replace(/ \./, '.'));
   }
 
-  const best = a.rewards?.[0];
-  const worst = a.risks?.[0];
-  if (best) bullets.push(best);
-  if (worst) bullets.push(worst);
+  const bb = bullsBears(a, r);
+  if (bb.bulls[0]) bullets.push(bb.bulls[0]);
+  if (bb.bears[0]) bullets.push(bb.bears[0]);
 
   if (isNum(a.forecast.revenueGrowth) || isNum(a.forecast.epsGrowth)) {
     bullets.push(join([
@@ -910,15 +910,17 @@ export function moatProse(a: any, r: any) {
       : null,
   ]));
 
-  if (m.key === 'wide') {
-    paras.push('A company that out-earns its cost of capital that consistently is either '
-      + 'protected by something — a brand, a patent estate, switching costs, a cost position '
-      + 'rivals cannot match — or is about to attract the competition that removes the excess. '
-      + 'The persistence of the record is the evidence for the former.');
-  } else if (m.key === 'narrow') {
-    paras.push('The excess return is real but not emphatic: either the margin over the cost of '
-      + 'capital is thin, or the record has gaps in it. That is the profile of a business with a '
-      + 'defensible position rather than an unassailable one.');
+  if (m.key === 'wide' || m.key === 'narrow') {
+    const ev = moatEvidence(a);
+    paras.push(join([
+      m.key === 'wide'
+        ? 'A company that out-earns its cost of capital that consistently is either protected by something or about to attract the competition that removes the excess.'
+        : 'The excess return is real but not emphatic: the margin over the cost of capital is thin, or the record has gaps in it.',
+      ev.sources.length
+        ? `On the accounts, the likeliest sources of the record: ${ev.sources.join('; ')}. That is an inference from the figures, not a finding: the filings say what the business earns, not why.`
+        : 'The accounts do not point to an obvious source: neither the gross margin, the research budget nor the capital intensity stands far from the sector’s, which makes the record harder to explain and harder to rely on.',
+    ]));
+    if (ev.threats.length) paras.push(`What would erode it shows in the same figures: ${ev.threats.join('; ')}.`);
   } else {
     paras.push('On this evidence the company does not earn more on its capital than that capital '
       + 'costs, at least not durably. That is not a judgement on the business — plenty of '
@@ -1033,6 +1035,9 @@ export function fairValueProse(a: any, r: any) {
     }
   }
 
+  const weight = modelWeightProse(a, fve, cur);
+  if (weight) paras.push(weight);
+
   paras.push('No fair value on this page feeds any letter grade anywhere in this report. That is '
     + 'a deliberate separation: a valuation is a set of assumptions the reader chooses, and '
     + 'letting a chosen assumption move a sector-relative grade would make the grade mean '
@@ -1040,6 +1045,184 @@ export function fairValueProse(a: any, r: any) {
     + 'one reading built from it, and it is labelled as such.');
 
   return paras;
+}
+
+/* ---------- which models deserve weight ------------------------------------ */
+
+/**
+ * The reading the model table leaves to the reader: the cash flow model that
+ * rests least on its terminal value leans most on the consensus years, the
+ * one that rests most on it is the least reliable, and the multiples price
+ * the company at its sector's median. Null when there are too few models.
+ */
+export function modelWeightProse(a: any, fve: any, cur: string) {
+  if (!fve?.models?.length) return null;
+  const p = valuationParameters(a, fve);
+  const dcfs = p.rows.filter((x) => x.family === 'dcf' && isNum(x.terminalShare)).sort((x, y) => x.terminalShare! - y.terminalShare!);
+  const multiples = p.rows.filter((x) => x.family === 'multiple');
+  if (dcfs.length < 2 && !multiples.length) return null;
+  const parts: string[] = ['Not every model deserves equal weight.'];
+  if (dcfs.length >= 2) {
+    const lo = dcfs[0], hi = dcfs[dcfs.length - 1];
+    parts.push(`${lo.label}, at ${price(lo.value, cur)}, rests least on its terminal value (${pct(lo.terminalShare, { dp: 0 })} of the total), `
+      + `so it leans most on what analysts actually forecast; ${hi.label}, at ${price(hi.value, cur)}, rests ${pct(hi.terminalShare, { dp: 0 })} `
+      + 'on its terminal value and is the least reliable of the cash flow models.');
+  }
+  if (multiples.length) {
+    parts.push(`The multiples (${listOf(multiples.map((x) => `${x.label} at ${price(x.value, cur)}`))}) price the company at its sector’s `
+      + 'median multiple, so they say what the business would be worth if it were valued like the sector, and nothing about growth beyond it.');
+  }
+  return parts.join(' ');
+}
+
+/* ---------- bulls say / bears say -------------------------------------------- */
+
+/** Ratios in one family say one thing: four returns on capital are one strength, not four. */
+const family = (m: any) => (/return on|roe\b|roic|fwdRoe|roeGrowth/i.test(`${m.id} ${m.label}`) ? 'returns'
+  : /debt|altman|interest|current ratio|quick|cash ratio|piotroski/i.test(`${m.id} ${m.label}`) ? 'balance'
+    : /margin/i.test(m.label) ? 'margin' : m.factor);
+
+/** Every graded ratio with its factor, strongest first. */
+function graded(a: any) {
+  const all: any[] = [];
+  for (const k of FACTOR_KEYS) {
+    for (const g of a.scores?.[k]?.groups || []) {
+      for (const m of g.metrics || []) if (m.state === 'ok' && isNum(m.grade) && isNum(m.value)) all.push({ ...m, factor: k });
+    }
+  }
+  return all.sort((x, y) => y.grade - x.grade);
+}
+
+function ratioLine(m: any, sector: string) {
+  const v = m.fmt ? m.fmt(m.value) : String(m.value);
+  const med = isNum(m.median) && m.fmt ? m.fmt(m.median) : null;
+  const p = m.pctile;
+  const where = !isNum(p) ? `against the ${sector} sector`
+    : p >= 0.99 ? `at the very top of the ${sector} sector`
+      : p <= 0.01 ? `at the very bottom of the ${sector} sector`
+        : p >= 0.5 ? `ahead of ${pct(p, { dp: 0 })} of the ${sector} sector` : `behind ${pct(1 - p, { dp: 0 })} of the ${sector} sector`;
+  return `${m.label}: ${v}, ${where}${med ? ` (median ${med})` : ''}.`;
+}
+
+/* The ratios a reader knows by name lead; a size figure (cash from operations
+   in dollars) is a rank of scale, not of quality, and stays out. */
+const HEADLINE = /^(returnOnInvestedCapital|returnOnEquity|grossMargin|netMargin|operatingMargin|ebitdaMargin|revenueGrowth\w*|epsDilutedGrowth|fwdRevenueGrowth|fwdEpsGrowth|peGaapTtm|peFwd\w*|evToEbitdaTtm|priceToSalesTtm|fcfYieldTtm|netDebtToEbitda|debtToEquity|currentRatio|interestCoverage\w*|altmanZScore|piotroski\w*)$/;
+const SIZE = /^(cashFromOperations|revenueTtm|netIncomeTtm|marketCap|ebitdaTtm|freeCashFlowTtm)$/;
+// Return on invested capital before return on equity: it counts debt and equity alike, so buybacks cannot flatter it.
+const boost = (m: any) => (SIZE.test(m.id) ? -9 : m.id === 'returnOnInvestedCapital' ? 0.7 : HEADLINE.test(m.id) ? 0.6 : 0);
+
+/**
+ * Three strengths and three weaknesses, each one point with its figure. The
+ * graded ratios supply most of them, at most one per family, so a company
+ * with four excellent returns on capital gets one sentence on returns and
+ * room for the rest; the moat record, the consensus, the earnings record, the
+ * valuation and the concentrations supply the others.
+ */
+export function bullsBears(a: any, r: any) {
+  const f = a.facts;
+  const cur = curSymbol(f.currency);
+  const sector = f.sector || 'its';
+  const name = shortName(f);
+  const all = graded(a);
+  type C = { fam: string; strength: number; text: string };
+  const bulls: C[] = [];
+  const bears: C[] = [];
+
+  for (const m of all) if (m.grade >= 3.75 && !SIZE.test(m.id)) bulls.push({ fam: family(m), strength: m.grade + boost(m), text: ratioLine(m, sector) });
+  for (const m of [...all].reverse()) if (m.grade <= 1.5 && !SIZE.test(m.id)) bears.push({ fam: family(m), strength: 5 - m.grade + boost(m), text: ratioLine(m, sector) });
+
+  const mo = r?.moat;
+  if (mo?.key === 'wide' && isNum(mo.avgSpread)) {
+    bulls.push({ fam: 'returns', strength: 4.9, text: `Return on invested capital has beaten the cost of capital in ${mo.positive} of the last ${mo.years} filed years, by ${pct(mo.avgSpread)} on average.` });
+  }
+  const epsCagr = consensusCagr(a.forecast, 'eps');
+  if (isNum(epsCagr) && epsCagr >= 0.10 && a.forecast?.target?.year) {
+    bulls.push({ fam: 'forecast', strength: 4.2, text: `Analysts expect earnings per share to compound at ${pct(epsCagr)} a year through ${a.forecast.target.year}.` });
+  } else if (isNum(epsCagr) && epsCagr < 0 && a.forecast?.target?.year) {
+    bears.push({ fam: 'forecast', strength: 4.2, text: `Analysts expect earnings per share to shrink by ${pct(-epsCagr)} a year through ${a.forecast.target.year}.` });
+  }
+  const s = a.surprises;
+  if (s && isNum(s.beatRate) && s.scored >= 8 && s.beatRate >= 0.85) {
+    bulls.push({ fam: 'record', strength: 3.9, text: `${name} has met or beaten the earnings consensus in ${s.beats} of the last ${s.scored} quarters.` });
+  }
+  const z = r?.zone;
+  if (isNum(z?.ratio) && isNum(r?.fve?.value)) {
+    if (z.label === 'Overvalued') bears.push({ fam: 'valuation', strength: 4.8, text: `At ${price(f.price, cur)} the shares trade ${pct(z.ratio - 1, { dp: 0 })} above our ${price(r.fve.value, cur)} fair value estimate, past the line at which they read overvalued.` });
+    if (z.label === 'Undervalued') bulls.push({ fam: 'valuation', strength: 4.8, text: `At ${price(f.price, cur)} the shares trade ${pct(1 - z.ratio, { dp: 0 })} below our ${price(r.fve.value, cur)} fair value estimate.` });
+  }
+  const seg = a.segments?.product?.latest;
+  if (seg?.total > 0 && seg.parts?.[0] && seg.parts[0].value / seg.total > 0.5) {
+    bears.push({ fam: 'concentration', strength: 4.3, text: `${pct(seg.parts[0].value / seg.total)} of revenue comes from ${seg.parts[0].name} alone, so a forecast for the company is largely a forecast for that line.` });
+  }
+  if (isNum(f.netDebtToEbitda) && f.netDebtToEbitda > 3) {
+    bears.push({ fam: 'balance', strength: 4.4, text: `Net debt is ${mult(f.netDebtToEbitda)} EBITDA, which leaves little room for a bad year.` });
+  }
+  if (isNum(a.momentum?.drawdown) && a.momentum.drawdown > 0.3) {
+    bears.push({ fam: 'momentum', strength: 3.8, text: `The shares have fallen ${pct(a.momentum.drawdown)} peak to trough inside the last year.` });
+  }
+
+  const pick = (xs: C[]) => {
+    const out: string[] = [];
+    const seen = new Set<string>();
+    for (const c of [...xs].sort((x, y) => y.strength - x.strength)) {
+      if (seen.has(c.fam)) continue;
+      seen.add(c.fam);
+      out.push(c.text);
+      if (out.length === 3) break;
+    }
+    return out;
+  };
+  return { bulls: pick(bulls), bears: pick(bears) };
+}
+
+/* ---------- where a moat could come from -------------------------------------- */
+
+/**
+ * What in the accounts could explain an excess return, and what in them
+ * could erode it. Each is a reading of a figure against a threshold, said as
+ * an inference, never as a finding.
+ */
+export function moatEvidence(a: any) {
+  const rows: any[] = (a.series?.rows || []).filter((x: any) => isNum(x.revenue) && x.revenue > 0);
+  const last = rows.at(-1) || {};
+  const gm = isNum(last.grossMargin) ? last.grossMargin : a.facts?.grossMargin;
+  const gmMed = a.lookup?.medianFor?.('grossMargin');
+  const rnd = isNum(last.rnd) ? last.rnd / last.revenue : null;
+  const capex = isNum(last.capex) ? last.capex / last.revenue : null;
+  const sources: string[] = [];
+  const threats: string[] = [];
+
+  if (isNum(gm) && isNum(gmMed) && gm > gmMed + 0.15) {
+    sources.push(`a gross margin of ${pct(gm)} against a sector median of ${pct(gmMed)}, the mark of pricing power or a cost position rivals do not match`);
+  }
+  if (isNum(rnd) && rnd >= 0.1) {
+    sources.push(`research and development of ${pct(rnd)} of revenue, which points to an advantage built on technology that has to be paid for every year`);
+  }
+  if (isNum(capex) && capex < 0.04) {
+    sources.push(`capital spending of ${pct(capex)} of revenue, an asset-light model in which growth needs little new capital`);
+  }
+  const seg = a.segments?.product?.latest;
+  const recurring = seg?.parts?.find((x: any) => /service|subscri|cloud|software|licens|recurring/i.test(x.name));
+  if (recurring && seg.total > 0 && recurring.value / seg.total >= 0.15) {
+    sources.push(`a ${recurring.name} line worth ${pct(recurring.value / seg.total)} of revenue, earned from customers already won`);
+  }
+
+  if (seg?.total > 0 && seg.parts?.[0] && seg.parts[0].value / seg.total > 0.4) {
+    threats.push(`${pct(seg.parts[0].value / seg.total)} of revenue rests on ${seg.parts[0].name}, so the moat is only as durable as that line`);
+  }
+  const roic = rows.filter((x) => isNum(x.roic)).slice(-4);
+  if (roic.length >= 3 && roic[roic.length - 1].roic < roic[0].roic - 0.05) {
+    threats.push(`return on invested capital has fallen from ${pct(roic[0].roic)} to ${pct(roic[roic.length - 1].roic)} over the last ${roic.length - 1} years`);
+  }
+  const margins = rows.slice(-5).map((x) => x.grossMargin).filter(isNum);
+  const sd = margins.length >= 4 ? stdev(margins) : null;
+  if (isNum(sd) && sd > 0.05) {
+    threats.push(`the gross margin has swung by a standard deviation of ${pct(sd)} in five years, which a durable advantage would not allow`);
+  }
+  if (isNum(rnd) && rnd >= 0.1) {
+    threats.push('the research budget is a cost of keeping the position, and the position lasts only while it is paid');
+  }
+  return { sources, threats };
 }
 
 /* ---------- risk prose ------------------------------------------------------ */

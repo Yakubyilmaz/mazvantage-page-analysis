@@ -232,7 +232,7 @@ home, 241 KB of shell shared by all. In order of payoff:
 ## 9. Not started (owner's backlog)
 
 From the competitor gap analysis (all 16 "group 1" features are built; see `web/PORTING.md`):
-- **Group 2, AI layer:** chat, auto-reports, call summaries, "why is it moving".
+- **Group 2, AI layer:** chat, auto-reports, call summaries. ("Why is it moving" is built, rule-based, 2026-10-17: `lib/why-moving.ts`.)
 - **Group 3, accounts and backend:** alerts, rating history, track records, PDF, sync.
 - **Group 4, data FMP lacks:** options, short interest, pre-market, estimate revisions.
 - **Group 5:** excluded on purpose.

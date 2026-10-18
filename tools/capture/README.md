@@ -223,3 +223,26 @@ ratio, key-metric and growth rows. The market and sector benchmark series are
 copied from AAPL's snapshot, since both companies sit in Technology. Feeds a
 live session pulls that are not here (dividends, earnings history, insider
 and institutional data, news) show their usual "not available" notice.
+
+---
+
+## 3. The Research tab's captures (2026-10-12)
+
+Four more files in `web/public/data/`, each a capture with its date on it. All
+connector replies were recovered byte-for-byte from the session log, never retyped.
+
+| File | What | Source | Refresh |
+| --- | --- | --- | --- |
+| `consensus-ledger.json` | Dated captures of the analyst consensus per fiscal year (revenue, EPS, low/high, analyst counts), target consensus, rating counts; plus `reported` quarters for symbols whose snapshot has no `earnings` feed | AAPL 24 Aug 2026 (git `2f6051b` snapshot), AAPL 9 Oct (bundled snapshot, estimates only), AAPL + NVDA 12 Oct (`analyst-estimates`, `price-target-consensus`, `grades-consensus`), NVDA 10 Oct (bundled snapshot) | `python tools/capture/consensus_ledger.py live AAPL NVDA` with `FMP_API_KEY` set, daily. The history only exists if this runs. |
+| `history/<SYMBOL>.json` | Ten years of daily closes, split-adjusted (`historical-price-eod/light`) | Connector, 12 Oct 2026, last close 9 Oct | Re-capture, or a live key replaces it |
+| `ownership.json` | 13F top holders and holder summary for the quarter ended 30 Jun 2026; NVDA insider statistics | `filings-extract-with-analytics-by-holder`, `positions-summary`, `insider-trade-statistics`, 12 Oct 2026 | After each 13F deadline (45 days after quarter end) |
+| `NVDA.json` (folded) | `gradesHistorical`, `targetSummary` | Connector, 12 Oct 2026, via `fold_alpha_refresh.py` | With the snapshot |
+
+NVIDIA's earnings rows go in the ledger's `reported`, not in its snapshot:
+adding an `earnings` feed to the snapshot would rate `peNonGaapTtm` and move the
+quant rating the edition on record was graded on.
+
+The guidance and pay records (`web/src/lib/guidance.ts`), debates
+(`web/src/lib/debates.ts`) and market-share tables (`web/src/lib/industry.ts`)
+are read by hand from primary sources (earnings call transcripts, DEF 14A
+proxies, IDC and TrendForce releases); each record names its source.

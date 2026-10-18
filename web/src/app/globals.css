@@ -281,4 +281,78 @@
   .no-print {
     display: none !important;
   }
+  /* The black side rail never prints, and without it the frame is one column. */
+  [data-sidenav] {
+    display: none !important;
+  }
+  [data-app-frame] {
+    display: block !important;
+  }
+}
+
+/* ---------- the Research report on paper ----------------------------------
+   A4, the report alone: the company head and the saved-copy banner give way
+   to the report's own running head, the sticky contents column flows as the
+   first page's left column, and exhibits, tables, quotes and headings never
+   split across a page. Page numbers sit in the bottom margin where the
+   browser supports margin boxes (Chrome and Edge). */
+@page {
+  size: A4;
+  margin: 15mm 13mm 17mm;
+}
+/* The footer's mark and name are set by the Research tab itself
+   (`PrintBrand`), so they come from the brand module rather than this file. */
+@media print {
+  body:has(:not([hidden]) > [data-print="report"]) [data-print-hide],
+  body:has(:not([hidden]) > [data-print="report"]) .print-hide-report {
+    display: none !important;
+  }
+  body:has(:not([hidden]) > [data-print="report"]) {
+    background: #fff;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  [data-print="report"] {
+    max-width: none !important;
+    padding: 0 !important;
+    font-size: 10pt;
+  }
+  /* One column on paper: the sidebar runs above the text in two columns, and
+     the report takes the full width of every page after it. */
+  [data-print="report"] [data-print-flow] {
+    display: block !important;
+  }
+  [data-print="report"] aside {
+    position: static !important;
+    column-count: 2;
+    column-gap: 9mm;
+    margin-bottom: 7mm;
+  }
+  [data-print="report"] aside dl {
+    break-inside: avoid-column;
+  }
+  [data-print="report"] aside p.font-bold {
+    break-after: avoid-column;
+  }
+  [data-print="report"] figure,
+  [data-print="report"] table,
+  [data-print="report"] blockquote,
+  [data-print="report"] svg {
+    break-inside: avoid;
+  }
+  [data-print="report"] h2,
+  [data-print="report"] h3 {
+    break-after: avoid;
+  }
+  [data-print="report"] p {
+    orphans: 3;
+    widows: 3;
+  }
+  [data-print="report"] .overflow-x-auto {
+    overflow: visible !important;
+  }
+  [data-print="report"] a {
+    color: inherit;
+    text-decoration: none;
+  }
 }

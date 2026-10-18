@@ -129,6 +129,8 @@ export interface NavMenu {
   label: string;
   blurb?: string;
   items: NavItem[];
+  /** off the rail and the footer, but every route still opens: old links keep working */
+  archived?: boolean;
 }
 
 const screen = (kind: string) => ([label, collection]: [string, string]): NavItem =>
@@ -287,6 +289,8 @@ export const NAV: NavMenu[] = [
       { label: 'Article', sub: 'article', hidden: true },
       // Other houses' outlooks and fund letters, linked at the publisher.
       { label: 'Letters & Outlooks', sub: 'letters' },
+      // Moved from the archived Alpha Signal menu (2026-10-13); its address is unchanged.
+      { label: 'Demand Discovery', view: 'alpha', sub: 'demand' },
       { label: 'Stock Analysis', symbolTab: 'Research' },
       { label: 'Investing Strategy', sub: 'strategy' },
       { label: 'Calculators', sub: 'calculators' },
@@ -351,7 +355,11 @@ export const NAV: NavMenu[] = [
     ],
   },
   {
+    /* Archived 2026-10-13: the scanner, method and limits pages stay
+       reachable by their old links; Demand Discovery moved to Research; a
+       company's reading now sits in its Research report. */
     view: 'alpha',
+    archived: true,
     icon: 'bulb',
     label: 'Alpha Signal',
     blurb: 'Where something measurable has recently changed, and fewer people than usual are '
@@ -364,7 +372,7 @@ export const NAV: NavMenu[] = [
       { label: 'Demand Discovery', sub: 'demand' },
       { label: 'Method & Weights', sub: 'method' },
       { label: 'Limits & Validation', sub: 'limits' },
-      { label: 'On a company', symbolTab: 'Alpha Signal' },
+      { label: 'On a company', symbolTab: 'Research' },
       // The slugs the three tabs also answer to.
       { label: 'Scanner', sub: 'screener', hidden: true },
       { label: 'Methodology', sub: 'methodology', hidden: true },
@@ -376,7 +384,7 @@ export const NAV: NavMenu[] = [
     icon: 'shield',
     label: 'Shariah',
     blurb: 'The compliance screen run across the market rather than one company, with the '
-      + 'method, the purification question, and what the screen cannot test.',
+      + 'method, purification, a zakat calculator, and what the screen cannot test.',
     items: [
       { label: 'Halal Stock Screener', sub: 'screener' },
       { label: 'Top Halal Stocks', sub: 'top' },
@@ -386,12 +394,16 @@ export const NAV: NavMenu[] = [
       { label: 'Compliance Changes', sub: 'changes' },
       { label: 'Shariah Methodology', sub: 'methodology' },
       { label: 'Purification', sub: 'purification' },
+      { label: 'Zakat Calculator', sub: 'zakat' },
       /* Funds, which none of the screens above can reach: a fund has no
          balance sheet of its own. */
       { label: 'Shariah ETFs & Funds', view: 'markets', sub: 'etfs', params: { board: 'tables', table: 'shariah' } },
     ],
   },
 ];
+
+/** The menus the rail and the footer list: everything not archived. */
+export const RAIL_NAV: NavMenu[] = NAV.filter((m) => !m.archived);
 
 /** view slug -> its menu. */
 export const NAV_BY_VIEW: Record<string, NavMenu> = Object.fromEntries(NAV.map((m) => [m.view, m]));

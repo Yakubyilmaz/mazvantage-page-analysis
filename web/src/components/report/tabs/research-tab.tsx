@@ -20,7 +20,7 @@ import * as React from 'react';
 import { curSymbol, dec, fmtDate, isNum, money, mult, num, pct, price, yearOf } from '@/lib/format';
 import { buildPrompt, fetchNarrative } from '@/lib/narrative';
 import {
-  SAFETY_BANDS, analystNote, capitalProse, fairValueProse, moatProse, researchRatings, riskProse, strategyProse,
+  SAFETY_BANDS, analystNote, bullsBears, capitalProse, fairValueProse, moatProse, researchRatings, riskProse, strategyProse,
 } from '@/lib/research-model';
 import { getApiKey } from '@/lib/fmp';
 import type { Analysis } from '@/lib/model';
@@ -32,150 +32,126 @@ import { parameterProse, profitDriverProse, profitDrivers, valuationParameters }
 import { FACTOR_TITLES, comparison, quantPeerParas } from '@/lib/research-peers';
 import { KIND_LABEL, RELATION_LABEL, VOICES, linkOf, voicesFor, type Voice, type VoiceSection } from '@/lib/research-voices';
 import { CONFIDENCE_LABEL, KIND_LABEL as EVENT_KIND, dealMath, eventsFor, type CorpEvent, type EventParty } from '@/lib/events';
+import { TRIGGER_LABEL, earningsNote, editionsFor, readingOf, sinceLastEdition } from '@/lib/research-editions';
+import { CHANGE_LABEL, riskReviewFor } from '@/lib/risk-factors';
+import { discountInputs } from '@/lib/valuation-models';
+import { loadDividendScores, type DivResult } from '@/lib/dividend-grades';
+import { SHARIAH_STANDARDS, shariahVerdict } from '@/lib/shariah';
+import { issuerRecord, screenIssuer } from '@/lib/shariah-issuers';
+import { PREFERRED, SCENARIO_NAME } from '@/lib/shariah-v5';
+import { useNav } from '@/components/nav-context';
+import { BrandMark, Slogan, Wordmark, markDataUri } from '@/components/shell/brand';
+import { BRAND_NAME } from '@/lib/brand';
+import type { VoiceCall } from '@/lib/management-voice';
 import { GradeBar, GradePill } from '@/components/report/grade-parts';
 import { toneForLetter } from '@/lib/grading';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/cn';
-
-type Ratings = ReturnType<typeof researchRatings>;
-type Narrative = { sections: Record<string, any>; model?: string; generatedAt?: string; source?: string } | null;
-
-const SEG_COLORS = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)', 'var(--chart-5)', 'var(--chart-6)', 'var(--muted-foreground)'];
-
-/* ---------- type ------------------------------------------------------------------ */
-
-const Para = ({ children }: { children: React.ReactNode }) =>
-  <p className="mb-3.5 text-[14.5px] leading-[1.75] text-foreground/90 last:mb-0">{children}</p>;
-
-const Small = ({ children, className }: { children: React.ReactNode; className?: string }) =>
-  <p className={cn('text-tiny leading-relaxed text-muted-foreground', className)}>{children}</p>;
-
-const Signed = ({ v }: { v: number | null | undefined }) =>
-  <span className={isNum(v) ? (v >= 0 ? 'text-up' : 'text-down') : ''}>{isNum(v) ? pct(v, { sign: true }) : 'n/a'}</span>;
-
-/** The paragraphs of one section: the narrative's if it wrote this section, else the generated form, which is complete prose. */
-function Prose({ a, nar, k, fallback }: { a: Analysis; nar: Narrative; k: VoiceSection; fallback: string[] }) {
-  const paras = nar?.sections?.[k];
-  const written = Array.isArray(paras) && paras.length > 0;
-  const use: string[] = written ? paras : fallback;
-  // Quotes are anchored to the written narrative's paragraphs; over the generated form they gather at the end.
-  return <WithVoices items={use.map((p, i) => ({ key: i, node: <Para key={i}>{p}</Para> }))} voices={voicesFor(a.facts.symbol, k)} anchored={written} />;
-}
-
-const REL_RULE: Record<string, string> = { confirms: 'border-up', challenges: 'border-down', adds: 'border-muted-foreground/40' };
-const REL_TEXT: Record<string, string> = { confirms: 'text-up', challenges: 'text-down', adds: 'text-muted-foreground' };
-
-/** `2026-07-30` → 30 Jul 2026; a month-only `2026-01` → Jan 2026. */
-const voiceDate = (d: string) => (d.length === 7 ? fmtDate(`${d}-01`, { month: 'short', year: 'numeric' }) : fmtDate(d));
-
-/*
-  One outside voice, set as a pull quote under the paragraph it bears on:
-  whether it confirms, challenges or adds context, who said it and where,
-  then one line of ours on why it is there.
-*/
-function VoiceQuote({ v }: { v: Voice }) {
-  const link = linkOf(v);
-  return (
-    <blockquote className={cn('my-4 ml-1 border-l-[3px] py-0.5 pl-4', REL_RULE[v.relation])}>
-      <p className="text-micro font-semibold uppercase tracking-[.06em] text-muted-foreground">
-        <span className={REL_TEXT[v.relation]}>{RELATION_LABEL[v.relation]}</span> · {KIND_LABEL[v.kind]}
-      </p>
-      <p className="mt-1 font-serif text-[15.5px] italic leading-[1.6] text-foreground">“{v.quote}”</p>
-      <p className="mt-1.5 text-tiny text-muted-foreground">
-        — <span className="font-semibold text-foreground">{v.speaker}</span>{v.role ? `, ${v.role}` : ''} ·{' '}
-        {link ? <a href={link} target="_blank" rel="noopener noreferrer" className="underline decoration-border underline-offset-2 hover:text-foreground">{v.source}</a> : v.source}, {voiceDate(v.date)}
-      </p>
-      <p className="mt-1 text-tiny leading-relaxed text-muted-foreground">{v.note}</p>
-    </blockquote>
-  );
-}
-
-/** Paragraphs with their quotes between them; anything unanchored, or anchored past the end, closes the run. */
-function WithVoices({ items, voices, anchored }: { items: { key: number | string; node: React.ReactNode }[]; voices: Voice[]; anchored: boolean }) {
-  const keys = new Set(items.map((x) => x.key));
-  const placed = anchored ? voices.filter((v) => keys.has(v.after)) : [];
-  const tail = voices.filter((v) => !placed.includes(v));
-  return (
-    <>
-      {items.map((x) => (
-        <React.Fragment key={x.key}>
-          {x.node}
-          {placed.filter((v) => v.after === x.key).map((v, i) => <VoiceQuote key={i} v={v} />)}
-        </React.Fragment>
-      ))}
-      {tail.map((v, i) => <VoiceQuote key={`t${i}`} v={v} />)}
-    </>
-  );
-}
-
-/*
-  Who wrote it, where an analyst report puts the analyst's name. A Morningstar
-  section is signed by a named person; signing generated prose with anything
-  resembling a name would be the one genuinely misleading thing this page
-  could do, so it names the model and the date it wrote.
-*/
-const authorOf = (nar: Narrative) => (nar?.model ? `${nar.model}, for Maz Vantage` : 'Maz Vantage model');
-const dateOf = (a: Analysis, nar: Narrative) => fmtDate(nar?.generatedAt || a.ds.asOf);
-
-/** A section: the title on a rule, the byline beside it, then the argument. */
-function Section({ id, title, a, nar, signed = true, children }: {
-  id: string; title: string; a: Analysis; nar: Narrative; signed?: boolean; children: React.ReactNode;
-}) {
-  return (
-    <section id={id} className="mt-10 scroll-mt-24 border-t border-foreground/80 pt-3 first:mt-0">
-      <h2 className="mb-3 flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
-        <span className="text-[17px] font-bold tracking-[-.01em]">{title}</span>
-        {signed ? <span className="text-tiny text-muted-foreground">{authorOf(nar)}, {dateOf(a, nar)}</span> : null}
-      </h2>
-      {children}
-    </section>
-  );
-}
-
-/** A numbered exhibit, the way broker research carries its charts: title above, source below. */
-function Exhibit({ n, title, source, children }: { n?: number; title: string; source: string; children: React.ReactNode }) {
-  return (
-    <figure className="my-5 border-y border-border py-3">
-      <figcaption className="mb-2 text-13 font-semibold">{n ? `Exhibit ${n}: ` : ''}{title}</figcaption>
-      {children}
-      <Small className="mt-2">Source: {source}</Small>
-    </figure>
-  );
-}
-
-/** A report table: hairline rules, figures right-aligned, no card around it. */
-function DocTable({ head, rows, first = 'Figure' }: { head: string[]; rows: React.ReactNode[][]; first?: string }) {
-  return (
-    <div className="scroll-none overflow-x-auto">
-      <table className="w-full border-collapse text-13 tnum">
-        <thead>
-          <tr className="border-b border-foreground/70">
-            {[first, ...head].map((h, i) => (
-              <th key={i} className={cn('px-2 py-1.5 text-tiny font-semibold text-muted-foreground', i ? 'text-right' : 'text-left')}>{h}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r, i) => (
-            <tr key={i} className="border-b border-border last:border-foreground/70">
-              {r.map((c, j) => <td key={j} className={cn('px-2 py-1.5', j ? 'whitespace-nowrap text-right' : 'text-left')}>{c}</td>)}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
+import {
+  DocTable, Exhibit, NoteHead, Para, Prose, SEG_COLORS, Section, Signed, Small, VoiceQuote, WithVoices,
+  staleTitles, titleList, voiceDate, type Narrative, type Ratings,
+} from '@/components/report/research/doc';
+import { ImpliedSection } from '@/components/report/research/implied-section';
+import { DebatesSection } from '@/components/report/research/debates-section';
+import { debatesFor } from '@/lib/debates';
+import { StreetSection } from '@/components/report/research/street-section';
+import { SensitivityBlock } from '@/components/report/research/sensitivity';
+import { HistorySection } from '@/components/report/research/history-section';
+import { OwnershipSection } from '@/components/report/research/ownership-section';
+import { ManagementSection } from '@/components/report/research/management-section';
+import { IndustryBlock } from '@/components/report/research/industry-block';
+import { marketsFor } from '@/lib/industry';
+import { SignpostsSection } from '@/components/report/research/signposts-section';
+import { AlphaSection } from '@/components/report/research/alpha-section';
 
 /* ---------- the head of the report ---------------------------------------------- */
 
 function RunningHead({ a }: { a: Analysis }) {
   const f = a.facts;
   return (
-    <p className="border-b border-border pb-2 text-micro text-muted-foreground">
-      Maz Vantage Equity Research Report | Report as of {fmtDate(a.ds.asOf)} | Reporting currency: {f.currency || 'n/a'} | Exchange: {f.exchange || 'n/a'}
-    </p>
+    <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-border pb-2 print:hidden">
+      <p className="text-micro text-muted-foreground">
+        Maz Vantage Equity Research Report | {f.name} ({f.symbol}) | Report as of {fmtDate(a.ds.asOf)} | Reporting currency: {f.currency || 'n/a'} | Exchange: {f.exchange || 'n/a'}
+      </p>
+      <button type="button" onClick={() => window.print()} className="text-tiny font-semibold text-primary hover:underline no-print"
+        aria-label="Print the report or save it as a PDF">
+        Print or save as PDF
+      </button>
+    </div>
   );
+}
+
+/*
+  The brand on paper. On screen the report sits inside the site's frame,
+  which carries the logo; printed, that frame is gone, so the first page
+  opens on a masthead (the mark, the name in its own typeface, the slogan)
+  and every page's footer carries the mark and the name. The footer lives in
+  the page margin, where only CSS reaches, so it is written here from the
+  brand module rather than hard-coded in the stylesheet.
+*/
+function PrintBrand({ a }: { a: Analysis }) {
+  const f = a.facts;
+  // Written into a stylesheet as raw text: keep the ticker to ticker characters.
+  const sym = String(f.symbol || '').replace(/[^A-Za-z0-9.\-]/g, '');
+  const footer = `@page {
+  @bottom-left {
+    content: url("${markDataUri('#131722', 9)}") "  ${BRAND_NAME} · Equity Research Report · ${sym} · Not investment advice";
+    font: 7.5pt system-ui, sans-serif;
+    color: #6b7280;
+    vertical-align: middle;
+  }
+  @bottom-right {
+    content: "Page " counter(page) " of " counter(pages);
+    font: 7.5pt system-ui, sans-serif;
+    color: #6b7280;
+    vertical-align: middle;
+  }
+}`;
+  return (
+    <>
+      {/* A raw-text element: set as HTML so the quotes in the CSS are not escaped into entities. */}
+      <style dangerouslySetInnerHTML={{ __html: footer }} />
+      <header className="mb-4 hidden items-end justify-between gap-6 border-b-2 border-foreground pb-3 print:flex">
+        <div className="flex items-center gap-3 text-foreground">
+          <BrandMark className="h-[30px]" title={BRAND_NAME} />
+          <div className="grid gap-1">
+            <Wordmark className="text-[24px]" />
+            <Slogan className="text-[10.5px] text-muted-foreground" />
+          </div>
+        </div>
+        <div className="text-right">
+          <p className="text-[10px] font-semibold uppercase tracking-[.14em] text-muted-foreground">Equity Research Report</p>
+          <p className="mt-0.5 text-[12px] font-semibold">{f.name} ({f.symbol})</p>
+          <p className="text-[10px] text-muted-foreground">
+            Report as of {fmtDate(a.ds.asOf)} · {f.currency || 'n/a'} · {f.exchange || 'n/a'}
+          </p>
+        </div>
+      </header>
+    </>
+  );
+}
+
+/*
+  Printing: the report prints on paper-white whatever the screen theme, so
+  the theme is switched to light for the print and back afterwards. Ctrl+P
+  goes through the same two events as the button.
+*/
+function usePrintInLight() {
+  React.useEffect(() => {
+    const html = document.documentElement;
+    let was: string | null = null;
+    const before = () => {
+      was = html.getAttribute('data-theme');
+      if (was === 'dark') html.setAttribute('data-theme', 'light');
+    };
+    const after = () => {
+      if (was === 'dark') html.setAttribute('data-theme', 'dark');
+      was = null;
+    };
+    window.addEventListener('beforeprint', before);
+    window.addEventListener('afterprint', after);
+    return () => { window.removeEventListener('beforeprint', before); window.removeEventListener('afterprint', after); };
+  }, []);
 }
 
 function HeadStrip({ a, r }: { a: Analysis; r: Ratings }) {
@@ -269,9 +245,10 @@ function PriceVsFairValue({ a, r }: { a: Analysis; r: Ratings }) {
 /* ---------- the left column ----------------------------------------------------- */
 
 const CONTENTS: [string, string][] = [
-  ['rsr-note', 'Analyst Note'], ['rsr-dev', 'Recent Developments'], ['rsr-strategy', 'Business Strategy & Outlook'], ['rsr-bullbear', 'Bulls Say / Bears Say'], ['rsr-quant', 'Quant Rating and Peers'],
-  ['rsr-moat', 'Economic Moat'], ['rsr-fv', 'Fair Value and Profit Drivers'], ['rsr-risk', 'Risk and Uncertainty'],
-  ['rsr-capital', 'Capital Allocation'], ['rsr-fin', 'Financials'], ['rsr-method', 'Research Methodology'],
+  ['rsr-note', 'Analyst Note'], ['rsr-dev', 'Recent Developments'], ['rsr-implied', 'What the Price Implies'], ['rsr-debates', 'Key Debates'], ['rsr-alpha', 'Alpha Signal'], ['rsr-strategy', 'Business Strategy & Outlook'], ['rsr-bullbear', 'Bulls Say / Bears Say'], ['rsr-street', 'Street View'], ['rsr-owners', 'Ownership and Positioning'], ['rsr-quant', 'Quant Rating and Peers'],
+  ['rsr-moat', 'Economic Moat'], ['rsr-fv', 'Fair Value and Profit Drivers'], ['rsr-history', 'Valuation History'], ['rsr-risk', 'Risk and Uncertainty'],
+  ['rsr-mgmt', 'Management’s Record'], ['rsr-capital', 'Capital Allocation'], ['rsr-div', 'Dividend'], ['rsr-shariah', 'Shariah Compliance'], ['rsr-signposts', 'Our Record and Signposts'], ['rsr-fin', 'Financials'],
+  ['rsr-method', 'Research Methodology'],
 ];
 
 function Sidebar({ a, nar }: { a: Analysis; nar: Narrative }) {
@@ -279,14 +256,15 @@ function Sidebar({ a, nar }: { a: Analysis; nar: Narrative }) {
   const go = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   return (
     <aside className="text-13 @3xl:sticky @3xl:top-20 @3xl:self-start">
-      <p className="border-t border-foreground/80 pt-2 text-13 font-bold">Contents</p>
-      <ol className="mt-1.5 grid gap-1">
-        {CONTENTS.filter(([id]) => id !== 'rsr-dev' || eventsFor(f.symbol).length).map(([id, label]) => (
+      <p className="border-t border-foreground/80 pt-2 text-13 font-bold no-print">Contents</p>
+      <ol className="mt-1.5 grid gap-1 no-print">
+        {CONTENTS.filter(([id]) => (id !== 'rsr-dev' || eventsFor(f.symbol).length) && (id !== 'rsr-debates' || debatesFor(f.symbol).length) && (id !== 'rsr-div' || paysDividend(a))).map(([id, label]) => (
           <li key={id}>
             <button type="button" onClick={() => go(id)} className="text-left hover:text-primary hover:underline">{label}</button>
           </li>
         ))}
       </ol>
+      <KeyStats a={a} />
       <p className="mt-5 border-t border-foreground/80 pt-2 font-bold">Sector · Industry</p>
       <p className="mt-1">{f.sector || 'n/a'} · {f.industry || 'n/a'}</p>
       <p className="mt-5 border-t border-foreground/80 pt-2 font-bold">Business Description</p>
@@ -303,7 +281,7 @@ function Sidebar({ a, nar }: { a: Analysis; nar: Narrative }) {
       </dl>
       <Small className="mt-5 border-t border-border pt-2">
         {nar
-          ? `The prose in this report was written by ${nar.model} from a brief of pre-computed figures and was not reviewed by a person before publication. Where prose and tables disagree, the tables are right.`
+          ? `The prose in this report was written by ${nar.model} from a brief of pre-computed figures and was not reviewed by a person before publication.${staleTitles(nar).length ? ` ${titleList(staleTitles(nar))} ${staleTitles(nar).length === 1 ? 'was' : 'were'} written against figures that have since moved, so ${staleTitles(nar).length === 1 ? 'it shows' : 'they show'} the generated form.` : ''} Where prose and tables disagree, the tables are right.`
           : 'The prose in this report is assembled from the figures shown in it. No analyst opinion is expressed.'}
         {' '}This is not investment advice.
       </Small>
@@ -328,7 +306,104 @@ function AnalystNote({ a, r, nar }: { a: Analysis; r: Ratings; nar: Narrative })
         </>
       ) : null}
       <p className="mt-1 text-[14.5px] leading-[1.75]"><b>The bottom line: </b>{n?.bottomLine || gen.bottom}</p>
+      <SinceLastEdition a={a} r={r} />
+      <EarningsNoteBlock a={a} />
+      <EditionHistory a={a} />
     </Section>
+  );
+}
+
+/* ---------- editions ------------------------------------------------------------ */
+
+/** What moved since the last edition, with the reason: written for a recorded edition, built from the figures when today has moved past it. */
+function SinceLastEdition({ a, r }: { a: Analysis; r: Ratings }) {
+  const s = React.useMemo(() => sinceLastEdition(a.facts.symbol, readingOf(a, r), a.facts.currency), [a, r]);
+  if (!s) return null;
+  if (!s.rows.length) {
+    return (
+      <>
+        <NoteHead>Editions</NoteHead>
+        <Para>This is the first edition of this report, written {fmtDate(s.base.date)}. Later editions will say here what moved and why.</Para>
+      </>
+    );
+  }
+  const title = s.against === 'today'
+    ? `What has moved since the ${fmtDate(s.base.date)} edition`
+    : `What changed in this edition, ${fmtDate(s.current!.date)}, against ${fmtDate(s.base.date)}`;
+  return (
+    <>
+      <NoteHead>{title}</NoteHead>
+      {s.prose.map((p, i) => <Para key={i}>{p}</Para>)}
+      <DocTable first="Reading" head={[fmtDate(s.base.date), s.against === 'today' ? 'Today' : fmtDate(s.current!.date)]}
+        rows={s.rows.map((c) => [
+          c.moved ? <b key="l">{c.label}</b> : c.label,
+          <span key="f" className={c.moved ? 'text-muted-foreground line-through decoration-muted-foreground/50' : ''}>{c.from}</span>,
+          c.moved ? <b key="t">{c.to}</b> : c.to,
+        ])} />
+      {s.against === 'today' ? (
+        <Small className="mt-1.5">Today’s figures have moved past the last recorded edition; the reasons above are built from the figures, and a new edition records them with ours.</Small>
+      ) : null}
+    </>
+  );
+}
+
+let savedCalls: Promise<VoiceCall[]> | null = null;
+const loadSavedCalls = () => (savedCalls ||= fetch('/data/management-voice.json')
+  .then((res) => (res.ok ? res.json() : { calls: [] }))
+  .then((f): VoiceCall[] => (Array.isArray(f?.calls) ? f.calls : []))
+  .catch(() => []));
+
+/** The dated note on the latest quarter: results against consensus, the call in management's words, the estimate across it. */
+function EarningsNoteBlock({ a }: { a: Analysis }) {
+  const [calls, setCalls] = React.useState<VoiceCall[] | null>(null);
+  React.useEffect(() => {
+    let live = true;
+    loadSavedCalls().then((c) => { if (live) setCalls(c); });
+    return () => { live = false; };
+  }, []);
+  const note = React.useMemo(() => (calls ? earningsNote(a, calls) : null), [a, calls]);
+  if (!note) return null;
+  return (
+    <>
+      <NoteHead>Earnings note, {fmtDate(note.date)}</NoteHead>
+      {note.paras.map((p, i) => <Para key={i}>{p}</Para>)}
+      {note.outlook.length ? (
+        <>
+          <p className="mb-1.5 text-[14.5px] font-semibold">Looking ahead, in management’s words:</p>
+          {note.outlook.map((o, i) => (
+            <blockquote key={i} className="my-3 ml-1 border-l-[3px] border-muted-foreground/40 py-0.5 pl-4">
+              <p className="font-serif text-[15.5px] italic leading-[1.6] text-foreground">“{o.text}”</p>
+              <p className="mt-1 text-tiny text-muted-foreground">— <span className="font-semibold text-foreground">{o.speaker}</span>, on the call</p>
+            </blockquote>
+          ))}
+        </>
+      ) : null}
+      <Small className="mt-1.5">The call is read by the same rule-based reader as the Alpha Signal tab; quotes are cut at 25 words and the transcript is not stored. Not scored.</Small>
+    </>
+  );
+}
+
+/** Every edition on record, newest first: the report's own past, as a Morningstar report lists its earlier notes. */
+function EditionHistory({ a }: { a: Analysis }) {
+  const eds = editionsFor(a.facts.symbol);
+  const cur = curSymbol(a.facts.currency);
+  if (eds.length < 2) return null;
+  return (
+    <>
+      <p className="mb-1.5 mt-5 text-[14.5px] font-semibold">Editions on record</p>
+      <DocTable first="Edition" head={['Why', 'Quant rating', 'Fair value', 'Price', 'Zone']}
+        rows={eds.map((e) => [
+          <span key="d" className="block min-w-[14rem] whitespace-normal">
+            <b>{fmtDate(e.date)}</b>
+            <span className="block text-tiny text-muted-foreground">{e.headline}</span>
+          </span>,
+          e.triggers.map((t) => TRIGGER_LABEL[t]).join(', '),
+          `${e.quant.verdict} · ${e.quant.letter} · ${isNum(e.quant.score) ? dec(e.quant.score, 2) : 'n/a'}`,
+          isNum(e.fairValue) ? price(e.fairValue, cur) : 'n/a',
+          isNum(e.price) ? price(e.price, cur) : 'n/a',
+          e.zone || 'n/a',
+        ])} />
+    </>
   );
 }
 
@@ -471,7 +546,7 @@ function RecentDevelopments({ a, nar }: { a: Analysis; nar: Narrative }) {
   );
 }
 
-function Strategy({ a, r, nar, ex }: { a: Analysis; r: Ratings; nar: Narrative; ex: number }) {
+function Strategy({ a, r, nar, ex, industryEx }: { a: Analysis; r: Ratings; nar: Narrative; ex: number; industryEx: number }) {
   const seg = a.segments?.product;
   const cur = curSymbol(a.facts.currency);
   return (
@@ -484,13 +559,15 @@ function Strategy({ a, r, nar, ex }: { a: Analysis; r: Ratings; nar: Narrative; 
             valueFmt={(v) => money(v, { currency: cur })} />
         </Exhibit>
       ) : null}
+      <IndustryBlock symbol={a.facts.symbol} ex={industryEx} />
     </Section>
   );
 }
 
-function BullsBears({ a, nar }: { a: Analysis; nar: Narrative }) {
-  const bulls: string[] = nar?.sections?.bulls?.length ? nar.sections.bulls : (a.rewards || []);
-  const bears: string[] = nar?.sections?.bears?.length ? nar.sections.bears : (a.risks || []);
+function BullsBears({ a, r, nar }: { a: Analysis; r: Ratings; nar: Narrative }) {
+  const gen = React.useMemo(() => bullsBears(a, r), [a, r]);
+  const bulls: string[] = nar?.sections?.bulls?.length ? nar.sections.bulls : gen.bulls;
+  const bears: string[] = nar?.sections?.bears?.length ? nar.sections.bears : gen.bears;
   const list = (title: string, items: string[], empty: string) => (
     <>
       <p className="mb-1.5 mt-1 text-[14.5px] font-semibold">{title}</p>
@@ -582,6 +659,7 @@ function FairValue({ a, r, nar, ex }: { a: Analysis; r: Ratings; nar: Narrative;
         </Exhibit>
       ) : null}
       {paramParas.map((p, i) => <Para key={i}>{p}</Para>)}
+      <DiscountInputs a={a} params={params} />
       {params.rows.length ? (
         <Exhibit n={ex + 3} title={`The ${r.fve.count} models in the ${price(r.fve.value, cur)} estimate, and their key input`}
           source="Maz Vantage valuation models on consensus estimates; the estimate is their median and never reaches the quant rating.">
@@ -611,6 +689,7 @@ function FairValue({ a, r, nar, ex }: { a: Analysis; r: Ratings; nar: Narrative;
         </Exhibit>
       ) : null}
       <Cases a={a} />
+      <SensitivityBlock a={a} ex={ex + 5} />
     </Section>
   );
 }
@@ -652,6 +731,176 @@ function Cases({ a }: { a: Analysis }) {
   );
 }
 
+/* ---------- key statistics ------------------------------------------------------ */
+
+/** The figures a broker report prints on its first page, beside the contents. */
+function KeyStats({ a }: { a: Analysis }) {
+  const f = a.facts;
+  const cur = curSymbol(f.currency);
+  const rows: [string, string][] = [
+    ['Last price', isNum(f.price) ? price(f.price, cur) : 'n/a'],
+    ['Market cap', isNum(f.marketCap) ? money(f.marketCap, { currency: cur }) : 'n/a'],
+    ['52-week range', isNum(f.yearLow) && isNum(f.yearHigh) ? `${price(f.yearLow, cur)} – ${price(f.yearHigh, cur)}` : 'n/a'],
+    ['P/E, trailing', isNum(f.pe) && f.pe > 0 ? mult(f.pe) : 'n/a'],
+    ['P/E, forward', isNum(a.val?.peFwd) && a.val.peFwd > 0 ? mult(a.val.peFwd) : 'n/a'],
+    ['Dividend yield', isNum(f.dividendYield) && f.dividendYield > 0 ? pct(f.dividendYield) : 'None'],
+    ['Beta', isNum(f.beta) ? dec(f.beta, 2) : 'n/a'],
+    ['Next earnings', a.quarter?.next ? fmtDate(a.quarter.next) : 'n/a'],
+  ];
+  return (
+    <>
+      <p className="mt-5 border-t border-foreground/80 pt-2 font-bold">Key Statistics</p>
+      <dl className="mt-1.5 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-tiny tnum">
+        {rows.map(([k, v]) => (
+          <React.Fragment key={k}><dt className="text-muted-foreground">{k}</dt><dd className="text-right">{v}</dd></React.Fragment>
+        ))}
+      </dl>
+    </>
+  );
+}
+
+/* ---------- the valuation inputs --------------------------------------------------- */
+
+/** Every input the discounted cash flows share, with where it comes from: what a broker report's valuation table prints. */
+function DiscountInputs({ a, params }: { a: Analysis; params: ReturnType<typeof valuationParameters> }) {
+  const d = React.useMemo(() => discountInputs(a), [a]);
+  if (!d) return null;
+  // The exit multiples, as the models' own key inputs state them: "16.9x EV/EBITDA on 2030 EBITDA, the Technology median".
+  const exits = [...new Set(params.rows.filter((x) => x.family === 'dcf')
+    .map((x) => x.key.match(/^([\d.]+x EV\/\w+)/)?.[1]).filter(Boolean) as string[])];
+  const fc = (a.forecast?.rows || []).filter((x: any) => isNum(x.revenue) && (!isNum(a.forecast?.base?.year) || x.year >= a.forecast.base.year));
+  const rows: [string, string, string][] = [
+    ['Risk-free rate', isNum(d.riskFree) ? pct(d.riskFree) : 'n/a', 'The 10-year Treasury yield, a benchmark rate'],
+    ['Equity risk premium', isNum(d.equityRiskPremium) ? pct(d.equityRiskPremium) : 'n/a', 'What equities are assumed to earn over the risk-free rate'],
+    ['Beta', isNum(d.beta) ? dec(d.beta, 2) : 'n/a', 'The share’s sensitivity to the market, as published'],
+    ['Cost of equity', pct(d.ke), 'Risk-free rate plus beta times the premium (CAPM)'],
+    ['Cost of debt, before tax', pct(d.kd), d.kdFallback ? 'No interest expense is reported, so the risk-free rate plus 1%' : 'Interest expense over total debt'],
+    ['Tax rate', pct(d.tax), 'The effective rate, held between 0% and 50%'],
+    ['Debt weight', pct(d.weightD), 'Total debt over debt plus market value of equity'],
+    ['Discount rate (WACC)', pct(d.wacc), 'The weighted cost of equity and after-tax debt'],
+    ['Terminal growth', pct(d.terminalGrowth), 'Growth assumed after the forecast, for the terminal-growth models'],
+    ['Analyst years used', fc.length ? `${fc.length}, FY${fc[0].year}–FY${fc[fc.length - 1].year}` : 'n/a', 'Consensus rows as published; ten-year models extend from the median step'],
+    ...(exits.length ? [['Exit multiples', exits.join(', '), 'The sector medians, for the exit models'] as [string, string, string]] : []),
+  ];
+  return (
+    <>
+      <p className="mb-1.5 mt-4 text-[14.5px] font-semibold">The inputs behind every discounted cash flow</p>
+      <DocTable first="Input" head={['Value', 'Where it comes from']} rows={rows.map(([k, v, w]) => [
+        k, v, <span key="w" className="block min-w-[14rem] whitespace-normal text-left text-muted-foreground">{w}</span>,
+      ])} />
+      <Small className="mt-1.5">No input is set by hand for this company. Change the benchmark rates in Settings and every model, and the estimate, moves with them.</Small>
+    </>
+  );
+}
+
+/* ---------- dividend ------------------------------------------------------------- */
+
+const paysDividend = (a: Analysis) => !!a.dividends?.available && isNum(a.facts.dividendYield) && a.facts.dividendYield > 0;
+
+/*
+  The dividend, for payers: the record in figures, then the four composites
+  graded against other payers on their own 1-5 scale. No total, as on the
+  Dividends tab: the four are reported side by side by design.
+*/
+function DividendSection({ a }: { a: Analysis }) {
+  const nav = useNav();
+  const [res, setRes] = React.useState<DivResult | null>(null);
+  const pays = paysDividend(a);
+  React.useEffect(() => {
+    if (!pays) return undefined;
+    let live = true;
+    loadDividendScores(a).then((r) => { if (live) setRes(r); }).catch(() => { /* the figures still stand */ });
+    return () => { live = false; };
+  }, [a, pays]);
+  if (!pays) return null;
+  const f = a.facts;
+  const dv = a.dividends;
+  const name = String(f.name || f.symbol).replace(/,?\s+(Inc\.?|Corporation|Corp\.?)$/i, '');
+  const record = [
+    `${name} pays a dividend yielding ${pct(f.dividendYield)}${isNum(f.payoutRatio) ? `, ${pct(f.payoutRatio)} of earnings` : ''}.`,
+    isNum(dv.growth) && dv.years > 1
+      ? `Over the ${dv.years} years on record the dividend per share grew ${pct(dv.growth)} a year${isNum(dv.worstDrop) ? (dv.worstDrop < 0 ? `, and the deepest annual cut was ${pct(-dv.worstDrop)}` : ', without a single annual cut') : ''}.`
+      : null,
+    isNum(a.val?.buybackYield) && a.val.buybackYield > (f.dividendYield || 0)
+      ? `Buybacks return more than the dividend: a ${pct(a.val.buybackYield)} buyback yield against the ${pct(f.dividendYield)} dividend yield.`
+      : null,
+  ].filter(Boolean).join(' ');
+  const factors = res?.pays ? res.order.map((k) => res.factors[k]).filter(Boolean) : [];
+  return (
+    <Section id="rsr-div" title="Dividend" a={a} nar={null} signed={false}>
+      <Para>{record}</Para>
+      {factors.length ? (
+        <DocTable first="Composite" head={['Grade and score (1–5)', 'The question it answers']} rows={factors.map((x) => [
+          x.title,
+          <GradePill key="g" score={x.score} letter={x.letter} />,
+          <span key="q" className="block min-w-[14rem] whitespace-normal text-left text-muted-foreground">{x.question}</span>,
+        ])} />
+      ) : null}
+      <Small className="mt-1.5">
+        Graded against dividend payers only, on their own 1–5 scale, and kept apart from the quant rating. There is no total by design: the
+        four composites answer different questions.{res?.lapsed ? ' The latest expected payment has not arrived; the grades are flagged as lapsing.' : ''}{' '}
+        <button type="button" onClick={() => nav.goSymbolTab('Dividends', f.symbol)} className="font-semibold text-primary hover:underline">Every line behind the grades, on the Dividends tab ›</button>
+      </Small>
+    </Section>
+  );
+}
+
+/* ---------- Shariah compliance --------------------------------------------------- */
+
+/*
+  The verdict in brief, linked to the full screen. A company with a researched
+  record (AAPL) gets that record's summary and the five index families on its
+  figures; every other company gets the quick screen on today's market cap,
+  which the Shariah tab refines with the averaged market caps.
+*/
+function ShariahSection({ a }: { a: Analysis }) {
+  const nav = useNav();
+  const f = a.facts;
+  const record = issuerRecord(f.symbol);
+  const sc = React.useMemo(() => (record ? screenIssuer(record) : null), [record]);
+  const quick = React.useMemo(() => (record ? [] : SHARIAH_STANDARDS.map((std) => shariahVerdict(a, std))), [a, record]);
+  const word = (s: string) => (s === 'pass' ? 'Pass' : s === 'fail' ? 'Fail' : s === 'borderline' ? 'Borderline' : 'Not measured');
+  const tone = (s: string) => (s === 'pass' ? 'text-up' : s === 'fail' ? 'text-down' : 'text-muted-foreground');
+  const link = (
+    <button type="button" onClick={() => nav.goSymbolTab('Shariah Compliance', f.symbol)} className="font-semibold text-primary hover:underline">
+      The full screen, gate by gate, on the Shariah Compliance tab ›
+    </button>
+  );
+  if (record && sc) {
+    const pref = sc.scenarios[PREFERRED];
+    const passed = sc.indexes.filter((x) => x.state === 'pass').length;
+    return (
+      <Section id="rsr-shariah" title="Shariah Compliance" a={a} nar={null} signed={false}>
+        <Para>
+          {record.summary} On Maz Vantage’s preferred reading ({SCENARIO_NAME[PREFERRED]}) the verdict is{' '}
+          <b>{pref.verdict === 'PASS' ? 'pass' : pref.verdict.toLowerCase()}</b>, and {passed} of the {sc.indexes.length} index methodologies pass on
+          the same figures.
+        </Para>
+        <DocTable first="Methodology" head={['Verdict']} rows={[
+          ...sc.indexes.map((x) => [x.rule.name, <b key="v" className={tone(x.state)}>{word(x.state)}</b>]),
+          [<span key="n">Maz Vantage, {SCENARIO_NAME[PREFERRED]}</span>, <b key="v" className={pref.verdict === 'PASS' ? 'text-up' : pref.verdict.startsWith('MIXED') ? 'text-muted-foreground' : 'text-down'}>{pref.verdict === 'PASS' ? 'Pass' : pref.verdict.startsWith('MIXED') ? 'Watch' : 'Fail'}</b>],
+        ]} />
+        <Small className="mt-1.5">Screened {fmtDate(record.screened)} from the company’s SEC filings, methodology {record.version.replace(/^v?/, 'v')}. A mechanical screen, not a scholarly ruling. {link}</Small>
+      </Section>
+    );
+  }
+  const passed = quick.filter((x) => x.state === 'pass').length;
+  return (
+    <Section id="rsr-shariah" title="Shariah Compliance" a={a} nar={null} signed={false}>
+      <Para>
+        On today’s market value, {f.name} passes {passed} of the {quick.length} standards’ financial screens. This is the quick screen: the
+        index families divide by averaged market caps and test revenue line by line, which the Shariah tab does where the history is available.
+      </Para>
+      <DocTable first="Standard" head={['Verdict', 'Deciding test']} rows={quick.map((x) => [
+        x.std.name,
+        <b key="v" className={tone(x.state)}>{word(x.state)}</b>,
+        <span key="n" className="block min-w-[14rem] whitespace-normal text-left text-muted-foreground">{x.note}</span>,
+      ])} />
+      <Small className="mt-1.5">A mechanical screen, not a scholarly ruling. {link}</Small>
+    </Section>
+  );
+}
+
 function Risk({ a, r, nar }: { a: Analysis; r: Ratings; nar: Narrative }) {
   const u = r.unc;
   const read = (p: number | null) => (p === 0 ? 'Contained' : p === 1 ? 'Moderate' : p === 2 ? 'Wide' : 'Not measured');
@@ -668,7 +917,49 @@ function Risk({ a, r, nar }: { a: Analysis; r: Ratings; nar: Narrative }) {
           discount below and a premium above the fair value estimate. It does not touch the quant rating.
         </Small>
       </div>
+      <RiskFactorChanges a={a} />
     </Section>
+  );
+}
+
+/*
+  What the company itself changed in its risk factors between its last two
+  10-Ks: the risks no market measure sees until they happen, in its own
+  filing, with the reading ours. Shown only where a review is on record.
+*/
+function RiskFactorChanges({ a }: { a: Analysis }) {
+  const rv = riskReviewFor(a.facts.symbol);
+  if (!rv) return null;
+  const fy = (y: number) => `FY${y}`;
+  const order = { new: 0, removed: 1, expanded: 2, reworded: 3 } as const;
+  const changes = [...rv.changes].sort((x, y) => order[x.kind] - order[y.kind]);
+  const link = (url: string, label: string) => (
+    <a href={url} target="_blank" rel="noopener noreferrer" className="underline decoration-border underline-offset-2 hover:text-foreground">{label}</a>
+  );
+  return (
+    <>
+      <h3 className="mb-2 mt-7 text-[15px] font-bold">What the company changed in its own risk factors, {fy(rv.current.fiscalYear)} 10-K against {fy(rv.previous.fiscalYear)}</h3>
+      <Para>{rv.summary}</Para>
+      <Para>
+        The {fy(rv.current.fiscalYear)} filing lists {rv.current.count} risk factors against {rv.previous.count}: {rv.counts.sameHeading} kept
+        their heading word for word, {rv.counts.reworded} {rv.counts.reworded === 1 ? 'was' : 'were'} rewritten, {rv.counts.added} {rv.counts.added === 1 ? 'is' : 'are'} new
+        and {rv.counts.dropped} {rv.counts.dropped === 1 ? 'was' : 'were'} dropped. These are the risks the uncertainty rating above cannot see,
+        because none of them is in the market or accounting data until it happens.
+      </Para>
+      <DocTable first="Risk factor" head={['Change', 'What changed']} rows={changes.map((c) => [
+        <span key="s" className="block min-w-[9rem] whitespace-normal"><b>{c.subject}</b><span className="block text-tiny text-muted-foreground">{c.group}</span></span>,
+        CHANGE_LABEL[c.kind],
+        <span key="w" className="block min-w-[16rem] whitespace-normal text-left">
+          {c.what}
+          {c.quote ? <span className="mt-1 block font-serif italic text-foreground/80">“{c.quote}”</span> : null}
+        </span>,
+      ])} />
+      <Small className="mt-1.5">
+        Source: the company’s 10-K filings, {link(rv.current.url, `${fy(rv.current.fiscalYear)}, filed ${fmtDate(rv.current.filed)}`)} and{' '}
+        {link(rv.previous.url, `${fy(rv.previous.fiscalYear)}, filed ${fmtDate(rv.previous.filed)}`)}, Item 1A. Compared heading by heading and sentence by
+        sentence on {fmtDate(rv.readOn)}; which changes matter, and the words describing them, are ours. Quotations are the company’s. Not scored.
+      </Small>
+    </>
   );
 }
 
@@ -878,7 +1169,7 @@ function PromptTools({ a, r }: { a: Analysis; r: Ratings }) {
   };
   if (!operator) return null;
   return (
-    <div className="mt-6 border-t border-border pt-3">
+    <div className="mt-6 border-t border-border pt-3 no-print">
       <Small>
         For the developer: the narrative is loaded by <code>src/lib/narrative.ts</code>, which tries a configured endpoint, then the bundled{' '}
         <code>/data/research.json</code>, then the generated prose. A service that accepts the payload below and returns{' '}
@@ -951,8 +1242,20 @@ function Methodology({ a, r, nar }: { a: Analysis; r: Ratings; nar: Narrative })
       <Para>
         <b>The prose</b>{' '}
         {nar
-          ? `was written by ${nar.model} from a brief of pre-computed figures, under instructions to quote them verbatim and invent nothing. The model was given numbers and asked for prose; it was never asked for a number, and no person reviewed it before publication. A summary can still mislead by emphasis without stating anything false; where the prose and the tables disagree, the tables are right.`
+          ? `was written by ${nar.model} from a brief of pre-computed figures, under instructions to quote them verbatim and invent nothing. The model was given numbers and asked for prose; it was never asked for a number, and no person reviewed it before publication. Every figure and rating it names is checked against the page as it loads, and a section that cites one the page no longer shows is replaced by the generated form${staleTitles(nar).length ? ` (here: ${titleList(staleTitles(nar))})` : ''}. A summary can still mislead by emphasis without stating anything false; where the prose and the tables disagree, the tables are right.`
           : 'is assembled from the numbers in this report. Every sentence is built from a figure shown here, and a sentence whose inputs are missing is not written.'}
+      </Para>
+      <Para>
+        <b>The perspectives beyond our own model.</b> What the Price Implies runs the ten-year discounted cash flow backwards, solving for
+        the growth, margin or return today’s price needs, with every other input as the models set it. Key Debates sets out the
+        questions that decide the value in the words of management, sell-side analysts, fund managers, researchers and competitors, and
+        which side the price already pays for; the debates, the quotes chosen and the readings are ours. Street View reads the analysts’
+        consensus as captured on dated occasions in a ledger built forward from August 2026, so revisions are measured, not inferred.
+        The Alpha Signal section is the reading that had its own tab until October 2026: eleven categories of dated, sourced evidence,
+        grouped into three questions and read on their own 0–100 scale with weights that have not been tested against returns.
+        Ownership comes from 13F and Form 4 filings as filed; Management’s Record compares each call’s guidance with the result and reads
+        the pay goals from the proxy statement; the market-share tables are copied from the researchers’ own free releases. None of
+        these enters the quant rating.
       </Para>
       <OutsideVoices a={a} />
       {a.sectorTable?.quality === 'seed' ? (
@@ -977,6 +1280,7 @@ function Methodology({ a, r, nar }: { a: Analysis; r: Ratings; nar: Narrative })
 export function ResearchTab({ a }: { a: Analysis }) {
   const r = React.useMemo(() => researchRatings(a), [a]);
   const [nar, setNar] = React.useState<Narrative>(null);
+  usePrintInLight();
 
   /* The generated prose renders first; the narrative swaps in when it lands.
      A failure is silent: the generated form is a complete report. */
@@ -987,25 +1291,46 @@ export function ResearchTab({ a }: { a: Analysis }) {
     return () => { live = false; };
   }, [a, r]);
 
-  // Exhibits are numbered in reading order; Exhibit 1 would be the price chart in the head, which carries its own title instead.
+  // Exhibits are numbered in reading order, each section reserving as many numbers as it can draw; Exhibit 1 would be the
+  // price chart in the head, which carries its own title instead. A section that draws fewer leaves a gap, never a repeat.
+  const ex = (() => {
+    let n = 1;
+    const take = (k: number) => { const at = n; n += k; return at; };
+    return {
+      implied: take(2), debates: take(1), alpha: take(4), strategy: take(1), industry: take(marketsFor(a.facts.symbol).length), street: take(4),
+      owners: take(2), quant: take(4), moat: take(1), fv: take(7), history: take(4), mgmt: take(2), capital: take(1),
+      signposts: take(2), fin: take(1),
+    };
+  })();
   return (
-    <article className="@container mx-auto max-w-[1180px] bg-background px-1 pb-10">
+    <article data-print="report" className="@container mx-auto max-w-[1180px] bg-background px-1 pb-10">
+      <PrintBrand a={a} />
       <RunningHead a={a} />
       <HeadStrip a={a} r={r} />
       <PriceVsFairValue a={a} r={r} />
-      <div className="mt-8 grid gap-8 @3xl:grid-cols-[230px_minmax(0,1fr)] @3xl:gap-10">
+      <div data-print-flow className="mt-8 grid gap-8 @3xl:grid-cols-[230px_minmax(0,1fr)] @3xl:gap-10">
         <Sidebar a={a} nar={nar} />
         <div className="min-w-0">
           <AnalystNote a={a} r={r} nar={nar} />
           <RecentDevelopments a={a} nar={nar} />
-          <Strategy a={a} r={r} nar={nar} ex={1} />
-          <BullsBears a={a} nar={nar} />
-          <QuantPeers a={a} nar={nar} ex={2} />
-          <Moat a={a} r={r} nar={nar} ex={6} />
-          <FairValue a={a} r={r} nar={nar} ex={7} />
+          <ImpliedSection a={a} nar={nar} ex={ex.implied} />
+          <DebatesSection a={a} nar={nar} ex={ex.debates} />
+          <AlphaSection a={a} nar={nar} ex={ex.alpha} />
+          <Strategy a={a} r={r} nar={nar} ex={ex.strategy} industryEx={ex.industry} />
+          <BullsBears a={a} r={r} nar={nar} />
+          <StreetSection a={a} nar={nar} ex={ex.street} />
+          <OwnershipSection a={a} nar={nar} ex={ex.owners} />
+          <QuantPeers a={a} nar={nar} ex={ex.quant} />
+          <Moat a={a} r={r} nar={nar} ex={ex.moat} />
+          <FairValue a={a} r={r} nar={nar} ex={ex.fv} />
+          <HistorySection a={a} nar={nar} ex={ex.history} />
           <Risk a={a} r={r} nar={nar} />
-          <Capital a={a} r={r} nar={nar} ex={12} />
-          <Financials a={a} nar={nar} ex={13} />
+          <ManagementSection a={a} nar={nar} ex={ex.mgmt} />
+          <Capital a={a} r={r} nar={nar} ex={ex.capital} />
+          <DividendSection a={a} />
+          <ShariahSection a={a} />
+          <SignpostsSection a={a} r={r} nar={nar} ex={ex.signposts} />
+          <Financials a={a} nar={nar} ex={ex.fin} />
           <Methodology a={a} r={r} nar={nar} />
         </div>
       </div>

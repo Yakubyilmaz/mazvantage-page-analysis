@@ -46,6 +46,9 @@ function saveSnapshot({ ds, extras }: LoadedReport) {
     extras: {
       peerRatios: extras?.peerRatios || {},
       peerGrowth: extras?.peerGrowth || {},
+      // The Research tab's peer comparison reads returns on capital from these; a snapshot without them showed n/a.
+      peerMetrics: extras?.peerMetrics || {},
+      peersCapturedAt: today,
       benchmarks: extras?.benchmarks || {},
     },
     feeds,

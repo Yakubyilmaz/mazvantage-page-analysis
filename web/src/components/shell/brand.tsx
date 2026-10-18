@@ -28,6 +28,17 @@ export function BrandMark({ className, title }: { className?: string; title?: st
   );
 }
 
+/**
+ * The mark as a data URI, for places a component cannot reach: a printed
+ * page's margin boxes take an image through CSS `content: url(…)`, and size
+ * it by the SVG's own width and height.
+ */
+export function markDataUri(color = '#131722', height = 11) {
+  const width = Math.round((height * 4879) / 2693);
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 4879 2693"><path fill="${color}" d="${MARK_D}"/></svg>`;
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}
+
 /** "Maz Vantage", in the logo's typeface. */
 export function Wordmark({ className }: { className?: string }) {
   return <span className={cn('font-brand font-semibold leading-none tracking-[-.005em] whitespace-nowrap', className)}>{BRAND_NAME}</span>;

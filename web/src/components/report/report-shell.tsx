@@ -45,10 +45,10 @@ import { DividendsTab } from '@/components/report/tabs/dividends-tab';
 import { NewsTab } from '@/components/report/tabs/news-tab';
 import { TranscriptsTab } from '@/components/report/tabs/transcripts-tab';
 import { ResearchTab } from '@/components/report/tabs/research-tab';
-import { AlphaTab } from '@/components/report/tabs/alpha-tab';
 import { TechnicalsTab } from '@/components/report/tabs/technicals-tab';
 import { DividendGradeSections } from '@/components/report/dividend-grades';
 import { ReportActions } from '@/components/report/report-actions';
+import { WhyMoving } from '@/components/report/why-moving';
 import { cn } from '@/lib/cn';
 
 /* ---------- tab label -> panel ------------------------------------------------ */
@@ -67,7 +67,6 @@ const PLAIN_TABS: Record<PlainTab, React.ComponentType<PanelProps>> = {
   Transcripts: TranscriptsTab,
   News: NewsTab,
   Research: ResearchTab,
-  'Alpha Signal': AlphaTab,
   // After Momentum, the one factor that also reads prices — but not a factor:
   // nothing on it grades, and it says so at the top.
   Technicals: TechnicalsTab,
@@ -91,7 +90,7 @@ function PriceHead({ a }: { a: Analysis }) {
   const word = consensus.toLowerCase();
   const tone = /strong buy|^buy/.test(word) ? 'bg-up' : /sell/.test(word) ? 'bg-down' : /hold|neutral/.test(word) ? 'bg-warning' : 'bg-muted-foreground';
   return (
-    <div className="flex flex-wrap items-center gap-x-6 gap-y-4 px-6 pb-4 pt-5">
+    <div data-print-hide className="flex flex-wrap items-center gap-x-6 gap-y-4 px-6 pb-4 pt-5">
       <div className="flex min-w-0 items-center gap-3">
         {f.image ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -331,7 +330,7 @@ export function ReportShell({ symbol }: { symbol: string }) {
   const { a, extras, ds } = load;
   // One banner per panel: every tab needs to say the report runs off the snapshot.
   const banner = ds.source !== 'snapshot' ? null : (
-    <Notice error={!!ds.liveError} className="mb-4">
+    <Notice error={!!ds.liveError} className="mb-4 print-hide-report">
       {ds.liveError
         ? <>Live data could not be loaded — <b>{ds.liveError}</b> — so a <b>saved copy</b> of this report is shown instead.</>
         : <>Live data is unavailable right now, so a <b>saved copy</b> of this report is shown. Figures are as of the date it was saved.</>}
@@ -350,6 +349,7 @@ export function ReportShell({ symbol }: { symbol: string }) {
   return (
     <NavOverride override={override}>
       {tab === 'Overview' ? <OverviewHead a={a} /> : <PriceHead a={a} />}
+      <WhyMoving a={a} extras={extras} />
       <div className="overflow-x-auto border-b border-border px-6 scroll-none no-print">
         <div className="inline-flex gap-6">
           {TABS.map((label) => (

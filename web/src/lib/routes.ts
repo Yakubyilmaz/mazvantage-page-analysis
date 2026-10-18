@@ -23,17 +23,16 @@ import { NAV_VIEWS, defaultSub, hasSub } from './nav';
 /**
  * The tab strip under the report head.
  *
- * `Alpha Signal` sits directly after `Ratings`, where the report stops
- * describing what the company *is* and starts describing what has recently
- * happened to it — deliberately not beside the five factor tabs, because it
- * is not a factor and does not grade on the 0-5 scale.
+ * `Alpha Signal` was archived as a tab on 2026-10-13: its reading now sits
+ * inside the Research report (`components/report/research/alpha-section.tsx`),
+ * on the same engine. Its old address opens Research (`ARCHIVED_TABS`).
  *
  * `Insider Trading` sits after `Analysts Forecast` because it holds the other
  * half of the sell side's record — each firm's dated upgrades and downgrades —
  * beside the Form 4s.
  */
 export const TABS = [
-  'Overview', 'Analysis', 'Research', 'Ratings', 'Alpha Signal', 'Financials',
+  'Overview', 'Analysis', 'Research', 'Ratings', 'Financials',
   'Statistics & Metrics', 'Valuation', 'Growth', 'Financial Health',
   'Profitability', 'Momentum', 'Technicals', 'Analysts Forecast', 'Insider Trading', 'Dividends', 'Transcripts', 'News',
   'Shariah Compliance',
@@ -63,9 +62,13 @@ export const TAB_FOR_FACTOR: Record<string, TabLabel> = Object.fromEntries(
    reach the address bar percent-encoded. */
 export const tabSlug = (tab: string) => slugify(tab);
 
+/** Archived tabs, by slug, to the tab that now holds their content: an old link still lands on it. */
+export const ARCHIVED_TABS: Record<string, TabLabel> = { 'alpha-signal': 'Research' };
+
 export function tabFromSlug(slug: string | null | undefined): TabLabel | null {
   if (!slug) return null;
-  return TABS.find((t) => tabSlug(t) === slug.toLowerCase()) ?? null;
+  const s = slug.toLowerCase();
+  return TABS.find((t) => tabSlug(t) === s) ?? ARCHIVED_TABS[s] ?? null;
 }
 
 export const DEFAULT_SYMBOL = 'AAPL';

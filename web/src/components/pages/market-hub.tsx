@@ -184,9 +184,11 @@ function ChartBlock({ quotes, label }: { quotes: any[]; label: string }) {
     const btn = railRef.current?.querySelectorAll<HTMLElement>('[role=tab]')[next];
     btn?.focus(); btn?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
   };
+  // One column pinned to the available width: an auto grid column sizes to the rail's content (every symbol
+  // side by side, thousands of pixels) and pushes the whole page sideways instead of letting the rail scroll.
   return (
-    <div className="grid gap-4">
-      <div ref={railRef}>
+    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4">
+      <div ref={railRef} className="min-w-0">
         <Carousel label={`${label} symbols`} className="gap-2">
           {quotes.map((row, i) => {
             const on = row.symbol === selected.symbol;

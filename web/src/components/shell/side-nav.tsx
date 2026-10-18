@@ -31,7 +31,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { NAV, menuItems, matchesDestination, type NavItem, type NavMenu } from '@/lib/nav';
+import { RAIL_NAV, menuItems, matchesDestination, type NavItem, type NavMenu } from '@/lib/nav';
 import { viewHref } from '@/lib/routes';
 import { lastSymbol, useNav } from '@/components/nav-context';
 import { StrokeIcon } from '@/components/shell/icons';
@@ -95,8 +95,12 @@ function RailMenu({
   const button = React.useRef<HTMLButtonElement>(null);
   const panel = React.useRef<HTMLDivElement>(null);
   const [pos, setPos] = React.useState<{ left: number; top: number } | null>(null);
-  const isCurrent = current?.view === menu.view;
   const items = menu.items.filter((i) => !i.hidden);
+  /* An item can live in another menu's view (Demand Discovery sits under
+     Research at /alpha/demand): on that page, the menu that lists it is the current one. */
+  // Only a plain section counts: a shortcut with params (ETF Tables) or to a whole page (Investment Ideas) is not this menu's page.
+  const borrowed = (i: NavItem) => !!i.view && !!i.sub && !i.params && i.view !== menu.view && i.view === current?.view && i.sub === current?.sub;
+  const isCurrent = current?.view === menu.view || items.some(borrowed);
 
   /* Measured after it is visible, because a hidden element has no height and
      the bottom-edge clamp needs one. Anchored to the rail's edge, not the
@@ -159,7 +163,7 @@ function RailMenu({
         ) : null}
         <ul className={cn(items.length > 6 && 'grid grid-cols-2 gap-x-3')}>
           {items.map((item, i) => {
-            const active = isCurrent && !!item.sub && matchesDestination(item, current?.sub, query);
+            const active = isCurrent && !!item.sub && (item.view && item.view !== menu.view ? borrowed(item) : matchesDestination(item, current?.sub, query));
             if (item.built === false) {
               return (
                 <li key={i}>
@@ -231,7 +235,7 @@ export function SideNav() {
           <StrokeIcon kind="dashboard" className="max-[900px]:hidden" />
           <span>Home</span>
         </Link>
-        {NAV.map((menu) => (
+        {RAIL_NAV.map((menu) => (
           <RailMenu
             key={menu.view}
             menu={menu}

@@ -1,0 +1,662 @@
+{
+ "about": "Dated captures of the analyst consensus, built forward one capture at a time by tools/capture/consensus_ledger.py. Each capture holds what its source carried that day and nothing more.",
+ "symbols": {
+  "AAPL": [
+   {
+    "date": "2026-08-24",
+    "source": "snapshot",
+    "estimates": [
+     {
+      "fy": "2026-09-27",
+      "revenue": 477397859987,
+      "revenueLow": 472488087684,
+      "revenueHigh": 483007599827,
+      "eps": 8.8343,
+      "epsLow": 8.82432,
+      "epsHigh": 8.86425,
+      "ebit": 159893332146,
+      "analystsRevenue": 27,
+      "analystsEps": 27
+     },
+     {
+      "fy": "2027-09-27",
+      "revenue": 519424218390,
+      "revenueLow": 496818754452,
+      "revenueHigh": 548939693264,
+      "eps": 9.52458,
+      "epsLow": 9.01433,
+      "epsHigh": 10.15488,
+      "ebit": 173969085404,
+      "analystsRevenue": 29,
+      "analystsEps": 30
+     },
+     {
+      "fy": "2028-09-27",
+      "revenue": 558901943758,
+      "revenueLow": 518820294908,
+      "revenueHigh": 629292346614,
+      "eps": 10.61799,
+      "epsLow": 9.49342,
+      "epsHigh": 11.45552,
+      "ebit": 187191233184,
+      "analystsRevenue": 22,
+      "analystsEps": 20
+     },
+     {
+      "fy": "2029-09-27",
+      "revenue": 483092000000,
+      "revenueLow": 461036559352,
+      "revenueHigh": 518064526792,
+      "eps": 12.34288,
+      "epsLow": 11.61032,
+      "epsHigh": 13.50448,
+      "ebit": 161800452175,
+      "analystsRevenue": 18,
+      "analystsEps": 9
+     },
+     {
+      "fy": "2030-09-27",
+      "revenue": 693145000000,
+      "revenueLow": 661499643820,
+      "revenueHigh": 743323914333,
+      "eps": 12.8,
+      "epsLow": 12.04031,
+      "epsHigh": 14.00462,
+      "ebit": 232152828908,
+      "analystsRevenue": 11,
+      "analystsEps": 9
+     }
+    ],
+    "target": {
+     "consensus": 340.72,
+     "median": 360,
+     "high": 400,
+     "low": 245
+    },
+    "grades": {
+     "strongBuy": 1,
+     "buy": 69,
+     "hold": 32,
+     "sell": 9,
+     "strongSell": 0
+    },
+    "note": "Snapshot captured 24 Aug 2026 (commit 2f6051b); the 22 Sep snapshot carried these estimates unchanged."
+   },
+   {
+    "date": "2026-10-09",
+    "source": "snapshot",
+    "estimates": [
+     {
+      "fy": "2026-09-27",
+      "revenue": 477611940418,
+      "revenueLow": 472670264879,
+      "revenueHigh": 483193833029,
+      "eps": 8.83556,
+      "epsLow": 8.81562,
+      "epsHigh": 8.8555,
+      "ebit": 160627907706,
+      "analystsRevenue": 30,
+      "analystsEps": 29
+     },
+     {
+      "fy": "2027-09-27",
+      "revenue": 524594957025,
+      "revenueLow": 502764320863,
+      "revenueHigh": 557751948350,
+      "eps": 9.60811,
+      "epsLow": 9.07433,
+      "epsHigh": 10.53468,
+      "ebit": 166626036745,
+      "analystsRevenue": 30,
+      "analystsEps": 30
+     },
+     {
+      "fy": "2028-09-27",
+      "revenue": 564183930875,
+      "revenueLow": 527128555962,
+      "revenueHigh": 630137714284,
+      "eps": 10.68651,
+      "epsLow": 9.48153,
+      "epsHigh": 11.67872,
+      "ebit": 185155589759,
+      "analystsRevenue": 23,
+      "analystsEps": 21
+     },
+     {
+      "fy": "2029-09-27",
+      "revenue": 618060150234,
+      "revenueLow": 607422523206,
+      "revenueHigh": 631134714882,
+      "eps": 12.23979,
+      "epsLow": 11.40748,
+      "epsHigh": 13.0721,
+      "ebit": 222010705935,
+      "analystsRevenue": 3,
+      "analystsEps": 2
+     },
+     {
+      "fy": "2030-09-27",
+      "revenue": 647707000000,
+      "revenueLow": 617378530229,
+      "revenueHigh": 705192002580,
+      "eps": 12.905,
+      "epsLow": 12.11945,
+      "epsHigh": 14.39394,
+      "ebit": 234005327688,
+      "analystsRevenue": 1,
+      "analystsEps": 1
+     }
+    ],
+    "note": "Estimates refreshed into the bundled snapshot on 9 Oct 2026; its target and rating counts were not refreshed then, so they are left out."
+   },
+   {
+    "date": "2026-10-12",
+    "source": "connector",
+    "estimates": [
+     {
+      "fy": "2021-09-25",
+      "revenue": 366419852406,
+      "revenueLow": 350616555105,
+      "revenueHigh": 395120916228,
+      "eps": 5.60786,
+      "epsLow": 5.29344,
+      "epsHigh": 6.17889,
+      "ebit": 100923740754,
+      "analystsRevenue": 11,
+      "analystsEps": 19
+     },
+     {
+      "fy": "2022-09-24",
+      "revenue": 392776831583,
+      "revenueLow": 375836785890,
+      "revenueHigh": 423542394194,
+      "eps": 6.09835,
+      "epsLow": 5.75643,
+      "epsHigh": 6.71933,
+      "ebit": 117433958615,
+      "analystsRevenue": 18,
+      "analystsEps": 12
+     },
+     {
+      "fy": "2023-09-30",
+      "revenue": 383094279806,
+      "revenueLow": 381843384216,
+      "revenueHigh": 384044960454,
+      "eps": 6.0576,
+      "epsLow": 5.91789,
+      "epsHigh": 6.09752,
+      "ebit": 124571710429,
+      "analystsRevenue": 22,
+      "analystsEps": 24
+     },
+     {
+      "fy": "2024-09-28",
+      "revenue": 400366000000,
+      "revenueLow": 398249481830,
+      "revenueHigh": 402482518170,
+      "eps": 6.42891,
+      "epsLow": 6.03589,
+      "epsHigh": 7.16873,
+      "ebit": 116919410418,
+      "analystsRevenue": 12,
+      "analystsEps": 25
+     },
+     {
+      "fy": "2025-09-27",
+      "revenue": 415406882375,
+      "revenueLow": 408476748243,
+      "revenueHigh": 417924195930,
+      "eps": 7.38183,
+      "epsLow": 7.22157,
+      "epsHigh": 7.43191,
+      "ebit": 132110874734,
+      "analystsRevenue": 25,
+      "analystsEps": 27
+     },
+     {
+      "fy": "2026-09-27",
+      "revenue": 477606991591,
+      "revenueLow": 472665367256,
+      "revenueHigh": 483188826365,
+      "eps": 8.83545,
+      "epsLow": 8.81551,
+      "epsHigh": 8.85539,
+      "ebit": 160625924260,
+      "analystsRevenue": 30,
+      "analystsEps": 29
+     },
+     {
+      "fy": "2027-09-27",
+      "revenue": 524845121824,
+      "revenueLow": 503004075236,
+      "revenueHigh": 558017924799,
+      "eps": 9.61286,
+      "epsLow": 9.07881,
+      "epsHigh": 10.53989,
+      "ebit": 167229672840,
+      "analystsRevenue": 30,
+      "analystsEps": 30
+     },
+     {
+      "fy": "2028-09-27",
+      "revenue": 564321571621,
+      "revenueLow": 527130121452,
+      "revenueHigh": 630139585695,
+      "eps": 10.68732,
+      "epsLow": 9.48151,
+      "epsHigh": 11.67869,
+      "ebit": 185667559517,
+      "analystsRevenue": 23,
+      "analystsEps": 21
+     },
+     {
+      "fy": "2029-09-27",
+      "revenue": 618060150234,
+      "revenueLow": 607422523206,
+      "revenueHigh": 631134714882,
+      "eps": 12.23979,
+      "epsLow": 11.40748,
+      "epsHigh": 13.0721,
+      "ebit": 222010705935,
+      "analystsRevenue": 3,
+      "analystsEps": 2
+     },
+     {
+      "fy": "2030-09-27",
+      "revenue": 647707000000,
+      "revenueLow": 617247933685,
+      "revenueHigh": 705042830501,
+      "eps": 12.905,
+      "epsLow": 12.11607,
+      "epsHigh": 14.39008,
+      "ebit": 234005327688,
+      "analystsRevenue": 1,
+      "analystsEps": 1
+     }
+    ],
+    "target": {
+     "consensus": 341.68,
+     "median": 357.5,
+     "high": 400,
+     "low": 245
+    },
+    "grades": {
+     "strongBuy": 1,
+     "buy": 70,
+     "hold": 32,
+     "sell": 9,
+     "strongSell": 0
+    },
+    "price": 336.64
+   }
+  ],
+  "NVDA": [
+   {
+    "date": "2026-10-10",
+    "source": "snapshot",
+    "estimates": [
+     {
+      "fy": "2026-01-25",
+      "revenue": 213656385457,
+      "revenueLow": 210599426336,
+      "revenueHigh": 215270058959,
+      "eps": 4.69388,
+      "epsLow": 4.67378,
+      "epsHigh": 4.73408,
+      "ebit": 126223363905,
+      "analystsRevenue": 34,
+      "analystsEps": 30
+     },
+     {
+      "fy": "2027-01-25",
+      "revenue": 409796678872,
+      "revenueLow": 371314848148,
+      "revenueHigh": 423501983388,
+      "eps": 9.27796,
+      "epsLow": 9.03723,
+      "epsHigh": 9.73935,
+      "ebit": 246717834780,
+      "analystsRevenue": 41,
+      "analystsEps": 33
+     },
+     {
+      "fy": "2028-01-25",
+      "revenue": 694610426694,
+      "revenueLow": 519104870857,
+      "revenueHigh": 751764992497,
+      "eps": 15.77137,
+      "epsLow": 13.65904,
+      "epsHigh": 17.30484,
+      "ebit": 415336234213,
+      "analystsRevenue": 42,
+      "analystsEps": 32
+     },
+     {
+      "fy": "2029-01-25",
+      "revenue": 924393466487,
+      "revenueLow": 613757362168,
+      "revenueHigh": 1205103547368,
+      "eps": 21.41136,
+      "epsLow": 13.87521,
+      "epsHigh": 27.15577,
+      "ebit": 546056521988,
+      "analystsRevenue": 38,
+      "analystsEps": 20
+     },
+     {
+      "fy": "2030-01-25",
+      "revenue": 1106491211008,
+      "revenueLow": 868821284849,
+      "revenueHigh": 1250750995030,
+      "eps": 25.6,
+      "epsLow": 18.45159,
+      "epsHigh": 29.93891,
+      "ebit": 685784882469,
+      "analystsRevenue": 30,
+      "analystsEps": 9
+     },
+     {
+      "fy": "2031-01-25",
+      "revenue": 1160995000000,
+      "revenueLow": 911617876011,
+      "revenueHigh": 1312360764395,
+      "eps": 26.595,
+      "epsLow": 19.16875,
+      "epsHigh": 31.10255,
+      "ebit": 712429526860,
+      "analystsRevenue": 35,
+      "analystsEps": 10
+     }
+    ],
+    "target": {
+     "consensus": 339.17,
+     "median": 325,
+     "high": 515,
+     "low": 210
+    },
+    "grades": {
+     "strongBuy": 2,
+     "buy": 58,
+     "hold": 16,
+     "sell": 3,
+     "strongSell": 0
+    },
+    "note": "The bundled snapshot, captured 10 Oct 2026."
+   },
+   {
+    "date": "2026-10-12",
+    "source": "connector",
+    "estimates": [
+     {
+      "fy": "2022-01-30",
+      "revenue": 26662163796,
+      "revenueLow": 22244243387,
+      "revenueHigh": 30483644438,
+      "eps": 0.43252,
+      "epsLow": 0.33935,
+      "epsHigh": 0.51311,
+      "ebit": 11818252855,
+      "analystsRevenue": 13,
+      "analystsEps": 14
+     },
+     {
+      "fy": "2023-01-29",
+      "revenue": 26952415189,
+      "revenueLow": 22486400125,
+      "revenueHigh": 30815497484,
+      "eps": 0.32685,
+      "epsLow": 0.25644,
+      "epsHigh": 0.38775,
+      "ebit": 11541887975,
+      "analystsRevenue": 16,
+      "analystsEps": 15
+     },
+     {
+      "fy": "2024-01-28",
+      "revenue": 59306860332,
+      "revenueLow": 59095875397,
+      "revenueHigh": 60130706265,
+      "eps": 1.23926,
+      "epsLow": 1.21917,
+      "epsHigh": 1.26537,
+      "ebit": 58161735793,
+      "analystsRevenue": 28,
+      "analystsEps": 28
+     },
+     {
+      "fy": "2025-01-26",
+      "revenue": 129426091457,
+      "revenueLow": 129074989829,
+      "revenueHigh": 131001033044,
+      "eps": 2.95192,
+      "epsLow": 2.93184,
+      "epsHigh": 2.99208,
+      "ebit": 79563955675,
+      "analystsRevenue": 34,
+      "analystsEps": 33
+     },
+     {
+      "fy": "2026-01-25",
+      "revenue": 213656385457,
+      "revenueLow": 210599426336,
+      "revenueHigh": 215270058959,
+      "eps": 4.69388,
+      "epsLow": 4.67378,
+      "epsHigh": 4.73408,
+      "ebit": 126223363905,
+      "analystsRevenue": 34,
+      "analystsEps": 30
+     },
+     {
+      "fy": "2027-01-25",
+      "revenue": 409796678872,
+      "revenueLow": 371314848148,
+      "revenueHigh": 423501983388,
+      "eps": 9.27796,
+      "epsLow": 9.03723,
+      "epsHigh": 9.73935,
+      "ebit": 246717834780,
+      "analystsRevenue": 41,
+      "analystsEps": 33
+     },
+     {
+      "fy": "2028-01-25",
+      "revenue": 694610426694,
+      "revenueLow": 519104870857,
+      "revenueHigh": 751764992497,
+      "eps": 15.77137,
+      "epsLow": 13.65904,
+      "epsHigh": 17.30484,
+      "ebit": 415336234213,
+      "analystsRevenue": 42,
+      "analystsEps": 32
+     },
+     {
+      "fy": "2029-01-25",
+      "revenue": 924393466487,
+      "revenueLow": 613757362168,
+      "revenueHigh": 1205103547368,
+      "eps": 21.41136,
+      "epsLow": 13.87521,
+      "epsHigh": 27.15577,
+      "ebit": 546056521988,
+      "analystsRevenue": 38,
+      "analystsEps": 20
+     },
+     {
+      "fy": "2030-01-25",
+      "revenue": 1106491211008,
+      "revenueLow": 868821284849,
+      "revenueHigh": 1250750995030,
+      "eps": 25.6,
+      "epsLow": 18.45159,
+      "epsHigh": 29.93891,
+      "ebit": 685784882469,
+      "analystsRevenue": 30,
+      "analystsEps": 9
+     },
+     {
+      "fy": "2031-01-25",
+      "revenue": 1160995000000,
+      "revenueLow": 911617876011,
+      "revenueHigh": 1312360764395,
+      "eps": 26.595,
+      "epsLow": 19.16875,
+      "epsHigh": 31.10255,
+      "ebit": 712429526860,
+      "analystsRevenue": 35,
+      "analystsEps": 10
+     }
+    ],
+    "target": {
+     "consensus": 339.17,
+     "median": 325,
+     "high": 515,
+     "low": 210
+    },
+    "grades": {
+     "strongBuy": 2,
+     "buy": 58,
+     "hold": 16,
+     "sell": 3,
+     "strongSell": 0
+    },
+    "price": 229.28
+   }
+  ]
+ },
+ "reported": {
+  "about": "Quarterly results against the consensus, for symbols whose snapshot carries no earnings feed (adding one would move the quant rating the snapshot was graded on).",
+  "NVDA": {
+   "date": "2026-10-12",
+   "rows": [
+    {
+     "symbol": "NVDA",
+     "date": "2026-11-18",
+     "epsActual": null,
+     "epsEstimated": 2.47,
+     "revenueActual": null,
+     "revenueEstimated": 108803300000,
+     "lastUpdated": "2026-10-12"
+    },
+    {
+     "symbol": "NVDA",
+     "date": "2026-08-26",
+     "epsActual": 2.22,
+     "epsEstimated": 2.09,
+     "revenueActual": 96221000000,
+     "revenueEstimated": 92270940000,
+     "lastUpdated": "2026-10-12"
+    },
+    {
+     "symbol": "NVDA",
+     "date": "2026-05-20",
+     "epsActual": 1.87,
+     "epsEstimated": 1.76,
+     "revenueActual": 81615000000,
+     "revenueEstimated": 78423370000,
+     "lastUpdated": "2026-08-20"
+    },
+    {
+     "symbol": "NVDA",
+     "date": "2026-02-25",
+     "epsActual": 1.62,
+     "epsEstimated": 1.54,
+     "revenueActual": 68127000000,
+     "revenueEstimated": 66126470000,
+     "lastUpdated": "2026-05-25"
+    },
+    {
+     "symbol": "NVDA",
+     "date": "2025-11-19",
+     "epsActual": 1.3,
+     "epsEstimated": 1.26,
+     "revenueActual": 57006000000,
+     "revenueEstimated": 54961119678,
+     "lastUpdated": "2026-03-25"
+    },
+    {
+     "symbol": "NVDA",
+     "date": "2025-08-27",
+     "epsActual": 1.05,
+     "epsEstimated": 1.01,
+     "revenueActual": 46743000000,
+     "revenueEstimated": 46048920689,
+     "lastUpdated": "2026-03-25"
+    },
+    {
+     "symbol": "NVDA",
+     "date": "2025-05-28",
+     "epsActual": 0.81,
+     "epsEstimated": 0.737,
+     "revenueActual": 44062000000,
+     "revenueEstimated": 43334160366,
+     "lastUpdated": "2026-03-25"
+    },
+    {
+     "symbol": "NVDA",
+     "date": "2025-02-26",
+     "epsActual": 0.89,
+     "epsEstimated": 0.848,
+     "revenueActual": 39331000000,
+     "revenueEstimated": 38101348563,
+     "lastUpdated": "2026-03-25"
+    },
+    {
+     "symbol": "NVDA",
+     "date": "2024-11-20",
+     "epsActual": 0.81,
+     "epsEstimated": 0.75,
+     "revenueActual": 35100000000,
+     "revenueEstimated": 33171590000,
+     "lastUpdated": "2026-09-10"
+    },
+    {
+     "symbol": "NVDA",
+     "date": "2024-08-28",
+     "epsActual": 0.68,
+     "epsEstimated": 0.645,
+     "revenueActual": 30040000000,
+     "revenueEstimated": 28779505589,
+     "lastUpdated": "2026-03-25"
+    },
+    {
+     "symbol": "NVDA",
+     "date": "2024-05-22",
+     "epsActual": 0.61,
+     "epsEstimated": 0.56,
+     "revenueActual": 26044000000,
+     "revenueEstimated": 24592795107,
+     "lastUpdated": "2026-03-25"
+    },
+    {
+     "symbol": "NVDA",
+     "date": "2024-02-21",
+     "epsActual": 0.52,
+     "epsEstimated": 0.46,
+     "revenueActual": 22103000000,
+     "revenueEstimated": 20238800000,
+     "lastUpdated": "2026-03-25"
+    },
+    {
+     "symbol": "NVDA",
+     "date": "2023-11-21",
+     "epsActual": 0.4,
+     "epsEstimated": 0.34,
+     "revenueActual": 18120000000,
+     "revenueEstimated": 16294147339,
+     "lastUpdated": "2026-03-25"
+    },
+    {
+     "symbol": "NVDA",
+     "date": "2023-08-23",
+     "epsActual": 0.27,
+     "epsEstimated": 0.21,
+     "revenueActual": 13507000000,
+     "revenueEstimated": 11224000000,
+     "lastUpdated": "2026-03-25"
+    }
+   ]
+  }
+ }
+}

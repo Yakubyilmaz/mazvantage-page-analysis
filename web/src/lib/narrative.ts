@@ -55,11 +55,19 @@
    The rendered narrative is checked against that on the way in: `validate()`
    drops any section that is not the expected shape, so a malformed or
    truncated model response degrades to the generated prose for that section
-   rather than rendering as an empty card.
+   rather than rendering as an empty card. Then `freshSections()` drops any
+   section that cites a figure the brief does not carry, or names a rating
+   the page no longer shows: a saved narrative goes stale the moment a live
+   key moves the price, and that section shows the generated form instead.
    ========================================================================== */
 
 import { isNum, money, num, pct, mult, price, dec, fmtDate } from './format';
 import { curSymbol } from './format';
+import { parameterProse, profitDriverProse, valuationParameters } from './research-valuation';
+import { comparison, quantPeerProse } from './research-peers';
+import { buildScenarios } from './scenarios';
+import { consensusCagr } from './research-model';
+import { dealMath, eventsFor } from './events';
 
 const NARRATIVE_URL = '/data/research.json';
 const ENDPOINT_KEY = 'mazvantage.narrative.endpoint';
@@ -153,8 +161,9 @@ export function setNarrativeEndpoint(url: any) {
 /**
  * The narrative for this company, or null.
  *
- * Returns `{ sections, source, model, generatedAt, basis }`. `source` is
- * 'live' or 'bundled', and the byline prints it — a reader is entitled to
+ * Returns `{ sections, stale, source, model, generatedAt, basis }`. `stale`
+ * lists the sections dropped because they cite a figure or a rating the page
+ * no longer shows. `source` is 'live' or 'bundled', and the byline prints it — a reader is entitled to
  * know whether the prose came from a model just now or from a file written
  * weeks ago against figures that have since moved.
  */
@@ -175,10 +184,10 @@ export async function fetchNarrative(a: any, ratings: any) {
       });
       if (res.ok) {
         const json = await res.json();
-        const sections = validate(json.sections || json);
-        if (sections) {
+        const checked = checkAgainstPage(validate(json.sections || json), a, ratings);
+        if (checked) {
           return {
-            sections, source: 'live',
+            ...checked, source: 'live',
             model: json.model || 'the configured service',
             generatedAt: json.generatedAt || new Date().toISOString(),
             basis: null,
@@ -190,16 +199,29 @@ export async function fetchNarrative(a: any, ratings: any) {
 
   const file = await loadFile();
   const entry = file?.[symbol];
-  const sections = validate(entry?.sections);
-  if (!sections) return null;
+  const checked = checkAgainstPage(validate(entry?.sections), a, ratings);
+  if (!checked) return null;
 
   return {
-    sections,
+    ...checked,
     source: 'bundled',
     model: entry.model || 'a language model',
     generatedAt: entry.generatedAt || null,
     basis: entry.basis || null,
   };
+}
+
+/**
+ * Drops the sections whose figures or ratings the page no longer shows, and
+ * says which. A saved narrative is written once against one set of figures;
+ * a live key moves them, and prose that disagrees with the tables beside it
+ * is worse than the generated form. Null when nothing survives.
+ */
+function checkAgainstPage(sections: any, a: any, ratings: any) {
+  if (!sections) return null;
+  if (!ratings) return { sections, stale: [] };
+  const fresh = freshSections(sections, buildBrief(a, ratings), ratings);
+  return Object.keys(fresh.sections).length ? fresh : null;
 }
 
 /* ==========================================================================
@@ -279,8 +301,11 @@ export function buildBrief(a: any, ratings: any) {
       year: r.year,
       revenue: m$(r.revenue), netIncome: m$(r.netIncome), eps: p$(r.eps),
       grossMargin: pc(r.grossMargin), operatingMargin: pc(r.operatingMargin),
+      netMargin: isNum(r.netIncome) && isNum(r.revenue) && r.revenue > 0 ? pct(r.netIncome / r.revenue) : null,
       roic: pc(r.roic), wacc: pc(r.wacc), spread: pc(r.spread),
       freeCashFlow: m$(r.fcf), buybacks: m$(r.buybacks), dividends: m$(r.dividends),
+      capitalSpending: m$(r.capex),
+      capexToRevenue: isNum(r.capex) && isNum(r.revenue) && r.revenue > 0 ? pct(r.capex / r.revenue) : null,
       rAndD: m$(r.rnd),
       dilutedShares: f1(r.shares, (v: any) => num(v, 0)),
     })),
@@ -294,10 +319,13 @@ export function buildBrief(a: any, ratings: any) {
     },
 
     forecast: {
+      note: 'revenueCompound and epsCompound are true compound rates from fromYear to toYear. The median steps are the median year-on-year change across the consensus years: never call them compound rates.',
       analysts: a.forecast?.analystCount || null,
-      revenueCagr: pc(a.forecast?.revenueGrowth),
-      epsCagr: pc(a.forecast?.epsGrowth),
-      earningsCagr: pc(a.forecast?.earningsGrowth),
+      revenueCompound: pc(consensusCagr(a.forecast, 'revenue')),
+      epsCompound: pc(consensusCagr(a.forecast, 'eps')),
+      revenueMedianStep: pc(a.forecast?.revenueGrowth),
+      epsMedianStep: pc(a.forecast?.epsGrowth),
+      earningsMedianStep: pc(a.forecast?.earningsGrowth),
       forecastRoe: pc(a.forecast?.futureRoe),
       fromYear: a.forecast?.base?.year ?? null,
       toYear: a.forecast?.target?.year ?? null,
@@ -319,7 +347,7 @@ export function buildBrief(a: any, ratings: any) {
 
     segments: {
       product: seg?.parts?.map((p: any) => ({ name: p.name, share: pct(p.value / seg.total), value: m$(p.value) })) || [],
-      geography: geo?.parts?.map((p: any) => ({ name: p.name, share: pct(p.value / geo.total) })) || [],
+      geography: geo?.parts?.map((p: any) => ({ name: p.name, share: pct(p.value / geo.total), value: m$(p.value) })) || [],
     },
 
     /* The quant rating, which is the headline rating on the page and the
@@ -345,6 +373,7 @@ export function buildBrief(a: any, ratings: any) {
       middleHalf: (ratings.fve.q1 && ratings.fve.q3)
         ? `${price(ratings.fve.q1, cur)} to ${price(ratings.fve.q3, cur)}` : null,
       priceToFairValue: f1(ratings.zone?.ratio, (v: any) => dec(v, 2)),
+      priceAgainstFairValue: f1(ratings.zone?.ratio, (v: any) => `${pct(Math.abs(v - 1))} ${v >= 1 ? 'above' : 'below'} the estimate`),
       zone: ratings.zone?.label || null,
       undervaluedBelow: p$(ratings.zone?.low),
       overvaluedAbove: p$(ratings.zone?.high),
@@ -375,10 +404,13 @@ export function buildBrief(a: any, ratings: any) {
 
     capitalAllocation: ratings?.capital ? {
       rating: ratings.capital.label,
+      score: isNum(ratings.capital.total) ? `${dec(ratings.capital.total, 1)} of 6` : null,
       legs: ratings.capital.legs.map((l: any) => ({ leg: l.label, assessment: l.verdict, evidence: l.detail || null })),
     } : null,
 
     style: ratings?.style ? { box: ratings.style.label } : null,
+
+    ...pageReadings(a, ratings, cur),
 
     /* The ratios that rank furthest from the sector median, with the
        sentence the report already prints for each. These are the raw
@@ -395,6 +427,204 @@ export function buildBrief(a: any, ratings: any) {
       'No fair value on this page feeds the quant rating. The two are computed separately and routinely disagree.',
     ].filter(Boolean),
   };
+}
+
+/**
+ * The readings the Research tab prints beside the prose: the profit-driver
+ * bridge, each model's key input, the set-aside models, the bull and bear
+ * cases, the peer comparison and the company events on record. They are on
+ * the page, so the prose may cite them, and a figure is citable only if the
+ * brief carries it. The sentences are the page's own, figures included.
+ */
+function pageReadings(a: any, ratings: any, cur: string) {
+  const p$ = (v: any) => f1(v, (x: any) => price(x, cur));
+  const m$ = (v: any) => f1(v, (x: any) => money(x, { currency: cur }));
+  const fve = ratings?.fve;
+  const params = fve ? valuationParameters(a, fve) : null;
+
+  const s = buildScenarios(a);
+  const caseOf = (c: any) => (c ? {
+    fairValue: p$(c.value), againstPrice: f1(c.upside, (v: any) => pct(v, { sign: true })),
+    revenuePath: `FY${c.fromYear} ${money(c.revenueFrom)} to FY${c.toYear} ${money(c.revenueTo)}`,
+    growthAYear: pc0(c.growth),
+  } : null);
+
+  let peers: any = null;
+  try {
+    const cmp = comparison(a);
+    if (cmp.companies.length > 1) {
+      peers = {
+        companies: cmp.companies.map((c) => c.symbol),
+        prose: quantPeerProse(a, cmp),
+        ratios: cmp.rows.map((r) => ({
+          ratio: r.pick.label,
+          company: r.pick.fmt(r.values[0]),
+          sectorMedian: isNum(r.graded.median) ? r.pick.fmt(r.graded.median) : null,
+          peerMedian: isNum(r.peerMedian) ? r.pick.fmt(r.peerMedian) : null,
+          rank: isNum(r.rank) ? `${r.rank} of ${r.ranked}` : null,
+        })),
+      };
+    }
+  } catch { peers = null; }
+
+  const events = eventsFor(a.facts.symbol).map(({ event: e, party }) => {
+    const d = e.deal ? dealMath(e.deal) : null;
+    return {
+      date: fmtDate(e.date), announced: e.announced ? fmtDate(e.announced) : null,
+      title: e.title, confidence: e.confidence, summary: e.summary,
+      role: party.role, whatItMeansForTheCompany: party.why,
+      facts: e.facts.map((f) => `${f.label}: ${f.value}`),
+      vendorClaims: (e.claims || []).map((c) => `${c.by} claims (not verified): ${c.claim}`),
+      deal: e.deal ? {
+        headlineValue: m$(e.deal.value), consideration: e.deal.consideration, expected: e.deal.expectedLabel,
+        premium: f1(d!.premium, (v: any) => pct(v)), spread: f1(d!.spread, (v: any) => pct(v)),
+        sizeAgainstAcquirer: f1(d!.materiality, (v: any) => pct(v, { dp: 2 })),
+      } : null,
+    };
+  });
+
+  return {
+    profitDrivers: profitDriverProse(a),
+    valuationDetail: params ? {
+      parameters: parameterProse(a, params, fve),
+      models: params.rows.map((x) => ({
+        model: x.label, value: p$(x.value), keyInput: x.key || null,
+        terminalShare: isNum(x.terminalShare) ? pct(x.terminalShare, { dp: 0 }) : null,
+      })),
+      setAside: (fve.setAside || []).map((x: any) => ({ model: x.full || x.label, value: p$(x.value), why: x.why })),
+    } : null,
+    scenarios: s.available && s.cases ? {
+      note: 'The six discounted cash flows rerun on the lowest and highest revenue any analyst publishes, margins held at consensus.',
+      bear: caseOf(s.cases.bear), consensus: caseOf(s.cases.base), bull: caseOf(s.cases.bull),
+      streetTargets: { low: p$(s.targets.low), consensus: p$(s.targets.consensus), high: p$(s.targets.high) },
+    } : null,
+    peers,
+    events,
+  };
+}
+
+const pc0 = (v: any) => f1(v, (x: any) => pct(x));
+
+/* ==========================================================================
+   Checking the prose against the brief
+
+   The prompt's first rule, enforced. Every money amount, percentage, multiple
+   and decimal in a paragraph has to appear, as written, somewhere in the
+   brief built from the figures on the page now. A paragraph that cites one
+   that does not was written against numbers that have since moved, or quotes
+   something the page cannot show; either way it is not rendered.
+   ========================================================================== */
+
+const FIGURE = /[+\-−]?US\$\d[\d,]*(?:\.\d+)?(?:t|b|m|k)?|[+\-−]?\d[\d,]*(?:\.\d+)?%|\d[\d,]*(?:\.\d+)?x(?![a-z])|\b\d+\.\d+\b/g;
+
+/** The figures in a piece of text, in the forms the brief prints them. */
+export function figuresIn(text: string): string[] {
+  return (text.match(FIGURE) || []).map((t) => t.replace(/^[+−-]/, ''));
+}
+
+/** Every figure the brief makes citable. */
+export function briefFigures(brief: any): Set<string> {
+  const out = new Set<string>();
+  for (const t of figuresIn(JSON.stringify(brief))) {
+    out.add(t);
+    // "US$193.7b" makes "193.7" citable too, as in "193.7 billion".
+    const bare = t.match(/[\d,]+(?:\.\d+)?/);
+    if (bare) out.add(bare[0]);
+  }
+  return out;
+}
+
+/** Each section's paragraphs, flattened with a key, the note's parts included. */
+export function paragraphsOf(sections: any): { section: string; key: string; text: string }[] {
+  const out: { section: string; key: string; text: string }[] = [];
+  for (const [k, v] of Object.entries<any>(sections || {})) {
+    if (Array.isArray(v)) v.forEach((t, i) => out.push({ section: k, key: `${k}[${i}]`, text: t }));
+    else if (v && typeof v === 'object') {
+      out.push({ section: k, key: `${k}.headline`, text: v.headline });
+      (v.why || []).forEach((t: string, i: number) => out.push({ section: k, key: `${k}.why[${i}]`, text: t }));
+      out.push({ section: k, key: `${k}.bottomLine`, text: v.bottomLine });
+    }
+  }
+  return out;
+}
+
+/** The figures the prose cites that the brief does not carry, paragraph by paragraph. */
+export function unbackedFigures(sections: any, brief: any): { section: string; key: string; figure: string }[] {
+  const ok = briefFigures(brief);
+  const out: { section: string; key: string; figure: string }[] = [];
+  for (const p of paragraphsOf(sections)) {
+    for (const f of figuresIn(p.text || '')) if (!ok.has(f)) out.push({ section: p.section, key: p.key, figure: f });
+  }
+  return out;
+}
+
+/*
+  Ratings are words, not figures, so the figure check cannot see a paragraph
+  that still says "Medium uncertainty" after the rating moved to Low. Each
+  pattern finds where the prose names a rating of one kind; the word it names
+  has to be the rating the page shows now.
+*/
+const RATING_WORDS: { kind: string; rx: RegExp; is: (r: any) => string | null }[] = [
+  { kind: 'uncertainty', rx: /\b(low|medium|high|very high|extreme)[ -]uncertainty\b/gi, is: (r) => r?.unc?.label ?? null },
+  { kind: 'moat', rx: /\b(wide|narrow|no)(?:[ -]economic)?[ -]moat\b/gi, is: (r) => (r?.moat?.key === 'none' ? 'no' : r?.moat?.key ?? null) },
+  { kind: 'capital allocation', rx: /\b(exemplary|standard|poor) capital allocation\b/gi, is: (r) => r?.capital?.label ?? null },
+  { kind: 'quant verdict', rx: /\bquant rating (?:is|of) (strong buy|strong sell|buy|hold|sell)\b/gi, is: (r) => r?.quant?.verdict ?? null },
+  { kind: 'quant verdict', rx: /\brate [A-Z][\w’'.]* (strong buy|strong sell|buy|hold|sell) on the quant\b/gi, is: (r) => r?.quant?.verdict ?? null },
+  { kind: 'quant grade', rx: /\bgrade ([A-F][+-]?)(?![\w+-])/g, is: (r) => r?.quant?.letter ?? null },
+];
+
+/** Where the prose names a rating other than the one the page shows. */
+export function ratingConflicts(sections: any, ratings: any): { section: string; key: string; said: string; is: string }[] {
+  const out: { section: string; key: string; said: string; is: string }[] = [];
+  for (const p of paragraphsOf(sections)) {
+    for (const w of RATING_WORDS) {
+      const is = w.is(ratings);
+      if (!is) continue;
+      for (const m of (p.text || '').matchAll(w.rx)) {
+        if (m[1].toLowerCase() !== is.toLowerCase()) out.push({ section: p.section, key: p.key, said: m[0], is: `${w.kind} ${is}` });
+      }
+    }
+  }
+  return out;
+}
+
+/**
+ * A sentence that says "compound" may only cite a rate that is one: the
+ * consensus compound rates, the profit-driver bridge's, or a case's growth.
+ * The forecast's median step is not, and calling it one misstates it.
+ */
+export function compoundMisuse(sections: any, brief: any): { section: string; key: string; figure: string }[] {
+  const ok = new Set<string>([brief?.forecast?.revenueCompound, brief?.forecast?.epsCompound].filter(Boolean));
+  for (const t of brief?.profitDrivers || []) if (/compound/i.test(t)) for (const f of figuresIn(t)) ok.add(f);
+  for (const c of ['bear', 'consensus', 'bull']) if (brief?.scenarios?.[c]?.growthAYear) ok.add(brief.scenarios[c].growthAYear);
+  const out: { section: string; key: string; figure: string }[] = [];
+  for (const p of paragraphsOf(sections)) {
+    for (const sentence of (p.text || '').split(/(?<=[.;])\s+/)) {
+      if (!/compound/i.test(sentence)) continue;
+      // The rate itself: "compound at 9%", "compounding by 9%", "9% a year"; a margin in the same sentence is not a rate.
+      const rates = new Set([...sentence.matchAll(/compound\w*\s+(?:at\s+|by\s+)?([+\-−]?\d[\d,]*(?:\.\d+)?%)/gi), ...sentence.matchAll(/([+\-−]?\d[\d,]*(?:\.\d+)?%)\s+a\s+year/gi)]
+        .map((m) => m[1].replace(/^[+−-]/, '')));
+      for (const f of rates) if (!ok.has(f)) out.push({ section: p.section, key: p.key, figure: f });
+    }
+  }
+  return out;
+}
+
+/**
+ * The sections to keep, and the ones written against a page that has since
+ * moved. Section by section, like `validate`: a stale Fair Value section falls
+ * back to the generated form without taking the Moat section with it.
+ */
+export function freshSections(sections: any, brief: any, ratings: any) {
+  const why = new Map<string, string[]>();
+  const add = (s: string, r: string) => why.set(s, [...(why.get(s) || []), r]);
+  for (const u of unbackedFigures(sections, brief)) add(u.section, u.figure);
+  for (const c of ratingConflicts(sections, ratings)) add(c.section, c.said);
+  for (const c of compoundMisuse(sections, brief)) add(c.section, `${c.figure} called compound`);
+  const keep = Object.fromEntries(Object.entries(sections || {}).filter(([k]) => !why.has(k)));
+  // Bulls and bears are one section on the page; one stale side stales both.
+  if (why.has('bulls') || why.has('bears')) { delete keep.bulls; delete keep.bears; }
+  return { sections: keep, stale: [...why.entries()].map(([section, reasons]) => ({ section, reasons })) };
 }
 
 /* ==========================================================================

@@ -305,6 +305,44 @@ function waccOf(a: any, d: any) {
 }
 
 /**
+ * The pieces a reverse DCF needs, from the same definitions the models use:
+ * the equity bridge, the discount rate and the consensus cash flow path the
+ * ten-year models discount. Null when the models themselves could not run.
+ */
+export function dcfBasis(a: any, years = 10) {
+  const d = drivers(a);
+  const w = waccOf(a, d);
+  if (!w) return null;
+  const g = isNum(a.bm?.terminalGrowth) ? a.bm.terminalGrowth : 0.025;
+  const path = projectFcff(a, d, { years, g, tax: w.tax });
+  return {
+    shares: d.shares, netDebt: d.netDebt, revenueTtm: d.revenue,
+    wacc: w.wacc, tax: w.tax, g,
+    capexRate: isNum(a.facts.capexToRevenue) ? Math.abs(a.facts.capexToRevenue) : 0,
+    path,
+  };
+}
+
+/**
+ * Every input the discounted cash flows share, for a report to print beside
+ * them: the CAPM pieces, the cost of debt and whether it was a stand-in, the
+ * tax rate, the weights, the rate itself and the terminal growth. Null when
+ * no discount rate can be built.
+ */
+export function discountInputs(a: any) {
+  const w = waccOf(a, null);
+  if (!w) return null;
+  const bm = a.bm || {};
+  return {
+    ...w,
+    riskFree: isNum(bm.riskFreeRate) ? bm.riskFreeRate : null,
+    equityRiskPremium: isNum(bm.equityRiskPremium) ? bm.equityRiskPremium : null,
+    beta: isNum(a.facts?.beta) ? a.facts.beta : null,
+    terminalGrowth: isNum(bm.terminalGrowth) ? bm.terminalGrowth : 0.025,
+  };
+}
+
+/**
  * A free cash flow path `years` long.
  *
  * Analyst rows first, verbatim. Past them, revenue grows from the forecast's

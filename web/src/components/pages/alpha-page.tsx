@@ -233,7 +233,7 @@ function ScanTab() {
                 {shown.map((r) => (
                   <tr key={r.symbol} className="border-b border-border hover:bg-accent/60">
                     <td className="px-3 py-2">
-                      <button type="button" onClick={() => nav.goSymbolTab('Alpha Signal', r.symbol)} className="grid text-left hover:text-primary">
+                      <button type="button" onClick={() => nav.goSymbolTab('Research', r.symbol)} className="grid text-left hover:text-primary">
                         <strong>{r.symbol}</strong><small className="max-w-[200px] truncate text-micro text-muted-foreground">{r.name}</small>
                       </button>
                     </td>
@@ -300,7 +300,7 @@ function MethodTab() {
         <Para>In order of preference: SEC filings, company releases, earnings releases, structured financial data, then market data. News is used for context and counting only, never as a fact about the business.</Para>
         <Warn><b>No social media, ever.</b> Reddit, X and message boards are not read by any provider in this engine and will not be. If a sentiment or attention source is ever added it will be labelled as attention data, kept out of the fundamental categories, and never presented as evidence about a company’s financial condition.</Warn>
         <div className="flex flex-wrap gap-2">
-          <Button size="sm" onClick={() => nav.goSymbolTab('Alpha Signal')}>See it on a company →</Button>
+          <Button size="sm" onClick={() => nav.goSymbolTab('Research')}>See it on a company, in its Research report →</Button>
           <Button size="sm" variant="outline" onClick={() => nav.goView('quant', 'ratings')}>The quant rating →</Button>
         </div>
       </Panel>
@@ -357,12 +357,25 @@ export function AlphaPage({ sub }: { sub: string | null }) {
   const demand = tab === 'demand';
   return (
     <PageFrame id="alpha-desk">
-      <PageHero eyebrow="Maz Vantage Alpha Signal" title={demand ? 'Demand Discovery' : 'Alpha Signal'}
+      <PageHero eyebrow={demand ? 'Maz Vantage Research' : 'Maz Vantage Alpha Signal · archived'} title={demand ? 'Demand Discovery' : 'Alpha Signal'}
         strap={demand
           ? 'Where demand is accelerating along a supply chain, whether supply can keep up, and how much of it the price already assumes — read from filed quarters and dated, sourced evidence, with the backtest beside it.'
           : 'Companies where something measurable has recently changed, and where fewer people than usual are looking. Eleven categories of dated, sourced evidence, scored 0–100 with the share of it that could actually be measured printed beside every number.'}
         meta={<><ConnectionButton /><MetaDivider /><span>{demand ? 'Five chains · twenty-nine companies · research signal, not advice' : `${CATS.length} categories · weighting v${CALC_VERSION} · unvalidated`}</span></>} />
-      <SectionBar label="Alpha Signal sections" items={TABS} active={tab} onSelect={(id) => nav.goView('alpha', id)} />
+      {/* Archived 2026-10-13: the menu is off the rail. Demand Discovery now
+          belongs to Research and stands alone; the other three pages stay
+          readable by their old links, under a notice, with their own bar. */}
+      {demand ? null : (
+        <>
+          <div role="note" className="mt-5 rounded-lg border border-border bg-muted/50 px-4 py-3 text-13 leading-relaxed">
+            <b>This page is archived.</b> The Alpha Signal reading of each company now sits in its Research report, on the same engine and
+            the same data.{' '}
+            <button type="button" onClick={() => nav.goSymbolTab('Research')} className="font-semibold text-primary hover:underline">Open a Research report ›</button>
+            {' '}Demand Discovery has moved to the Research menu.
+          </div>
+          <SectionBar label="Alpha Signal sections" items={TABS.filter((t) => t.id !== 'demand')} active={tab} onSelect={(id) => nav.goView('alpha', id)} />
+        </>
+      )}
       {tab === 'scan' ? <ScanTab /> : demand ? <DemandDesk /> : tab === 'method' ? <MethodTab /> : <LimitsTab />}
     </PageFrame>
   );

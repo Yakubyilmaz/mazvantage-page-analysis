@@ -23,6 +23,7 @@ import { MarketRail } from '@/components/shell/market-rail';
 export function AppFrame({ children }: { children: React.ReactNode }) {
   return (
     <div
+      data-app-frame
       className={[
         'grid min-h-screen',
         'grid-cols-[var(--sidenav-w)_minmax(0,1fr)_296px]',

@@ -3,6 +3,12 @@
 /* ==========================================================================
    Maz Vantage — the Alpha Signal tab
 
+   ARCHIVED as a tab on 2026-10-13. The reading now sits inside the Research
+   report (`components/report/research/alpha-section.tsx`), which builds it
+   with `useAlphaReading` below — the same feeds, providers, score and brief —
+   and reuses `HowBuilt`. The tab component is kept, unmounted, so the
+   reading can be shown on its own again without rebuilding it.
+
    One question: is something changing that the market has not priced yet?
    The page answers it in the order a reader needs it (rebuilt 2026-10-09):
 
@@ -38,7 +44,7 @@ import { Chevron } from '@/components/market/market-ui';
 import { Skeleton } from '@/components/ui/primitives';
 import { cn } from '@/lib/cn';
 
-type Built = { result: any; classification: any; story: any; brief: Brief; quant: number | null; capturedAt: string | null; bag: any };
+export type Built = { result: any; classification: any; story: any; brief: Brief; quant: number | null; capturedAt: string | null; bag: any };
 
 const SecTitle = ({ children }: { children: React.ReactNode }) => <h2 className="text-[19px] font-bold tracking-[-.02em]">{children}</h2>;
 const SecBody = ({ children }: { children: React.ReactNode }) => <p className="max-w-[100ch] text-13 leading-[1.7] text-muted-foreground">{children}</p>;
@@ -108,7 +114,7 @@ function Answer({ state }: { state: Built }) {
  * that sold a report usually sold it on something a headline named. Tagged by
  * event, with an arrow only where the words carry one; not scored.
  */
-function WhatHappened({ news, symbol }: { news: Brief['news']; symbol: string }) {
+export function WhatHappened({ news, symbol }: { news: Brief['news']; symbol: string }) {
   const nav = useNav();
   if (!news.articles) return null;
   return (
@@ -203,7 +209,7 @@ function BlockCard({ block, result, index, news, symbol }: { block: Block; resul
 
 /* ---- 5. how it is built, folded away --------------------------------------------- */
 
-function HowBuilt({ state }: { state: Built }) {
+export function HowBuilt({ state }: { state: Built }) {
   const { result, story } = state;
   const gaps: any[] = story.unconfirmed;
   const cats = result.categories.slice().sort((x: any, y: any) => y.weight - x.weight);
@@ -312,7 +318,12 @@ function Page({ state, a }: { state: Built; a: Analysis }) {
 
 /* ---- the tab --------------------------------------------------------------------- */
 
-export function AlphaTab({ a }: { a: Analysis }) {
+/**
+ * The reading for one company: its feeds (some fetched now — they are not in
+ * the report's dataset), the eleven providers, the score, the classification,
+ * the narrative and the three-question brief. One build, shared by every view.
+ */
+export function useAlphaReading(a: Analysis): { state: Built | null; error: string | null } {
   const symbol = a.facts?.symbol || a.ds?.symbol || '';
   const [state, setState] = React.useState<Built | null>(null);
   const [error, setError] = React.useState<string | null>(null);
@@ -336,11 +347,18 @@ export function AlphaTab({ a }: { a: Analysis }) {
         setState({ result, classification, story, brief, quant, capturedAt: bagCapturedAt(bag), bag });
       })
       .catch((err: any) => {
-        console.error('alpha tab', err);
+        console.error('alpha reading', err);
         if (live) setError(String(err?.message || err));
       });
     return () => { live = false; };
   }, [a, symbol]);
+
+  return { state, error };
+}
+
+export function AlphaTab({ a }: { a: Analysis }) {
+  const symbol = a.facts?.symbol || a.ds?.symbol || '';
+  const { state, error } = useAlphaReading(a);
 
   if (error) {
     return (
