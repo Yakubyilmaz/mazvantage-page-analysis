@@ -1,0 +1,136 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @font-face {
+    font-family: 'Brand';
+    src: url('../../web/src/fonts/es-klarheit-kurrent-semibold.woff') format('woff');
+    font-weight: 600;
+  }
+  :root {
+    --bg: #0d1017;
+    --card: #161b26;
+    --line: #232a38;
+    --fg: #f2f4f8;
+    --muted: #969ba9;
+    --primary: #5085f7;
+    --track: #232a38;
+    --up: #26a69a;
+    --strong: hsl(151 63% 48%);
+    --strong-bg: hsl(151 63% 48% / 14%);
+    --warning: hsl(25 100% 54%);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1350px; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: 'Inter', sans-serif;
+    font-feature-settings: 'tnum' 1, 'cv11' 1;
+    padding: 68px 72px 60px;
+    display: flex; flex-direction: column;
+    position: relative; overflow: hidden;
+  }
+  /* a quiet echo of the mark, bottom right */
+  .echo { position: absolute; right: -180px; bottom: 120px; width: 760px; opacity: .035; z-index: -1; }
+
+  header { display: flex; align-items: center; justify-content: space-between; }
+  .brand { display: flex; align-items: center; gap: 16px; }
+  .brand img { height: 30px; }
+  .wordmark { font-family: 'Brand', serif; font-weight: 600; font-size: 34px; letter-spacing: -.005em; }
+  .meta { display: flex; gap: 10px; align-items: center; }
+  .chip { font-size: 17px; font-weight: 600; padding: 7px 14px; border-radius: 999px; border: 1.5px solid var(--line); color: var(--muted); }
+  .chip.sample { color: var(--warning); border-color: hsl(25 100% 54% / 45%); letter-spacing: .08em; }
+
+  .eyebrow { margin-top: 54px; font-size: 19px; font-weight: 700; letter-spacing: .16em; color: var(--primary); }
+  h1 { margin-top: 16px; font-family: 'Inter Display', 'Inter', sans-serif; font-size: 78px; line-height: 1.02; font-weight: 800; letter-spacing: -.025em; }
+  h1 .accent { color: var(--primary); }
+  .sub { margin-top: 20px; font-size: 24px; line-height: 1.4; color: var(--muted); max-width: 860px; }
+
+  ol { list-style: none; margin-top: 40px; display: grid; gap: 14px; }
+  li {
+    background: var(--card); border: 1px solid var(--line); border-radius: 20px;
+    padding: 22px 28px; display: grid; grid-template-columns: 44px 68px 1fr auto; align-items: center; column-gap: 22px;
+  }
+  .rank { font-family: 'Inter Display', 'Inter', sans-serif; font-size: 40px; font-weight: 700; color: var(--muted); text-align: center; }
+  li:first-child .rank { color: var(--fg); }
+  .logo {
+    width: 68px; height: 68px; border-radius: 50%; background: #202634; border: 1px solid #2c3445;
+    display: grid; place-items: center; font-weight: 800; font-size: 21px; letter-spacing: -.02em; color: #c9cedb;
+  }
+  .who { min-width: 0; }
+  .ticker { font-size: 30px; font-weight: 800; letter-spacing: -.01em; display: flex; align-items: center; gap: 12px; }
+  .halal { display: inline-flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 600; color: var(--up); padding: 4px 10px 4px 8px; border-radius: 999px; background: hsl(174 63% 40% / 13%); }
+  .halal svg { width: 15px; height: 15px; }
+  .name { margin-top: 4px; font-size: 19px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bar { margin-top: 14px; height: 8px; border-radius: 4px; background: var(--track); overflow: hidden; }
+  .bar span { display: block; height: 100%; background: var(--primary); border-radius: 0 4px 4px 0; }
+  .score { text-align: right; display: grid; justify-items: end; gap: 8px; }
+  .grade { font-size: 26px; font-weight: 800; color: var(--strong); background: var(--strong-bg); border-radius: 12px; min-width: 64px; padding: 6px 12px; text-align: center; }
+  .num { font-size: 22px; font-weight: 700; }
+  .num small { font-size: 16px; color: var(--muted); font-weight: 500; }
+
+  footer { margin-top: auto; display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; }
+  .cta { font-size: 25px; font-weight: 700; }
+  .cta span { color: var(--primary); }
+  .fine { margin-top: 8px; font-size: 16px; color: var(--muted); }
+  .slogan { font-size: 17px; color: var(--muted); text-align: right; white-space: nowrap; }
+  .slogan b { color: var(--primary); font-weight: 600; }
+</style>
+</head>
+<body>
+  <img class="echo" src="../../web/public/img/mazvantage-mark-white.svg" alt="">
+
+  <header>
+    <div class="brand">
+      <img src="../../web/public/img/mazvantage-mark-white.svg" alt="">
+      <span class="wordmark">Maz Vantage</span>
+    </div>
+    <div class="meta">
+      <span class="chip sample">SAMPLE DATA</span>
+      <span class="chip">October 2026</span>
+    </div>
+  </header>
+
+  <div class="eyebrow">HALAL QUANT RANKING</div>
+  <h1>Top 5 halal stocks<br>by <span class="accent">quant score</span></h1>
+  <p class="sub">Every name passes all 5 Shariah screens. Ranked on a 0–5 quant score, graded against each company’s own sector.</p>
+
+  <ol id="list"></ol>
+
+  <footer>
+    <div>
+      <div class="cta">Check any stock’s halal status, free <span>→ link in bio</span></div>
+      <div class="fine">Research, not investment advice. Screens: AAOIFI, S&amp;P, Dow Jones, FTSE, MSCI.</div>
+    </div>
+    <div class="slogan">Market Research to your ad<b>vantage</b></div>
+  </footer>
+
+<script>
+  // Sample figures for a layout test — not ratings.
+  const rows = [
+    { t: 'NVDA', n: 'NVIDIA · Semiconductors', s: 4.86, g: 'A' },
+    { t: 'AVGO', n: 'Broadcom · Semiconductors', s: 4.71, g: 'A' },
+    { t: 'LLY', n: 'Eli Lilly · Pharmaceuticals', s: 4.58, g: 'A' },
+    { t: 'ANET', n: 'Arista Networks · Networking', s: 4.37, g: 'A-' },
+    { t: 'ADBE', n: 'Adobe · Software', s: 4.12, g: 'A-' },
+  ];
+  const check = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-7"/></svg>';
+  document.getElementById('list').innerHTML = rows.map((r, i) => `
+    <li>
+      <div class="rank">${i + 1}</div>
+      <div class="logo">${r.t.slice(0, 2)}</div>
+      <div class="who">
+        <div class="ticker">${r.t}<span class="halal">${check}Halal · 5 of 5</span></div>
+        <div class="name">${r.n}</div>
+        <div class="bar"><span style="width:${(r.s / 5) * 100}%"></span></div>
+      </div>
+      <div class="score">
+        <div class="grade">${r.g}</div>
+        <div class="num">${r.s.toFixed(2)} <small>/ 5</small></div>
+      </div>
+    </li>`).join('');
+</script>
+</body>
+</html>
