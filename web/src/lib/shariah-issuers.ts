@@ -17,6 +17,8 @@ import {
   type Band, type BalanceSheet, type Gate4Total, type Income, type IndexResult, type McapWindows, type Purification,
   type RevenueLine, type Scenario, type TestResult, type Verdict,
 } from './shariah-v5';
+// Type-only the other way, so there is no import cycle at run time.
+import { ABNB, ADP, DE } from './shariah-issuers-hidden-interest';
 
 export interface Filing { form: string; period: string; accession: string; href: string }
 export interface Source { label: string; href: string }
@@ -97,16 +99,19 @@ export const AAPL: IssuerRecord = {
   version: 'v5.0',
   screened: '2026-10-07',
   period: { label: 'Twelve months to 27 June 2026 (Q4 FY2025 – Q3 FY2026)', start: '2025-06-29', end: '2026-06-27' },
-  summary: 'The business clears the activity screen, and against market value its debt and cash are small — which is '
-    + 'why AAOIFI\'s own market-cap tests pass. Scenario B applies the same limits to total assets as well, and there '
-    + '$146.5b of cash and interest-bearing securities is 38.2% of everything Apple owns, over the 33% allowed. Under '
-    + 'Scenario C and Strictest the estimated non-permissible income — interest, social-casino commissions, insurance '
-    + 'distribution, media and finance advertising — also runs over the cap.',
+  summary: 'The business clears the activity screen, and against its 12-month average market value its debt (2.0%) and '
+    + 'its cash and interest-bearing securities (3.5%) are small, so Scenario B, the AAOIFI reading, passes: the '
+    + 'estimated non-permissible income is 3.7% of revenue, under the 5% cap. Scenario C and Strictest take the '
+    + 'conservative edge of that estimate — interest, social-casino commissions, insurance distribution, media and '
+    + 'finance advertising — and it runs over their caps; Strictest also counts operating leases, which put debt at '
+    + '25.6% of total assets, over its 25%. Cash and securities are tested against the 12-month average market cap at '
+    + 'every scenario, as AAOIFI Standard 21 does (since 18 October 2026); against total assets they are 38.2%, shown '
+    + 'for information.',
   methodsNote: 'Every methodology that divides by market value passes Apple: its debt and cash are a few percent of a '
-    + '$3.5–4.9t company. Those that divide by total assets — MSCI Islamic, and Maz Vantage\'s Scenario B, which runs '
-    + 'AAOIFI\'s limits against market cap and again against total assets — fail it, because cash and interest-bearing '
-    + 'securities are 38.2% of what Apple owns. FTSE\'s revenue test counts music, film and insurance broking whole, '
-    + 'which puts Apple on its 5% line within the range of the estimates; its index holds Apple.',
+    + '$3.5–4.9t company. MSCI Islamic divides by total assets and fails it, because cash and interest-bearing '
+    + 'securities are 38.2% of what Apple owns; Maz Vantage\'s scenarios test cash against the 12-month average market '
+    + 'cap, as AAOIFI does. FTSE\'s revenue test counts music, film and insurance broking whole, which puts Apple on its '
+    + '5% line within the range of the estimates; its index holds Apple.',
   ratioNote: 'Debt is commercial paper and notes ($84.3b) plus finance leases ($1.2b); Strictest adds operating leases '
     + '($12.5b, September 2025 — leases are disclosed yearly). Cash and interest-bearing securities ($146.5b) include the '
     + '$84.1b of non-current debt securities that a cash-and-short-term figure leaves out. Receivables are trade receivables '
@@ -322,7 +327,7 @@ export const AAPL: IssuerRecord = {
     'Single class of common stock — no dual-class control flag.',
   ],
   monitoring: [
-    'Cash + interest-bearing securities falling below 33% of total assets (now 38.2%) would lift the Sc B Gate-2 fail — roughly $30b deployed off the balance sheet.',
+    'Sc B non-permissible income at 3.7% of revenue against the 5% cap: the casino-commission, insurance-distribution and advertising lines are what would move it.',
     'Track-(b) debt under 25% of total assets lifts one Strictest fail: ~$3b of net repayment; $11.0b of notes fall due within a year.',
     'The FY2026 10-K (due late October 2026): lease liabilities, the Q2 intangible addition, and any return of an interest-income line.',
     'The D.C. Circuit appeal in the Google search case, and the JPMorgan terms on Apple Card.',
@@ -368,7 +373,8 @@ export const AAPL: IssuerRecord = {
   ],
 };
 
-export const SHARIAH_ISSUERS: Record<string, IssuerRecord> = { AAPL };
+// Three more, from the 2026-10-18 hidden-interest sweep.
+export const SHARIAH_ISSUERS: Record<string, IssuerRecord> = { AAPL, ADP, ABNB, DE };
 
 export const issuerRecord = (symbol: string | null | undefined): IssuerRecord | null =>
   (symbol && SHARIAH_ISSUERS[symbol.toUpperCase()]) || null;

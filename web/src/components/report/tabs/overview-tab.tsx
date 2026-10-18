@@ -29,14 +29,14 @@ import { MAX_SCORE, letterFor, verdictTone, verdictWord } from '@/lib/grading';
 import { SHARIAH_STANDARDS, shariahVerdict } from '@/lib/shariah';
 import { MarketChart } from '@/components/market/market-chart';
 import { MarketHeading, StoryRow } from '@/components/market/market-ui';
-import { LineChart } from '@/components/charts/charts';
+import { LineChart, type ChartMarker } from '@/components/charts/charts';
+import { usePings } from '@/components/report/pings';
 import { Snowflake } from '@/components/charts/snowflake';
 import { GradePill } from '@/components/report/grade-parts';
 import { FeedGate, Notice } from '@/components/report/ui';
 import { RelatedResearchCard, useTickerArticles } from '@/components/research/feed-parts';
 import { ReportActions } from '@/components/report/report-actions';
 import { useNav } from '@/components/nav-context';
-import { VerdictCard } from '@/components/report/verdict-card';
 import { cn } from '@/lib/cn';
 
 const PEERS = 4;
@@ -170,18 +170,18 @@ export function OverviewHead({ a }: { a: Analysis }) {
    ========================================================================== */
 
 /** The bundled dataset's own price history, for the disconnected page. */
-function SnapshotChart({ a }: { a: Analysis }) {
+function SnapshotChart({ a, markers }: { a: Analysis; markers: ChartMarker[] }) {
   const f = a.facts;
   const points = normalisePrices(a.ds.get('prices'));
   return (
-    <div className="rounded-[14px] border border-border px-[18px] py-4">
+    <div>
       <div className="mb-2.5 flex flex-wrap items-baseline gap-2.5">
         <b className="text-[15px] font-[650]">{f.name} · {f.symbol}</b>
         <span className="text-micro text-muted-foreground">Saved copy — the live chart and its ranges return when live data is available.</span>
       </div>
       {points.length > 1 ? (
         <LineChart height={300} series={points.map((p: any) => ({ date: p.date, value: p.price }))}
-          valueFmt={(v) => price(v, curSymbol(f.currency))} labelFmt={(d) => fmtDate(d, { month: 'short', year: '2-digit' })} />
+          valueFmt={(v) => price(v, curSymbol(f.currency))} labelFmt={(d) => fmtDate(d, { month: 'short', year: '2-digit' })} markers={markers} />
       ) : a.ds.status('prices') !== 'ok' ? <FeedGate a={a} feed="prices" what="Price history" /> : <Notice>No price history in this dataset.</Notice>}
     </div>
   );
@@ -193,6 +193,10 @@ function ChartSection({ a }: { a: Analysis }) {
   const m = a.momentum || {};
   const windows = ([['1 month', m.r1m], ['3 months', m.r3m], ['6 months', m.r6m], ['Year to date', m.rYtd], ['1 year', m.r1y]] as [string, unknown][])
     .filter(([, v]) => isNum(v)) as [string, number][];
+  // Insider buys and sells (Form 4) and fund position changes (13F) on the
+  // line, with the legend that turns each on and off — the same markers as
+  // the Analysis tab's price history and Research's price against fair value.
+  const pings = usePings(a);
   return (
     <section aria-label="Price" className="grid min-w-0">
       {/* The market chart fetches its own series — the right chart with a key,
@@ -203,13 +207,20 @@ function ChartSection({ a }: { a: Analysis }) {
           <MarketChart height={380} meta={{
             symbol: f.symbol, name: f.name, shortName: f.name, kind: 'stock', currency: f.currency, report: false,
             quote: { price: f.price, previousClose: f.previousClose },
-          }} />
+          }} markers={pings.markers} />
+          <div className="px-0.5 pb-3">{pings.legend}</div>
         </div>
-      ) : <SnapshotChart a={a} />}
+      ) : (
+        <div className="rounded-[14px] border border-border px-[18px] py-4">
+          <SnapshotChart a={a} markers={pings.markers} />
+          {pings.legend}
+        </div>
+      )}
       <button type="button" onClick={() => nav.goSymbolTab('Technicals', f.symbol)}
         className="mt-2 justify-self-end text-tiny font-semibold text-primary hover:underline">
         Indicators, drawing tools and seasonality on the Technicals tab ›
       </button>
+      {pings.note}
       {windows.length ? (
         <div className="mt-3.5 grid grid-cols-5 gap-px overflow-hidden rounded-xl border border-border bg-border max-md:grid-cols-2">
           {windows.map(([label, value]) => (
@@ -363,8 +374,6 @@ export function OverviewTab({ a }: { a: Analysis }) {
 
   return (
     <div className="grid gap-[58px] pt-2.5 max-md:gap-[42px]">
-      {/* The two questions a reader arrives with, before the chart: is it halal, and is it any good. */}
-      <VerdictCard a={a} />
       <ChartSection a={a} />
 
       {peers.length ? (

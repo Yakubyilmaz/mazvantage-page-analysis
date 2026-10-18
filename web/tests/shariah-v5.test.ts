@@ -41,14 +41,23 @@ describe('Apple (AAPL), twelve months to 27 June 2026', () => {
   const v = (s: Scenario) => sc.scenarios[s];
   const test = (s: Scenario, key: string) => v(s).tests.find((t) => t.key === key)!;
 
-  it('passes the Hanafi lens and fails the other three', () => {
-    expect(order.map((s) => v(s).verdict)).toEqual(['PASS', 'FAIL', 'FAIL', 'FAIL']);
+  it('passes Sc A and Sc B (AAOIFI), and fails Sc C and Strictest', () => {
+    expect(order.map((s) => v(s).verdict)).toEqual(['PASS', 'PASS', 'FAIL', 'FAIL']);
+    expect(v('C').deciding).toMatch(/^Gate 4/);
   });
 
-  it('fails Sc B on cash and securities over total assets, outside the Δ22 zone', () => {
-    expect(test('B', 'cash_ta').value).toBeCloseTo(0.38229, 4);
-    expect(test('B', 'cash_ta').state).toBe('fail');
-    expect(test('A', 'cash_ta').state).toBe('info');
+  it('tests cash and securities against the 12-month average market cap at every scenario (owner, 2026-10-18)', () => {
+    for (const s of SCENARIOS) {
+      // 3.5%, the figure AAOIFI Shariah Standard 21's row prints.
+      expect(test(s, 'cash_mcap').value).toBeCloseTo(0.034966, 5);
+      expect(test(s, 'cash_mcap').state).toBe('pass');
+      // Against total assets it is still computed and printed, and decides nothing.
+      expect(test(s, 'cash_ta').value).toBeCloseTo(0.38229, 4);
+      expect(test(s, 'cash_ta').state).toBe('info');
+      expect(test(s, 'cash_hanbali').state).toBe('info');
+    }
+    const ss21 = sc.indexes.find((x) => x.rule.key === 'aaoifi')!;
+    expect(test('B', 'cash_mcap').value).toBeCloseTo(ss21.cash, 9);
     expect(v('B').g4.state).toBe('pass');
   });
 

@@ -14,7 +14,7 @@ import * as React from 'react';
 import { money, pct } from '@/lib/format';
 import {
   PREFERRED, SCENARIOS, SCENARIO_NAME, SCENARIO_SHORT, TEST_INFO, lineAt, ratioTests, sizeAt,
-  type IndexResult, type Scenario, type TestResult, type TestState, type Verdict,
+  type IndexResult, type Scenario, type TestState, type Verdict,
 } from '@/lib/shariah-v5';
 import { screenIssuer, type IssuerRecord } from '@/lib/shariah-issuers';
 import { DataTable, Notice, OCard, OHead, Pill } from '@/components/report/ui';
@@ -57,10 +57,6 @@ const Named = ({ name, sub, title, wide }: { name: React.ReactNode; sub: React.R
   </span>
 );
 
-const ExtLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
-  <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{children}</a>
-);
-
 function Bullets({ items }: { items: string[] }) {
   return (
     <ul className="grid gap-1.5 text-13 leading-relaxed text-muted-foreground">
@@ -69,7 +65,6 @@ function Bullets({ items }: { items: string[] }) {
   );
 }
 
-const PreferredTag = () => <Pill tone="gold" className="ml-1.5 align-middle">Preferred</Pill>;
 
 const indexState = (x: IndexResult) => (x.state === 'borderline' ? 'Borderline' : x.state === 'pass' ? 'Pass' : 'Fail');
 
@@ -87,18 +82,11 @@ export function ShariahIssuerReport({ record: r }: { record: IssuerRecord }) {
     label: s === PREFERRED ? <span className="text-primary">{SCENARIO_SHORT[s]}</span> : SCENARIO_SHORT[s],
     num: true,
   }));
-  // Scenario B tests the same limits against market cap and total assets; show whichever binds harder.
-  const binding = (keys: TestResult['key'][]) => pref.tests
-    .filter((t) => keys.includes(t.key) && t.value != null && t.limit != null)
-    .reduce((a, b) => ((b.value! / b.limit!) > (a.value! / a.limit!) ? b : a));
-  const prefDebt = binding(['ibd_mcap', 'ibd_ta']);
-  const prefCash = binding(['cash_mcap', 'cash_ta']);
-  const prefAr = binding(['ar_mcap']);
 
   return (
     <>
       <OCard span={12} id="sh-methods">
-        <OHead title="Five index methodologies and Maz Vantage"
+        <OHead title="Five index methodologies"
           info="Each family's own rules — what it divides by, its limits, its revenue test — run against the same figures from the company's SEC filings. They disagree mostly over the denominator: market value or total assets."
           aside={<Pill tone={indexPass === sc.indexes.length ? 'good' : indexPass ? 'warn' : 'bad'}>{indexPass} of {sc.indexes.length} index methodologies pass</Pill>} />
         <DataTable dense exportName="shariah-methodologies"
@@ -117,19 +105,11 @@ export function ShariahIssuerReport({ record: r }: { record: IssuerRecord }) {
                 </span>,
               <b key="v" className={stateTone(x.state)}>{indexState(x)}</b>,
             ]),
-            [
-              <Named key="n" name={<>Maz Vantage — {SCENARIO_NAME[PREFERRED]}<PreferredTag /></>} sub="Market cap and total assets" />,
-              <Ratio key="d" value={prefDebt.value} limit={prefDebt.limit} state={prefDebt.state} />,
-              <Ratio key="c" value={prefCash.value} limit={prefCash.limit} state={prefCash.state} />,
-              <Ratio key="a" value={prefAr.value} limit={prefAr.limit} state={prefAr.state} />,
-              <Ratio key="i" value={pref.g4.npi} limit={pref.g4.cap} state={pref.g4.state} />,
-              <b key="v" className={verdictTone(pref.verdict)}>{pref.verdict === 'PASS' ? 'Pass' : pref.verdict.startsWith('MIXED') ? 'Watch' : 'Fail'}</b>,
-            ],
           ]}
         />
         <div className="mt-3 flex flex-wrap items-center gap-2 text-13">
-          <span className="text-muted-foreground">Maz Vantage&apos;s other scenarios:</span>
-          {SCENARIOS.filter((s) => s !== PREFERRED).map((s) => (
+          <span className="text-muted-foreground">Maz Vantage&apos;s own scenarios:</span>
+          {SCENARIOS.map((s) => (
             <Pill key={s} tone={at(s).verdict === 'PASS' ? 'good' : at(s).verdict.startsWith('MIXED') ? 'warn' : 'bad'}>
               {SCENARIO_NAME[s]} · {at(s).verdict === 'PASS' ? 'Pass' : at(s).verdict.startsWith('MIXED') ? 'Watch' : 'Fail'}
             </Pill>
@@ -168,11 +148,6 @@ export function ShariahIssuerReport({ record: r }: { record: IssuerRecord }) {
             );
           })}
         </div>
-        <p className="mt-3 text-tiny text-muted-foreground/80">
-          {r.period.label}. Balance sheet at {fmtDay(r.bs.date)}; market cap {usd(r.mcap.m12)} (12-month average), {usd(r.mcap.m24)} (24),
-          {' '}{usd(r.mcap.m36)} (36), {usd(r.mcap.spot)} on {fmtDay(r.mcap.spotDate)}. Filings:{' '}
-          {r.filings.map((f, i) => <React.Fragment key={f.accession}>{i ? ', ' : ''}<ExtLink href={f.href}>{f.form} {f.period.split(' (')[0]}</ExtLink></React.Fragment>)}.
-        </p>
       </OCard>
 
       <OCard span={12} id="sh-v5-gates">
@@ -218,7 +193,7 @@ export function ShariahIssuerReport({ record: r }: { record: IssuerRecord }) {
         <DataTable dense exportName={null}
           headers={[{ label: 'Ratio' }, ...r.history.map((h) => ({ label: fmtDay(h.date), num: true }))]}
           rows={[
-            [<Named key="n" name="Cash & securities / total assets" sub="limit 33% Scenario B · 30% Scenario C · 25% Strictest" />,
+            [<Named key="n" name="Cash & securities / total assets" sub="for information: since 18 Oct 2026 every scenario tests cash against the 12-month average market cap" />,
               ...r.history.map((h) => { const t = ratioTests(h, r.mcap, r.l1.point, rev, 'B').find((x) => x.key === 'cash_ta')!; return <b key={h.date} className={stateTone(t.state)}>{p2(t.value!)}</b>; })],
             [<Named key="n" name="Debt incl. operating leases / total assets" sub="limit 25% Strictest" />,
               ...r.history.map((h) => { const t = ratioTests(h, r.mcap, r.l1.point, rev, 'S').find((x) => x.key === 'ibd_ta')!; return <b key={h.date} className={stateTone(t.state)}>{p2(t.value!)}</b>; })],
@@ -326,7 +301,8 @@ export function ShariahIssuerReport({ record: r }: { record: IssuerRecord }) {
         </p>
       </OCard>
 
-      <OCard span={12} id="sh-v5-standards">
+      {/* Only where the record researched national rulebooks too (Apple's does). */}
+      {r.standards.length ? <OCard span={12} id="sh-v5-standards">
         <OHead title="Other standards" info="National and index rulebooks beyond the five above, each run on its own rules against the same figures."
           aside={<Pill tone={otherPass === r.standards.length ? 'good' : otherPass ? 'warn' : 'bad'}>{otherPass} of {r.standards.length} pass</Pill>} />
         <ul className="grid gap-x-8 md:grid-cols-2">
@@ -338,7 +314,7 @@ export function ShariahIssuerReport({ record: r }: { record: IssuerRecord }) {
             </li>
           ))}
         </ul>
-      </OCard>
+      </OCard> : null}
 
       <OCard span={12} id="sh-v5-notes">
         <OHead title="Disclosure, governance and what to watch" />

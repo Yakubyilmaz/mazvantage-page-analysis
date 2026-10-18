@@ -4,7 +4,8 @@
    Price-chart pings — the markers that say *when* somebody bought or sold,
    and the legend that doubles as their controls.
 
-   Three charts mount this: the Overview's price card, the Analysis tab's price
+   Three charts mount this: the Overview's price card (both its live and its
+   saved-copy chart), the Analysis tab's price
    history, and the Research tab's price-against-fair-value. **The fund markers
    cost eight requests**, so `FUND_CACHE` memoises the promise per symbol:
    whichever chart the reader presses the button on, the others get it free.

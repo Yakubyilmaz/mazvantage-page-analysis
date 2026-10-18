@@ -20,6 +20,19 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { useDataEpoch } from '@/components/providers';
 import { useNav } from '@/components/nav-context';
 import { cn } from '@/lib/cn';
+import type { ChartMarker, MarkerKind } from '@/components/charts/charts';
+
+/* Insider and fund markers, the same glyphs as the report's line charts
+   (`charts.tsx`): a triangle is a Form 4's trade date, a diamond a 13F's
+   quarter end. Green below the line for a buy, red above it for a sale. */
+const MARK: Record<MarkerKind, { color: string; below: boolean; exact: boolean }> = {
+  insiderBuy: { color: 'var(--up)', below: true, exact: true },
+  insiderSell: { color: 'var(--down)', below: false, exact: true },
+  fundBuy: { color: 'var(--up)', below: true, exact: false },
+  fundSell: { color: 'var(--down)', below: false, exact: false },
+};
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const markDate = (d: string) => { const [y, m, day] = d.slice(0, 10).split('-').map(Number); return `${day} ${MONTHS[m - 1]} ${y}`; };
 
 export const RANGES = ['1D', '1M', '3M', '6M', 'YTD', '1Y', '5Y', 'ALL'] as const;
 export type Range = (typeof RANGES)[number];
@@ -154,10 +167,10 @@ function Candle(props: any) {
 }
 
 function ChartBody({
-  meta, range, setRange, style, setStyle, expanded, onToggleExpand, height,
+  meta, range, setRange, style, setStyle, expanded, onToggleExpand, height, markers,
 }: {
   meta: ChartMeta; range: Range; setRange: (r: Range) => void; style: 'area' | 'candles'; setStyle: (s: 'area' | 'candles') => void;
-  expanded: boolean; onToggleExpand: () => void; height: number;
+  expanded: boolean; onToggleExpand: () => void; height: number; markers?: ChartMarker[];
 }) {
   const { epoch } = useDataEpoch();
   const [state, setState] = React.useState<{ loading: boolean; result: FeedResult | null; rows: Row[] }>({ loading: true, result: null, rows: [] });
@@ -258,6 +271,25 @@ function ChartBody({
   const data = rows.map((r, i) => ({ ...r, i, range: [r.low, r.high] }));
   const lastClose = rows[rows.length - 1]?.close;
   const gid = React.useId().replace(/:/g, '');
+
+  // Each marker on the session (or candle) it falls in; none outside the
+  // range drawn, and none on the intraday view, whose points are minutes.
+  const marks = React.useMemo(() => {
+    if (intraday || !markers?.length || rows.length < 2) return [];
+    const from = (rows[0].startDate || rows[0].date).slice(0, 10);
+    const to = rows[rows.length - 1].date.slice(0, 10);
+    const buckets = new Map<string, { i: number; kind: MarkerKind; items: ChartMarker[] }>();
+    for (const m of markers) {
+      const d = String(m.date).slice(0, 10);
+      if (!MARK[m.kind] || d < from || d > to) continue;
+      const i = rows.findIndex((r) => r.date.slice(0, 10) >= d);
+      if (i < 0) continue;
+      const key = `${i}|${m.kind}`;
+      if (!buckets.has(key)) buckets.set(key, { i, kind: m.kind, items: [] });
+      buckets.get(key)!.items.push(m);
+    }
+    return [...buckets.values()];
+  }, [markers, rows, intraday]);
 
   const nav = useNav();
   // A company or fund opens its page from the chart: the name is a link, and so is the button beside the tools.
@@ -362,6 +394,29 @@ function ChartBody({
                   );
                 }} />
             ) : null}
+            {marks.map((b) => {
+              const st = MARK[b.kind];
+              const r = rows[b.i];
+              const y = effectiveStyle === 'candles' ? (st.below ? r.low ?? r.close : r.high ?? r.close) : r.close;
+              const tip = b.items.slice(0, 6).map((m) => `${markDate(m.date)} — ${m.label}`).join('\n') + (b.items.length > 6 ? `\n+${b.items.length - 6} more` : '');
+              return (
+                <ReferenceDot key={`${b.i}-${b.kind}`} x={b.i} y={y} ifOverflow="extendDomain"
+                  shape={(p: any) => {
+                    const cx = p.cx; const cy = (p.cy ?? 0) + (st.below ? 13 : -13); const s = 4.5;
+                    return (
+                      <g style={{ cursor: 'default' }}>
+                        <title>{tip}</title>
+                        {st.exact ? (
+                          <path d={st.below ? `M${cx},${cy - s} L${cx + s},${cy + s} L${cx - s},${cy + s} Z` : `M${cx},${cy + s} L${cx + s},${cy - s} L${cx - s},${cy - s} Z`}
+                            fill={st.color} stroke="var(--background)" strokeWidth={1} />
+                        ) : (
+                          <rect x={cx - s} y={cy - s} width={s * 2} height={s * 2} transform={`rotate(45 ${cx} ${cy})`} fill="var(--background)" stroke={st.color} strokeWidth={1.6} />
+                        )}
+                      </g>
+                    );
+                  }} />
+              );
+            })}
             {row && effectiveStyle === 'candles' ? <ReferenceDot x={selected} y={row.close} r={4.5} fill="var(--primary)" stroke="var(--background)" strokeWidth={2} /> : null}
           </ComposedChart>
         </ResponsiveContainer>
@@ -383,6 +438,7 @@ function ChartBody({
           ))}
         </div>
         <span className="text-[10px] text-muted-foreground opacity-80">
+          {intraday && markers?.length ? 'Insider and fund markers show from 1M up · ' : ''}
           {records.length
             ? `${intraday ? '5-minute prices' : supportsCandles ? 'Daily prices' : 'Daily close'} · ${dateLabel(records[records.length - 1].date, false, true)}`
             : ''}
@@ -396,8 +452,10 @@ function ChartBody({
  * `initialRange` defaults to one session, as TradingView's page does.
  * `height` is the plot's height; the expanded view takes most of the screen.
  */
-export function MarketChart({ meta, initialRange = '1D', height = 385, className }: {
+export function MarketChart({ meta, initialRange = '1D', height = 385, className, markers }: {
   meta: ChartMeta; initialRange?: Range; height?: number; className?: string;
+  /** dated events drawn on daily ranges (insider trades, fund position changes) */
+  markers?: ChartMarker[];
 }) {
   const [range, setRangeState] = React.useState<Range>(initialRange);
   const [style, setStyle] = React.useState<'area' | 'candles'>('area');
@@ -408,7 +466,7 @@ export function MarketChart({ meta, initialRange = '1D', height = 385, className
 
   const body = (big: boolean) => (
     <ChartBody key={`${meta.symbol}-${nonce}-${big}`} meta={meta} range={range} setRange={setRange} style={style} setStyle={setStyle}
-      expanded={big} onToggleExpand={() => setExpanded((v) => !v)} height={big ? Math.min(700, typeof window !== 'undefined' ? window.innerHeight * 0.68 : 600) : height} />
+      expanded={big} onToggleExpand={() => setExpanded((v) => !v)} markers={markers} height={big ? Math.min(700, typeof window !== 'undefined' ? window.innerHeight * 0.68 : 600) : height} />
   );
 
   return (

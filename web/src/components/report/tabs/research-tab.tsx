@@ -26,6 +26,7 @@ import { getApiKey } from '@/lib/fmp';
 import type { Analysis } from '@/lib/model';
 import { ColumnChart, LineChart, MultiLineChart, WaterfallChart } from '@/components/charts/charts';
 import { ValuationRangeChart } from '@/components/charts/diagrams';
+import { usePings } from '@/components/report/pings';
 import { scenarioReading } from '@/components/report/scenario-card';
 import { buildScenarios } from '@/lib/scenarios';
 import { parameterProse, profitDriverProse, profitDrivers, valuationParameters } from '@/lib/research-valuation';
@@ -219,14 +220,18 @@ function PriceVsFairValue({ a, r }: { a: Analysis; r: Ratings }) {
   const cur = curSymbol(f.currency);
   const pts: any[] = a.momentum?.points || [];
   const years = yearlyReturns(pts);
+  // Insider trades and fund position changes on the line (restored 2026-10-18;
+  // the document rebuild of 11 Oct had dropped them).
+  const pings = usePings(a);
   return (
     <div className="mt-5">
       <p className="mb-1 text-13 font-semibold">Price vs. Fair Value</p>
       {pts.length > 1 ? (
         <LineChart height={240} series={pts.map((p) => ({ date: p.date, value: p.price }))} valueFmt={(v) => price(v, cur)}
-          labelFmt={(d) => fmtDate(d, { month: 'short', year: '2-digit' })}
+          labelFmt={(d) => fmtDate(d, { month: 'short', year: '2-digit' })} markers={pings.markers}
           refLine={isNum(r.fve.value) ? { value: r.fve.value, label: `Fair value ${price(r.fve.value, cur)}` } : null} />
       ) : <Small>No price history was loaded.</Small>}
+      <div className="no-print">{pings.legend}</div>
       {years.length ? (
         <div className="mt-2">
           <DocTable first="" head={years.map((y) => String(y.year))} rows={[

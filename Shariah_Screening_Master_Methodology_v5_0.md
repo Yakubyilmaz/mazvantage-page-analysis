@@ -8,6 +8,10 @@
 **Locked:** 7 October 2026.
 **Owner:** Shariah Methodology Council (platform Shariah supervisor).
 **Classification:** Internal — institutional Shariah screening reference.
+**Interim delta Δ40 (18 October 2026, owner decision).** Cash + IBS is tested against the **12-month average market capitalisation at every scenario**, as AAOIFI Shariah Standard No. 21 does: R8 decides at Sc A, Sc B, Sc C and Strictest, each at its own limit. R9–R10 (24- and 36-month windows), R11 (Cash + IBS / total assets) and R12 (Cash + IBS / tangible market cap) are computed and reported at every scenario and decide nothing. The debt tests (R1–R7, R19) and the scenario windows for them are unchanged. Implemented in `web/src/lib/shariah-v5.ts` (`THRESHOLDS`, `ratioTests`). Issuer reports screened before this date carry an amendment note.
+
+**Interim deltas Δ41–Δ48 (18 October 2026, owner decision).** Hidden-interest rules drawn from the ADP, Airbnb and Deere screens (`HIDDEN_INTEREST_Shariah_Screening_v5_0.md`): interest booked inside revenue, client funds and float balances, lessor income, revenue shares from a partner's lending, pass-throughs and embedded insurance. Full text in §56.1.
+
 **Next scheduled review:** 7 January 2027 (quarterly cycle). Interim deltas (Δ40+) may be added between reviews; each is flagged in the issuer report that needs it and consolidated at the next review.
 
 **What this edition is.** v4.4.4 rewritten as one internally consistent rulebook. Every gate, scenario, delta (Δ1–Δ38), framework (F1–F12, the F6/F7 Modifier Rules) and worked example is carried forward. Where v4.4.4, its worked examples or the eighteen issuer reports contradicted each other, v5.0 states one rule, says which way it went and why (Part 0), and restates every number the change touches (Part XIII). The issuer figures in Part XIII were re-checked against the companies' own SEC XBRL filings on 7 October 2026. Part XII is new: the data-sourcing manual (which filing, which section, which XBRL tag, which free database) that earlier editions only gestured at.
@@ -191,9 +195,10 @@ Labelled **U** so they cannot be confused with the Gate-3 layers L1–L8.
 | R1–R3 IBD / MCAP | ≤ 33% | ≤ 30% | ≤ 30% | ≤ 25% |
 | R4 IBD / total assets | info | ≤ 30% | ≤ 30% | ≤ 25% |
 | R7 IBD / (MCAP − GW − intangibles) | info | info | ≤ 30% | ≤ 25% |
-| R8–R10 Cash + IBS / MCAP | ≤ 33% | ≤ 30% | ≤ 30% | ≤ 25% |
-| R11 Cash + IBS / total assets | info | ≤ 33% | ≤ 30% | ≤ 25% |
-| R12 Cash + IBS / (MCAP − GW − intangibles) | info | info | ≤ 30% | ≤ 25% |
+| R8 Cash + IBS / **12-month avg** MCAP, at every scenario (Δ40) | ≤ 33% | ≤ 30% | ≤ 30% | ≤ 25% |
+| R9–R10 Cash + IBS / 24m, 36m MCAP (Δ40) | info | info | info | info |
+| R11 Cash + IBS / total assets (Δ40) | info | info | info | info |
+| R12 Cash + IBS / (MCAP − GW − intangibles) (Δ40) | info | info | info | info |
 | R13 (Cash + IBS + AR) / MCAP | ≤ 50% | ≤ 50% | ≤ 50% | ≤ 50% |
 | R14–R15 AR / MCAP | ≤ 33% | ≤ 33% | ≤ 33% | ≤ 25% |
 | R16 AR / total assets | info | info | ≤ 33% | ≤ 25% |
@@ -268,7 +273,7 @@ Labelled **U** so they cannot be confused with the Gate-3 layers L1–L8.
 
 **Excluded from both tracks:** trade payables; accruals; deferred revenue and contract liabilities; deferred taxes; pension obligations (unless the issuer classifies them as debt); non-interest-bearing content or programming liabilities; contingent consideration; undrawn facilities; guarantees; and **sukuk or other financing whose Shariah-compliant structure is verified** (MSCI excludes these too).
 
-**Cash + interest-bearing securities (Cash + IBS):** cash and cash equivalents; money-market funds; T-bills and government securities; commercial paper; corporate bonds; term deposits; **current and non-current** debt securities (AFS, HTM, trading); restricted cash invested in any of these; and **interest-bearing customer financing receivables** (loan books such as MELI's), which count here rather than in AR. Excluded: equity securities, equity-method investments and strategic stakes (Δ3), and verified Shariah-compliant placements.
+**Cash + interest-bearing securities (Cash + IBS):** cash and cash equivalents; money-market funds; T-bills and government securities; commercial paper; corporate bonds; term deposits; **current and non-current** debt securities (AFS, HTM, trading); restricted cash invested in any of these (client funds matched by an equal obligation: Δ43; balances that swing within the year: Δ44); and **interest-bearing customer financing receivables** (loan books such as MELI's), which count here rather than in AR. Excluded: equity securities, equity-method investments and strategic stakes (Δ3), and verified Shariah-compliant placements.
 
 **Accounts receivable (AR):** trade receivables net of allowances. Interest-bearing customer loans sit in Cash + IBS.
 
@@ -276,7 +281,7 @@ Labelled **U** so they cannot be confused with the Gate-3 layers L1–L8.
 
 **Hanbali-strict denominator:** MCAP − goodwill − intangible assets (book values). If it is ≤ 0, the ratio is **undefined and disqualifying** at Sc C and Strictest (Δ38).
 
-**Revenue:** total revenue as reported (operating). Interest income is not added to the denominator. One-off non-operating items (termination fees, litigation receipts, disposal gains) are excluded (D14).
+**Revenue:** total revenue as reported (operating). Interest income is not added to the denominator; interest already reported inside revenue is not taken out of it (Δ42). One-off non-operating items (termination fees, litigation receipts, disposal gains) are excluded (D14).
 
 ## §7 — The twenty-two ratios
 
@@ -291,11 +296,11 @@ The thresholds for every ratio are in §3. The keys are the machine names the pl
 | R5 | `ibd_equity` | IBD / book equity | Info (undefined if equity ≤ 0) |
 | R6 | `net_ibd_equity` | (IBD − cash − IBS) / book equity | Info (undefined if equity ≤ 0) |
 | R7 | `ibd_hanbali` | IBD / (MCAP − GW − intangibles) | Test at Sc C / Strictest |
-| R8 | `cash_ibs_mcap_12m` | Cash + IBS / 12m MCAP | Test |
-| R9 | `cash_ibs_mcap_24m` | Cash + IBS / 24m MCAP | Test |
-| R10 | `cash_ibs_mcap_36m` | Cash + IBS / 36m MCAP | Test |
-| R11 | `cash_ibs_ta` | Cash + IBS / total assets | Test at Sc B/C/Strictest; info at Sc A |
-| R12 | `cash_ibs_hanbali` | Cash + IBS / (MCAP − GW − intangibles) | Test at Sc C / Strictest |
+| R8 | `cash_ibs_mcap_12m` | Cash + IBS / 12m MCAP | Test at every scenario (Δ40) |
+| R9 | `cash_ibs_mcap_24m` | Cash + IBS / 24m MCAP | Info (Δ40) |
+| R10 | `cash_ibs_mcap_36m` | Cash + IBS / 36m MCAP | Info (Δ40) |
+| R11 | `cash_ibs_ta` | Cash + IBS / total assets | Info at every scenario (Δ40; was a test at Sc B/C/Strictest) |
+| R12 | `cash_ibs_hanbali` | Cash + IBS / (MCAP − GW − intangibles) | Info at every scenario (Δ40; was a test at Sc C / Strictest) |
 | R13 | `liquid_mcap_12m` | (Cash + IBS + AR) / 12m MCAP | Test, ≤ 50% everywhere |
 | R14 | `ar_mcap_12m` | AR / 12m MCAP | Test |
 | R15 | `ar_mcap_24m` | AR / 24m MCAP | Test |
@@ -344,7 +349,7 @@ Only **income-type** layers (L1, L7 and speculative L6) count toward the 5% cap 
 
 | Layer | Key | Definition | Type | Rule |
 |---|---|---|---|---|
-| **L1** | `l1_interest_income_gross` | Interest income on cash, deposits, money-market funds, T-bills, bonds, loan books and float, taken **gross** from the investments or other-income footnote — never from an FX-netted "interest and other income" line (§39(i)) | Income | **≤ 5% of revenue at every scenario.** Enters Gate-4 NPI at 100%. |
+| **L1** | `l1_interest_income_gross` | Interest income on cash, deposits, money-market funds, T-bills, bonds, loan books and float, taken **gross** from the investments or other-income footnote **and from any revenue line earned as interest or yield (Δ41)** — never from an FX-netted "interest and other income" line (§39(i)) | Income | **≤ 5% of revenue at every scenario.** Enters Gate-4 NPI at 100%. |
 | **L2** | `l2_interest_expense` | Interest expense on borrowings | Expense | Info; Δ20. |
 | **L3** | `l3_capitalized_interest` | Interest capitalised into PP&E or inventory | Expense | Info; if above 1% of revenue, add to L2 for Δ20. |
 | **L4** | `l4_pension_interest_cost` | Interest cost on defined-benefit obligations | Expense | Info; disclose if above 0.5% of revenue. |
@@ -372,7 +377,7 @@ Only **income-type** layers (L1, L7 and speculative L6) count toward the 5% cap 
 | L7 | Financing income | none | < 0.05% | PASS |
 | L8 | Cash-vehicle yield (inside L1) | ~200M | 0.32% | Disclosed |
 
-[Operational Note for Claude] Take L1 from the investments or "other income" footnote of the filing — not from the face of the income statement, and never from a feed. If only a net figure is available, say so and treat the gross figure as unknown rather than using the net one.
+[Operational Note for Claude] Take L1 from the investments or "other income" footnote of the filing — not from the face of the income statement, and never from a feed. Then read the revenue lines and the revenue-disaggregation note for interest booked as revenue (Δ41). A feed's "interest income" of zero is not evidence of no interest: it was $0 for Deere and Paylocity and carried only corporate interest for ADP. If only a net figure is available, say so and treat the gross figure as unknown rather than using the net one.
 
 ---
 
@@ -960,7 +965,7 @@ BNPL and instalment economics → L7 (and L2 categorical if a lending segment ex
 
 ---
 
-# PART IX — THE DELTA REGISTER (Δ1–Δ39)
+# PART IX — THE DELTA REGISTER (Δ1–Δ48)
 
 ## §56.1 — Every delta
 
@@ -1005,6 +1010,15 @@ Format: **trigger → rule (v5.0)** · scenarios · precedent · status. "Amende
 - **Δ37 Dual-track lease leverage.** §6: track (a) at Sc A/B/C, track (b) at Strictest, every issuer. · Gate 2 · AMC; applied record-wide in v5.0. · **Amended (F16).**
 - **Δ38 Negative equity.** §11: equity and non-positive denominators undefined; MCAP and TA ratios tested. · Gate 2 · ABBV, AMC. · **Amended (F18).**
 - **Δ39 Post-windfall treasury mitigation — PROPOSED, NOT RATIFIED, DOES NOT APPLY.** Draft (MRNA report): where Layer 1 breaks the cap *solely* because cash was accumulated in a Δ23 / Δ26 emergency window and no new debt-investment policy was adopted, re-anchor the Layer-1 numerator to a three-year operating-cycle benchmark, subject to a 36-month cash-deployment plan and short-duration Treasuries only. **Council analysis:** (1) no external standard re-anchors the numerator to a past year; (2) *ribā* income is *ribā* whatever produced the cash pile; (3) it would not change MRNA, which also fails Gate 2 liquidity (Cash + IBS 41.7% of MCAP, 65.9% of assets). **Recommendation:** do not ratify as drafted. If the Council wants a remedy, consider a *remediation Watch* instead: the issuer stays FAIL, is monitored quarterly, and re-enters only after two consecutive quarters with Layer 1 < 5% and Cash + IBS inside the caps. · none · MRNA. · Open (§0.5).
+- **Δ40 Cash on the 12-month average market cap.** §3, §7: R8 decides at every scenario, each at its own limit; R9–R12 are information only. · Gate 2, all · AAPL. · **Interim (18 Oct 2026).**
+- **Δ41 Interest booked inside revenue.** Trigger: a revenue line earned as interest or yield — "interest on funds held for clients", stablecoin reserve revenue (Δ7), "finance and interest income", interest on customer balances inside a services line. Rule: it is Layer 1 (Layer 7 where it is lending), counted gross wherever it is reported; the revenue lines and the revenue-disaggregation note are searched as well as the investments and other-income notes. · all · ADP ($1,354.8m on client funds), Deere ($5,526m), Coinbase (sweep). · **Interim (18 Oct 2026).**
+- **Δ42 Revenue that contains interest.** Rule: the denominator is revenue as reported; interest booked inside it is not taken out (one definition across issuers, and the conservative edge is not the point of a denominator). · all · ADP: 7.86% as reported, 8.38% with the interest removed. · **Interim (18 Oct 2026).**
+- **Δ43 Client funds matched by an equal obligation.** Trigger: restricted funds held for clients or customers, invested in interest-bearing instruments and matched by a client-fund obligation (payroll processors, marketplaces, payment companies). Rule: Sc A excludes the matched amount from Cash + IBS and from (Cash + IBS + AR) — the funds are the clients', held as agent; Sc B, Sc C and Strictest count it (§6, the plain reading). The yield stays Layer 1 at every scenario unless §54 Position 2 applies. · Gate 2, per scenario · ADP (49.6% of 12-month MCAP counted, 4.4% excluded), Airbnb (28.9% / 14.4%). · **Interim (18 Oct 2026).**
+- **Δ44 Average balances where they swing.** Trigger: client funds or short-term borrowings whose disclosed average for the window differs from the period end (float businesses borrow to fund obligations between collection and payment). Rule: IBD and Cash + IBS take, line by line, the higher of the period-end balance and the disclosed average. · Gate 2, all · ADP: commercial paper nil at 30 June against a $4.2b average, reverse repos $139.3m against $3.6b — IBD $12,764m rather than $5,103m; client funds kept at the period end ($44.0b > $40.4b average). · **Interim (18 Oct 2026).**
+- **Δ45 Lessor income: rent is not interest.** Trigger: an issuer that both leases assets out and finances customers, reporting one finance-income line. Rule: operating-lease rentals received as lessor are *ijārah* (AAOIFI SS 9), Tier 0; finance-lease income and loan interest are Layer 7. Where the filing does not separate them, Layer 7 is a band whose low edge removes an estimate of rentals, stated as such. The U2 test is unaffected: a lending segment is P1 whatever its rental share. · Gate 3/4, all · Deere ($3.9–5.5b). · **Interim (18 Oct 2026).**
+- **Δ46 A share of a partner's lending income.** Trigger: credit-card profit sharing, co-brand card or savings revenue shares, loan or deposit referral shares tied to a bank's interest income. Rule: Layer 7 at 100% at Sc B, Sc C and Strictest; at Sc A, payment for promotional capacity under the Δ31 carve-out (0%). · per scenario · Target ($522m, 0.5%), Apple Card (est. $0.3–1.0b). · **Interim (18 Oct 2026).** The app sizes it at Gate 4; adding it to the Gate-3 cap by scenario is not yet implemented (Apple: +0.1–0.2pp, no verdict change).
+- **Δ47 Zero-margin pass-throughs.** Trigger: costs re-billed at no margin and reported gross in revenue (PEO benefits, premiums collected for insurers). Rule: the denominator is as reported (Δ42); Gate 4 counts the issuer's margin on a P1 pass-through, not the gross amount, and the gross reading is shown as a sensitivity. · Gate 4, all · ADP ($4,607.3m; +21pp if counted gross). · **Interim (18 Oct 2026).**
+- **Δ48 Insurance inside a service fee.** Trigger: an issuer that underwrites or retains insurance risk for customers without a separately billed premium. Rule: where the cover is priced inside fees and can be estimated, size it at 100% under §31 (Tier 1), banded; where no charge exists (a free guarantee with risk retained), G-flag only. · Gate 4, all · ADP Indemnity (est. $330–900m), Airbnb Host Damage Protection (G-flag). · **Interim (18 Oct 2026).**
 
 ## §56.2 — Trigger matrix (find every delta before Gate 2)
 
@@ -1036,6 +1050,13 @@ Format: **trigger → rule (v5.0)** · scenarios · precedent · status. "Amende
 | Sportsbook partnerships | Δ32 |
 | Window-sensitive MCAP ratios | §8, D16 |
 | Food, retail, REIT, gaming, distributor, fintech float | Part VIII |
+| A revenue line earned as interest or yield (client funds, stablecoin reserves, finance income) | Δ41, Δ42 |
+| Restricted funds held for clients or customers, with a matching obligation | Δ43, Δ44, §54 |
+| Commercial paper or repos that fund client obligations; balances that swing within the year | Δ44 |
+| Equipment leased out by an issuer that also finances customers | Δ45, U2 |
+| Credit-card profit sharing; co-brand card or savings revenue shares | Δ46 |
+| Costs re-billed at zero margin and reported gross (PEO, insurance premiums) | Δ47 |
+| A captive insurer or self-insured guarantee inside a service | Δ48, §31 |
 
 ---
 
@@ -1209,7 +1230,7 @@ For each Tier-2 rate and each sized sub-line: the point used, the band, the sour
 
 **Fair-access rules:** send a `User-Agent` header naming the organisation and a contact email; stay under 10 requests per second.
 
-**Full-text screens that pay off** (restrict to `forms=10-K,20-F`): `"pork"`, `"porcine"`, `"gelatin"`, `"alcoholic beverages"`, `"spirits"`, `"casino"`, `"sportsbook"`, `"sports betting"`, `"tobacco" "excise"`, `"loot box"`, `"interest income" "money market"`, `"buy now, pay later"`, `"captive finance"`, `"Shariah"`, `"halal"`. The search returns the exact filing and paragraph — cite it.
+**Full-text screens that pay off** (restrict to `forms=10-K,20-F`): `"pork"`, `"porcine"`, `"gelatin"`, `"alcoholic beverages"`, `"spirits"`, `"casino"`, `"sportsbook"`, `"sports betting"`, `"tobacco" "excise"`, `"loot box"`, `"interest income" "money market"`, `"buy now, pay later"`, `"captive finance"`, `"funds held for clients"`, `"interest on funds held"`, `"amounts held on behalf of customers"`, `"finance and interest income"`, `"credit card profit sharing"`, `"stablecoin revenue"`, `"zero-margin"`, `"Shariah"`, `"halal"`. The search returns the exact filing and paragraph — cite it.
 
 **MeridianLink precedent:** the company was taken private, so it drops out of the ticker file; full-text search still finds its filings (CIK 0001834494).
 

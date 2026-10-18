@@ -18,7 +18,7 @@ import { OSub } from '@/components/report/grade-parts';
 import { TickIcon } from '@/components/shell/icons';
 import { cn } from '@/lib/cn';
 import { issuerRecord } from '@/lib/shariah-issuers';
-import { labelFromQuick } from '@/lib/halal-label';
+import { answerTone, halalAnswer, labelFromIssuer, labelFromQuick, type HalalLabel, type HalalTone } from '@/lib/halal-label';
 import { ShariahIssuerReport } from './shariah-issuer';
 import { useMcapHistory } from '@/components/report/use-mcap-history';
 
@@ -31,13 +31,33 @@ const fmtDay = (iso: string | null) => (iso ? new Date(`${iso}T12:00:00Z`).toLoc
 
 export function ShariahTab({ a }: { a: Analysis }) {
   const record = issuerRecord(a.facts.symbol);
+  const researched = record ? labelFromIssuer(a.facts.symbol) : null;
 
   // A researched screen replaces the quick one outright; every other ticker gets the quick screen.
+  // The answer box sits under the question: here for a researched screen, inside
+  // QuickScreen otherwise, where the averaged market cap it reads is loaded.
   return (
     <div className="grid grid-cols-12 gap-6 max-lg:grid-cols-1">
       <h2 className="col-span-12 text-[26px] font-bold tracking-[-.025em] max-lg:col-span-1">Is {a.facts.name} ({a.facts.symbol}) halal?</h2>
+      {researched ? <HalalAnswer label={researched} text={halalAnswer(researched, a.facts.name, a.facts.symbol, null)} /> : null}
       {record ? <ShariahIssuerReport record={record} /> : <QuickScreen a={a} />}
     </div>
+  );
+}
+
+const ANSWER_TONE: Record<HalalTone, string> = {
+  good: 'border-up bg-up/8 text-up',
+  bad: 'border-down bg-down/8 text-down',
+  warn: 'border-warning bg-warning/10 text-foreground',
+  muted: 'border-border bg-muted text-muted-foreground',
+};
+
+/** The plain answer under the tab's question: the verdict first, then when, by what method, and why. */
+function HalalAnswer({ label, text }: { label: HalalLabel; text: string }) {
+  return (
+    <p className={cn('col-span-12 -mt-2 max-w-[120ch] rounded-lg border-l-4 px-5 py-4 text-[15px] font-medium leading-relaxed max-lg:col-span-1', ANSWER_TONE[answerTone(label)])}>
+      {text}
+    </p>
   );
 }
 
@@ -72,7 +92,10 @@ function QuickScreen({ a }: { a: Analysis }) {
   // disagree on identical financials, so "compliant" would be true of some
   // readers' standard and false of others'. The same label as the verdict
   // card and the server summary (`lib/halal-label.ts`).
-  const { tone, headline } = labelFromQuick(rows, f.name);
+  const label = labelFromQuick(rows, f.name);
+  const { tone, headline } = label;
+  // "As of": the market value the ratios divide by, from the quote's date.
+  const asOf = f.quoteTime ? String(f.quoteTime).slice(0, 10) : a.ds.asOf.toISOString().slice(0, 10);
 
   const limits = [
     { label: 'Income from excluded activities', detail: 'Interest income is tested above wherever the company reports it. Income from alcohol, gambling, music and film, conventional finance and the like needs a revenue breakdown by activity that no statement line carries; where a researched screen exists it is at the top of this tab. Elsewhere, a company clearing everything here could still fail on this test.' },
@@ -86,6 +109,7 @@ function QuickScreen({ a }: { a: Analysis }) {
 
   return (
     <>
+      <HalalAnswer label={label} text={halalAnswer(label, f.name, f.symbol, asOf)} />
       <OCard span={8} id="sh-verdict">
         <OHead title={`${f.name} Shariah screen`} info={SHARIAH_INFO}
           aside={<Pill tone={failed ? 'bad' : passed ? 'good' : 'muted'}>{passed} of {rows.length} pass</Pill>} />

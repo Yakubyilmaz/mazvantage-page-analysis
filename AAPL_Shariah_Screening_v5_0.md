@@ -14,6 +14,17 @@ The same computation drives the **Shariah Compliance tab** of the AAPL stock pag
 
 ---
 
+> **Amendment, 18 October 2026 (methodology Δ40).** Cash + IBS is now tested against the 12-month average market cap at every scenario, as AAOIFI Shariah Standard No. 21 does; R11 (Cash + IBS / total assets, 38.23%) is reported for information and decides nothing. On the same figures as this report, R8 is **3.50%** of the 12-month average market cap, a pass at every scenario. The verdicts become:
+>
+> | Scenario | Verdict | Deciding |
+> |---|---|---|
+> | Scenario A | **PASS** | All five gates pass |
+> | **Scenario B · AAOIFI** (preferred) | **PASS** | All five gates pass; Gate 4 NPI 3.68% < 5% |
+> | Scenario C | **FAIL** | Gate 4: 5.58% > 5% at the conservative edge |
+> | Strictest | **FAIL** | Gate 2, R19: debt incl. operating leases 25.59% of total assets > 25%; Gate 4: 5.99% > 3% |
+>
+> The sections below are the report as screened on 7 October 2026; where they say R11 decides a scenario, read it as superseded by this note. The app (`web/src/lib/shariah-issuers.ts`) carries the amended verdicts.
+
 ## 1. TL;DR
 
 | Scenario | Verdict | Deciding gate(s) | NPI (Gate 4) | Purification / share (TTM) |

@@ -14,6 +14,7 @@
    - §3, the master threshold table. Thresholds live nowhere else.
    - Which market-cap window and which debt track each scenario tests on
      (D16, Δ37), and the ±2pp Watch zone at Sc A and Sc B only (Δ22, D3).
+     Cash and securities are on the 12-month average at all four (owner, 2026-10-18).
    - Gate-4 sizing: point estimates at Sc A/B, the conservative edge of the
      band at Sc C/Strictest (D9), and open elections kept out of the total.
    - Δ6 purification, the two-component v5.0 formula, with Δ6-D and the
@@ -55,8 +56,12 @@ export const THRESHOLDS: Record<TestKey, Record<Scenario, number | null>> = {
   ibd_ta: { A: null, B: 0.30, C: 0.30, S: 0.25 },
   ibd_hanbali: { A: null, B: null, C: 0.30, S: 0.25 },
   cash_mcap: { A: 0.33, B: 0.30, C: 0.30, S: 0.25 },
-  cash_ta: { A: null, B: 0.33, C: 0.30, S: 0.25 },
-  cash_hanbali: { A: null, B: null, C: 0.30, S: 0.25 },
+  // Owner's change, 2026-10-18: cash and securities are tested against the
+  // 12-month average market cap at every scenario, as AAOIFI Standard 21 does;
+  // the total-asset and tangible-market-cap versions are still computed and
+  // printed, and decide nothing.
+  cash_ta: { A: null, B: null, C: null, S: null },
+  cash_hanbali: { A: null, B: null, C: null, S: null },
   liquid_mcap: { A: 0.50, B: 0.50, C: 0.50, S: 0.50 },
   ar_mcap: { A: 0.33, B: 0.33, C: 0.33, S: 0.25 },
   ar_ta: { A: null, B: null, C: 0.33, S: 0.25 },
@@ -71,7 +76,7 @@ export const TEST_INFO: Record<TestKey, { r: string; label: string; code: string
   ibd_mcap: { r: 'R1–R3', label: 'Debt / market cap', code: 'R1–R3 · interest-bearing debt', gate: 2 },
   ibd_ta: { r: 'R4', label: 'Debt / total assets', code: 'R4 · R19 at Strictest, operating leases included', gate: 2 },
   ibd_hanbali: { r: 'R7', label: 'Debt / tangible market cap', code: 'R7 · market cap less goodwill and intangibles', gate: 2 },
-  cash_mcap: { r: 'R8–R10', label: 'Cash & securities / market cap', code: 'R8–R10 · cash plus interest-bearing securities', gate: 2 },
+  cash_mcap: { r: 'R8–R10', label: 'Cash & securities / 12-month market cap', code: 'R8–R10 · cash plus interest-bearing securities, on the 12-month average at every scenario', gate: 2 },
   cash_ta: { r: 'R11', label: 'Cash & securities / total assets', code: 'R11', gate: 2 },
   cash_hanbali: { r: 'R12', label: 'Cash & securities / tangible market cap', code: 'R12', gate: 2 },
   liquid_mcap: { r: 'R13', label: 'Cash, securities & receivables / market cap', code: 'R13', gate: 2 },
@@ -105,6 +110,8 @@ export interface BalanceSheet {
   operatingLeases: number;
   goodwill: number;
   intangibles: number;
+  /** Δ43: restricted client funds inside cashIbs that are matched by an equal client-fund obligation. */
+  clientFunds?: number;
 }
 
 /** Market-cap windows (§8), US$ millions. */
@@ -160,14 +167,17 @@ export function ratioTests(bs: BalanceSheet, w: McapWindows, l1: number, revenue
   const hanbali = mcap - bs.goodwill - bs.intangibles;
   // Δ38: a Hanbali denominator at or below zero is undefined, and disqualifying where tested.
   const overHanbali = (x: number) => (hanbali > 0 ? x / hanbali : null);
+  // Δ43: client funds matched by an equal obligation are the clients', held as agent — out at Sc A only.
+  const cashIbs = s === 'A' ? Math.max(0, bs.cashIbs - (bs.clientFunds ?? 0)) : bs.cashIbs;
   const values: Record<TestKey, number | null> = {
     ibd_mcap: ibd / mcap,
     ibd_ta: ibd / bs.totalAssets,
     ibd_hanbali: overHanbali(ibd),
-    cash_mcap: bs.cashIbs / mcap,
-    cash_ta: bs.cashIbs / bs.totalAssets,
-    cash_hanbali: overHanbali(bs.cashIbs),
-    liquid_mcap: (bs.cashIbs + bs.ar) / mcap,
+    // The 12-month average at every scenario, not the scenario's window (2026-10-18).
+    cash_mcap: cashIbs / w.m12,
+    cash_ta: cashIbs / bs.totalAssets,
+    cash_hanbali: overHanbali(cashIbs),
+    liquid_mcap: (cashIbs + bs.ar) / mcap,
     ar_mcap: bs.ar / mcap,
     ar_ta: bs.ar / bs.totalAssets,
     l1_revenue: l1 / revenue,
