@@ -42,10 +42,24 @@ interface Saved {
   prices: Record<string, number>;
   extra: { symbol: string; shares: number }[];
   listId: string | null;
+  /** deduct the company's current liabilities on the look-through method */
+  deduct: boolean;
+}
+
+/**
+ * The first zakat page (2026-10-13) kept `{ rows, year, deduct }` under the
+ * same key. Its holdings, intentions, year and switch carry over once.
+ */
+function migrate(raw: any): Partial<Saved> {
+  if (!raw || !Array.isArray(raw.rows)) return raw || {};
+  const { rows, year, ...rest } = raw;
+  const extra = rows.filter((r: any) => r?.symbol && Number(r.shares) > 0).map((r: any) => ({ symbol: String(r.symbol), shares: Number(r.shares) }));
+  const intents = Object.fromEntries(rows.filter((r: any) => r?.symbol).map((r: any) => [r.symbol, r.intent === 'trade' ? 'trading' : 'long']));
+  return { ...rest, extra, intents, basis: year === 'solar' ? 'solar' : 'lunar', deduct: !!raw.deduct };
 }
 const DEFAULTS: Saved = {
   basis: 'lunar', metal: 'gold', gram: { gold: null, silver: null }, method: 'lookthrough',
-  other: {}, intents: {}, prices: {}, extra: [], listId: null,
+  other: {}, intents: {}, prices: {}, extra: [], listId: null, deduct: false,
 };
 
 interface Company { price: number | null; marketCap: number | null; balance: any | null; source: 'live' | 'saved' | null; name?: string }
@@ -141,7 +155,7 @@ export function ZakatCalculator() {
   const store = useWatchlists();
   const [saved, setSavedState] = React.useState<Saved>(DEFAULTS);
   const [hydrated, setHydrated] = React.useState(false);
-  React.useEffect(() => { setSavedState({ ...DEFAULTS, ...readJson<Partial<Saved>>(KEY, {}) }); setHydrated(true); }, []);
+  React.useEffect(() => { setSavedState({ ...DEFAULTS, ...migrate(readJson<any>(KEY, {})) }); setHydrated(true); }, []);
   const save = React.useCallback((patch: Partial<Saved>) => {
     setSavedState((s) => { const next = { ...s, ...patch }; writeJson(KEY, next); return next; });
   }, []);
@@ -178,7 +192,7 @@ export function ZakatCalculator() {
     const value = price != null ? price * r.shares : null;
     const intention = saved.intents[r.symbol] || 'long';
     const figures = c ? figuresFrom(c.balance, c.marketCap) : null;
-    const look = lookThrough(figures);
+    const look = lookThrough(figures, { deductCurrentLiabilities: saved.deduct });
     const h = holdingBase({ value, intention, method: saved.method, look: look.share });
     return { ...r, c, price, value, intention, figures, look, h };
   });
@@ -237,6 +251,15 @@ export function ZakatCalculator() {
               </button>
             ))}
           </div>
+          {saved.method === 'lookthrough' ? (
+            <label className="flex max-w-[100ch] items-start gap-2 text-13">
+              <input type="checkbox" className="mt-1" checked={saved.deduct} onChange={(e) => save({ deduct: e.target.checked })} />
+              <span>
+                <span className="font-semibold">Deduct the company’s current liabilities first.</span>{' '}
+                <span className="text-muted-foreground">Scholars differ: the Fiqh Council’s ruling counts cash, receivables and inventory without deducting them; some methods built on AAOIFI’s standard deduct them. Off unless you choose it.</span>
+              </span>
+            </label>
+          ) : null}
         </div>
       </Panel>
 

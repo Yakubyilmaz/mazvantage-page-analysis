@@ -36,6 +36,7 @@ import { FeedGate, Notice } from '@/components/report/ui';
 import { RelatedResearchCard, useTickerArticles } from '@/components/research/feed-parts';
 import { ReportActions } from '@/components/report/report-actions';
 import { useNav } from '@/components/nav-context';
+import { VerdictCard } from '@/components/report/verdict-card';
 import { cn } from '@/lib/cn';
 
 const PEERS = 4;
@@ -362,6 +363,8 @@ export function OverviewTab({ a }: { a: Analysis }) {
 
   return (
     <div className="grid gap-[58px] pt-2.5 max-md:gap-[42px]">
+      {/* The two questions a reader arrives with, before the chart: is it halal, and is it any good. */}
+      <VerdictCard a={a} />
       <ChartSection a={a} />
 
       {peers.length ? (

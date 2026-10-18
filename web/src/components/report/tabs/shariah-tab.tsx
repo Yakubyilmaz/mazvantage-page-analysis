@@ -12,14 +12,15 @@ import {
   EXCLUDED_ACTIVITIES, INCOME_CAP, SHARIAH_INFO, SHARIAH_STANDARDS, basisLabel, quickInputs, quickPurification, quickScreen,
   type QuickResult, type QuickState, type QuickTest,
 } from '@/lib/shariah';
-import { fetchFor, loadSnapshot } from '@/lib/fmp';
 import type { Analysis } from '@/lib/model';
 import { CheckRow, DataTable, Notice, OCard, OHead, Pill, StatLine, StatLines } from '@/components/report/ui';
 import { OSub } from '@/components/report/grade-parts';
 import { TickIcon } from '@/components/shell/icons';
 import { cn } from '@/lib/cn';
 import { issuerRecord } from '@/lib/shariah-issuers';
+import { labelFromQuick } from '@/lib/halal-label';
 import { ShariahIssuerReport } from './shariah-issuer';
+import { useMcapHistory } from '@/components/report/use-mcap-history';
 
 const VERDICT_TONE: Record<string, string> = { good: 'text-up', bad: 'text-down', warn: 'text-grade-mid', muted: 'text-muted-foreground' };
 const stateText = (s: QuickState) => (s === 'pass' ? 'Pass' : s === 'fail' ? 'Fail' : 'n/a');
@@ -38,32 +39,6 @@ export function ShariahTab({ a }: { a: Analysis }) {
       {record ? <ShariahIssuerReport record={record} /> : <QuickScreen a={a} />}
     </div>
   );
-}
-
-/**
- * The daily market-cap history the averages need, loaded when the tab opens
- * rather than with every report: live where the data is available, else the
- * bundled capture, else nothing — and the screen then says it fell back to
- * today's market cap.
- */
-function useMcapHistory(a: Analysis) {
-  const [got, setGot] = React.useState<{ for: Analysis; rows: any[] | null } | null>(null);
-  React.useEffect(() => {
-    let live = true;
-    (async () => {
-      const res = await fetchFor('marketCapHist', a.facts.symbol).catch(() => null);
-      let rows: any[] | null = res?.status === 'ok' && Array.isArray(res.data) && res.data.length ? res.data : null;
-      if (!rows) {
-        const snap = await loadSnapshot(a.facts.symbol).catch(() => null);
-        const cap = (snap as any)?.feeds?.marketCapHist;
-        rows = Array.isArray(cap) ? cap : null;
-      }
-      if (live) setGot({ for: a, rows });
-    })();
-    return () => { live = false; };
-  }, [a]);
-  const mine = got?.for === a ? got : null;
-  return { loading: !mine, rows: mine?.rows ?? null };
 }
 
 function Cell({ t }: { t: QuickTest | undefined }) {
@@ -95,12 +70,9 @@ function QuickScreen({ a }: { a: Analysis }) {
 
   // The headline is a count rather than a word: the five providers can and do
   // disagree on identical financials, so "compliant" would be true of some
-  // readers' standard and false of others'.
-  const tone = excluded ? 'bad' : unknown === rows.length ? 'muted' : failed === 0 ? 'good' : passed === 0 ? 'bad' : 'warn';
-  const headline = excluded ? 'Excluded on activity'
-    : unknown === rows.length ? 'Cannot be screened'
-      : failed === 0 ? `Passes all ${rows.length}`
-        : passed === 0 ? `Fails all ${rows.length}` : `Passes ${passed} of ${rows.length}`;
+  // readers' standard and false of others'. The same label as the verdict
+  // card and the server summary (`lib/halal-label.ts`).
+  const { tone, headline } = labelFromQuick(rows, f.name);
 
   const limits = [
     { label: 'Income from excluded activities', detail: 'Interest income is tested above wherever the company reports it. Income from alcohol, gambling, music and film, conventional finance and the like needs a revenue breakdown by activity that no statement line carries; where a researched screen exists it is at the top of this tab. Elsewhere, a company clearing everything here could still fail on this test.' },

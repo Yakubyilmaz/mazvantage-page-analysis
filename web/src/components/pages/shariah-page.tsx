@@ -3,9 +3,10 @@
 /* ==========================================================================
    Maz Vantage — the Shariah desk (`/shariah/<sub>`)
 
-   One canvas, five tabs:
+   One canvas, six tabs:
 
      screener      the five compliance screens, in one table
+     etf           a fund's holdings through the company screen
      methodology   the five published standards and what they measure
      purification  what to do with the income the screen cannot remove
      zakat         the calculator: shares by intention, the nisab, the rate
@@ -21,6 +22,7 @@ import * as React from 'react';
 import { SHARIAH_IDEAS, SHARIAH_SCREENS, shariahScreenForSub } from '@/lib/shariah-screens';
 import { EXCLUDED_ACTIVITIES, SHARIAH_INFO, SHARIAH_STANDARDS, basisLabel } from '@/lib/shariah';
 import { ScreenDesk } from '@/components/pages/screen-desk';
+import { EtfHalalCheck } from '@/components/pages/etf-halal-page';
 import {
   ConnectionButton, Grid, MetaDivider, PageFrame, PageHero, Panel, Para, SectionBar, Warn, useQueryState,
 } from '@/components/pages/page-parts';
@@ -30,9 +32,10 @@ import { ZakatCalculator } from '@/components/pages/zakat-calculator';
 
 const IDEA_BY_ID: Record<string, any> = Object.fromEntries((SHARIAH_IDEAS as any[]).map((idea) => [idea.key, idea]));
 
-type TabId = 'screener' | 'methodology' | 'purification' | 'zakat' | 'changes';
+type TabId = 'screener' | 'etf' | 'methodology' | 'purification' | 'zakat' | 'changes';
 const TABS: { id: TabId; label: string }[] = [
   { id: 'screener', label: 'Halal Screener' },
+  { id: 'etf', label: 'ETF Halal Check' },
   { id: 'methodology', label: 'Methodology' },
   { id: 'purification', label: 'Purification' },
   { id: 'zakat', label: 'Zakat' },
@@ -91,19 +94,18 @@ function PurificationTab() {
         </Para>
         <Para>
           Purification is the practice of giving that share away rather than keeping it. The share is the company’s non-compliant income over its
-          total income, applied to the dividend received — which is the same figure this screen cannot measure, for the same reason it cannot run
-          the income test.
+          earnings — a dividend is paid out of earnings, not revenue — applied to the dividend received.
         </Para>
       </Panel>
-      <Panel title="What this product can and cannot give you">
+      <Panel title="What this product works out, and what it cannot">
         <Grid heads={['You need', 'Where it comes from']} rows={[
-          ['The dividend you received', 'Your own records, or the company’s Dividends tab for the per-share amounts and dates.'],
-          ['The non-compliant share of income', 'Not here. It is read out of the filings, and most index providers publish a purification ratio per constituent — that published figure is the one to use.'],
-          ['The amount to purify', 'The two multiplied together. This desk can supply the first and never the second, so it does not print a total that would look authoritative.'],
+          ['The dividend you received', 'Your watchlist, from the shares you hold and the trailing dividend; or the company’s Dividends tab for the per-share amounts and dates.'],
+          ['The non-compliant share of income', 'Worked out for you where it can be. For a company with a researched screen, its interest and impure revenue after tax over its earnings. For every other company, the interest it earned after tax over its earnings — interest only, so a floor: income from excluded activities would add to it. Where an index provider publishes a purification ratio for the company, you can type that in instead.'],
+          ['The amount to purify', 'The two multiplied together, per holding and in total, on your watchlist’s Purification block.'],
         ]} />
         <div className="flex flex-wrap gap-2">
-          <Button size="sm" onClick={() => nav.goSymbolTab('Dividends')}>A company’s dividend record →</Button>
-          <Button size="sm" variant="outline" onClick={() => nav.goSymbolTab('Shariah Compliance')}>Its compliance tab →</Button>
+          <Button size="sm" onClick={() => nav.goView('watchlist')}>Purify my holdings →</Button>
+          <Button size="sm" variant="outline" onClick={() => nav.goSymbolTab('Shariah Compliance')}>A company’s compliance tab →</Button>
         </div>
       </Panel>
       <Panel title="Capital gains are a separate question">
@@ -172,7 +174,7 @@ export function ShariahPage({ sub }: { sub: string | null }) {
       {tab === 'screener' ? (
         <ScreenDesk screens={SHARIAH_SCREENS} ideaFor={(id) => IDEA_BY_ID[id] || null} label="Shariah screens" coreRules={3}
           lede="Five screens over the same compliance universe. The first three rules are the compliance test and never change; each screen adds its own on top, so the funnel under the table reads “this many were compliant, then this many of those were also cheap”." />
-      ) : tab === 'methodology' ? <MethodologyTab /> : tab === 'purification' ? <PurificationTab /> : tab === 'zakat' ? <ZakatCalculator /> : <ChangesTab />}
+      ) : tab === 'etf' ? <EtfHalalCheck /> : tab === 'methodology' ? <MethodologyTab /> : tab === 'purification' ? <PurificationTab /> : tab === 'zakat' ? <ZakatCalculator /> : <ChangesTab />}
     </PageFrame>
   );
 }

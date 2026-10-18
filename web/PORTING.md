@@ -543,6 +543,160 @@ ETFs and economy ahead of, so none of it ever rendered in the legacy app.
 - **Verified in the browser:** the AI chain's 19 company rows, NVDA's and MOD's bull and bear blocks, 375px.
   **Not verified:** the live call read (no key here).
 
+## Launch focus: halal stock picking (2026-10-13)
+
+Six changes from the product review of 2026-10-13, which set the positioning as research for the halal stock
+picker: the halal label free, the analysis paid. Each has its own section below.
+
+### 1. Demand Discovery out of the menu; "What the price assumes" on every Valuation tab
+
+Demand Discovery's own pilot report found its headline signal (the shortage signature) did not predict returns
+(rank correlation −0.10 out of sample), and it covers 29 hand-picked companies. Its reverse DCF — one of the parts
+that held up — answers a question every stock picker asks, so it moved to every company.
+
+| File | What it does |
+| --- | --- |
+| `lib/implied-growth.ts` | `priceImpliedGrowth`: the ten-year revenue growth the enterprise value implies, on the newest year's free-cash margin and the median across the years on file; the midpoint is read; past five-year revenue growth beside it. Refuses, with the reason, for financials, for statements reported in another currency than the price, and without positive free cash |
+| `lib/demand-pricedin.ts` | `pricedInLevel` exported, so both readings share one set of cut points |
+| `lib/model.ts` | `deriveImpliedGrowth` reads the annual statements (the vendor fields stay in this file) into `a.impliedGrowth`, after the grades: never an input to one |
+| `components/report/implied-growth-card.tsx` | The card, first on the Valuation tab's detail; `impliedSentence` and `impliedTone` are reused by the verdict card |
+| `lib/nav.ts`, `pages/alpha-page.tsx`, `alpha/outside-views.tsx` | Demand Discovery `hidden` (routable, labelled "Lab"), off the Alpha section bar, and no longer linked from non-member companies |
+
+- **Request cost:** none — annual income, balance and cash-flow statements are already loaded.
+- **Tests:** `tests/implied-growth.test.ts` (7): agreement with the gate's solver, the midpoint, the four-year
+  minimum, the no-cycle-cash floor, every refusal, past growth, and the AAPL and NVDA captures.
+- **Verified in the browser:** AAPL's saved report, Valuation tab (15.8% asked against 8.7% delivered, "Priced in");
+  the Alpha Signal page without the Demand Discovery section. `/alpha/demand` still opens.
+
+### 2. Search: server-rendered halal summary, per-tab titles, structured data, sitemap and robots
+
+The report renders in the browser, so the HTML a search engine fetched for `/stock/AAPL` held a skeleton. The page
+people search for — "is <company> halal?" — now answers in the server HTML.
+
+| File | What it does |
+| --- | --- |
+| `lib/halal-label.ts` | `halalLabel`: the one label every free surface prints — the researched v5.0 screen where one exists (preferred scenario), else the quick screen's count. The Shariah tab's headline now comes from it too (which fixes "Passes all 5" when a standard could not be measured) |
+| `lib/server/stock-summary.ts` | Server only: five reads (profile, balance, income, dividends, market-cap history) through the browser's own `FEEDS` specs, cached a day by the framework; the bundled snapshot without a key; null rather than an invented summary |
+| `lib/server/universe.ts` | The sitemap's companies: one screener read (US, largest first, up to 5,000), cached a day; the bundled reports without a key |
+| `components/report/stock-summary.tsx` | `StockSummaryBlock` (shown while the report loads) and `StockJsonLd` (an FAQ "Is X halal?" and the company), both streamed behind Suspense |
+| `app/stock/[symbol]/layout.tsx`, `[[...tab]]/page.tsx` | The summary as the report's `preface`; per-tab titles, descriptions and canonical links ("Is Apple Inc. (AAPL) halal? Shariah compliance check") |
+| `app/sitemap.ts`, `app/robots.ts`, `lib/site.ts` | Every visible menu section, then each company's report and Shariah tab; `/api/` disallowed; absolute URLs from `NEXT_PUBLIC_SITE_URL` (documented in `.env.example`) |
+| `report/report-shell.tsx` | Takes `preface`; no longer overwrites the server's title on load |
+
+- **Request cost:** five reads per company per day on the server, however many readers and crawlers open it, plus one
+  screener read a day for the sitemap. Nothing new in the browser.
+- **Before launch:** set `NEXT_PUBLIC_SITE_URL`, or the sitemap and canonical links point at localhost.
+- **Tests:** `tests/halal-label.test.ts` (5): the count rules, the excluded activity, the researched-first order on the
+  AAPL and NVDA copies, and the summary's snapshot fallback (and refusal of a symbol without one).
+- **Verified:** the served HTML of `/stock/AAPL/shariah-compliance` (title, description, canonical, JSON-LD, the summary
+  heading), `/robots.txt`, `/sitemap.xml` (88 URLs without a key), and the NVDA Shariah tab in the browser.
+
+### 3. The verdict card, and the seam for plans
+
+A reader arriving from a search lands on eighteen tabs. The Overview now opens with the two questions they came with.
+
+| File | What it does |
+| --- | --- |
+| `components/report/verdict-card.tsx` | Four cells over the chart: **Is it halal?** (free; `halalLabel` on the averaged market cap), **Maz grade**, **What the price assumes** and **Watch out for** (the first sentence of the two weakest ratios), each linking to the tab that explains it |
+| `lib/access.ts` | `FEATURE_PLAN` (the halal surfaces free, the analysis Pro, score history Pro+), `canUse`, `planFor`. Gating is **off** unless `NEXT_PUBLIC_PLAN_GATING=on` |
+| `components/access-context.tsx` | `AccessContext` / `useAccess`: the back end provides the reader's plan here once accounts exist |
+| `components/report/use-mcap-history.ts` | The Shariah tab's market-cap history hook, shared so the card and the tab print the same label |
+
+- **Gated:** a paid cell says what it holds and links to the plans. It never shows a blurred or invented figure. The
+  check is presentation only; once there are accounts, the server must withhold the paid figures too.
+- **Ungated (today):** every cell shows its figures with a small "Pro" or "Free" mark.
+- **Request cost:** +1 on opening a report (`marketCapHist`, which the Shariah tab already read; cached, so opening the
+  tab afterwards costs nothing).
+- **Tests:** `tests/access.test.ts` (2).
+- **Verified in the browser:** NVDA and AAPL at 1400px and 390px, ungated and with `NEXT_PUBLIC_PLAN_GATING=on`.
+
+### 4. ETF Halal Check (`/shariah/etf?fund=SPUS`)
+
+Readers say Shariah ETFs hold companies that are not compliant. Often both sides are right: the fund follows one
+provider's rules and the reader another's. This tab puts every holding of a fund through the company screen and adds
+up the fund's weight.
+
+| File | What it does |
+| --- | --- |
+| `lib/etf-halal.ts` | `loadFund` (record and holdings), `checkFund` (one screener read for sector, industry and market cap, then each holding's annual balance sheet — a profile too for holdings the screener does not list — largest first, up to the cap), `checkHolding` and `summariseFund` (pure): weight by label, and pass / fail / not measured under each of the five standards |
+| `components/pages/etf-halal-page.tsx` | Ticker field, suggested funds, cap (50 / 100 / 250), a button that states the request count; the weight bar, the per-standard table, and every holding with its label and a link to its Shariah tab (CSV export) |
+| `pages/shariah-page.tsx`, `lib/nav.ts` | The tab and its menu item |
+
+- **Each holding's label** is `halalLabel`, as on its report, but on **today's market cap** (the averages would cost a
+  request per holding) and without the interest-income test. The page says both. Lines with no ticker, holdings with no
+  balance sheet and holdings past the cap are reported as "not screened", never as a pass or a fail.
+- **Request cost:** 2 on choosing a fund; then 1 screener read plus 1 per holding screened (2 for a holding outside the
+  screener's US list). About 53 for the default cap of 50. Balance sheets are cached and shared with the reports.
+- **Tests:** `tests/etf-halal.test.ts` (8): pass, fail, excluded activity, mixed standards, never-screened lines, the
+  weight sums by label and per standard, the cost.
+- **Verified in the browser:** with live data stubbed in memory (a five-company fund plus cash, using the AAPL and NVDA
+  captures and made-up rows for the rest; nothing stored or sent): the run, the bar, the table, 0 errors. **Not verified:**
+  a real fund's holdings (no key in this environment).
+
+### 5. Purification worked out automatically, and a zakat calculator
+
+| File | What it does |
+| --- | --- |
+| `lib/purification.ts` | `autoImpure`: the impure share of a dividend — the researched v5.0 screen's Δ6 (interest and impure revenue after tax, over earnings) where one exists, else after-tax interest over net income from the newest annual statement; null, never zero, without an interest line or in a loss year |
+| `pages/watchlist-page.tsx` | The Purification block fills each holding's impure share from `autoImpure` and labels its source ("researched" / "interest"); a reader's own figure still wins. The old hint divided interest by **revenue**, which understated the share of a dividend several times over |
+| `lib/zakat.ts` | `zakatLine` / `zakatTotal`: held to trade → 2.5% of market value; held long term → 2.5% of the company's cash, receivables and inventory per share (current liabilities deducted only when the reader asks); lunar 2.5% or solar 2.577%; a line that cannot be read is left out and says why |
+| `components/pages/zakat-page.tsx` | Shariah → Zakat (`/shariah/zakat`): the reader's list (kept in this browser, **new storage key `mazvantage.zakat`**), filled by hand or from the active watchlist's holdings |
+| `pages/shariah-page.tsx`, `lib/nav.ts` | The Zakat tab and menu item; the Purification tab now says what is worked out and links to the watchlist |
+
+- **Request cost:** purification, unchanged (the income bag it already loaded). Zakat: one batch quote, then a balance
+  sheet and an income statement per long-term line, on the button; cached and shared with the reports.
+- **Not decided here:** the nisab (needs all of a reader's wealth) and whether a company already pays zakat. The page
+  says both.
+- **Tests:** `tests/zakat-purification.test.ts` (7).
+- **Superseded 2026-10-18 (merge):** the owner kept the 2026-10-17 calculator below and ported this page's current-liabilities switch into it. `zakat-page.tsx` is gone; `lib/zakat.ts` is the newer module; the purification half of this section stands; its storage is migrated on first load.
+- **Verified in the browser** with stubbed live data (AAPL and NVDA captures, made-up rows for the rest; nothing stored
+  or sent): the zakat table, both methods, a line left out, the total; the watchlist's purification shares and labels.
+
+### 6. Portfolio compliance, compliance changes, the Ideas track record — and the back-end contract
+
+Alerts and a track record need memory across days, which needs the back end being built separately. What could be
+built without it is built; the rest is a seam and a contract (`BACKEND_CONTRACT.md` at the repository root).
+
+| File | What it does |
+| --- | --- |
+| `pages/watchlist-page.tsx` → `ComplianceBlock` | Every holding's `halalLabel` (profile and balance bags, on a click), the share of the list's value passing / mixed / failing (counted equally until every holding has shares), and **"Changed since you last looked"** with "Mark as seen" |
+| `lib/compliance-changes.ts` | `recordOf`, `diffLabels`, `direction`: what counts as a change and which way. The browser uses it today against `mazvantage.halal.seen` (**new storage key**); the nightly job should import it |
+| `lib/track-record.ts` | `trackRecord`: equal-weight price return chained over published lists, the benchmark over the same dates, annualised after a full year, members with no end price counted in `missing`, never dropped silently |
+| `lib/backend.ts` | `NEXT_PUBLIC_BACKEND_URL` and `fetchTrackRecord`; no request at all while it is unset |
+| `components/ideas/track-record-card.tsx` | On every portfolio page; renders nothing until the back end serves a record |
+| `BACKEND_CONTRACT.md` | Plans and `AccessContext`; the daily `halal_labels` table, changes and email alerts; the track-record endpoint and its JSON; score history; storage keys to migrate; costs |
+| `.env.example` | `NEXT_PUBLIC_BACKEND_URL`, `NEXT_PUBLIC_PLAN_GATING` |
+
+- **Request cost:** the Compliance block, a profile and a balance sheet per holding on the button (both shared with
+  other blocks and the reports). The track record: none until the back end exists.
+- **Tests:** `tests/track-and-changes.test.ts` (4).
+- **Verified in the browser** with stubbed live data (two captures, three made-up companies; nothing stored or sent but
+  the in-browser last-seen labels): the labels, the value split, two changes (one worse, one better). **Not verified:**
+  the track-record card with a real back end (none exists yet; the arithmetic is unit-tested).
+
+### 7. The halal FAQ on each Shariah tab, and the most-searched halal checks in the footer
+
+Modelled on the "Is <company> halal?" pages competing screeners rank with, but every answer is the company's own
+figures rather than the same paragraph on every page.
+
+| File | What it does |
+| --- | --- |
+| `lib/halal-faq.ts` | `halalFaq`: up to eight questions from the label and the quick screen's five rows. Is it halal (answered in the first word), which standards it passes (each with its ratios and limits), why they disagree, **how close it is to the line** (the tightest test and how far the market value would have to fall) or **what it would take to pass**, purification (as a share of each dividend; in money only when a dividend is on record), how often it is checked, and "Is this a fatwa?". An excluded business gets its reason; a company that cannot be screened gets nothing invented. `faqJsonLd` builds the structured data from the same items |
+| `components/report/halal-faq.tsx` | `StockHalalFaq`: server-rendered under the Shariah tab, native `<details>` (no script), the first answer open, with the FAQ structured data |
+| `app/stock/[symbol]/[[...tab]]/page.tsx` | Renders the FAQ on the Shariah tab only |
+| `components/report/stock-summary.tsx` | The FAQ structured data moved out of `StockJsonLd`, so it is only on the page that prints the questions |
+| `lib/server/stock-summary.ts` | The summary also carries the quick screen's `inputs` and `rows` |
+| `lib/popular-halal.ts`, `shell/site-footer.tsx` | "Is it halal? Most searched stocks": 20 US companies, each linking to its Shariah tab, on every page |
+
+- **Request cost:** none new; the FAQ reads the same five cached server reads as the summary.
+- **Tests:** `tests/halal-faq.test.ts` (9): a passing, a split, an excluded and an unscreenable company; purification
+  without interest income or a dividend on record; the structured data matching the page; the NVDA (quick) and AAPL
+  (researched) copies; the footer links.
+- **Verified:** the served HTML of `/stock/NVDA/shariah-compliance` (FAQ and one FAQPage block) and `/stock/NVDA` (neither),
+  the AAPL researched answer, and both at 390px and 1280px in the browser.
+- **Not built:** per-country and per-sector halal collections and per-ETF answer pages (the screener takes no sector
+  parameter yet, and the ETF check runs in the browser on a button).
+
 ## Why it's moving, and the zakat calculator (2026-10-17)
 
 | Feature | Where | Logic | Tests |
@@ -555,3 +709,4 @@ Rules both keep:
 - **Rating changes are an on-demand feed**: the strip fetches them once (live, else the saved copy). Intraday, the two fund quotes are one batch request.
 - **The zakat methods are the published rulings', and the page picks none**: the International Islamic Fiqh Academy's Resolution 28 (3/4), 1988, and the Fiqh Council of North America's ruling on stocks, both linked on the page. A balance-sheet line the data lacks counts as zero and is named, so a look-through share is a floor. Without a metal price, the nisab is untested and no amount is shown. The gold and silver price per gram comes from the futures quote per troy ounce when live, and is otherwise typed.
 - The model-written version of the line (Haiku, from the same matched items) is not built: there is no model service. The rule-based line stands on its own.
+- **Merged 2026-10-18 with the 2026-10-13 session's work.** The owner chose this calculator over that session's `zakat-page.tsx`, with its "deduct current liabilities" switch ported in (`lookThrough(…, { deductCurrentLiabilities })`, off by default; a missing liabilities line is named). Readers' entries saved by the older page (`{ rows, year, deduct }` under the same key) carry over on first load. Demand Discovery follows that session: hidden from every menu, reachable by link as a lab page.

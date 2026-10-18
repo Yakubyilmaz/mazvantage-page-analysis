@@ -57,6 +57,8 @@ const TABS: { id: TabId; label: string }[] = [
   { id: 'limits', label: 'Limits' },
 ];
 const TAB_ALIAS: Record<string, TabId> = { screener: 'scan', methodology: 'method', backtest: 'limits' };
+/** Demand Discovery is routable but not on the section bar (see `nav.ts`): a lab page, reached only by link. */
+const BAR_TABS = TABS.filter((t) => t.id !== 'demand');
 
 const W = ALPHA_WEIGHTS as Record<string, number>;
 const CATS = CATEGORIES as any[];
@@ -361,9 +363,9 @@ export function AlphaPage({ sub }: { sub: string | null }) {
         strap={demand
           ? 'Where demand is accelerating along a supply chain, whether supply can keep up, and how much of it the price already assumes — read from filed quarters and dated, sourced evidence, with the backtest beside it.'
           : 'Companies where something measurable has recently changed, and where fewer people than usual are looking. Eleven categories of dated, sourced evidence, scored 0–100 with the share of it that could actually be measured printed beside every number.'}
-        meta={<><ConnectionButton /><MetaDivider /><span>{demand ? 'Five chains · twenty-nine companies · research signal, not advice' : `${CATS.length} categories · weighting v${CALC_VERSION} · unvalidated`}</span></>} />
-      {/* Archived 2026-10-13: the menu is off the rail. Demand Discovery now
-          belongs to Research and stands alone; the other three pages stay
+        meta={<><ConnectionButton /><MetaDivider /><span>{demand ? 'Lab · five chains · twenty-nine companies · research signal, not advice' : `${CATS.length} categories · weighting v${CALC_VERSION} · unvalidated`}</span></>} />
+      {/* Archived 2026-10-13: the menu is off the rail. Demand Discovery
+          is a lab page reached by link only (no menu lists it); the other three stay
           readable by their old links, under a notice, with their own bar. */}
       {demand ? null : (
         <>
@@ -371,9 +373,8 @@ export function AlphaPage({ sub }: { sub: string | null }) {
             <b>This page is archived.</b> The Alpha Signal reading of each company now sits in its Research report, on the same engine and
             the same data.{' '}
             <button type="button" onClick={() => nav.goSymbolTab('Research')} className="font-semibold text-primary hover:underline">Open a Research report ›</button>
-            {' '}Demand Discovery has moved to the Research menu.
           </div>
-          <SectionBar label="Alpha Signal sections" items={TABS.filter((t) => t.id !== 'demand')} active={tab} onSelect={(id) => nav.goView('alpha', id)} />
+          <SectionBar label="Alpha Signal sections" items={BAR_TABS} active={tab} onSelect={(id) => nav.goView('alpha', id)} />
         </>
       )}
       {tab === 'scan' ? <ScanTab /> : demand ? <DemandDesk /> : tab === 'method' ? <MethodTab /> : <LimitsTab />}

@@ -5,12 +5,14 @@ import './globals.css';
 import { AppProviders } from '@/components/providers';
 import { AppFrame } from '@/components/shell/app-frame';
 import { BRAND_NAME, BRAND_SLOGAN } from '@/lib/brand';
+import { SITE_URL } from '@/lib/site';
 
 const inter = Inter({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-inter' });
 // The logo's typeface, for the wordmark only. One weight, self-hosted.
 const klarheit = localFont({ src: '../fonts/es-klarheit-kurrent-semibold.woff', weight: '600', display: 'swap', variable: '--font-klarheit' });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: { default: `${BRAND_NAME} — ${BRAND_SLOGAN}`, template: `%s — ${BRAND_NAME}` },
   description:
     `${BRAND_NAME} stock analysis: a five-factor report on valuation, growth, track record, balance sheet health `

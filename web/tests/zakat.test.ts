@@ -48,6 +48,14 @@ describe('the company’s zakatable assets', () => {
     expect(lookThrough({ cash: 900, receivables: 200, inventory: 0, marketCap: 1000 }).share).toBe(1);
     expect(lookThrough({ cash: null, marketCap: 400 }).share).toBeNull();
   });
+  it('deducts current liabilities only when asked, and names the line when it is missing', () => {
+    const c = { cash: 300, receivables: 100, inventory: 100, currentLiabilities: 200, marketCap: 1000 };
+    expect(lookThrough(c).assets).toBe(500);
+    expect(lookThrough(c, { deductCurrentLiabilities: true })).toEqual({ share: 0.3, assets: 300, missing: [] });
+    expect(lookThrough({ ...c, currentLiabilities: 900 }, { deductCurrentLiabilities: true }).share).toBe(0);
+    expect(lookThrough({ ...c, currentLiabilities: null }, { deductCurrentLiabilities: true }).missing).toEqual(['current liabilities']);
+    expect(figuresFrom({ cashAndShortTermInvestments: 1, totalCurrentLiabilities: 7 }, 10).currentLiabilities).toBe(7);
+  });
   it('NVIDIA, from its fiscal 2026 balance sheet in the bundled copy', () => {
     const d = load('NVDA.json');
     const bal = d.feeds.balance[0];

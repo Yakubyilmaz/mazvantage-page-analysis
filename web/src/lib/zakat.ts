@@ -63,6 +63,8 @@ export interface CompanyFigures {
   receivables?: number | null;
   inventory?: number | null;
   marketCap?: number | null;
+  /** current liabilities, deducted only when the reader asks */
+  currentLiabilities?: number | null;
   /** the balance sheet's date */
   asOf?: string | null;
 }
@@ -72,7 +74,7 @@ export interface LookThrough {
   share: number | null;
   assets: number | null;
   /** lines the balance sheet did not carry, counted as zero */
-  missing: ('cash' | 'receivables' | 'inventory')[];
+  missing: ('receivables' | 'inventory' | 'current liabilities')[];
 }
 
 const finite = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
@@ -81,8 +83,12 @@ const finite = (v: unknown): v is number => typeof v === 'number' && Number.isFi
  * The share of a company's market value that is zakatable on the look-through
  * method. Cash is required; a receivables or inventory line the data does not
  * carry counts as zero and is named, so the figure is a floor, never inflated.
+ *
+ * Whether the company's current liabilities come off first is a point
+ * scholars differ on (the FCNA ruling does not deduct them; some methods
+ * built on AAOIFI's standard do), so it is the reader's switch, off by default.
  */
-export function lookThrough(c: CompanyFigures | null | undefined): LookThrough {
+export function lookThrough(c: CompanyFigures | null | undefined, { deductCurrentLiabilities = false } = {}): LookThrough {
   if (!c || !finite(c.cash) || !finite(c.marketCap) || c.marketCap <= 0) return { share: null, assets: null, missing: [] };
   const missing: LookThrough['missing'] = [];
   const part = (v: number | null | undefined, name: 'receivables' | 'inventory') => {
@@ -90,7 +96,11 @@ export function lookThrough(c: CompanyFigures | null | undefined): LookThrough {
     missing.push(name);
     return 0;
   };
-  const assets = Math.max(0, c.cash) + part(c.receivables, 'receivables') + part(c.inventory, 'inventory');
+  let assets = Math.max(0, c.cash) + part(c.receivables, 'receivables') + part(c.inventory, 'inventory');
+  if (deductCurrentLiabilities) {
+    if (finite(c.currentLiabilities)) assets = Math.max(0, assets - c.currentLiabilities);
+    else missing.push('current liabilities');
+  }
   return { share: Math.min(1, assets / c.marketCap), assets, missing };
 }
 
@@ -101,6 +111,7 @@ export function figuresFrom(balance: any, marketCap: number | null | undefined):
     cash: n(balance?.cashAndShortTermInvestments ?? balance?.cashAndCashEquivalents),
     receivables: n(balance?.netReceivables ?? balance?.accountsReceivables),
     inventory: n(balance?.inventory),
+    currentLiabilities: n(balance?.totalCurrentLiabilities),
     marketCap: finite(marketCap) ? marketCap : null,
     asOf: balance?.date ?? null,
   };

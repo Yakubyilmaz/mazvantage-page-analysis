@@ -289,8 +289,6 @@ export const NAV: NavMenu[] = [
       { label: 'Article', sub: 'article', hidden: true },
       // Other houses' outlooks and fund letters, linked at the publisher.
       { label: 'Letters & Outlooks', sub: 'letters' },
-      // Moved from the archived Alpha Signal menu (2026-10-13); its address is unchanged.
-      { label: 'Demand Discovery', view: 'alpha', sub: 'demand' },
       { label: 'Stock Analysis', symbolTab: 'Research' },
       { label: 'Investing Strategy', sub: 'strategy' },
       { label: 'Calculators', sub: 'calculators' },
@@ -356,7 +354,7 @@ export const NAV: NavMenu[] = [
   },
   {
     /* Archived 2026-10-13: the scanner, method and limits pages stay
-       reachable by their old links; Demand Discovery moved to Research; a
+       reachable by their old links; Demand Discovery is a hidden lab page; a
        company's reading now sits in its Research report. */
     view: 'alpha',
     archived: true,
@@ -369,7 +367,11 @@ export const NAV: NavMenu[] = [
        real section rather than a footnote — the weights are unvalidated. */
     items: [
       { label: 'Alpha Scanner', sub: 'scan' },
-      { label: 'Demand Discovery', sub: 'demand' },
+      // Out of the menu since 2026-10-13: its own backtest found the headline
+      // signal did not predict returns, and it covers 29 hand-picked names.
+      // The route stays alive as a lab page; its reverse DCF moved to every
+      // company's Valuation tab (`lib/implied-growth.ts`).
+      { label: 'Demand Discovery', sub: 'demand', hidden: true },
       { label: 'Method & Weights', sub: 'method' },
       { label: 'Limits & Validation', sub: 'limits' },
       { label: 'On a company', symbolTab: 'Research' },
@@ -391,6 +393,8 @@ export const NAV: NavMenu[] = [
       { label: 'Halal Dividend Stocks', sub: 'dividend' },
       { label: 'Halal Growth Stocks', sub: 'growth' },
       { label: 'Halal Value Stocks', sub: 'value' },
+      // A fund's holdings through the company screen: the answer to "my Shariah ETF holds non-compliant names".
+      { label: 'ETF Halal Check', sub: 'etf' },
       { label: 'Compliance Changes', sub: 'changes' },
       { label: 'Shariah Methodology', sub: 'methodology' },
       { label: 'Purification', sub: 'purification' },
