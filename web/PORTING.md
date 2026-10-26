@@ -686,7 +686,7 @@ figures rather than the same paragraph on every page.
 | `app/stock/[symbol]/[[...tab]]/page.tsx` | Renders the FAQ on the Shariah tab only |
 | `components/report/stock-summary.tsx` | The FAQ structured data moved out of `StockJsonLd`, so it is only on the page that prints the questions |
 | `lib/server/stock-summary.ts` | The summary also carries the quick screen's `inputs` and `rows` |
-| `lib/popular-halal.ts`, `shell/site-footer.tsx` | "Is it halal? Most searched stocks": 20 US companies, each linking to its Shariah tab, on every page |
+| `lib/popular-halal.ts`, `shell/site-footer.tsx` | "Is it halal? Most searched stocks": 20 US companies, each linking to its Shariah tab, on every page. **Removed from the footer 2026-10-25** at the user's request; `lib/popular-halal.ts` stays (tested, unused) |
 
 - **Request cost:** none new; the FAQ reads the same five cached server reads as the summary.
 - **Tests:** `tests/halal-faq.test.ts` (9): a passing, a split, an excluded and an unscreenable company; purification
