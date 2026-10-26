@@ -27,7 +27,7 @@ import {
   COUNTRIES, ETF_SECTIONS, HUB_SECTIONS, countryOf, loadEtfCollections, loadHubSection, loadIndicatorRange,
   loadUsIndicators, quoteMap,
 } from '@/lib/markethub-data';
-import { rememberCountry } from '@/lib/market-format';
+import { rememberCountry, storedCountry } from '@/lib/market-format';
 import { newsStories } from '@/lib/news-stories';
 import { etfCollection } from '@/lib/etf-collections';
 import { sectorSlug } from '@/lib/nav';
@@ -132,7 +132,8 @@ function HubDialog({ state, onClose, onPick }: { state: DialogState; onClose: ()
 
 /* ---------- the country picker ------------------------------------------------------ */
 
-function CountryPicker({ world, country, onPick }: { world: boolean; country: Place; onPick: (code: string) => void }) {
+/** The market picker in a page title. `suffix` names what the page is about ("ETFs"); without one it is the overview's. */
+export function CountryPicker({ world, country, onPick, suffix }: { world: boolean; country: Place; onPick: (code: string) => void; suffix?: string }) {
   const [open, setOpen] = React.useState(false);
   const groups = [...new Set(COUNTRIES.map((p) => p.group))];
   const pick = (code: string) => { setOpen(false); onPick(code); };
@@ -140,11 +141,11 @@ function CountryPicker({ world, country, onPick }: { world: boolean; country: Pl
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <button type="button" aria-haspopup="menu" aria-label={`Market data for ${world ? 'World' : country.name}. Choose another country`}
+        <button type="button" aria-haspopup="menu" aria-label={suffix ? `${world ? 'World' : country.name} ${suffix}. Choose another country` : `Market data for ${world ? 'World' : country.name}. Choose another country`}
           className="flex items-center gap-3 text-left hover:text-primary">
           <h1 className="flex items-center gap-3 text-[clamp(32px,3.8vw,58px)] font-bold leading-[1.2] tracking-[-.045em] max-sm:text-[32px]">
             {world ? <span aria-hidden="true">🌐</span> : <CountryFlag code={country.code} large className="[&_img]:h-[.75em] [&_img]:w-auto" />}
-            <span>{world ? 'World' : country.name}</span>
+            <span>{world ? 'World' : country.name}{suffix ? ` ${suffix}` : ''}</span>
           </h1>
           <span aria-hidden="true" className="text-3xl text-muted-foreground">⌄</span>
         </button>
@@ -522,7 +523,7 @@ function HubSection({ spec, country, world, section, requested, onLoaded, ctx, o
           <span aria-hidden="true" className={cn('text-primary', local && 'rounded bg-primary/10 px-1.5 text-lg')}>{local ? country.code : MARKS[spec.id]}</span>
           {page ? (
             <button type="button" aria-label={`${title} — open the board`} className="inline-flex items-center gap-1 hover:text-primary"
-              onClick={() => nav.goView('markets', page, { country: spec.id === 'world' ? 'WORLD' : country.code })}>{title}<Chevron /></button>
+              onClick={() => nav.goView('markets', page, { country: WORLD_ONLY.includes(spec.id) ? 'WORLD' : country.code })}>{title}<Chevron /></button>
           ) : title}
           {scope ? <span title={`This section covers ${scope.toLowerCase() === 'global' ? 'every market' : scope}`} className="rounded-full bg-accent px-2.5 py-1 text-micro font-medium tracking-normal text-muted-foreground">{scope}</span> : null}
         </h2>
@@ -549,17 +550,25 @@ export function MarketHub({ section = null }: { section?: HubSectionId | null })
   const nav = useNav();
   const has = useHasKey();
   const q = useQueryState();
-  const asked = q.get('country');
-  const world = !asked || asked.toUpperCase() === 'WORLD';
+  /* The ETF page picks its market in the title, as the Stocks page does: the
+     URL, else the market last chosen, else the United States. "World" shows
+     the world's funds section in place of one country's. The overview reads
+     no country as the world. */
+  const etfPage = section === 'etfs';
+  const asked = etfPage ? storedCountry(q.params) : q.get('country');
+  const world = etfPage ? String(asked).toUpperCase() === 'WORLD' : !asked || asked.toUpperCase() === 'WORLD';
   const country = countryOf(world ? 'US' : asked);
-  const specs = HUB_SECTIONS.filter((s) => s.id !== 'bonds' && (section ? s.id === section : world || !WORLD_ONLY.includes(s.id)));
+  const shown: string | null = etfPage && world ? 'worldEtfs' : section;
+  const specs = HUB_SECTIONS.filter((s) => s.id !== 'bonds' && (shown ? s.id === shown : world || !WORLD_ONLY.includes(s.id)));
   const [dialog, setDialog] = React.useState<DialogState>(null);
   const [requested, setRequested] = React.useState<string | null>(null);
-  const [active, setActive] = React.useState<string>(section || specs[0]?.id);
+  const [active, setActive] = React.useState<string>(shown || specs[0]?.id);
   const pendingJump = React.useRef<string | null>(null);
   const etfTab: EtfTab = section === 'etfs' && ETF_TABS.some((t) => t.id === q.get('board')) ? q.get('board') as EtfTab : 'overview';
 
-  React.useEffect(() => { if (section) document.title = `${PAGE_TITLE[section]} — Maz Vantage`; }, [section]);
+  React.useEffect(() => {
+    if (section) document.title = `${etfPage ? `${world ? 'World' : country.short} ETFs` : PAGE_TITLE[section]} — Maz Vantage`;
+  }, [section, etfPage, world, country.short]);
   // A new country rebuilds every section; the one a reader jumped to under the
   // old country is not a request under the new one, and the top section is.
   React.useEffect(() => { setRequested(null); }, [world, country.code]);
@@ -581,7 +590,8 @@ export function MarketHub({ section = null }: { section?: HubSectionId | null })
 
   const setCountry = (code: string) => {
     rememberCountry(code);
-    q.set({ country: code === 'WORLD' ? null : code });
+    // The ETF page names World in its address; the overview reads no country as the world.
+    q.set({ country: code === 'WORLD' && !etfPage ? null : code });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -653,7 +663,7 @@ export function MarketHub({ section = null }: { section?: HubSectionId | null })
 
   const sections = specs.map((spec) => (
     <HubSection key={`${spec.id}:${world ? 'WORLD' : country.code}`} spec={spec} country={country} world={world} section={section}
-      requested={requested === spec.id || (!requested && spec.id === (section || 'indices'))} onLoaded={onLoaded} ctx={ctx} openScreener={openScreener} />
+      requested={requested === spec.id || (!requested && spec.id === (shown || 'indices'))} onLoaded={onLoaded} ctx={ctx} openScreener={openScreener} />
   ));
   /* Sectors sits above the equity sections: it is the breakdown of the market
      those sections then rank inside. Only on the overview — a page about one
@@ -677,13 +687,17 @@ export function MarketHub({ section = null }: { section?: HubSectionId | null })
             <div className="mb-[11px] text-micro font-semibold uppercase tracking-[.16em] text-muted-foreground">
               <Crumb onClick={() => nav.goView('markets', 'overview')} className="uppercase">Market Data</Crumb>
             </div>
-            <h1 className="text-[clamp(32px,3.8vw,58px)] font-bold leading-[1.2] tracking-[-.045em] max-sm:text-[32px]">{PAGE_TITLE[section]}</h1>
+            {etfPage ? <CountryPicker world={world} country={country} onPick={setCountry} suffix="ETFs" /> : (
+              <h1 className="text-[clamp(32px,3.8vw,58px)] font-bold leading-[1.2] tracking-[-.045em] max-sm:text-[32px]">{PAGE_TITLE[section]}</h1>
+            )}
             <div className="mt-4 flex flex-wrap items-center gap-2.5 text-13 text-muted-foreground">
               <ConnectionButton />
               {section === 'etfs' ? (
                 <>
                   <MetaDivider />
-                  <span className="inline-flex items-center gap-1.5"><CountryFlag code={country.code} />Overview scoped to {countryPhrase(country)}</span>
+                  {world
+                    ? <span>Overview of the world&apos;s funds</span>
+                    : <span className="inline-flex items-center gap-1.5"><CountryFlag code={country.code} />Overview scoped to {countryPhrase(country)}</span>}
                 </>
               ) : null}
             </div>

@@ -22,7 +22,7 @@
 
 import * as React from 'react';
 import { fetchFor, fetchNewsFeed, fetchScreener, logoUrl } from '@/lib/fmp';
-import { COUNTRIES, countryOf, dedupeStocks, loadHubSection } from '@/lib/markethub-data';
+import { countryOf, dedupeStocks, loadHubSection } from '@/lib/markethub-data';
 import { changeOf, shortNumber, storedCountry, rememberCountry } from '@/lib/market-format';
 import { COLLECTIONS, aggregatePerformance, loadCountryPerformance, stockScreenParams } from '@/lib/stock-collections';
 import { SCREENER_COLUMN_SETS, newTableState, type TableState } from '@/lib/market-table';
@@ -36,6 +36,7 @@ import { DedicatedScreener } from '@/components/market/dedicated-screener';
 import { CanvasFooter, SeeAll } from '@/components/market/canvas';
 import { Logo } from '@/components/report/ui';
 import { PageFrame, SectionBar, useHasKey, useQueryState } from '@/components/pages/page-parts';
+import { CountryPicker } from '@/components/pages/market-hub';
 import { useNav } from '@/components/nav-context';
 import { cn } from '@/lib/cn';
 
@@ -384,13 +385,8 @@ export function StockMarkets() {
           <span aria-hidden="true"> / </span>
           <button type="button" className="uppercase hover:text-primary" onClick={() => go({})}>Stocks</button>
         </nav>
-        <h1>
-          <select aria-label="Stock market" value={code} onChange={(e) => pickCountry(e.target.value)}
-            className="max-w-full cursor-pointer appearance-none bg-transparent pr-2 text-[clamp(32px,3.8vw,58px)] font-bold leading-[1.2] tracking-[-.045em] hover:text-primary max-sm:text-[32px]">
-            <option value="WORLD">World stocks</option>
-            {COUNTRIES.map((c) => <option key={c.code} value={c.code}>{c.short} stocks</option>)}
-          </select>
-        </h1>
+        {/* The Market Data overview's picker: flags, regions, World first. */}
+        <CountryPicker world={code === 'WORLD'} country={countryOf(code === 'WORLD' ? 'US' : code)} onPick={pickCountry} suffix="stocks" />
         <div className="mt-4 text-13 text-muted-foreground">Quotes may be delayed</div>
       </header>
       <SectionBar label="Stocks navigation" active={board} items={BOARDS}
