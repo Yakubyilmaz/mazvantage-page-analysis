@@ -66,7 +66,7 @@ interface Plan {
 export const PLANS: Plan[] = [
   {
     id: 'pro', name: 'Pro', tagline: ['Every grade, on ', 'any company', '.'],
-    price: { monthly: 17.99, annual: 9.49, biennial: 8.99 },
+    price: { monthly: 17.99, annual: 8.99, biennial: 7.99 },
     keys: [
       '**115** ratios on every company, **77** graded against its sector',
       '**13** fair-value models on any stock',
@@ -80,7 +80,7 @@ export const PLANS: Plan[] = [
   },
   {
     id: 'proplus', name: 'Pro+', badge: 'Best value', tagline: ['Research that ', 'remembers', '.'],
-    price: { monthly: 44.49, annual: 23.99, biennial: 21.99 },
+    price: { monthly: 44.49, annual: 21.99, biennial: 19.99 },
     keys: [
       '**115** ratios on every company, **77** graded against its sector',
       '**13** fair-value models on any stock',
