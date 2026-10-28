@@ -19,6 +19,7 @@ import {
 } from './shariah-v5';
 // Type-only the other way, so there is no import cycle at run time.
 import { ABNB, ADP, DE } from './shariah-issuers-hidden-interest';
+import { AMZN } from './shariah-issuers-amazon';
 
 export interface Filing { form: string; period: string; accession: string; href: string }
 export interface Source { label: string; href: string }
@@ -374,7 +375,7 @@ export const AAPL: IssuerRecord = {
 };
 
 // Three more, from the 2026-10-18 hidden-interest sweep.
-export const SHARIAH_ISSUERS: Record<string, IssuerRecord> = { AAPL, ADP, ABNB, DE };
+export const SHARIAH_ISSUERS: Record<string, IssuerRecord> = { AAPL, ADP, ABNB, DE, AMZN };
 
 export const issuerRecord = (symbol: string | null | undefined): IssuerRecord | null =>
   (symbol && SHARIAH_ISSUERS[symbol.toUpperCase()]) || null;

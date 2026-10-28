@@ -12,6 +12,14 @@
 
 **Interim deltas Δ41–Δ48 (18 October 2026, owner decision).** Hidden-interest rules drawn from the ADP, Airbnb and Deere screens (`HIDDEN_INTEREST_Shariah_Screening_v5_0.md`): interest booked inside revenue, client funds and float balances, lessor income, revenue shares from a partner's lending, pass-throughs and embedded insurance. Full text in §56.1.
 
+**Interim deltas Δ49–Δ60, framework F13 and Part XV (28 October 2026, owner instruction to widen the lines analysed).** Drawn from the Amazon stress screen (`AMZN_Shariah_Screening_v5_0.md`), an issuer that reaches every part of this document and names none of its prohibited lines.
+- Ten deltas are interim and applied: Δ50–Δ55 and Δ57–Δ60.
+- Two are **proposed** and priced as sensitivities only, pending the Council: Δ49 (interest-free convertible loans with a fixed conversion price) and Δ56 (cloud and data-centre capacity rented to P1 businesses).
+- **§55A (F13)** is the decomposition protocol for platform conglomerates.
+- **Part XV** is the line-item lexicon: the financial-statement phrases that can hide a prohibited source, each with its rule and its test.
+
+Δ50 and Δ58 are implemented in `web/src/lib/shariah-v5.ts` (`level3Gains`, `nonOperatingGains`).
+
 **Next scheduled review:** 7 January 2027 (quarterly cycle). Interim deltas (Δ40+) may be added between reviews; each is flagged in the issuer report that needs it and consolidated at the next review.
 
 **What this edition is.** v4.4.4 rewritten as one internally consistent rulebook. Every gate, scenario, delta (Δ1–Δ38), framework (F1–F12, the F6/F7 Modifier Rules) and worked example is carried forward. Where v4.4.4, its worked examples or the eighteen issuer reports contradicted each other, v5.0 states one rule, says which way it went and why (Part 0), and restates every number the change touches (Part XIII). The issuer figures in Part XIII were re-checked against the companies' own SEC XBRL filings on 7 October 2026. Part XII is new: the data-sourcing manual (which filing, which section, which XBRL tag, which free database) that earlier editions only gestured at.
@@ -25,7 +33,7 @@
 ### How to read this document
 
 - **As a methodology** (onboarding, supervisor review): Parts I–XI in order.
-- **As a screening manual** (a new issuer): the threshold table in **§3 is the only place numbers live**; walk the decision tree in **Appendix B**; look up any delta in the **Part IX register**; pull data with **Part XII**.
+- **As a screening manual** (a new issuer): the threshold table in **§3 is the only place numbers live**; walk the decision tree in **Appendix B**; look up any delta in the **Part IX register**; pull data with **Part XII**; search the filings for what they do not name with the **Part XV lexicon**, and decompose a platform conglomerate with **F13 (§55A)**.
 - **As Claude's instruction set:** sections carry *[Operational Note for Claude]* blocks addressed to a future Claude instance opening an issuer screen. Default to v5.0. If the user names an older version, comply, but list every v5.0 rule that would have changed the result. Never silently downgrade.
 - **As the record:** Part XIII is the only cross-issuer table. Cross-issuer tables inside individual reports (JNJ §16, ABBV §15, NVO §8 and others) are void.
 
@@ -963,9 +971,58 @@ BNPL and instalment economics → L7 (and L2 categorical if a lending segment ex
 
 [Operational Note for Claude] When you screen the first issuer in any Part VIII sector, treat the rule as a proposal: apply it, show the four-scenario result, and list the rule in the report's open-questions section for ratification. Do not invent benchmark percentages — use the issuer's own disclosure or a cited benchmark, and label every modelled share as an estimate.
 
+## §55A — Platform conglomerates (F13: the decomposition protocol)
+
+**Trigger.** An issuer whose reported revenue categories each mix permissible and impure economics: retail, a marketplace, media, advertising, cloud, payments and private stakes under one roof. A filing of this kind names none of its prohibited lines.
+- Precedent: Amazon (28 October 2026: seven categories, thirty estimated lines).
+- Apple is the partial precedent.
+- Alphabet, Microsoft, Meta, Walmart, Costco, Alibaba and Tencent are the obvious next cases.
+
+**Protocol.**
+1. **Map every reported category to its economic lines.** Use the revenue-disaggregation note, the definition of "Other", and the Part XV lexicon. The lines are:
+   - product sales by department;
+   - fees by product sold;
+   - subscription benefits;
+   - advertising formats;
+   - licensing;
+   - financial revenue shares;
+   - healthcare;
+   - shipping.
+2. **Assign each line its rule before sizing it:**
+
+   | Line | Rule |
+   |---|---|
+   | Retail | §49 |
+   | Marketplace take | Δ53 |
+   | Media | F12, Δ28–Δ36; bundles Δ52 |
+   | Apps and games | §52 |
+   | Payments | §54 |
+   | Advertising | Δ31 for video, display and off-platform; Δ51 for retail media |
+   | Pharmacy | Part VI, U1 |
+   | Insurance | §31, Δ54 |
+   | Lender and card shares | Δ46, Δ55 |
+   | Infrastructure | Δ56 (proposed) |
+   | Private stakes | U4, Δ57 |
+3. **Separate the streams, so nothing is counted twice** (§37's rule, extended). On one bottle of wine, the product sale, the seller fee, the ad fee and the payment fee are four lines, each at its own rule.
+4. **Size once, banded, from a stated anchor** (§16), in this order:
+   - the issuer's disclosure;
+   - a cited sector benchmark × the reported category;
+   - a bounded residual (for example, co-brand revenue ≤ "Other" less its other named parts).
+
+   Never zero for a present Tier-1 line.
+5. **Run the Part XV lexicon over every filing in the window**: 10-K, 10-Qs, 8-K exhibits, proxy and Exhibit 21. Run it over the counterparties' filings too: a card issuer's retailer-share note, a lender's warrant note, an investee's S-1. Record the negative findings — what was searched and not found — so the next screen does not repeat them.
+6. **Read the balance sheet as well as the income statement:**
+   - Level-3 marks (Δ50, Δ57);
+   - interest-free loans with conversion features (Δ49);
+   - debt under other names (Δ59);
+   - restricted funds (Δ43).
+7. **Price every unsettled reading as a sensitivity.** Print the matrix: the base, each reading, and every combination that flips a verdict.
+
+[Operational Note for Claude] For a platform conglomerate, expect most Gate-4 lines to be estimates and say so in the report's first table. A screen that reads only the named interest line sees about a quarter of the impure income; Amazon's 0.6% against 2.5% at Scenario B is the measure.
+
 ---
 
-# PART IX — THE DELTA REGISTER (Δ1–Δ48)
+# PART IX — THE DELTA REGISTER (Δ1–Δ60)
 
 ## §56.1 — Every delta
 
@@ -1019,6 +1076,85 @@ Format: **trigger → rule (v5.0)** · scenarios · precedent · status. "Amende
 - **Δ46 A share of a partner's lending income.** Trigger: credit-card profit sharing, co-brand card or savings revenue shares, loan or deposit referral shares tied to a bank's interest income. Rule: Layer 7 at 100% at Sc B, Sc C and Strictest; at Sc A, payment for promotional capacity under the Δ31 carve-out (0%). · per scenario · Target ($522m, 0.5%), Apple Card (est. $0.3–1.0b). · **Interim (18 Oct 2026).** The app sizes it at Gate 4; adding it to the Gate-3 cap by scenario is not yet implemented (Apple: +0.1–0.2pp, no verdict change).
 - **Δ47 Zero-margin pass-throughs.** Trigger: costs re-billed at no margin and reported gross in revenue (PEO benefits, premiums collected for insurers). Rule: the denominator is as reported (Δ42); Gate 4 counts the issuer's margin on a P1 pass-through, not the gross amount, and the gross reading is shown as a sensitivity. · Gate 4, all · ADP ($4,607.3m; +21pp if counted gross). · **Interim (18 Oct 2026).**
 - **Δ48 Insurance inside a service fee.** Trigger: an issuer that underwrites or retains insurance risk for customers without a separately billed premium. Rule: where the cover is priced inside fees and can be estimated, size it at 100% under §31 (Tier 1), banded; where no charge exists (a free guarantee with risk retained), G-flag only. · Gate 4, all · ADP Indemnity (est. $330–900m), Airbnb Host Damage Protection (G-flag). · **Interim (18 Oct 2026).**
+- **Δ49 Interest-free loans that convert at a fixed price — PROPOSED, NOT RATIFIED, SENSITIVITY ONLY.**
+  - Trigger: a non-interest-bearing note or loan, held by the issuer, that converts into the borrower's equity at a price fixed at or before signing — or at the lower of a fixed price and a later one (IPO, next round).
+  - Rule (proposed): not Cash + IBS, because it bears no interest (§6). Sc A reads it as a deferred subscription for shares (*waʿd*), so its gains are equity return under U3. Sc B, Sc C and Strictest read it as *qarḍ* carrying a stipulated benefit to the lender (AAOIFI SS 19; the maxim "every loan that draws a benefit is *ribā*"). Under that reading the conversion gain recognised in income (fair value at conversion less principal) is Layer 1 at 100%, and gains still unrealised in OCI are documented.
+  - Outside the delta: a note that converts at the market price on the day, which carries no stipulated benefit, and a SAFE, which has no repayment claim.
+  - Scenarios: Sc B+.
+  - Precedent: Amazon/Anthropic — $6.2b of principal in "non-interest-bearing rollover notes" (Anthropic S-1), $97.9b at fair value, $6.8b of conversion gains in the twelve months to June 2026 → +0.88 points.
+  - Status: **Proposed (28 Oct 2026).**
+- **Δ50 Level-3 mark-ups in the asset denominator.**
+  - Trigger: unrealised fair-value gains on Level-3 assets exceed 5% of total assets — private stakes marked on unobservable inputs, or observable-price-change adjustments to non-marketable equity.
+  - Rule: Sc A and Sc B use total assets as reported. Sc C and Strictest divide every total-asset ratio (R4, R11, R16, R19) by total assets less those gains: D9's conservative edge, applied to an estimate. The market-cap ratios are untouched.
+  - Scenarios: Sc C / Strictest.
+  - Precedent: Amazon — $172.4b of Anthropic mark-ups; Strictest R19 is 22.97% as reported and 27.25% without them (fail). It was 25.70% as reported at 31 March 2026, before most of the mark-ups.
+  - Status: **Interim (28 Oct 2026).** Engine: `BalanceSheet.level3Gains`.
+- **Δ51 Retail media.**
+  - Trigger: advertising sold on the issuer's own store or marketplace pages (sponsored products, sponsored brands, on-site display) for goods the store sells.
+  - Rule: the impure share is the P1 share of the store's own catalogue where the ads run (alcohol, pork, tobacco where sold). Δ31's TV benchmarks apply only to video, display and off-platform inventory. Conventional-finance ads count only where the store sells financial products. Split the ad line by format, with a band where it is undisclosed.
+  - Scenarios: all.
+  - Precedent: Amazon — sponsored ads ~72–85% of $76.1b, at 0.3% (to 0.7%).
+  - Status: **Interim (28 Oct 2026).**
+- **Δ52 Bundled memberships.**
+  - Trigger: one fee buys content and non-content benefits (shipping, video, music, games, storage).
+  - Rule: allocate the fee by the issuer's ASC 606 standalone-selling-price allocation where disclosed; otherwise by the benefits' relative standalone list prices, banded. Each slice takes its own rule: the content archetype, or Tier 0 for shipping.
+  - Scenarios: all.
+  - Precedent: Amazon Prime — video 25–45% of fees, point 35%.
+  - Status: **Interim (28 Oct 2026).**
+- **Δ53 Marketplace take on prohibited goods.**
+  - Trigger: commissions, fulfilment and other seller fees on third-party sales.
+  - Rule: the take on goods that are themselves prohibited (alcohol, pork, tobacco, gambling products) is Tier 1 at 100% at every scenario, sized as the P1 share of third-party sales × the take. This mirrors §52's platform-take rule. The issuer's own listing policy is the evidence of what is, and is not, sold.
+  - Scenarios: all.
+  - Precedent: Amazon — pre-approved US alcohol sellers; licensed European wine sellers.
+  - Status: **Interim (28 Oct 2026).**
+- **Δ54 Insurance distribution inside a non-financial issuer.**
+  - Trigger: commissions or fees for selling conventional insurance below the Δ14 thresholds — warranty, accident, device, travel and motor cover, or a corporate-agent or broker licence.
+  - Rule: Tier 1 at 100% at every scenario (§31; Apple precedent). Risk the issuer retains without a premium stays a Δ48 G-flag; manufacturer service contracts follow the IIFA Resolution 103 question.
+  - Scenarios: all.
+  - Precedent: Apple (AppleCare+ in insurance-format markets); Amazon (Amazon Protect; Amazon Pay India's IRDAI composite corporate-agent licence).
+  - Status: **Interim (28 Oct 2026).**
+- **Δ55 Consideration in kind from a P1 counterparty.**
+  - Trigger: warrants, shares, credits or prepaid services received from a lender, insurer or gambling operator for referrals, volume or new customers.
+  - Rule: the vesting value is income from the underlying activity, at that activity's rate — Δ46 for lenders (Sc A 0%, Sc B+ 100%), Tier 1 at every lens for gambling. Measure it as the counterparty expenses it, or at grant-date fair value. Later fair-value moves are capital gains (U3), documented.
+  - Scenarios: per scenario.
+  - Precedent: Amazon/Affirm — warrants over 22m shares that vest on first-time Affirm borrowers; $199.9m expensed by Affirm in its FY2026; strike cut to $63.06 in November 2025.
+  - Status: **Interim (28 Oct 2026).**
+- **Δ56 Infrastructure *ijārah* — PROPOSED, NOT RATIFIED, SENSITIVITY ONLY.**
+  - Trigger: compute, storage, data-centre, colocation or network capacity rented on standard terms.
+  - The gap it closes: Δ16 attributes nothing unless one customer vertical reaches 50%, while D18 (REIT tenants) and Δ31 (ad capacity) attribute capacity rented to P1 businesses from Sc B.
+  - Rule (proposed):
+    - Sc A 0% (Abū Ḥanīfa, as in D18 and Δ31).
+    - Capacity rented to businesses whose primary activity is P1 (sportsbooks, casinos, alcohol and tobacco producers, adult) at 100% at every scenario — D18 row 1.
+    - Conventional banks, insurers and lenders at 100% from Sc B — D18 row 2.
+    - Mixed customers at Sc C and Strictest only, at their own NPI%.
+    - Size from vertical benchmarks and named customers, banded.
+  - Scenarios: per scenario.
+  - Precedent: AWS — $148.4b; FanDuel's strategic cloud; +1.78 points at Sc B, +2.77 at Sc C.
+  - Status: **Proposed (28 Oct 2026)** — it would reprice every cloud, data-centre and telecom issuer.
+- **Δ57 Look-through of a private stake that pays no dividend.**
+  - Trigger: a U4-material position (above 5% of the investment portfolio) in a company that distributes nothing.
+  - Rule: flow up the issuer's economic share (as converted, after ownership caps) × the investee's NPI amount into Gate 4 at every scenario. Where the investee's own screen fails a gate, add a G-flag naming the test. Where the investee files nothing, use a labelled band and log a Gate-5 gap. Capital gains stay under U3.
+  - Scenarios: all.
+  - Precedent: Amazon/Anthropic — the S-1 shows interest at 7.2% of revenue, so Anthropic fails its own Gate 3; 12% × $1,427m = $171m. Amazon/OpenAI — private, estimated.
+  - Status: **Interim (28 Oct 2026).**
+- **Δ58 Purification margin without valuation gains (amends Δ6).**
+  - Trigger: non-operating gains (fair-value revaluations, conversion gains, equity-method marks) above 10% of pre-tax income.
+  - Rule: Δ6's margin is (net income − after-tax interest − after-tax non-operating gains) ÷ revenue. No revenue line earned the gains, so impure revenue is not charged with them. The gains are capital gains (U3), documented.
+  - Scenarios: all.
+  - Precedent: Amazon — other income $80.4b, 46% of pre-tax income; margin 8.94% instead of 16.97%; Sc B purification $0.46 a share instead of $0.56.
+  - Status: **Interim (28 Oct 2026).** Engine: `Income.nonOperatingGains`.
+- **Δ59 Debt under other names.**
+  - Trigger: interest-bearing obligations reported outside the debt captions — financing obligations (build-to-suit and failed sale-leasebacks) inside other liabilities; current portions of long-term debt and short-term credit facilities inside "accrued expenses and other"; supplier-finance programmes owed to a bank; securitisation borrowings.
+  - Rule: each one is a borrowing in IBD track (a), at carrying value. Read the commitments table and the closing paragraphs of the debt note, not only the balance-sheet caption.
+  - Scenarios: Gate 2, all.
+  - Precedent: Amazon — $9.3b of financing obligations, $3.3b of current notes and $0.3b of facilities; track-(a) debt +10%.
+  - Status: **Interim (28 Oct 2026).**
+- **Δ60 Ingredients of unknown source in a retailer's catalogue.**
+  - Trigger: a retailer or marketplace selling products whose prohibited input is not the character and whose source is not stated (gelatin in confectionery and capsules, mono- and diglycerides, L-cysteine, carmine).
+  - Rule: §48's *mushbooh* row (0 / 0 / 2.5 / 5%) applies to the sized category; products labelled porcine join the pork lines at 100%.
+  - Scenarios: Sc C / Strictest.
+  - Precedent: Amazon — gelatin-containing gummies, marshmallows and capsules, est. $1.2–3.0b.
+  - Status: **Interim (28 Oct 2026).**
 
 ## §56.2 — Trigger matrix (find every delta before Gate 2)
 
@@ -1057,6 +1193,20 @@ Format: **trigger → rule (v5.0)** · scenarios · precedent · status. "Amende
 | Credit-card profit sharing; co-brand card or savings revenue shares | Δ46 |
 | Costs re-billed at zero margin and reported gross (PEO, insurance premiums) | Δ47 |
 | A captive insurer or self-insured guarantee inside a service | Δ48, §31 |
+| A non-interest-bearing note in another company that converts at a fixed or "lower-of" price | Δ49 (proposed), U4, Δ57 |
+| Level-3 or observable-price-change gains on private stakes above 5% of total assets | Δ50, Δ57, Δ58 |
+| Advertising sold on the issuer's own store pages | Δ51; video, display and off-platform inventory: Δ31 |
+| A membership or subscription that bundles content with other benefits | Δ52, F12 |
+| Commissions and fulfilment fees on third-party sales | Δ53, §49 |
+| Warranty, accident or device cover sold at checkout; a corporate-agent or broker licence | Δ54, §31, Δ48 |
+| Warrants, shares or credits received from a lender, insurer or gambling operator | Δ55, Δ46 |
+| Cloud, data-centre, colocation or network capacity sold to every industry | Δ56 (proposed), F11, Δ16 |
+| A material private stake that pays no dividend; an investee that files an S-1 | Δ57, U4 |
+| Non-operating gains above 10% of pre-tax income | Δ58 (amends Δ6) |
+| Financing obligations, current debt or credit facilities filed outside the debt captions | Δ59 |
+| A retailer or marketplace selling confectionery, capsules or processed foods | Δ60, §48 |
+| A platform conglomerate (several mixed revenue categories, no prohibited line named) | F13 (§55A), Part XV |
+| An acquisition of a licensed lender, insurer or payments firm (Exhibit 21, 8-K, press) | U2, L7, §54 |
 
 ---
 
@@ -1437,6 +1587,248 @@ What the free data in Part XII could add, in order of value per unit of work:
 4. **Gate 1 steps 2–3** from segment facts plus Exhibit 21 and EDGAR full-text search.
 
 Gate 4 product attribution, Δ16 customer mix and Δ35 content measurement stay per-issuer research; the app should show them only where a report exists, labelled with its date and version. Machine keys for every ratio and layer are in §7 and §12.
+
+---
+
+# PART XV — THE LINE-ITEM LEXICON (160 entries)
+
+**What it is.** The phrases and lines in a filing that can hold a prohibited source, or a debt, that the filing does not name. Each entry gives:
+- where the phrase usually appears;
+- what it can hold;
+- the rule that classifies it, and how to test it.
+
+The entries come from the record — ADP, Airbnb, Deere, Apple and the eighteen-issuer record — and from the Amazon stress screen. In Amazon's 10-K, the words alcohol, pork, gambling, tobacco, lending, warranty and Whole Foods appear **zero** times, though every one of those activities is in its revenue.
+
+**How to use it.**
+1. Run the phrases as full-text searches (§XII.3) over every filing in the window: 10-K, 10-Qs, 8-K exhibits, proxy and Exhibit 21.
+2. Run them over the counterparties' filings as well: card issuers, lenders, investees.
+3. Read each hit in context.
+4. Classify the hit by the rule column, then size it under §16.
+5. Record negative findings: a phrase searched and not found is evidence too.
+
+An entry is a place to look, not a verdict. Most hits are permissible on reading.
+
+**Growth.** Add an entry when a screen finds a new hiding place; give it the next number and its precedent. The count in the title is the count of entries.
+
+### §XV.1 Interest and financing income (Gate 3, Δ41, Δ46, Δ55)
+
+| # | Phrase or line | Where it appears | What it can hold | Rule · test |
+|---|---|---|---|---|
+| 1 | "Interest income" | Income statement | Gross interest on cash and securities | L1, Gate 3 · confirm it is gross in the footnote |
+| 2 | "Interest and other income, net" | Income statement | Interest netted with FX and gains | L1 gross from the footnote (§39(i)) |
+| 3 | "Investment income" | Income statement, notes | Interest, dividends and gains together | Split it; the interest part is L1 |
+| 4 | "Finance income" / "Financial income" (IFRS) | Income statement | Interest, plus FX and fair-value gains | Only the interest is L1 (NVO precedent) |
+| 5 | "Interest on funds held for clients" | Revenue | Float yield | Δ41 → L1 (ADP) |
+| 6 | "Float revenue" / "Client fund interest" | Revenue, MD&A | Float yield | Δ41 → L1 |
+| 7 | "Interest on customer balances" / "Yield on customer funds" | Revenue, MD&A | Yield on wallet or marketplace balances | Δ41, §54 (Airbnb) |
+| 8 | "Finance and interest income" | Revenue | A captive lender's income | L7; U2 if the segment is > 5% (Deere) |
+| 9 | "Financial services revenue" / "Financing revenue" | Segment note | Lending, leasing, cards | L7; Δ45 for lease rentals |
+| 10 | "Net interest margin" / "Spread income" | MD&A | A lending book | L7, U2 |
+| 11 | "Late fees" / "Late payment charges" | Revenue | Penalty interest | L7 |
+| 12 | "Deferred interest" / "Promotional financing" | Payment methods, risk factors | Interest-bearing credit run by a partner; any subsidy the issuer pays | Δ46 for a share; a paid subsidy is information (L2-like) (Amazon) |
+| 13 | "Pay over time" / "Installment" / "Pay in 4" | Payment methods | BNPL | L7 if the book is the issuer's; Δ46 if a partner's; Tier 0 only if 0% with no fees |
+| 14 | "Buy now, pay later" | Payment methods, 8-Ks | BNPL | As 13 |
+| 15 | "Consumer invoicing" / "Pay by invoice" | Payment methods | Trade credit | Tier 0 unless fees or interest accrue |
+| 16 | "Credit accounts" | Payment methods | A store card run by a partner bank | Δ46 |
+| 17 | "Store card" / "Private-label credit card" | Payment methods | A partner bank's interest-bearing card | Δ46 |
+| 18 | "Co-branded credit card agreements" | Revenue note, inside "Other" | Revenue share and new-account bounties | Δ46 (Amazon) |
+| 19 | "Credit card profit sharing" | Income statement | A share of the bank's card income, interest included | Δ46 (Target, $522m) |
+| 20 | "Retailer share arrangements" | The card issuer's 10-K | Payments to retail partners above a profit threshold | Δ46 sizing evidence (Synchrony) |
+| 21 | "Program fees" / "Marketing fees from the issuing bank" / "New account fees" | Revenue, other income | Δ46 economics under another name | Δ46 |
+| 22 | "Interchange share" | Revenue | A card-payment fee | §52 by what is bought, unless the share is of programme profit (then Δ46) |
+| 23 | "Merchant cash advance" / "Working-capital loans" / "Seller financing" | Platform terms, 8-Ks | Lending to sellers | L7 on the own book; Δ46 if referred (Amazon to March 2024) |
+| 24 | "Loans receivable" / "Notes receivable" / "Financing receivables" | Balance sheet | A loan book | Cash + IBS (§6); its income is L7 |
+| 25 | "Net investment in leases" / "Sales-type lease" / "Direct financing lease" | Balance sheet, lessor note | Finance-lease income | L7 (Δ45) |
+| 26 | "Lease receivables" (as lessor) | Balance sheet | Rentals or financing | Δ45 split |
+| 27 | "Below-market loans" / "Affordable housing loans" / "Community investment loans" | Other assets | Interest-bearing loans | Cash + IBS; interest in L1 (Amazon) |
+| 28 | "Employee loans" / "Loans to suppliers" / "Vendor financing" | Other assets | Interest-bearing loans | Cash + IBS and L1 if interest is charged |
+| 29 | "Convertible notes" (an asset) | Other assets, available-for-sale | A debt security, or a benefit-bearing loan | Cash + IBS if interest-bearing; Δ49 if it converts at a fixed price (Amazon/Anthropic) |
+| 30 | "SAFE" / "Simple agreement for future equity" (an asset) | Investments | An equity claim without repayment | Equity (U3), outside Δ49 |
+| 31 | "Available-for-sale debt securities" / "Held-to-maturity securities" | Balance sheet | Interest-bearing securities | Cash + IBS (§6) |
+| 32 | "Time deposits" / "Certificates of deposit" | Cash note | Interest-bearing cash | Cash + IBS, L8 |
+| 33 | "Money market funds" | Cash note | Interest-bearing cash | Cash + IBS, L8 |
+| 34 | "Reverse repurchase agreements" | Balance sheet, notes | Cash lent against collateral | Cash + IBS; Δ44 averages |
+| 35 | "Securities lending" | Notes | Fee and rebate interest | L1 |
+| 36 | "Restricted cash" | Balance sheet, notes | Client or seller funds, collateral | Cash + IBS; Δ43 if matched by an obligation |
+| 37 | "Funds held for clients" / "Amounts held on behalf of customers" | Balance sheet | Float | Δ43, Δ41 (ADP, Airbnb) |
+| 38 | "Stablecoin revenue" / "Reserve income" | Revenue | Yield on the reserve | Δ7, Δ41 |
+| 39 | "Rewards on customer crypto balances" / "Earn" | Revenue | Lending yield | L1 or L7 by structure (§54) |
+| 40 | "Interest on tax refunds" / "Accretion of discount" / "Imputed interest on deferred consideration" | Other income | Interest | L1 |
+| 41 | "Interest accrued on litigation awards or regulatory refunds" | Contingencies note | Interest | L7 (Δ4) |
+| 42 | "Equity warrants" received from a lender | Investments, other income | Payment for referring borrowers | Δ55 at Δ46 rates (Amazon/Affirm) |
+
+### §XV.2 Debt under other names (Gate 2, Δ37, Δ44, Δ59)
+
+| # | Phrase or line | Where it appears | What it can hold | Rule · test |
+|---|---|---|---|---|
+| 43 | "Financing obligations" | Other long-term liabilities, commitments table | Build-to-suit and failed sale-leasebacks | IBD track (a), Δ59 (Amazon $9.3b) |
+| 44 | "Other short-term credit facilities" | Accrued expenses | Bank borrowings | Δ59 |
+| 45 | "Current portion of long-term debt" inside "Accrued expenses and other" | Debt note | Notes due within a year | Δ59 (Amazon $3.3b) |
+| 46 | "Commercial paper" with a nil period-end balance | Debt note, cash flow | Borrowing within the year | Δ44 averages; cash-flow gross proceeds as evidence |
+| 47 | "Supplier finance programs" / "Structured payables" | Payables note | Bank-funded payables | Δ59 where the issuer owes the bank |
+| 48 | "Securitization borrowings" / "Asset-backed notes" | Debt note | Secured borrowings | IBD (Deere) |
+| 49 | "Sale-leaseback" / "Tax-equity financing" | Leases, debt note | Borrowings in substance | Δ59 |
+| 50 | "Finance lease liabilities" | Lease note | Leases | IBD track (a) |
+| 51 | "Operating lease liabilities" | Lease note | Leases | IBD track (b) at Strictest (Δ37) |
+| 52 | "Deferred or contingent consideration bearing interest" | Acquisitions note | Seller financing | IBD |
+| 53 | "Customer deposits bearing interest" | Liabilities | Deposits | IBD |
+| 54 | "Mandatorily redeemable preferred stock" | Liabilities | Debt-like equity | IBD |
+| 55 | "Convertible notes" (a liability), carrying below face | Debt note | Principal understated | IBD at principal (§XII.4) |
+| 56 | "Letters of credit" / "Guarantees of others' debt" | Commitments | Contingent debt | Information; G-flag if called |
+
+### §XV.3 Insurance and guarantees (§31, Δ47, Δ48, Δ54)
+
+| # | Phrase or line | Where it appears | What it can hold | Rule · test |
+|---|---|---|---|---|
+| 57 | "Protection plans" / "Product protection" / "Extended warranties" | Checkout, revenue note | Insurance sold as an agent | Δ54 (Amazon Protect; AppleCare+ abroad) |
+| 58 | "Device insurance" / "Theft and loss" / "Accidental damage" | Product terms | Underwritten cover | Δ54 |
+| 59 | "Corporate agent" / "Broker licence" (IRDAI, FCA, state DOI) | Regulatory filings, press | Insurance distribution | Δ54 (Amazon Pay India) |
+| 60 | "Insurance commissions" / "Insurance agency revenue" | Revenue | Insurance distribution | Δ54 |
+| 61 | A captive insurer in Exhibit 21 ("… Insurance Company, Inc.") | Exhibit 21 | Its own risk, or third-party underwriting | U2 if third-party underwriting > 5%; G-flag (Apple) |
+| 62 | "Reinsurance" | Notes | Underwriting | P1-INS |
+| 63 | "Self-insurance liabilities" | Accrued expenses | Its own risks | Tier 0 (§31) |
+| 64 | "Guarantee" / "Protection program" / "Host damage protection" | Risk factors, terms | Free cover with retained risk | Δ48: G-flag; Tier 1 if it is priced in fees |
+| 65 | "Premiums collected on behalf of insurers" | Revenue, gross | A pass-through | Δ47 (count the margin) |
+| 66 | "Workers' compensation" inside a PEO | Segment | Underwriting | §31, Δ48 (ADP) |
+| 67 | "Warranty reserve" (the manufacturer's own) | Balance sheet | Its own product warranty | Tier 0 |
+| 68 | "Takaful" | Notes | Cooperative insurance | Tier 0 (Δ12) |
+
+### §XV.4 Alcohol (P1-ALC, §49, §50, Δ53)
+
+| # | Phrase or line | Where it appears | What it can hold | Rule · test |
+|---|---|---|---|---|
+| 69 | "Beverages" | Category names | Alcohol inside | §49 split |
+| 70 | "Adult beverages" / "Beer, wine and spirits" / "Wine & spirits" | Category names, MD&A | Alcohol | Tier 1 |
+| 71 | "Sundries" / "Food and sundries" / "Grocery and consumables" | Retail categories | Alcohol and tobacco | §49 benchmark |
+| 72 | "Physical stores" / "Grocery" | Revenue category | A supermarket's alcohol | §49 (Amazon: Whole Foods) |
+| 73 | "Online stores" / "Consumables" | Revenue category | Alcohol sold online as retailer | §49 (Amazon UK, DE, JP) |
+| 74 | "Taproom" / "Bar" / "Lounge" / "Pub" | Store formats | On-premise alcohol | §49, §50 |
+| 75 | "Drink packages" / "Beverage packages" | Cruise and hotel notes | Alcohol | §50 |
+| 76 | "Concessions" / "Food and beverage" | Venue revenue | An alcohol share | Δ33 (AMC, DIS) |
+| 77 | "Minibar" / "In-room dining" | Hotel revenue | Alcohol | §50 |
+| 78 | "Licensing of brands to alcoholic products" / "Royalties" | Licensing note | Alcohol | §48 at 100% (PEP) |
+| 79 | "Flavours sold to alcoholic-beverage makers" | Segment | Alcohol inputs | §48 |
+| 80 | "Alcohol delivery" / "pre-approved selling partners" | Marketplace policy | The take on alcohol | Δ53 |
+| 81 | "Duty-free" / "Travel retail" | Revenue | Alcohol and tobacco | §49 |
+| 82 | "Hard seltzer" / "Ready-to-drink cocktails" / "Hard [brand]" | Brand lists | Alcohol | Tier 1 |
+| 83 | Liquor-licence registers | State and city databases | Which banners sell alcohol | §49 evidence |
+
+### §XV.5 Pork, meat and ingredients (P1-PRK, D13, §48, Δ60)
+
+| # | Phrase or line | Where it appears | What it can hold | Rule · test |
+|---|---|---|---|---|
+| 84 | "Meat" / "Fresh" / "Perishables" / "Protein" | Categories, MD&A | Pork and non-zabīḥah meat | §49; D13 at Sc C / Strictest |
+| 85 | "Deli" / "Charcuterie" / "Prepared foods" | Categories | Pork | §49 |
+| 86 | "Processed meats" | Segment | Pork | §48 |
+| 87 | "Gelatin" / "Collagen" | Ingredients | Porcine or bovine | §48; Δ60 when the source is unstated |
+| 88 | "Lard" / "Animal shortening" | Ingredients | Pork | §48 at 100% |
+| 89 | "Mono- and diglycerides (E471)" / "L-cysteine" / "Carmine" / "Glycerin" / "Stearates" | Ingredients | Mushbooh | §48, Δ60 |
+| 90 | "Pepsin" / "Rennet" / animal enzymes | Ingredients | Porcine or animal | §48, Δ24 |
+| 91 | "Softgel capsules" | Supplements | Gelatin | Δ60 |
+| 92 | "Heparin" / "Pancrelipase" | Pharma | Porcine origin | Δ24, Δ25 (SNY, ABBV) |
+| 93 | "Pet food" with pork | Products | Pork | §48 at 100% where pork is the character |
+| 94 | "Halal-certified" | Labels, certifiers | Positive evidence only | §48 note: absence ≠ ḥarām |
+
+### §XV.6 Tobacco, nicotine and cannabis (P1-TOB, D17)
+
+| # | Phrase or line | Where it appears | What it can hold | Rule · test |
+|---|---|---|---|---|
+| 95 | "Fuel, tobacco and other" | Club-store categories | Tobacco | Tier 1 (Sam's Club) |
+| 96 | "Other tobacco products" / "Vapor" / "Heated tobacco" | Categories | Tobacco | Tier 1 |
+| 97 | "Nicotine pouches" | Categories, listing policy | Nicotine | Tier 1 |
+| 98 | "Nicotine replacement therapy" | Pharmacy | Cessation products | Tier 0 |
+| 99 | "Hemp" / "CBD" / "Cannabinoids" | Categories | Cannabis | D17 recreational; F5 medical |
+| 100 | "Smoking accessories" / "Hookah" / "Rolling papers" | Categories | Accessories | Tier 3, contextual |
+| 101 | "Excise taxes" included in revenue | Revenue note | Proof of tobacco or alcohol sales | Evidence for §49 |
+
+### §XV.7 Gambling (P1-GMB, Δ32, §52)
+
+| # | Phrase or line | Where it appears | What it can hold | Rule · test |
+|---|---|---|---|---|
+| 102 | "Gaming" | Revenue | A casino, or video games | Read the note |
+| 103 | "Sweepstakes" / "Social casino" / "Free-to-play casino" | Apps, revenue | Maysir | §52, P1-GMB (Apple, Amazon Appstore) |
+| 104 | "Skill-based gaming" / "Fantasy sports" | Revenue | Maysir | P1-GMB |
+| 105 | "Odds provider" / "Betting integration" / "Bet tracking" | Media partnerships | A sportsbook inside a media property | Δ32 (Amazon/FanDuel, DIS/ESPN) |
+| 106 | "Sports wagering" / "iGaming" / "Online casino" | Segment | Gambling | P1-GMB |
+| 107 | "Lottery commissions" / "Lottery ticket sales" | Retail revenue | Gambling | §49, Tier 1 |
+| 108 | "Gaming machines" / "VLTs" | Bars, convenience stores | Gambling | §49 |
+| 109 | "Prediction markets" / "Event contracts" | Exchanges, apps | Maysir | P1-GMB |
+| 110 | "Loot boxes" / "Gacha" / "Card packs" / "Premium currency" | Games | Chance-based purchases | §52 election; Tier 1 with cash-out |
+| 111 | "Official betting partner" / "Sportsbook sponsor" | Teams, leagues, media | Gambling sponsorship | Δ32 |
+| 112 | Gambling advertising | Ad policies, press | Ads for betting | Δ31 at Sc A (Twitch from February 2026) |
+| 113 | "Casino" inside a hotel segment | Segment | Gambling | U2 if > 5% |
+| 114 | "Raffles" / "Mystery boxes" | E-commerce | Gharar, maysir | §52 election |
+| 115 | A sportsbook among cloud or data customers ("strategic cloud provider") | Customer press releases | Hosting the activity itself | Δ56 (proposed) (FanDuel on AWS) |
+
+### §XV.8 Media, adult and content (F12)
+
+| # | Phrase or line | Where it appears | What it can hold | Rule · test |
+|---|---|---|---|---|
+| 116 | "Licensing and distribution of video content" | Inside "Other" | Studio sales | Studio archetype (Amazon/MGM) |
+| 117 | "Content" / "Programming" / "Originals" | MD&A | Mature catalogues | F12, Δ35 |
+| 118 | "Channels" / "Add-on subscriptions" | Streaming | Third-party content | Studio archetype |
+| 119 | "Rentals and purchases" / "Digital media content recorded gross" | Online stores | Transactional video | F12 |
+| 120 | "Ad-supported tier" / "FAST channels" | Streaming | Ad revenue around content | Δ31 (not the content rate, §37) |
+| 121 | "Mature" / "TV-MA" / "R-rated" / "Explicit" | Catalogues, ratings | Impure content | Δ35 |
+| 122 | "Creator programs" / "Subscriptions and Bits" / "Tips" | Streaming platforms | User-made content | F12 by analogy (Twitch) |
+| 123 | "Audiobooks" / "Podcasts" | Subscriptions | Content | Open election (§39(vi)) |
+| 124 | "E-books" / "Self-publishing" / "Romance" | Subscriptions, online stores | Explicit titles | Open election (Kindle Unlimited, KDP) |
+| 125 | "Music" / "Digital music" | Subscriptions | Music as the product | Open election; placeholder archetype |
+| 126 | "Prime" / "Membership" | Subscriptions | Bundled content | Δ52 allocation |
+| 127 | "Dating" (a platform's take) | App stores | Contested | §52, F12 question |
+| 128 | "Sexual wellness" / "Adult products" | Retail categories | Contested goods | Tier 3 at Sc C / Strictest |
+| 129 | "Pornography" / "Adult entertainment" / "Adult venues" | Segment | P1-ADT | Categorical if primary or > 5% |
+| 130 | "Physical media" / "DVD and Blu-ray" / "Video games" (retail) | Online stores | Mature-rated goods | F12 by analogy; sensitivity (Amazon) |
+
+### §XV.9 Advertising (Δ31, Δ51)
+
+| # | Phrase or line | Where it appears | What it can hold | Rule · test |
+|---|---|---|---|---|
+| 131 | "Advertising services" | Revenue category | Every format at once | Split by format: Δ51 or Δ31 |
+| 132 | "Sponsored products" / "Sponsored brands" / "On-site display" | Ad products | Retail media | Δ51 (the store's own P1 mix) |
+| 133 | "Display" / "DSP" / "Programmatic" | Ad products | Non-endemic advertisers | Δ31, digital benchmarks |
+| 134 | "Video advertising" / "Connected TV" | Ad products | TV-like inventory | Δ31, TV benchmarks; FTSE whole-line |
+| 135 | "Traffic acquisition" / "Search licensing" / "Default placement" | Revenue, trial records | Advertising by proxy | Δ31 (Apple–Google) |
+| 136 | "Ad network" / "Partner network" | Revenue | Third-party inventory | Δ31 |
+| 137 | "Outdoor" / "Billboard" / "Print" | Segment | Media advertising | Δ31; FTSE whole-line |
+
+### §XV.10 Platform takes, payments and marketplaces (§52, §54, Δ53)
+
+| # | Phrase or line | Where it appears | What it can hold | Rule · test |
+|---|---|---|---|---|
+| 138 | "Third-party seller services" / "Marketplace revenue" / "Referral fees" / "Commissions" | Revenue category | The take on P1 goods | Δ53 |
+| 139 | "Fulfillment fees" / "Logistics for sellers" | Revenue category | The take on P1 goods | Δ53 |
+| 140 | "App store commissions" / "In-app purchases" | Services revenue | The take on P1 apps | §52 |
+| 141 | "Payment processing" / "Merchant services" / "Wallet" | Revenue | Fees on P1 purchases | §52, by what is bought |
+| 142 | "Bill payments" (loan instalments, insurance premiums) | Payments revenue | Facilitation of P1 contracts | §52 at Sc B+ |
+| 143 | "Money transfer" / "Check cashing" / "Money orders" | Retail financial services | A fee, or the discounting of a deferred cheque | Fee: Tier 0. Discounting a debt: bayʿ al-dayn, Tier 1 at Sc B+ |
+| 144 | "Breakage" (gift cards, points) | Revenue note | Unredeemed balances | Tier 0 |
+| 145 | "Subscriptions" bought for others (Channels, partner bundles) | Subscriptions | A third party's content | F12, by the partner's archetype |
+
+### §XV.11 Investments and the balance sheet (U3, U4, Δ3, Δ49, Δ50, Δ57)
+
+| # | Phrase or line | Where it appears | What it can hold | Rule · test |
+|---|---|---|---|---|
+| 146 | "Equity investments in private companies" / "Observable price changes" / "Upward adjustments" | Other assets, other income | Level-3 marks | Δ50, Δ57; U3 for the gains |
+| 147 | "Equity warrants" | Other assets | P1 counterparties, in-kind consideration | Δ55, U4 |
+| 148 | "Variable interest" (not consolidated) | Consolidation note | Strategic stakes | U4 |
+| 149 | "Equity-method investments" | Notes | Associates | U4 (> 5% of revenue) |
+| 150 | "Reclassification adjustments for gains on available-for-sale debt securities" | Other income | Note conversion gains | Δ49 |
+| 151 | "Unrealised gains on available-for-sale securities" (AOCI) | Equity | Unrealised note gains | U3, Δ49 |
+| 152 | 13F-HR information table | 13F filing | The public equity book | U4 |
+| 153 | Exhibit 21 names with Bank, Finance, Lending, Capital, Credit, Insurance, Gaming | Exhibit 21 | P1 subsidiaries | U2 |
+| 154 | Acquisitions of a licensed lender, insurer or payments firm | 8-K, press, regulator approvals | P1 subsidiaries | U2, L7 (Amazon/Axio) |
+
+### §XV.12 Pharma and health (Part VI, U1)
+
+| # | Phrase or line | Where it appears | What it can hold | Rule · test |
+|---|---|---|---|---|
+| 155 | "Weight management" / "GLP-1" / "Metabolic health" | Pharmacy, telehealth | GLP-1 | U1 |
+| 156 | "Men's health" / "Sexual health" / "ED" | Telehealth | ED | U1 |
+| 157 | "Aesthetics" / "Cosmetic" / "Hair loss" | Segment, telehealth | Vanity products | Δ27, F2 |
+| 158 | "Compounded" medicines | Telehealth | Unapproved copies | Δ8, G-flag (HIMS) |
+| 159 | "Pay-per-visit" / "Asynchronous visit" | Telehealth | A weak prescriber gate | F11, Δ8 |
+| 160 | "Fertility" / "IVF" / "Embryo" | Health services | Contested care | Tier 3 at Strictest (F5) |
 
 ---
 

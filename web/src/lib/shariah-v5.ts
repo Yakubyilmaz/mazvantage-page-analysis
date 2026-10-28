@@ -112,6 +112,11 @@ export interface BalanceSheet {
   intangibles: number;
   /** Δ43: restricted client funds inside cashIbs that are matched by an equal client-fund obligation. */
   clientFunds?: number;
+  /**
+   * Δ50: unrealised Level-3 gains carried in total assets (private stakes marked up on unobservable
+   * inputs). Sc C and Strictest divide by total assets without them; Sc A and B use total assets as reported.
+   */
+  level3Gains?: number;
 }
 
 /** Market-cap windows (§8), US$ millions. */
@@ -126,6 +131,8 @@ export interface Income {
   epsDiluted: number;
   dilutedShares: number;
   dps: number;
+  /** Δ58: after-tax non-operating valuation gains inside net income, kept out of the purification margin. */
+  nonOperatingGains?: number;
 }
 
 /** Δ37: track (a) at Sc A/B/C, track (b) — with operating leases — at Strictest. */
@@ -169,17 +176,19 @@ export function ratioTests(bs: BalanceSheet, w: McapWindows, l1: number, revenue
   const overHanbali = (x: number) => (hanbali > 0 ? x / hanbali : null);
   // Δ43: client funds matched by an equal obligation are the clients', held as agent — out at Sc A only.
   const cashIbs = s === 'A' ? Math.max(0, bs.cashIbs - (bs.clientFunds ?? 0)) : bs.cashIbs;
+  // Δ50: Level-3 mark-ups are estimates, so Sc C and Strictest take the asset base without them (D9's edge).
+  const ta = edge(s) ? bs.totalAssets - (bs.level3Gains ?? 0) : bs.totalAssets;
   const values: Record<TestKey, number | null> = {
     ibd_mcap: ibd / mcap,
-    ibd_ta: ibd / bs.totalAssets,
+    ibd_ta: ibd / ta,
     ibd_hanbali: overHanbali(ibd),
     // The 12-month average at every scenario, not the scenario's window (2026-10-18).
     cash_mcap: cashIbs / w.m12,
-    cash_ta: cashIbs / bs.totalAssets,
+    cash_ta: cashIbs / ta,
     cash_hanbali: overHanbali(cashIbs),
     liquid_mcap: (cashIbs + bs.ar) / mcap,
     ar_mcap: bs.ar / mcap,
-    ar_ta: bs.ar / bs.totalAssets,
+    ar_ta: bs.ar / ta,
     l1_revenue: l1 / revenue,
   };
   return (Object.keys(THRESHOLDS) as TestKey[]).map((key) => {
@@ -278,13 +287,14 @@ export interface Purification {
 
 /**
  * IE = I × (1 − t) + R_imp × m, with t floored at 0 and m the after-tax margin
- * excluding interest. A loss year purifies the interest alone. Purification
- * can therefore never exceed earnings unless interest alone does (F7).
+ * excluding interest — and, under Δ58, excluding non-operating valuation gains,
+ * which no revenue line earned. A loss year purifies the interest alone.
+ * Purification can therefore never exceed earnings unless interest alone does (F7).
  */
 export function purify(inc: Income, interest: number, impure: number, npi: number): Purification {
   const t = Math.max(0, inc.tax / inc.pretax);
   const afterTaxInterest = interest * (1 - t);
-  const margin = Math.max(0, (inc.netIncome - afterTaxInterest) / inc.revenue);
+  const margin = Math.max(0, (inc.netIncome - afterTaxInterest - (inc.nonOperatingGains ?? 0)) / inc.revenue);
   const ie = inc.netIncome > 0 ? afterTaxInterest + impure * margin : afterTaxInterest;
   const perShare = ie / inc.dilutedShares;
   const payout = Math.min(1, inc.dps / inc.epsDiluted);
