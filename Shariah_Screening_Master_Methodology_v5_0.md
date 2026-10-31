@@ -28,10 +28,16 @@
 - A **researched-lite tier** and a **calibration procedure against index constituents** join Part XIV.
 - Measured media rates are an open programme (§0.5).
 
+**Interim deltas Δ64–Δ66 and Part XV entries 161–165 (31 October 2026, from the Walmart stress screen, `WMT_Shariah_Screening_v5_0.md`).** Walmart sells alcohol, tobacco, pork and lottery tickets openly, names none of them as a figure, and renamed the one category that said "tobacco".
+- **Δ64** keeps a Gate-4 line for a category relabelled to drop a prohibited word.
+- **Δ65** reads cheque cashing at a discount as the sale of a debt.
+- **Δ66** moves estimated lines sized from one shared source together in the Δ61 watch test. It is implemented in `web/src/lib/shariah-v5.ts` (`RevenueLine.group`).
+- The screen is also the owed re-screen of the legacy v3.0 Walmart report (Fd30): Scenarios A and B **MIXED — Watch** (4.1–4.2%), Scenarios C and Strictest **FAIL**. It supersedes the §XIII.4 preliminary flag.
+
 **Next scheduled review:** 7 January 2027 (quarterly cycle). Interim deltas (Δ40+) may be added between reviews; each is flagged in the issuer report that needs it and consolidated at the next review.
 
 **Agenda fixed for 7 January 2027 (owner decision, 31 October 2026):**
-1. Consolidate Δ1–Δ63 into rules inside the gate sections, and keep Part IX as a dated changelog. Many deltas are now one-issuer patches a new reader cannot follow.
+1. Consolidate Δ1–Δ66 into rules inside the gate sections, and keep Part IX as a dated changelog. Many deltas are now one-issuer patches a new reader cannot follow.
 2. Take the first calibration run (Part XIV) and act on its systematic gaps.
 3. Ratify or revise every interim delta since Δ40, each with a named Shariah adviser's sign-off.
 
@@ -104,7 +110,7 @@ Each conflict was settled by the first rule that decides it:
 | Fd27 | **HIMS Strictest attributes 100% of alcohol-denat skincare** (5.25% of group) although F6 calls non-consumption alcohol Tier 0 at Sc A/B/C and only a "minor flag" at Strictest. | HIMS §6 | **"Minor flag" = 5% of the affected line** (the Δ24 Strictest rate) (D8) → 0.26%. HIMS Strictest **65.0% → 60.0%**. | None. |
 | Fd28 | **Gate-1 logic is scattered** across §1 (primary business), Δ14 (≥80% facilitation), Δ5/Δ13, the BRK lock (>5% prohibited segment) and F12 Reading (c), with no decision order. | §1, §25, §27, §45 | **One Gate-1 decision table** (§5). | None. |
 | Fd29 | The **AMC report numbers the exhibitor rule "Δ35"** and calls itself v4.4.3; v4.4.4 numbers it Δ36 (Δ35 is viewing-weighted flags). | AMC report | v4.4.4 numbering governs. | Labels only. |
-| Fd30 | **PEP and WMT run on "Master Methodology v3.0"**: total assets as the AAOIFI base, WMT's Sc A excludes tobacco, Sc B adds non-halal poultry. Incompatible with the four v4.x/v5.0 scenarios. | PEP, WMT reports | **Legacy.** Not part of the eighteen-issuer record; re-screen required (preliminary flags in §XIII.4). | Not in record. |
+| Fd30 | **PEP and WMT run on "Master Methodology v3.0"**: total assets as the AAOIFI base, WMT's Sc A excludes tobacco, Sc B adds non-halal poultry. Incompatible with the four v4.x/v5.0 scenarios. | PEP, WMT reports | **Legacy.** Not part of the eighteen-issuer record; re-screen required (preliminary flags in §XIII.4). **WMT re-screened under v5.0 on 31 October 2026** (`WMT_Shariah_Screening_v5_0.md`); PEP still owed. | WMT: Sc A/B MIXED — Watch, Sc C/Strictest FAIL. PEP: not in record. |
 | Fd31 | **Cash+IBS/MCAP at Sc B** is 33% in the §4 table but AAOIFI's literal test is 30% (§30). | §4 vs §30 | **Sc B 30%** (D12). | None. |
 | Fd32 | **§1's "eight-issuer precedent" lines are stale** — e.g. "EXLS, MLNK, EVER, RXST, HIMS all failed Gate 2"; EVER passes Gate 2 by wide margins and RXST fails only its 12-month cash ratio. | §1 | Precedents restated from the corrected record. | Text only. |
 | Fd33 | **Khums approximated** as revenue × operating margin × (1 − ETR), which ignores non-operating items; reports use three per-share bases (company-level, 20% × EPS × (1 − payout) in MELI, one-off 20% × retained earnings per share in VEEV). | §31; reports | 20% × **reported** net income attributable (company level); per share 20% × diluted EPS, marked informational. | Display only. |
@@ -170,7 +176,7 @@ Labelled **U** so they cannot be confused with the Gate-3 layers L1–L8.
 7. **Termination fees at Strictest** — compensation (*taʿwīḍ*) or penalty (*gharāmah*)?
 8. **Loot boxes without cash-out** (gaming) — open election (§52).
 9. **Δ27 graduated temporal scale** (≤6m / 6–24m / >24m).
-10. **Re-screens owed:** LLY (Gate-4 S8), SNY (exact R7 windows), RHHBY (R7 never computed), NFLX (Δ35 sourcing pass), PEP and WMT (legacy v3.0), DIS (FY2026 after the disclosure sunset and the Fubo carve-out); every cloud, data-centre and telecom issuer under Δ56; AMZN after its Q3 2026 results and Anthropic's IPO. **Hidden-interest suspects from the 18 October 2026 sweep, unscreened:** Paylocity (~6.8% of revenue), Paycom (~5.5%), Paychex (~4.2%), Coinbase (stablecoin reserve income ~18.8%), the GM, Ford, Caterpillar and Harley-Davidson finance arms (U2), PayPal.
+10. **Re-screens owed:** LLY (Gate-4 S8), SNY (exact R7 windows), RHHBY (R7 never computed), NFLX (Δ35 sourcing pass), PEP (legacy v3.0; WMT done 31 October 2026), DIS (FY2026 after the disclosure sunset and the Fubo carve-out); every cloud, data-centre and telecom issuer under Δ56; AMZN after its Q3 2026 results and Anthropic's IPO. **Hidden-interest suspects from the 18 October 2026 sweep, unscreened:** Paylocity (~6.8% of revenue), Paycom (~5.5%), Paychex (~4.2%), Coinbase (stablecoin reserve income ~18.8%), the GM, Ford, Caterpillar and Harley-Davidson finance arms (U2), PayPal.
 11. **Measured media rates (programme, owner decision 31 Oct 2026).** The §37 archetype rates (streaming 30/35/40/50%, studio 18/22/28/38%, music 20/25/30/40%) are the largest subjective input for every media-heavy issuer (DIS, NFLX, AAPL, AMZN). They are to be replaced by viewing-weighted Δ35 rates per service: catalogue ratings and advisories from public rating sources, weighted by published viewing data (hours per title). Each rate must be labelled measured or estimated (Fd34). Until a service has a measured rate, its line names the archetype as a placeholder.
 12. **§54 Position 3 outcome.** When float yield is structurally inseparable from the model (above 5% of revenue) at Sc C / Strictest, Gate 1 is "reconsidered" — but to what? Options: (a) CATEGORICAL FAIL, the business being in substance a float business; (b) FAIL on Gates 2–4 only. ADP (6.2%) is the first trigger; it stays FAIL meanwhile.
 
@@ -993,7 +999,8 @@ BNPL and instalment economics → L7 (and L2 categorical if a lending segment ex
 **Trigger.** An issuer whose reported revenue categories each mix permissible and impure economics: retail, a marketplace, media, advertising, cloud, payments and private stakes under one roof. A filing of this kind names none of its prohibited lines.
 - Precedent: Amazon (28 October 2026: seven categories, thirty estimated lines).
 - Apple is the partial precedent.
-- Alphabet, Microsoft, Meta, Walmart, Costco, Alibaba and Tencent are the obvious next cases.
+- Walmart (31 October 2026) is the second: a retailer whose prohibited goods sit inside its grocery categories, with a fintech, an Indian payments group and an ad network around the stores.
+- Alphabet, Microsoft, Meta, Costco, Alibaba and Tencent are the obvious next cases.
 
 **Protocol.**
 1. **Map every reported category to its economic lines.** Use the revenue-disaggregation note, the definition of "Other", and the Part XV lexicon. The lines are:
@@ -1039,7 +1046,7 @@ BNPL and instalment economics → L7 (and L2 categorical if a lending segment ex
 
 ---
 
-# PART IX — THE DELTA REGISTER (Δ1–Δ63)
+# PART IX — THE DELTA REGISTER (Δ1–Δ66)
 
 ## §56.1 — Every delta
 
@@ -1196,6 +1203,24 @@ Format: **trigger → rule (v5.0)** · scenarios · precedent · status. "Amende
   - Scenarios: all.
   - Precedent: Amazon — 31% disclosed at Sc A, 42% at Sc B, 19% at Sc C, 18% at Strictest.
   - Status: **Interim (31 Oct 2026, owner decision).** Engine: `Gate4Total.disclosed`.
+- **Δ64 A category relabelled to drop a prohibited word.**
+  - Trigger: a revenue or merchandise category whose name once included a prohibited good (tobacco, alcohol, pork, gaming) and no longer does, while nothing in the filings says the good stopped being sold. Compare category names and XBRL members across at least three annual filings.
+  - Rule: the line stays in Gate 4. Size it from the last disclosure that named it, rolled forward on benchmarks, and band it wide. The rename is a G-flag and a reconciliation row. The line lapses only on evidence that the good is no longer sold: a filing, a press release, or a store-level check.
+  - Scenarios: all.
+  - Precedent: Walmart — Sam's Club's "Fuel, tobacco and other categories" (FY2024 10-K, XBRL member `FueltobaccoandothercategoriesMember`) became "Fuel and other" in the FY2025 10-K. "Tobacco" appears zero times in the FY2025 and FY2026 10-Ks. Est. $1.2b (band $0.55–2.3b) with International.
+  - Status: **Interim (31 Oct 2026).**
+- **Δ65 Cheque cashing at a discount.**
+  - Trigger: a non-financial issuer that cashes customers' cheques for a fee: money-service counters in stores, payroll cards.
+  - Rule: cashing a cheque for less than its face buys a debt at a discount (*bayʿ al-dayn* at less than face). The fee is a Gate-4 line from Sc B. Sc A reads the fee as a service charge. Money transfers, money orders and bill payment are fee-for-service, Tier 0 at every scenario.
+  - Scenarios: Sc B / Sc C / Strictest.
+  - Precedent: Walmart — "money orders, prepaid access, money transfers, check cashing, bill payment" in Walmart U.S. stores; est. $100m (band $50–200m).
+  - Status: **Interim (31 Oct 2026).** Open question: the Council may read the fee as ujrah for a service, with the cheque honoured at face.
+- **Δ66 Correlated estimates are tested together under Δ61.**
+  - Trigger: two or more estimated Gate-4 lines sized from the same source or method — category shares from one benchmark family, one rate applied to several segments, one survey.
+  - Rule: give those lines a common group. The Δ61 test moves each group to the low or high edge as one, as well as each ungrouped line alone. If a group at either edge flips the result, the scenario reads **MIXED — Watch**, and the group is named. A group is drawn when an error in the source would move every line the same way. Lines that only share a rule (two Δ46 revenue shares from different partners) are not grouped.
+  - Scenarios: Sc A / Sc B (as Δ61).
+  - Precedent: Walmart — seven alcohol, tobacco and pork lines, all shares of segment Grocery or net sales. No single line flips Sc B (the widest adds 0.35 points). Together, at the high edge, they add 1.49 points: Sc A 5.56%, Sc B 5.67%.
+  - Status: **Interim (31 Oct 2026).** Engine: `RevenueLine.group`.
 
 ## §56.2 — Trigger matrix (find every delta before Gate 2)
 
@@ -1251,6 +1276,9 @@ Format: **trigger → rule (v5.0)** · scenarios · precedent · status. "Amende
 | A Gate-4 result at Sc A or B within one estimate's band of the cap | Δ61 |
 | Any line counted under a rule only Maz Vantage runs | Δ62 (keep it out of the index rows) |
 | Every researched screen | Δ63 (print the disclosed share) |
+| A category whose name dropped a prohibited word between filings (compare XBRL members) | Δ64, Part XV |
+| Cheque cashing, money orders or money transfers sold in stores | Δ65 (cheque cashing only) |
+| Several estimated Gate-4 lines sized from one benchmark family | Δ66 (group them for Δ61) |
 
 ---
 
@@ -1609,9 +1637,10 @@ AAOIFI dividend-ratio cross-check (§59), DPS × NPI%: JNJ $0.058 / 0.058 / 0.06
 ## §XIII.4 — Legacy reports (v3.0) — preliminary only
 
 - **PEP** (10-K 0000077476-26-000007): debt $49,182M / TA $107,399M = 45.8% → Sc B / C / Strictest Gate-2 FAIL; IBD / MCAP ~25.0% passes Sc A; Layer 1 "interest income and other" $719M (0.77%; the gross interest split needs the note); alcohol-brand licensing (Hard MTN Dew, Lipton Hard Iced Tea) is Tier 1 at 100% (§48); Sc A NPI ~0.9% → **preliminary: Sc A PASS, Sc B / C / Strictest FAIL.**
-- **WMT** (10-K 0000104169-26-000055): debt $38,166M + finance leases $6,761M = 15.8% of TA $284,668M (track b with operating leases $15,572M: 21.2%); Gate 2 passes. Gate 4: alcohol (~2.5%) + tobacco (~2.7%) + pork are Tier 1 at **every** scenario (P1), so Sc A is already above 5%; non-halal meat adds more at Sc C / Strictest → **preliminary: FAIL all four.**
+- **WMT** (10-K 0000104169-26-000055): debt $38,166M + finance leases $6,761M = 15.8% of TA $284,668M (track b with operating leases $15,572M: 21.2%); Gate 2 passes. Gate 4: alcohol (~2.5%) + tobacco (~2.7%) + pork are Tier 1 at **every** scenario (P1), so Sc A is already above 5%; non-halal meat adds more at Sc C / Strictest → **preliminary: FAIL all four.** **Superseded on 31 October 2026** by the full v5.0 screen (`WMT_Shariah_Screening_v5_0.md`): Sc A and Sc B **MIXED — Watch** (4.08% / 4.18%), Sc C and Strictest **FAIL** (11.41% / 12.35%; Strictest also fails R19 at 25.09%).
+  - The preliminary shares were applied to total revenue. Tobacco at 2.7% would be about $20b, roughly a quarter of all US cigarette retail. Rebuilt by segment and category, tobacco is 0.57%, alcohol 1.80% and pork 1.58%.
 
-Both need a full v5.0 re-screen before they enter the record.
+PEP needs a full v5.0 re-screen before it enters the record.
 
 ## §XIII.5 — Twelve-standard tallies
 
@@ -1640,7 +1669,7 @@ Full researched screens do not scale beyond a handful of issuers, so the app wor
 |---|---|---|---|
 | **Mechanical** | The quick screen: the five index families' ratios and the reported interest line, from the data feed | Every ticker | "Quick screen" |
 | **Researched-lite** | The mechanical screen, plus Gates 2–3 from the filings (no feed figures), plus the **five largest Gate-4 lines** found with the Part XV lexicon, each banded and sourced | Widely held names a reader asks about, before a full screen exists | "Researched-lite, [date]"; the verdict states that the remaining lines are unscreened |
-| **Full** | Every gate and scenario, all lines, sensitivities, report and pinned tests | Issuers with a record (AAPL, ADP, ABNB, DE, AMZN) | "Researched, v5.0, [date]" |
+| **Full** | Every gate and scenario, all lines, sensitivities, report and pinned tests | Issuers with a record (AAPL, ADP, ABNB, DE, AMZN, WMT) | "Researched, v5.0, [date]" |
 
 **Rules for researched-lite.**
 - A lite PASS reads "passes on its five largest lines", never plainly "halal".
@@ -1660,14 +1689,14 @@ Each quarter, take 50–100 large issuers and compare the platform's verdicts wi
 
 ---
 
-# PART XV — THE LINE-ITEM LEXICON (160 entries)
+# PART XV — THE LINE-ITEM LEXICON (165 entries)
 
 **What it is.** The phrases and lines in a filing that can hold a prohibited source, or a debt, that the filing does not name. Each entry gives:
 - where the phrase usually appears;
 - what it can hold;
 - the rule that classifies it, and how to test it.
 
-The entries come from the record — ADP, Airbnb, Deere, Apple and the eighteen-issuer record — and from the Amazon stress screen. In Amazon's 10-K, the words alcohol, pork, gambling, tobacco, lending, warranty and Whole Foods appear **zero** times, though every one of those activities is in its revenue.
+The entries come from the record — ADP, Airbnb, Deere, Apple and the eighteen-issuer record — and from the Amazon and Walmart stress screens. In Amazon's 10-K, the words alcohol, pork, gambling, tobacco, lending, warranty and Whole Foods appear **zero** times, though every one of those activities is in its revenue.
 
 **How to use it.**
 1. Run the phrases as full-text searches (§XII.3) over every filing in the window: 10-K, 10-Qs, 8-K exhibits, proxy and Exhibit 21.
@@ -1803,7 +1832,7 @@ An entry is a place to look, not a verdict. Most hits are permissible on reading
 
 | # | Phrase or line | Where it appears | What it can hold | Rule · test |
 |---|---|---|---|---|
-| 95 | "Fuel, tobacco and other" | Club-store categories | Tobacco | Tier 1 (Sam's Club) |
+| 95 | "Fuel, tobacco and other" | Club-store categories | Tobacco | Tier 1 (Sam's Club to FY2024; renamed "Fuel and other" from FY2025: entry 161, Δ64) |
 | 96 | "Other tobacco products" / "Vapor" / "Heated tobacco" | Categories | Tobacco | Tier 1 |
 | 97 | "Nicotine pouches" | Categories, listing policy | Nicotine | Tier 1 |
 | 98 | "Nicotine replacement therapy" | Pharmacy | Cessation products | Tier 0 |
@@ -1899,6 +1928,16 @@ An entry is a place to look, not a verdict. Most hits are permissible on reading
 | 158 | "Compounded" medicines | Telehealth | Unapproved copies | Δ8, G-flag (HIMS) |
 | 159 | "Pay-per-visit" / "Asynchronous visit" | Telehealth | A weak prescriber gate | F11, Δ8 |
 | 160 | "Fertility" / "IVF" / "Embryo" | Health services | Contested care | Tier 3 at Strictest (F5) |
+
+### §XV.13 Added from the Walmart screen (31 October 2026)
+
+| # | Phrase or line | Where it appears | What it can hold | Rule · test |
+|---|---|---|---|---|
+| 161 | "Fuel and other" (formerly "Fuel, tobacco and other categories") | Club-store categories, XBRL members | Tobacco, under a name that no longer says so | Δ64: compare category names across three 10-Ks |
+| 162 | "Prepaid access" / "MoneyCard" / "Reloadable card" | Financial-services list, partner bank's filings | A deposit product issued by a partner bank, with the retailer's referral share | Δ46 |
+| 163 | "Earned wage access" / "On-demand pay" | Fintech subsidiary, press | An advance on wages for a fee | Open: qarḍ with a fee or a service; size and flag |
+| 164 | "Debt investments" on Level-3 inputs / "Other long-term assets" | Fair-value note | Interest-bearing securities outside the cash captions | Cash + IBS (§6); yield is L8 |
+| 165 | "Limited access to cryptocurrency" / "Digital assets" in a payments app | Fintech terms, press | Crypto trading through a partner | Δ7; access only unless the issuer holds or earns on the assets |
 
 ---
 

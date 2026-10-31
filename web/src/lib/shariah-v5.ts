@@ -232,6 +232,11 @@ export interface RevenueLine {
    * left out of the index rows, which apply each family's own scope.
    */
   ownRule?: boolean;
+  /**
+   * Δ66: lines sized from one shared source (the same category benchmarks, say) are wrong together,
+   * so the Δ61 test moves every line of a group to the same edge at once.
+   */
+  group?: string;
   /** An activity index families exclude whole (music, film, insurance broking, conventional finance, gambling). */
   wholeLine?: boolean;
   /** An open election (§52 loot boxes): reported under readings, kept out of the total. */
@@ -285,13 +290,20 @@ export function gate4(lines: RevenueLine[], revenue: number, s: Scenario): Gate4
   const otherEdge = sumAt(true) / revenue;
   const cap = NPI_CAP[s];
   const passes = npi <= cap;
-  // Δ61: at the point-estimate lenses, does one estimated line alone, at either edge, cross the cap?
-  const watch = !edge(s) && counted.some((l) => {
-    if (l.status === 'disclosed') return false;
-    const now = lineAt(l, s, revenue).amount;
+  // Δ61: at the point-estimate lenses, does one estimated line alone — or, under Δ66, one group of lines
+  // sized from a shared source — at either edge, cross the cap?
+  const estimated = counted.filter((l) => l.status !== 'disclosed');
+  const sets = [
+    ...estimated.filter((l) => !l.group).map((l) => [l]),
+    ...[...new Set(estimated.map((l) => l.group).filter(Boolean))].map((g) => estimated.filter((l) => l.group === g)),
+  ];
+  const atEdge = (l: RevenueLine, high: boolean) => {
     const r = l.rate[s];
-    const at = (size: number, high: boolean) => size * (typeof r === 'number' ? r : high ? r.high : r.point);
-    return [at(l.base.low, false), at(l.base.high, true)].some((x) => (amount - now + x) / revenue <= cap !== passes);
+    return (high ? l.base.high : l.base.low) * (typeof r === 'number' ? r : high ? r.high : r.point);
+  };
+  const watch = !edge(s) && sets.some((set) => {
+    const now = set.reduce((t, l) => t + lineAt(l, s, revenue).amount, 0);
+    return [false, true].some((high) => (amount - now + set.reduce((t, l) => t + atEdge(l, high), 0)) / revenue <= cap !== passes);
   });
   const disclosed = amount > 0
     ? counted.filter((l) => l.status === 'disclosed').reduce((t, l) => t + lineAt(l, s, revenue).amount, 0) / amount

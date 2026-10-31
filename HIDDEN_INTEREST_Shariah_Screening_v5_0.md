@@ -1,6 +1,6 @@
 # Hidden interest — Shariah screening reports: ADP, Airbnb, Deere
 
-**Methodology:** v5.0 (with interim deltas Δ40–Δ48, 18 October 2026; Δ41–Δ48 came out of these three screens). **Screened:** 18 October 2026. **Reconciled with the master** (now Δ1–Δ63): 31 October 2026 — see the note below.
+**Methodology:** v5.0 (with interim deltas Δ40–Δ48, 18 October 2026; Δ41–Δ48 came out of these three screens). **Screened:** 18 October 2026. **Reconciled with the master** (then Δ1–Δ63): 31 October 2026 — see the note below. Δ64–Δ66, added the same day from the Walmart screen, change nothing here: Gate 1 or Gate 3 already decides all three.
 
 > **Reconciliation with the master methodology, 31 October 2026.** No verdict changes: all three fail at every scenario, as screened.
 > - **Later deltas.**

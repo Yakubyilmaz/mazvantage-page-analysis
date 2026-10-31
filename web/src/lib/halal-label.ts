@@ -93,7 +93,7 @@ export function labelFromQuick(rows: QuickResult[], name = 'The company'): Halal
 
 const V5_WORD: Record<Verdict, { tone: HalalTone; word: string; headline: string; phrase: string }> = {
   PASS: { tone: 'good', word: 'Halal · AAOIFI-based', headline: 'Compliant, AAOIFI-based', phrase: 'is Shariah-compliant under its AAOIFI-based scenario' },
-  'MIXED — Watch': { tone: 'warn', word: 'On watch · AAOIFI-based', headline: 'On watch, AAOIFI-based', phrase: 'is on watch under its AAOIFI-based scenario: compliant, but close to a limit or resting on one estimate' },
+  'MIXED — Watch': { tone: 'warn', word: 'On watch · AAOIFI-based', headline: 'On watch, AAOIFI-based', phrase: 'is on watch under its AAOIFI-based scenario: compliant, but close to a limit or resting on its estimates' },
   FAIL: { tone: 'bad', word: 'Not halal · AAOIFI-based', headline: 'Not compliant, AAOIFI-based', phrase: 'is not Shariah-compliant under its AAOIFI-based scenario' },
   'CATEGORICAL FAIL': { tone: 'bad', word: 'Not halal · activity', headline: 'Excluded on activity', phrase: 'is not Shariah-compliant: its business activity is excluded' },
   'NOT SCREENABLE': { tone: 'muted', word: 'Not screened', headline: 'Not screenable', phrase: 'cannot be screened from what it discloses' },

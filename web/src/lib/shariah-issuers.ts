@@ -20,6 +20,7 @@ import {
 // Type-only the other way, so there is no import cycle at run time.
 import { ABNB, ADP, DE } from './shariah-issuers-hidden-interest';
 import { AMZN } from './shariah-issuers-amazon';
+import { WMT } from './shariah-issuers-walmart';
 
 export interface Filing { form: string; period: string; accession: string; href: string }
 export interface Source { label: string; href: string }
@@ -375,7 +376,7 @@ export const AAPL: IssuerRecord = {
 };
 
 // Three more, from the 2026-10-18 hidden-interest sweep.
-export const SHARIAH_ISSUERS: Record<string, IssuerRecord> = { AAPL, ADP, ABNB, DE, AMZN };
+export const SHARIAH_ISSUERS: Record<string, IssuerRecord> = { AAPL, ADP, ABNB, DE, AMZN, WMT };
 
 export const issuerRecord = (symbol: string | null | undefined): IssuerRecord | null =>
   (symbol && SHARIAH_ISSUERS[symbol.toUpperCase()]) || null;
@@ -444,7 +445,7 @@ export function screenIssuer(r: IssuerRecord): Screen {
     const reasons = [
       ...failing.map((t) => `Gate ${TEST_INFO[t.key].gate}: ${testName(t, s)} ${PCT(t.value ?? 0)} > ${PCT(t.limit ?? 0)}`),
       ...(g4.state === 'fail' ? [`Gate 4: income ${PCT(g4.npi)} > ${PCT(g4.cap)}`] : []),
-      ...(g4.watch ? [`Gate 4: income ${PCT(g4.npi)} against ${PCT(g4.cap)} turns on one estimate (Δ61)`] : []),
+      ...(g4.watch ? [`Gate 4: income ${PCT(g4.npi)} against ${PCT(g4.cap)} turns on one estimate, or one group sized from the same source (Δ61, Δ66)`] : []),
     ];
     out[s] = {
       s,
