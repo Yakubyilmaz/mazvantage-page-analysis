@@ -13,7 +13,7 @@
 import * as React from 'react';
 import { money, pct } from '@/lib/format';
 import {
-  PREFERRED, SCENARIOS, SCENARIO_NAME, SCENARIO_SHORT, TEST_INFO, lineAt, ratioTests, sizeAt,
+  PREFERRED, SCENARIOS, SCENARIO_NAME, SCENARIO_SHORT, TEST_INFO, lineAt, ratioTests,
   type IndexResult, type Scenario, type TestState, type Verdict,
 } from '@/lib/shariah-v5';
 import { screenIssuer, type IssuerRecord } from '@/lib/shariah-issuers';
@@ -144,6 +144,7 @@ export function ShariahIssuerReport({ record: r }: { record: IssuerRecord }) {
                 <span className="mt-1 text-tiny text-muted-foreground">
                   Non-permissible income <b className="font-semibold text-foreground">{p2(x.g4.npi)}</b> · purify <b className="font-semibold text-foreground">{perShare(x.purification.perShare)}</b>/share
                 </span>
+                <span className="text-micro text-muted-foreground/80">{pct(x.g4.disclosed, { dp: 0 })} of that income is disclosed, the rest estimated</span>
               </div>
             );
           })}
@@ -171,8 +172,11 @@ export function ShariahIssuerReport({ record: r }: { record: IssuerRecord }) {
                 </span>
               );
             })],
-            [<b key="g">3 · Hidden interest</b>, ...SCENARIOS.map((s) => <span key={s} className={stateTone(at(s).g3)}>{at(s).g3 === 'pass' ? 'Pass' : 'Fail'} {p2(sizeAt(r.l1, s) / rev)}</span>)],
-            [<b key="g">4 · Revenue purity</b>, ...SCENARIOS.map((s) => <span key={s} className={stateTone(at(s).g4.state)}>{at(s).g4.state === 'pass' ? 'Pass' : 'Fail'} {p2(at(s).g4.npi)} <i className="not-italic text-muted-foreground">/ {pct(at(s).g4.cap, { dp: 0 })}</i></span>)],
+            [<b key="g">3 · Hidden interest</b>, ...SCENARIOS.map((s) => <span key={s} className={stateTone(at(s).g3)}>{at(s).g3 === 'pass' ? 'Pass' : 'Fail'} {p2(at(s).tests.find((t) => t.key === 'l1_revenue')?.value ?? 0)}</span>)],
+            [<b key="g">4 · Revenue purity</b>, ...SCENARIOS.map((s) => {
+              const g = at(s).g4;
+              return <span key={s} className={stateTone(g.watch ? 'watch' : g.state)}>{g.watch ? 'Watch' : g.state === 'pass' ? 'Pass' : 'Fail'} {p2(g.npi)} <i className="not-italic text-muted-foreground">/ {pct(g.cap, { dp: 0 })}</i></span>;
+            })],
             [<b key="g">5 · Disclosure</b>, ...SCENARIOS.map((s) => <span key={s} className="text-muted-foreground">{r.gate5.screenable ? 'Screenable, estimated' : 'Not screenable'}</span>)],
             [<b key="g">Verdict</b>, ...SCENARIOS.map((s) => <b key={s} className={verdictTone(at(s).verdict)}>{at(s).verdict}</b>)],
           ]}
@@ -228,7 +232,8 @@ export function ShariahIssuerReport({ record: r }: { record: IssuerRecord }) {
             <ul className="grid gap-1 text-13 leading-relaxed text-muted-foreground">
               {SCENARIOS.map((s) => (
                 <li key={s}><b className="font-semibold text-foreground">{SCENARIO_NAME[s]}</b>: {p2(at(s).g4.npi)} as sized, {p2(at(s).g4.otherEdge)} at the other edge —{' '}
-                  {at(s).g4.robust ? `${at(s).g4.state === 'pass' ? 'passes' : 'fails'} either way.` : 'the Gate-4 result depends on where in the band the truth sits.'}</li>
+                  {at(s).g4.robust ? `${at(s).g4.state === 'pass' ? 'passes' : 'fails'} either way.` : 'the Gate-4 result depends on where in the band the truth sits.'}
+                  {at(s).g4.watch ? ' One estimated line alone, at an edge of its band, would flip it: on watch (Δ61).' : ''}</li>
               ))}
             </ul>
           </div>

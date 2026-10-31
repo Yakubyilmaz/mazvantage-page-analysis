@@ -64,11 +64,11 @@ export const AMZN: IssuerRecord = {
   period: { label: 'Twelve months to 30 June 2026 (Q3 2025 – Q2 2026)', start: '2025-07-01', end: '2026-06-30' },
   summary: 'Amazon clears the activity screen and every balance-sheet test at Scenarios A to C: debt is 5.9% and cash '
     + 'and securities 4.7% of its 12-month average market value, and interest is 0.6% of revenue. No prohibited line is '
-    + 'disclosed by name — alcohol, pork, gambling, card and lender revenue shares, an insurance agency, a lender in India '
-    + 'and a media group all sit inside seven broad categories — so the screen estimates thirty of them: 2.5% of revenue '
-    + 'at Scenario B, the AAOIFI reading, under the 5% cap; 4.3% at Scenario C, under its cap with little room; 4.8% at '
-    + 'Strictest, over its 3%. Strictest\'s debt test also fails once $172b of Anthropic mark-ups are taken out of total '
-    + 'assets (Δ50): debt with leases is 27.3% of them.',
+    + 'disclosed by name, so the screen estimates thirty-five of them. Non-permissible income is 2.0% of revenue at '
+    + 'Scenario A and 3.5% at Scenario B, the AAOIFI-based reading, both under the 5% cap — B includes the $6.8b of gains '
+    + 'Amazon booked when its interest-free Anthropic loans converted at a fixed price, a benefit to the lender (Δ49). It '
+    + 'is 7.9% at Scenario C and 8.4% at Strictest, where AWS capacity rented to banks, insurers and sportsbooks is counted '
+    + 'on industry benchmarks (Δ56); at A and B only named customers count. 42% of the Scenario B figure is disclosed.',
   ratioNote: 'Debt is $132.2b of notes ($128.9b long-term and $3.3b current, inside accrued expenses), $9.3b of financing '
     + 'obligations filed under other liabilities, $0.3b of short-term facilities and $13.5b of finance leases; Strictest adds '
     + '$96.3b of operating leases (Δ59). Cash and securities ($121.0b) exclude equities; ~$2.9b of affordable-housing loans '
@@ -78,7 +78,8 @@ export const AMZN: IssuerRecord = {
   methodsNote: 'Every index family that divides by market value passes Amazon\'s balance sheet: debt and cash are single-digit '
     + 'percentages of a $2.2–2.7t company. FTSE\'s whole-line count (film, music, insurance broking, conventional finance, '
     + 'alcohol, pork, gambling and TV advertising counted in full) puts Amazon within the range of the estimates of its 5% '
-    + 'line. The Shariah index funds hold none: the S&P 500 Shariah ETF (SPUS) held Amazon at 6.4% in May 2025 and holds '
+    + 'line. The index rows apply each family\'s own scope, so they leave out the rules only Maz Vantage runs: the Anthropic '
+    + 'conversions (Δ49), the Affirm warrants (Δ55), AWS customers (Δ56) and the look-throughs (Δ57). The Shariah index funds hold none: the S&P 500 Shariah ETF (SPUS) held Amazon at 6.4% in May 2025 and holds '
     + 'none at 27 October 2026, and the FTSE USA Shariah ETF (HLAL) holds none. Each provider\'s constituent list is the '
     + 'authority for its index; neither publishes its reason.',
   filings: [
@@ -145,7 +146,7 @@ export const AMZN: IssuerRecord = {
     { step: '1', test: 'Primary business', finding: 'Online and physical retail (North America $453.7b, International $173.6b in the window) and cloud services (AWS $148.4b).', result: 'Not P1 — pass' },
     { step: '2', test: 'Own P1 segment > 5% (U2)', finding: 'Three segments. What Amazon conducts itself — Axio\'s lending in India (est. $65m) and insurance agency at checkout and in Amazon Pay India — is under 0.1% of revenue.', result: 'Below 5% — pass, G-flag' },
     { step: '3', test: 'Facilitation (Δ14)', finding: 'Card and lender revenue shares, Affirm warrants, insurance distribution, the marketplace take on alcohol, ads for P1 goods and a sportsbook integration: ~1–3% of revenue.', result: '< 50% — standard Gate 4' },
-    { step: '4', test: 'Sector routing', finding: 'Retail §49; marketplace Δ53; Prime Video, MGM, Music and Twitch Part VII (F12); games and the Appstore §52; payments and lending §54; advertising Δ31 and Δ51; pharmacy U1; cloud has no sector rule (Δ56 proposed).', result: 'Proceed' },
+    { step: '4', test: 'Sector routing', finding: 'Retail §49; marketplace Δ53; Prime Video, MGM, Music and Twitch Part VII (F12); games and the Appstore §52; payments and lending §54; advertising Δ31 and Δ51; pharmacy U1; cloud and data centres Δ56.', result: 'Proceed' },
     { step: '5', test: 'Special classes', finding: 'Not a health payer (One Medical is a provider), takaful operator or holding company.', result: 'n/a' },
     { step: '6', test: 'Sub-industry (Δ5, Δ13)', finding: '"Broadline retail" hides a $76b advertising business, a studio and streaming group, a lender and a private-stake portfolio carried at $224b.', result: 'Re-routed (F13)' },
     { step: '7', test: 'Client elections', finding: 'None.', result: 'n/a' },
@@ -193,7 +194,7 @@ export const AMZN: IssuerRecord = {
         + 'treats it as a lease of promotional capacity (Δ31 carve-out).',
     },
     {
-      key: 'affirm', wholeLine: true, label: 'Affirm warrants earned for new Affirm borrowers on Amazon', rule: 'Δ55 (Δ46 rates) — consideration in kind from a lender', tier: 'Tier 1 at Sc B+',
+      key: 'affirm', ownRule: true, label: 'Affirm warrants earned for new Affirm borrowers on Amazon', rule: 'Δ55 (Δ46 rates) — consideration in kind from a lender', tier: 'Tier 1 at Sc B+',
       base: { point: 200, low: 150, high: 260 },
       rate: { A: 0, B: 1, C: 1, S: 1 },
       status: 'estimated',
@@ -292,13 +293,14 @@ export const AMZN: IssuerRecord = {
     },
     {
       key: 'video', wholeLine: true, label: 'Prime Video inside Prime, ad-free upgrades and video-only plans', rule: 'F12, Δ28, Δ52 — general-entertainment SVOD archetype', tier: 'Tier 2',
-      base: { point: 9_500, low: 7_000, high: 13_000 },
+      base: { point: 9_000, low: 5_000, high: 12_700 },
       rate: { A: 0.30, B: 0.35, C: 0.40, S: 0.50 },
       status: 'estimated',
-      basis: 'Subscription services $52.9b. Prime fees ~$20–26b; video\'s slice by relative standalone price (Prime Video '
-        + 'alone $8.99 a month against Prime at $14.99) is 25–45%, point 35% (Δ52), plus ad-free upgrades and video-only '
-        + 'plans. Mature originals (The Boys, Gen V, Invincible, Fallout) set the archetype; live sport is Tier 0 and is not '
-        + 'carved out (Apple precedent). Video and music cost Amazon $22.4b in 2025.',
+      basis: 'Subscription services $52.9b; Prime fees ~$20–26b. Video\'s slice of Prime, triangulated (Δ52): by value 41% '
+        + '(Prime Video alone $108 a year against free shipping worth ~$95 at $6.99 on half of ~28 orders, music ~$36, other '
+        + '~$20); by cost 20% ($18.9b of video against $102.7b of shipping, two thirds of it Prime\'s, and $3.5b of music); by '
+        + 'survey 33% (video cited by 47–61% of members against shipping\'s 73–84%). Median 33%, band 20–41%, plus ~$1–2b of '
+        + 'ad-free upgrades and video-only plans. Mature originals set the archetype; live sport is not carved out.',
     },
     {
       key: 'channels', wholeLine: true, label: 'Prime Video rentals, purchases and Channels', rule: 'F12 — studio content sales archetype', tier: 'Tier 2',
@@ -403,7 +405,7 @@ export const AMZN: IssuerRecord = {
       basis: 'Not an enumerated activity (P1-ADT is pornography and adult venues); a contextual flag at the strict lenses only.',
     },
     {
-      key: 'anthropicLT', label: 'Anthropic look-through: Amazon\'s share of its interest income', rule: 'U4, Δ57', tier: 'Tier 1',
+      key: 'anthropicLT', ownRule: true, label: 'Anthropic look-through: Amazon\'s share of its interest income', rule: 'U4, Δ57', tier: 'Tier 1',
       base: { point: 171, low: 143, high: 228 },
       rate: { A: 1, B: 1, C: 1, S: 1 },
       status: 'estimated',
@@ -412,12 +414,54 @@ export const AMZN: IssuerRecord = {
         + '(band 10–16%); there are no dividends, so the share of the impure income flows up (Δ57).',
     },
     {
-      key: 'openaiLT', label: 'OpenAI look-through (private; estimated)', rule: 'U4, Δ57', tier: 'Tier 1',
+      key: 'openaiLT', ownRule: true, label: 'OpenAI look-through (private; estimated)', rule: 'U4, Δ57', tier: 'Tier 1',
       base: { point: 60, low: 20, high: 150 },
       rate: { A: 1, B: 1, C: 1, S: 1 },
       status: 'estimated — wide band',
       basis: 'Amazon bought $28.7b of OpenAI Series C preferred in H1 2026 and $21.3b more after June. OpenAI files nothing '
         + 'public: tens of billions of cash at ~4%, a mid-single-digit stake, pro rata for the months held.',
+    },
+    {
+      key: 'qard', interest: true, addsToLayer1: true, ownRule: true, label: 'Anthropic note conversion gains (a lender\'s benefit)', rule: 'Δ49', tier: 'Tier 1 at Sc B+',
+      base: { point: 6_800, low: 6_800, high: 6_800 },
+      rate: { A: 0, B: 1, C: 1, S: 1 },
+      status: 'disclosed',
+      basis: 'The notes bear no interest but convert at a fixed price ($2.09 or $5.05 a share) or the IPO price if lower: a '
+        + 'benefit written into a loan. The conversion gains recognised in the window — reclassification adjustments for '
+        + 'gains on available-for-sale debt securities, $5.6b in 2025 + $4.5b in H1 2026 − $3.3b in H1 2025 — are Layer 1 '
+        + 'at Sc B+ (Δ49). Sc A reads the notes as a deferred share subscription. The $92.0b still unrealised in AOCI is '
+        + 'documented (U3).',
+    },
+    {
+      key: 'awsP1Named', ownRule: true, label: 'AWS capacity rented to a named sportsbook (FanDuel)', rule: 'Δ56 — named customer, D18 row 1', tier: 'Tier 1',
+      base: { point: 150, low: 75, high: 300 },
+      rate: { A: 1, B: 1, C: 1, S: 1 },
+      status: 'estimated — wide band',
+      basis: 'FanDuel made AWS its strategic cloud provider in 2023 and runs its betting platform on it (AWS press release). '
+        + 'The spend is not published.',
+    },
+    {
+      key: 'awsFinNamed', ownRule: true, label: 'AWS capacity rented to named banks and insurers (Capital One and others in AWS case studies)', rule: 'Δ56 — named customers, D18 row 2', tier: 'Tier 1 at Sc B+',
+      base: { point: 1_000, low: 500, high: 2_000 },
+      rate: { A: 0, B: 1, C: 1, S: 1 },
+      status: 'estimated — wide band',
+      basis: 'Capital One closed its data centres to run on AWS; other banks and insurers appear in AWS\'s own case studies. '
+        + 'Their spend is not published. Sc A 0% (Abū Ḥanīfa, as D18 and Δ31).',
+    },
+    {
+      key: 'awsP1Bench', ownRule: true, label: 'AWS capacity rented to other sportsbooks, casinos and alcohol, tobacco and adult producers (benchmark)', rule: 'Δ56 — benchmark sizing, Sc C and Strictest', tier: 'Tier 1 at Sc C+',
+      base: { point: 650, low: 375, high: 1_200 },
+      rate: { A: 0, B: 0, C: 1, S: 1 },
+      status: 'estimated — wide band',
+      basis: 'Businesses whose activity is itself prohibited, 0.3–1.0% of AWS revenue ($148.4b), less the named customer.',
+    },
+    {
+      key: 'awsFinBench', ownRule: true, label: 'AWS capacity rented to other conventional banks, insurers and lenders (benchmark)', rule: 'Δ56 — benchmark sizing, Sc C and Strictest', tier: 'Tier 1 at Sc C+',
+      base: { point: 12_000, low: 8_500, high: 18_000 },
+      rate: { A: 0, B: 0, C: 1, S: 1 },
+      status: 'estimated — wide band',
+      basis: 'AWS does not disclose revenue by industry. Banking and finance are ~20% of enterprise cloud spending; the '
+        + 'lending and underwriting part, 6–13% of AWS revenue, less the named customers.',
     },
     {
       key: 'gacha', label: 'Loot boxes and premium currency in Amazon Games titles', rule: '§52 — open election', tier: 'Election',
@@ -432,31 +476,19 @@ export const AMZN: IssuerRecord = {
   ],
   sensitivities: [
     {
-      label: 'Anthropic note conversions read as a loan with a benefit to the lender (Δ49, proposed)',
-      note: 'The notes bear no interest but convert at a fixed price or the IPO price if lower. Read as qarḍ with a stipulated '
-        + 'benefit, the conversion gains recognised in the window ($5.6b in 2025 + $4.5b in H1 2026 − $3.3b in H1 2025) are '
-        + 'Layer 1 at Sc B+; Sc A reads the notes as a deferred share subscription.',
-      lines: [{
-        key: 'qard', label: 'Anthropic note conversion gains', rule: 'Δ49 (proposed)', tier: 'Tier 1 at Sc B+',
-        base: { point: 6_800, low: 6_800, high: 6_800 }, rate: { A: 0, B: 1, C: 1, S: 1 },
-        status: 'disclosed', basis: 'Reclassification adjustments for gains on available-for-sale debt securities (Other income note).',
-      }],
-    },
-    {
-      label: 'AWS capacity rented to businesses whose activity is prohibited (Δ56, proposed)',
-      note: 'D18\'s tenant rule and Δ31\'s ad-capacity rule applied to cloud: sportsbooks, casinos and alcohol, tobacco and adult '
-        + 'producers at every scenario; conventional banks, insurers and lenders at Sc B+ (Sc A 0%, Abū Ḥanīfa). Δ16 alone '
-        + 'leaves AWS at 0%, because no customer vertical reaches 50%.',
+      label: 'Δ56 as first adopted: AWS benchmark sizing at Scenario B as well',
+      note: 'Before 31 October 2026, Scenario B counted the benchmark-sized AWS customers too, and failed at 5.1% on an '
+        + 'estimate no filing supports. The narrowed rule counts only named customers at Scenario A and B.',
       lines: [
         {
-          key: 'awsP1', label: 'AWS revenue from sportsbooks, casinos and alcohol, tobacco and adult producers', rule: 'Δ56 (proposed)', tier: 'Tier 1',
-          base: { point: 800, low: 450, high: 1_500 }, rate: { A: 1, B: 1, C: 1, S: 1 },
-          status: 'estimated — wide band', basis: 'FanDuel made AWS its strategic cloud provider in 2023; 0.3–1.0% of AWS revenue.',
+          key: 'awsP1Bench', ownRule: true, label: 'AWS capacity rented to other P1 producers (benchmark)', rule: 'Δ56 as first adopted', tier: 'Tier 1',
+          base: { point: 650, low: 375, high: 1_200 }, rate: { A: 1, B: 1, C: 1, S: 1 },
+          status: 'estimated — wide band', basis: 'As the base line.',
         },
         {
-          key: 'awsFin', label: 'AWS revenue from conventional banks, insurers and lenders', rule: 'Δ56 (proposed)', tier: 'Tier 1 at Sc B+',
-          base: { point: 13_000, low: 9_000, high: 20_000 }, rate: { A: 0, B: 1, C: 1, S: 1 },
-          status: 'estimated — wide band', basis: 'Banking and finance ~20% of enterprise cloud spend; the lending and underwriting part, 6–13% of AWS revenue.',
+          key: 'awsFinBench', ownRule: true, label: 'AWS capacity rented to other banks, insurers and lenders (benchmark)', rule: 'Δ56 as first adopted', tier: 'Tier 1 at Sc B+',
+          base: { point: 12_000, low: 8_500, high: 18_000 }, rate: { A: 0, B: 1, C: 1, S: 1 },
+          status: 'estimated — wide band', basis: 'As the base line.',
         },
       ],
     },
@@ -494,7 +526,7 @@ export const AMZN: IssuerRecord = {
   standards: [
     { name: 'MSCI Islamic M-Series', tests: 'Debt, cash + securities, receivables + cash < 33.33% of average market cap', result: 'pass', deciding: 'Debt 7.0%, cash 5.6%, receivables + cash 7.8% of the 36-month average' },
     { name: 'Securities Commission Malaysia', tests: 'Debt and conventional cash < 33% of total assets; 5% / 20% activity benchmarks', result: 'pass', deciding: 'Debt 14.2%, cash 11.3% of total assets; no single activity near 5%' },
-    { name: 'OJK / DSN-MUI (Indonesia)', tests: 'Interest debt ≤ 45% of total assets; non-halal income ≤ 10%', result: 'pass', deciding: 'Debt 14.2% of total assets; income 2.5%' },
+    { name: 'OJK / DSN-MUI (Indonesia)', tests: 'Interest debt ≤ 45% of total assets; non-halal income ≤ 10%', result: 'pass', deciding: 'Debt 14.2% of total assets; income 5.1%' },
     { name: 'SECP Pakistan (KMI)', tests: 'Debt < 37% and non-compliant investments < 33% of total assets; illiquid assets ≥ 25%', result: 'pass', deciding: 'Interest-bearing investments 11.3% of total assets; property alone 40.7%' },
   ],
   gflags: [
@@ -505,16 +537,18 @@ export const AMZN: IssuerRecord = {
     'Single class of common stock — no dual-class control flag.',
   ],
   monitoring: [
-    'Scenario C at 4.3% against the 5% cap: the advertising, alcohol, meat and video lines move it, and a Council ruling for Δ49 (+0.9 points) or Δ56 (+2.8) would carry it over; both together would carry Scenario B over too (5.1%).',
+    'Scenario B at 3.49% against the 5% cap; no single estimated line at either edge of its band would carry it over (Δ61). Counting AWS customers on benchmarks at Scenario B, as Δ56 first did, would put it at 5.1%.',
+    'Q3 2026 results (released 30 October 2026, after this screen): the twelve months, Anthropic marks and debt need refreshing.',
+    'The Δ49 line shrinks as the notes convert: Anthropic\'s IPO turns the remaining $6.2b into shares, after which only rollover-note conversions add to it.',
     'Strictest debt with leases is 23.0% of total assets as reported and 27.3% without the Anthropic mark-ups (Δ50); it was 25.7% as reported at 31 March 2026, before the mark-ups. $25.0b of notes issued in July 2026 add more.',
-    'Q3 2026 results (due 29–30 October 2026), Anthropic\'s IPO, which converts the notes into shares, and further OpenAI funding.',
+    'Anthropic\'s IPO, which converts the notes into shares, and further OpenAI funding.',
     'Synchrony and Chase card terms; the Affirm warrant tranches vesting from February 2026 at $63.06.',
     'DraftKings\' sportsbook and online-casino integration on NHL on Prime in Canada (2026–27); any FanDuel renewal.',
     'Globalstar\'s close (2027): its debt joins Amazon\'s.',
   ],
   openQuestions: [
-    'Δ49: is a non-interest-bearing note that converts at a fixed price (or the IPO price if lower) qarḍ with a benefit to the lender? Shown as a sensitivity, not in the verdict.',
-    'Δ56: should cloud capacity rented to banks, insurers and sportsbooks carry D18\'s tenant attribution? It would change every cloud, data-centre and telecom issuer; shown as a sensitivity.',
+    'Δ49 and Δ56 were adopted on 30 October 2026 and Δ56 narrowed on 31 October (owner decisions): named customers at Scenarios A and B, industry benchmarks at C and Strictest only. Every other cloud, data-centre and telecom issuer is re-screened when next opened.',
+    'Δ56 sizing: AWS does not disclose revenue by industry or name its customers\' spend; the named-customer lines are estimates too.',
     'Δ50: Level-3 mark-ups taken out of total assets at Sc C and Strictest — applied as interim; ratification asked.',
     'Δ52 (bundle allocation by standalone price) and Δ51 (retail media by catalogue share) are first applications.',
     'Δ57: Anthropic\'s S-1 shows interest at 7.2% of its revenue; is flowing up the pro-rata impure income enough for a stake that fails its own Gate 3?',
@@ -523,11 +557,11 @@ export const AMZN: IssuerRecord = {
   ],
   reconciliation: [
     { field: 'Interest income', reference: '0.61% of revenue (HalalWallet, FY2025)', filing: '$4,660m in the window, 0.60%', effect: 'Agrees.' },
-    { field: 'Anthropic notes', reference: 'Read by screeners as interest-bearing debt securities', filing: '$97.9b at fair value; non-interest-bearing rollover notes (Anthropic S-1)', effect: 'Left out of Cash + IBS (§6); Δ49 open.' },
+    { field: 'Anthropic notes', reference: 'Read by screeners as interest-bearing debt securities', filing: '$97.9b at fair value; non-interest-bearing rollover notes (Anthropic S-1)', effect: 'Left out of Cash + IBS (§6); their conversion gains are Layer 1 at Sc B+ (Δ49).' },
     { field: 'Debt', reference: 'Long-term debt $128.9b', filing: '$141.9b: notes incl. current portion $132.2b + financing obligations $9.3b + facilities $0.3b (Δ59)', effect: 'Track-(a) debt +10%; every ratio still passes at A to C.' },
     { field: 'Total assets', reference: '$1,095.7b', filing: '$923.3b without $172.4b of Anthropic mark-ups (Δ50)', effect: 'Strictest debt with leases 27.3% of total assets — a fail.' },
     { field: 'Receivables', reference: 'Accounts receivable, net and other $88.1b', filing: 'Customer $49.2b; vendor $21.7b, other $9.8b, prepaid $7.4b', effect: 'Only customer receivables are AR (§6).' },
-    { field: 'Musaffa', reference: 'Doubtful (July 2026)', filing: 'Sc A–C pass, Strictest fails on this record', effect: 'Not reconciled: Musaffa does not publish its line attribution (§39(iv)).' },
+    { field: 'Musaffa', reference: 'Doubtful (July 2026)', filing: 'Sc A passes; Sc B, C and Strictest fail on this record', effect: 'Not reconciled: Musaffa does not publish its line attribution (§39(iv)).' },
   ],
   sources: [
     { label: 'Amazon FY2025 Form 10-K', href: `${SEC}/000101872426000004/amzn-20251231.htm` },

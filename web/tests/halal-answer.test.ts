@@ -21,7 +21,7 @@ describe('halalAnswer', () => {
     // The label reads the preferred scenario, which every other surface prints. Since cash
     // is tested on the 12-month average market cap (2026-10-18), it agrees with the answer.
     expect(label.tone).toBe('good');
-    expect(label.word).toBe('Halal · AAOIFI');
+    expect(label.word).toBe('Halal · AAOIFI-based');
   });
 
   it('quick screen, every standard passed', () => {

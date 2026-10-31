@@ -99,7 +99,7 @@ function Results({ r }: { r: FundHalal }) {
         {r.holdings.some((h) => h.label?.source === 'researched') ? (
           <p className="text-tiny leading-relaxed text-muted-foreground">
             Each standard here is the provider’s published rule on every holding. A holding with a researched screen carries that screen’s
-            label in the table below, which can be stricter than the published rule — Maz Vantage’s AAOIFI reading also tests total assets.
+            label in the table below, which can be stricter than the published rule — Maz Vantage’s AAOIFI-based reading also tests total assets.
           </p>
         ) : null}
       </Panel>

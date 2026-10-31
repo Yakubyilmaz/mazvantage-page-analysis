@@ -10,17 +10,30 @@
 **Classification:** Internal — institutional Shariah screening reference.
 **Interim delta Δ40 (18 October 2026, owner decision).** Cash + IBS is tested against the **12-month average market capitalisation at every scenario**, as AAOIFI Shariah Standard No. 21 does: R8 decides at Sc A, Sc B, Sc C and Strictest, each at its own limit. R9–R10 (24- and 36-month windows), R11 (Cash + IBS / total assets) and R12 (Cash + IBS / tangible market cap) are computed and reported at every scenario and decide nothing. The debt tests (R1–R7, R19) and the scenario windows for them are unchanged. Implemented in `web/src/lib/shariah-v5.ts` (`THRESHOLDS`, `ratioTests`). Issuer reports screened before this date carry an amendment note.
 
-**Interim deltas Δ41–Δ48 (18 October 2026, owner decision).** Hidden-interest rules drawn from the ADP, Airbnb and Deere screens (`HIDDEN_INTEREST_Shariah_Screening_v5_0.md`): interest booked inside revenue, client funds and float balances, lessor income, revenue shares from a partner's lending, pass-throughs and embedded insurance. Full text in §56.1.
+**Interim deltas Δ41–Δ48 (18 October 2026, owner decision).** Hidden-interest rules drawn from the ADP, Airbnb and Deere screens (`HIDDEN_INTEREST_Shariah_Screening_v5_0.md`): interest booked inside revenue, client funds and float balances, lessor income, revenue shares from a partner's lending, pass-throughs and embedded insurance. Full text in §56.1. Reconciled with the master on 31 October 2026 (report amendment note; §54 Position 3 now triggered for ADP).
 
 **Interim deltas Δ49–Δ60, framework F13 and Part XV (28 October 2026, owner instruction to widen the lines analysed).** Drawn from the Amazon stress screen (`AMZN_Shariah_Screening_v5_0.md`), an issuer that reaches every part of this document and names none of its prohibited lines.
-- Ten deltas are interim and applied: Δ50–Δ55 and Δ57–Δ60.
-- Two are **proposed** and priced as sensitivities only, pending the Council: Δ49 (interest-free convertible loans with a fixed conversion price) and Δ56 (cloud and data-centre capacity rented to P1 businesses).
+- All twelve are interim and applied. Δ49 (interest-free convertible loans with a fixed conversion price) and Δ56 (cloud and data-centre capacity rented to P1 businesses) were first proposed as sensitivities and **adopted on 30 October 2026 (owner decision)**.
 - **§55A (F13)** is the decomposition protocol for platform conglomerates.
 - **Part XV** is the line-item lexicon: the financial-statement phrases that can hide a prohibited source, each with its rule and its test.
 
-Δ50 and Δ58 are implemented in `web/src/lib/shariah-v5.ts` (`level3Gains`, `nonOperatingGains`).
+Δ50 and Δ58 are implemented in `web/src/lib/shariah-v5.ts` (`level3Gains`, `nonOperatingGains`); Δ49 through `RevenueLine.addsToLayer1`, which carries a line's amount into Gate 3 and purification at the scenarios where its rate applies.
+
+**Review changes of 31 October 2026 (owner decisions on the post-Amazon review).**
+- Δ52 now triangulates a bundle's content slice from value, cost and usage.
+- Δ56 counts only identifiable customers at Sc A and B; industry benchmarks at Sc C and Strictest.
+- New Δ61 (Gate-4 watch zone when one estimate decides), Δ62 (index rows on each family's own scope) and Δ63 (the disclosed share printed with every screen).
+- Scenario B is renamed **AAOIFI-based** (§3).
+- Findings are renumbered **Fd1–Fd42**, so frameworks alone use F1–F13 (§0.2).
+- A **researched-lite tier** and a **calibration procedure against index constituents** join Part XIV.
+- Measured media rates are an open programme (§0.5).
 
 **Next scheduled review:** 7 January 2027 (quarterly cycle). Interim deltas (Δ40+) may be added between reviews; each is flagged in the issuer report that needs it and consolidated at the next review.
+
+**Agenda fixed for 7 January 2027 (owner decision, 31 October 2026):**
+1. Consolidate Δ1–Δ63 into rules inside the gate sections, and keep Part IX as a dated changelog. Many deltas are now one-issuer patches a new reader cannot follow.
+2. Take the first calibration run (Part XIV) and act on its systematic gaps.
+3. Ratify or revise every interim delta since Δ40, each with a named Shariah adviser's sign-off.
 
 **What this edition is.** v4.4.4 rewritten as one internally consistent rulebook. Every gate, scenario, delta (Δ1–Δ38), framework (F1–F12, the F6/F7 Modifier Rules) and worked example is carried forward. Where v4.4.4, its worked examples or the eighteen issuer reports contradicted each other, v5.0 states one rule, says which way it went and why (Part 0), and restates every number the change touches (Part XIII). The issuer figures in Part XIII were re-checked against the companies' own SEC XBRL filings on 7 October 2026. Part XII is new: the data-sourcing manual (which filing, which section, which XBRL tag, which free database) that earlier editions only gestured at.
 
@@ -54,54 +67,56 @@ Each conflict was settled by the first rule that decides it:
 
 ## §0.2 Findings and fixes register
 
-"Impact" says whether any scenario verdict in the eighteen-issuer record changes. F1–F14 are the problems logged on 7 October 2026 before this rewrite; F15 onward were found while re-checking the record against the filings.
+**Numbering (31 October 2026).** Findings are numbered **Fd1–Fd42**; frameworks keep **F1–F13** (F1–F11 in Part VI, F12 in Part VII, F13 in §55A). Until this date both used a bare "F", so an older report's "F7" can mean either: read it as a finding when it sits in brackets after "Amended" or a figure, and as a framework otherwise.
 
-**Verdicts that change in v5.0:** RXST "split" → FAIL at all four scenarios (F19); VEEV Sc A "mixed / hold with purification" → FAIL (F20); **SNY Sc C PASS → FAIL** on the Hanbali ratio (F42); HIMS Sc B "MIXED" → FAIL (label only — the ratio is 16pp over the cap). Everything else is a corrected figure or a corrected reason behind an unchanged verdict. JNJ remains the only issuer that passes all four scenarios.
+"Impact" says whether any scenario verdict in the eighteen-issuer record changes. Fd1–Fd14 are the problems logged on 7 October 2026 before this rewrite; Fd15 onward were found while re-checking the record against the filings.
+
+**Verdicts that change in v5.0:** RXST "split" → FAIL at all four scenarios (Fd19); VEEV Sc A "mixed / hold with purification" → FAIL (Fd20); **SNY Sc C PASS → FAIL** on the Hanbali ratio (Fd42); HIMS Sc B "MIXED" → FAIL (label only — the ratio is 16pp over the cap). Everything else is a corrected figure or a corrected reason behind an unchanged verdict. JNJ remains the only issuer that passes all four scenarios.
 
 | # | What was wrong | Where | v5.0 fix | Impact |
 |---|---|---|---|---|
-| F1 | **Δ28 used twice.** v4.4.3 assigned Δ28 to Universal Content-Impurity Attribution; the MRNA report (and the Sector Data Maps / Free Sources notes) proposed a "Δ28 Post-Windfall Treasury Mitigation". | MRNA report §12.4; source-map notes | Δ28 stays content attribution. The treasury proposal is registered as **Δ39 — PROPOSED, NOT RATIFIED, does not apply** (Part IX). | None. Even if ratified as drafted, MRNA would still fail on Gate 2 liquidity (F6). |
-| F2 | **Strictest Gate-4 cap** is 5% in §2 but 3% in §45.6, the JNJ, DIS, NFLX and AMC reports. | §2 vs §45.6 | **3%** (D2). | None. No Strictest figure in the record falls between 3% and 5%. |
-| F3 | The standalone **ABBV report is the superseded v4.4.1 draft** (Sc C / Strictest 7.96%); v4.4.4 §44.7 restates 4.87% / 8.11% under Δ27. | ABBV report vs §44.7 | Record uses Δ27 figures, plus Creon at Δ25 (F24): **Sc C 4.93%, Strictest 8.23%**. | ABBV Sc C Gate 4 passes; Sc C still fails on Gate 2. |
-| F4 | **Cross-issuer tables in reports are wrong:** JNJ §16 shows EXLS, MLNK and VEEV as clean passes and NVO "borderline"; ABBV §15 calls NVO a "uniform PASS". | JNJ §16; ABBV §15 | Part XIII is the only cross-issuer table; report tables are void. | Record corrected. |
-| F5 | **NVO states three Sc C figures** — TL;DR 21.4% / DKK 11.66, synthesis 22.6%, body 23.2% / DKK 12.65 — and puts Wegovy + Saxenda at 20% although the locked band is 25–40%. It also calls Roche's 32.2% and HIMS's 58.6% "IBD/MCAP"; both are IBD/total assets. | NVO TL;DR, §7.2, §6 | Body method with the lock's floor (Wegovy + Saxenda 25%): **Sc C 24.5%**. Labels corrected. | None (Sc C fails either way). |
-| F6 | **MRNA's thresholds drift from §2** (Sc A 33% IBD/TA; Sc C 33% on 24m MCAP; Strictest 30% lease-inclusive), it uses a "70% Hanafi limb" that exists nowhere in the methodology, and it leaves non-current debt securities out of Cash + IBS. | MRNA §7, §11 | §3 thresholds. Cash + IBS includes non-current debt securities: $8,135M = **41.7% of MCAP, 65.9% of total assets**. | MRNA still fails all four, but on **two** gates (Gate 2 liquidity and Gate 3 Layer 1), not "Layer 1 only". |
-| F7 | **Δ6-RE treats impure revenue as 100%-margin profit** (NPI% × revenue × (1 − ETR) / shares), so purification can exceed earnings: NFLX Sc B $2.66 vs EPS $2.53; EXLS $3.82 / $5.88 vs $1.54; MELI $210.66 vs $39.39; NVO Strictest DKK 41.59 vs 23.03. Reports also used four different bases (dividend, cumulative net income, revenue, capital gain). | §29; most reports | **Two-component Δ6** (Part X): interest at (1 − t); impure operating revenue at the issuer's after-tax margin excluding interest; loss years purify interest only; Δ6-D splits by payout. For interest-only NPI the old and new formulas agree. | All purification figures restated (Part XIII §XIII.3). |
-| F8 | **Layer-1 interest is inside the Gate-4 total for pharma** (SNY, ABBV, JNJ, HIMS, NVO) **but not for media** (DIS, NFLX, AMC). NFLX §11 then lists $295M + $300M + $13.3B (≈30.8%) yet states 29.4%; Sc B content is $12,996M (82.18% × 35% × $45,183M), not $13.3B. | §45.6 step 9; DIS, NFLX, AMC | **Gate-4 NPI always includes gross Layer-1 interest** (D5). DIS, NFLX and AMC restated. | None (all fail). |
-| F9 | **Eight-layer numbering drifted.** NFLX/AMC: L3 = interest-bearing investments, L5 = FX, L7 = leases. HIMS: L3 = customer financing, L4 = hedging, L5 = pension, L6 = tax interest. §7: L3 = capitalised interest, L4 = pension, L5 = leases, L6 = derivatives, L7 = receivable financing, L8 = cash vehicles. | §7 vs reports | §7 numbering is canonical, with fixed machine keys (Part IV). | Labels only. |
-| F10 | **Warner Bros. Discovery** — the NFLX dossier (Feb 2026) has a pending all-cash $27.75/share deal; the NFLX report says Netflix withdrew. | NFLX dossier vs report | Verified: on 26 Feb 2026 WBD declared Paramount Skydance's $31/share cash bid a superior proposal; Netflix declined to match and received the **$2.8B termination fee** (funded by Paramount). It is FY2026 non-operating income: Tier 0 compensation under a permissible contract, excluded from the NPI denominator (D14); the *gharāmah* vs *taʿwīḍ* question is logged as open. | None for FY2025. |
-| F11 | **Does Sc A test total-asset ratios?** §2 says 33% "across all denominators"; §4 calls IBD/TA "informational under Sc A" yet applies Cash+IBS/TA at 33% to Sc A; the reports pass Sc A on market cap alone. | §2 vs §4 | **Sc A is market-cap denominated** (DJIM/S&P lineage); total-asset ratios are informational at Sc A (D1). | Confirms HIMS and ABBV Sc A passes. VEEV and RXST fail Sc A on Layer 1 instead (F19, F20). |
-| F12 | **GLP-1 / ED stated three ways** — §2 (obesity 20% / diabetes 35%), F5 table (25–40%), Δ18 ("30%; GLP-1 same"), HIMS (35%), NVO (20% / 35%) — and Strictest is 100% under the lock but capped at the "pre-v4.4 mid-band" (25/35/30%) by §44.5. | §2, §17, Δ18, §44.5 | **The lock governs (U1):** GLP-1 Sc C band 25–40%, ED 20–50%, default 30%; Δ19 evidence may move the point inside the band; Δ8 elevation counts inside the band; **Strictest 100% of the GLP-1/ED product line.** The §44.5 ceiling applies only to categories that are not locked. F5 rows corrected. | NVO Sc C 23.2% → 24.5%; HIMS unchanged. |
-| F13 | **HIMS purification** ($1.85–2.30 at Sc C) comes from the revenue formula, although the text attributes it to cumulative net income ($254.4M × 20.7% / 258.2M = $0.20), and Strictest is shown equal to Sc C. | HIMS §10; §29 | Δ6 v5: **Sc A/B $0.09, Sc C $0.17, Strictest $0.33.** | Figures only. |
-| F14 | **"Twelve standards" differ in every report** (§30's list; HIMS adds Russell-Jadwa, IdealRatings, Refinitiv; MRNA adds ISRA, Bursa, STOXX, Meezan, ICD-Refinitiv, Dar Al-Istithmar; BRK adds AMF, JASDAQ, Wahed; JNJ lists twelve *ratios*), so tallies cannot be compared (HIMS 2/0/10 vs §30's 2/5/5). §30 itself lists JAKIM (a halal-food certifier, not an equity screen), SAC Bank Negara Malaysia (governs Islamic banking, publishes no equity screen) and "IIFA Resolution 108 tracks AAOIFI" (unverified; IIFA's resolution on company shares is stricter, not a ratio screen). HIMS marks S&P "non-compliant" though S&P's market-cap tests pass. | §30; all reports | **Canonical twelve** (Part XI §60) with thresholds checked against the index rulebooks. **All earlier tallies are void until re-run.** HIMS under S&P passes the ratio tests. | Tallies only. |
-| F15 | **HIMS IBD of $1,263.8M includes the operating-lease liability and counts its $143.2M non-current part twice.** The 10-K shows the convertible at $972.6M carried / $1,000M principal, operating-lease liabilities of $148.0M and no finance leases. | HIMS §4 | Borrowings-only IBD **$1,000M → IBD/TA 46.4%**; lease-inclusive 53.3%. Sc B remediation: ~$354M paydown with assets constant, ~$505M if repaid from cash, or total assets ≥ $3.33B. | None (Sc B/C/Strictest still fail; Cash+IBS/TA 43.1% fails on its own). |
-| F16 | **Δ37 says the lease-inclusive track is "considered at Sc-C/Strictest" but not what it decides.** AMC used it for Strictest only, and AMC's "borrowings-only" omitted its $52.5M finance leases although §55.4 puts true finance leases in track (a). | §55.4; AMC | **Track (a)** = borrowings + finance-lease liabilities, used at Sc A/B/C; **track (b)** = (a) + operating-lease liabilities, used at Strictest; applied to **every** issuer (D4). | AMC (a) 51.0%. NVO Strictest Gate 2 now fails (25.7%), NFLX (b) 30.5%, JNJ (b) 24.8% still passes. No verdict changes. |
-| F17 | **Δ22's scope is undefined** — "within 2pp of its threshold" never says which scenarios accept a sensitivity zone. | §6 | Δ22 applies at **Sc A and Sc B only**; Sc C and Strictest are bright-line (D3). | Roche Sc B MIXED-Watch, Sc C FAIL (as reported). JNJ Strictest passes bright-line. |
-| F18 | **Δ38 calls market-cap ratios "undefined" when book equity is negative.** Market cap is never negative, and ABBV's own Sc A was decided on IBD/MCAP. | §55.5 | **Undefined** = any ratio whose denominator is book equity or is ≤ 0 (for example MCAP − goodwill − intangibles at AMC, where goodwill exceeds MCAP). Market-cap ratios are computed and tested. Negative equity stays an independent flag. | None. |
-| F19 | **RXST** — TL;DR "SPLIT, compliant under 24m/36m windows" and §30's "4/4/4", but the audited Layer 1 ($9.332M / $134.5M = **6.94%**) breaks the 5% cap at every scenario and window. | RXST TL;DR; §30 | **FAIL all four.** Window sensitivity applies to the cash ratio only. | Verdict corrected (from split to FAIL). |
-| F20 | **VEEV** — Sc A shown "MIXED → hold with purification" although Layer 1 is 8.36%. The Layer-1 cap binds at every scenario. | VEEV §9 | **FAIL all four.** | Sc A corrected (MIXED → FAIL). |
-| F21 | **MLNK** — ~85% of revenue comes from lenders; Δ14 (v4.3) says ≥80% facilitation is a Gate-1 fail, but the record never applied it; the report's Sc A also used a total-asset test. | §27 Δ14; MLNK report | **Gate 1 FAIL all four (Δ14).** | Basis corrected; verdict unchanged. |
-| F22 | **MELI** — §1 says it "failed G1 under wasīṭ-equivalence"; §27 says Δ14 is not triggered at ~30%; the MELI report passes Gate 1 and fails Gate 4. | §1 vs §27 vs report | MELI lends on its own balance sheet through a regulated subsidiary (credits revenue $5,395M = 18.7%). That is **direct conduct of an enumerated-prohibited activity above 5% → Gate-1 categorical fail under the multi-segment rule (U2)**, not Δ14. | Basis corrected; verdict unchanged. |
-| F23 | **EXLS** is called "100% BFSI" (§1, §11) and "~37% insurance" (§25); its report has insurance at 34.0% and total financial-industry client exposure at ~59%. | §1, §11, §25 | Record uses the report: Δ16 "recommended" band (50–80%); Δ14 not triggered. | None. |
-| F24 | **ABBV:** IBD/TA 51.6% in the report vs **50.4%** from the 10-K ($2,499M short-term borrowings + $64,997M debt and finance leases = $67,496M / $133,960M). Creon (porcine pancrelipase, $1,512M) is treated as Δ23 in the report but is a canonical Δ25 case in §38. | ABBV §6, §14 | 50.4%. Creon at **Δ25 (0 / 0 / 2.5 / 5%)** unless a life-saving (cystic-fibrosis) share is disclosed. | None. |
-| F25 | **Sizing moved with the lens.** DIS: alcohol 0.70/0.90/1.10/1.48, gambling 0.40/0.40/0.50/0.60, pork 0.00/0.20/0.30/0.40. AMC: alcohol 1.72/2.59/3.45/3.45, pork 0.00/0.52/0.69/1.03. A sub-line's size is a fact; sizing a present Tier-1 impurity to zero at Sc A is exactly the leniency hole §51.4 forbids. | DIS §52.4; AMC §56.3 | **Sc A and Sc B use the point estimate; Sc C and Strictest use the conservative edge of the band; a present Tier-1 sub-line is never zero** (D9). DIS restated to 7.06 / 9.18 / 11.70 / 14.68%; AMC to 8.31 / 9.86 / 14.19 / 17.14% (both including Layer 1). | None (all fail). |
-| F26 | **Pork and non-zabīḥah meat share one line**, and pork gets 0% at Sc A. | DIS; AMC | **Pork is Tier 1 at every scenario.** Meat of halal species not slaughtered Islamically is attributed at Sc C and Strictest only (D13). | None. |
-| F27 | **HIMS Strictest attributes 100% of alcohol-denat skincare** (5.25% of group) although F6 calls non-consumption alcohol Tier 0 at Sc A/B/C and only a "minor flag" at Strictest. | HIMS §6 | **"Minor flag" = 5% of the affected line** (the Δ24 Strictest rate) (D8) → 0.26%. HIMS Strictest **65.0% → 60.0%**. | None. |
-| F28 | **Gate-1 logic is scattered** across §1 (primary business), Δ14 (≥80% facilitation), Δ5/Δ13, the BRK lock (>5% prohibited segment) and F12 Reading (c), with no decision order. | §1, §25, §27, §45 | **One Gate-1 decision table** (§5). | None. |
-| F29 | The **AMC report numbers the exhibitor rule "Δ35"** and calls itself v4.4.3; v4.4.4 numbers it Δ36 (Δ35 is viewing-weighted flags). | AMC report | v4.4.4 numbering governs. | Labels only. |
-| F30 | **PEP and WMT run on "Master Methodology v3.0"**: total assets as the AAOIFI base, WMT's Sc A excludes tobacco, Sc B adds non-halal poultry. Incompatible with the four v4.x/v5.0 scenarios. | PEP, WMT reports | **Legacy.** Not part of the eighteen-issuer record; re-screen required (preliminary flags in §XIII.4). | Not in record. |
-| F31 | **Cash+IBS/MCAP at Sc B** is 33% in the §4 table but AAOIFI's literal test is 30% (§30). | §4 vs §30 | **Sc B 30%** (D12). | None. |
-| F32 | **§1's "eight-issuer precedent" lines are stale** — e.g. "EXLS, MLNK, EVER, RXST, HIMS all failed Gate 2"; EVER passes Gate 2 by wide margins and RXST fails only its 12-month cash ratio. | §1 | Precedents restated from the corrected record. | Text only. |
-| F33 | **Khums approximated** as revenue × operating margin × (1 − ETR), which ignores non-operating items; reports use three per-share bases (company-level, 20% × EPS × (1 − payout) in MELI, one-off 20% × retained earnings per share in VEEV). | §31; reports | 20% × **reported** net income attributable (company level); per share 20% × diluted EPS, marked informational. | Display only. |
-| F34 | **NFLX's Δ35 rates are presented as "measured"**, but the dossier says the viewing-weighted maturity split is a reconstruction (Netflix discloses only kids & family = 15% of viewing). | §53.4, §54.4 | Every Δ35 output labels each component **measured or estimated**. NFLX = estimated; sourcing pass recommended (tag the top ~200 titles). | None. |
-| F35 | **LLY has no four-scenario Gate-4 computation** ("did not reach Gate 4"), contrary to the S8 rule. | LLY record | Flagged for re-screen; the Gate-2 fail at Sc B/C/Strictest stands. | Sc A provisional. |
-| F36 | **Governance flags filed under the wrong deltas**: dual-class control under "Δ11" (fee structure, HIMS) and "Δ4" (litigation interest, §5). | §5; HIMS | Governance items go on a **Gate-5 non-attributing register** (G-flags, §2). Δ4 keeps litigation contingencies (interest → Layer 7; JNJ talc Options A/B/C). | None. |
-| F37 | **JNJ describes Sc A Gate 4 as "no formal limit; 5% guidance".** | JNJ §8.2 | The 5% cap binds at Sc A. | None. |
-| F38 | **Ratio 19 duplicates ratio 7** (both IBD / (MCAP − GW − intangibles)). | §4 | Ratio 19 becomes the Δ37 lease-inclusive IBD / TA (track b). | None. |
-| F39 | **"Layers 2–8 combined 5% of revenue"** mixes expense layers (interest expense, capitalised interest, pension and lease interest) with income layers. | §1 G3 | Only **income-type** layers (L1, L7 and speculative L6) count toward the 5% Layer-1 cap and the Gate-4 numerator; expense layers are informational / Δ20 cross-reference. | None. |
-| F40 | **Ja'fari mapped two ways**: Sc B + khums (§31, HIMS, NVO, RHHBY) vs Sc C + khums (MELI). | MELI §10 | **Sc B + khums.** | None (MELI categorical). |
-| F41 | **Which market-cap window decides each scenario was never stated**, so window-sensitive issuers (RXST, MLNK) were reported as "split". | §5 | **Primary windows** (D16): Sc A 24-month average; Sc B 12-month; Sc C the worst of 12/24/36; Strictest the worst of 12/24/36 and spot. A window disagreement adds a Watch flag. | None. |
-| F42 | **The Hanbali-strict ratio was not applied in two Gate-2 verdicts.** Ratio 7 (IBD ÷ (MCAP − goodwill − intangibles)) has been a Sc C (30%) and Strictest (25%) test since v4.3, but the SNY and DIS screens show Gate 2 clean at every lens. Sanofi: IBD €18.7B, goodwill + intangibles €67.6B → passes 30% only above ~€130B of MCAP; its market cap ran ~€104–139B through 2025. Disney: $42.2B ÷ (~$179B − $82.6B) = 43.8%. | §43; §52.2 | Apply R7 / R12 at Sc C and Strictest for every issuer (§3, §7). | **SNY Sc C PASS → FAIL.** DIS Sc C / Strictest Gate 2 now fail (Gate 4 already did). ABBV R7 ≈ 31% (already failing). |
+| Fd1 | **Δ28 used twice.** v4.4.3 assigned Δ28 to Universal Content-Impurity Attribution; the MRNA report (and the Sector Data Maps / Free Sources notes) proposed a "Δ28 Post-Windfall Treasury Mitigation". | MRNA report §12.4; source-map notes | Δ28 stays content attribution. The treasury proposal is registered as **Δ39 — PROPOSED, NOT RATIFIED, does not apply** (Part IX). | None. Even if ratified as drafted, MRNA would still fail on Gate 2 liquidity (Fd6). |
+| Fd2 | **Strictest Gate-4 cap** is 5% in §2 but 3% in §45.6, the JNJ, DIS, NFLX and AMC reports. | §2 vs §45.6 | **3%** (D2). | None. No Strictest figure in the record falls between 3% and 5%. |
+| Fd3 | The standalone **ABBV report is the superseded v4.4.1 draft** (Sc C / Strictest 7.96%); v4.4.4 §44.7 restates 4.87% / 8.11% under Δ27. | ABBV report vs §44.7 | Record uses Δ27 figures, plus Creon at Δ25 (Fd24): **Sc C 4.93%, Strictest 8.23%**. | ABBV Sc C Gate 4 passes; Sc C still fails on Gate 2. |
+| Fd4 | **Cross-issuer tables in reports are wrong:** JNJ §16 shows EXLS, MLNK and VEEV as clean passes and NVO "borderline"; ABBV §15 calls NVO a "uniform PASS". | JNJ §16; ABBV §15 | Part XIII is the only cross-issuer table; report tables are void. | Record corrected. |
+| Fd5 | **NVO states three Sc C figures** — TL;DR 21.4% / DKK 11.66, synthesis 22.6%, body 23.2% / DKK 12.65 — and puts Wegovy + Saxenda at 20% although the locked band is 25–40%. It also calls Roche's 32.2% and HIMS's 58.6% "IBD/MCAP"; both are IBD/total assets. | NVO TL;DR, §7.2, §6 | Body method with the lock's floor (Wegovy + Saxenda 25%): **Sc C 24.5%**. Labels corrected. | None (Sc C fails either way). |
+| Fd6 | **MRNA's thresholds drift from §2** (Sc A 33% IBD/TA; Sc C 33% on 24m MCAP; Strictest 30% lease-inclusive), it uses a "70% Hanafi limb" that exists nowhere in the methodology, and it leaves non-current debt securities out of Cash + IBS. | MRNA §7, §11 | §3 thresholds. Cash + IBS includes non-current debt securities: $8,135M = **41.7% of MCAP, 65.9% of total assets**. | MRNA still fails all four, but on **two** gates (Gate 2 liquidity and Gate 3 Layer 1), not "Layer 1 only". |
+| Fd7 | **Δ6-RE treats impure revenue as 100%-margin profit** (NPI% × revenue × (1 − ETR) / shares), so purification can exceed earnings: NFLX Sc B $2.66 vs EPS $2.53; EXLS $3.82 / $5.88 vs $1.54; MELI $210.66 vs $39.39; NVO Strictest DKK 41.59 vs 23.03. Reports also used four different bases (dividend, cumulative net income, revenue, capital gain). | §29; most reports | **Two-component Δ6** (Part X): interest at (1 − t); impure operating revenue at the issuer's after-tax margin excluding interest; loss years purify interest only; Δ6-D splits by payout. For interest-only NPI the old and new formulas agree. | All purification figures restated (Part XIII §XIII.3). |
+| Fd8 | **Layer-1 interest is inside the Gate-4 total for pharma** (SNY, ABBV, JNJ, HIMS, NVO) **but not for media** (DIS, NFLX, AMC). NFLX §11 then lists $295M + $300M + $13.3B (≈30.8%) yet states 29.4%; Sc B content is $12,996M (82.18% × 35% × $45,183M), not $13.3B. | §45.6 step 9; DIS, NFLX, AMC | **Gate-4 NPI always includes gross Layer-1 interest** (D5). DIS, NFLX and AMC restated. | None (all fail). |
+| Fd9 | **Eight-layer numbering drifted.** NFLX/AMC: L3 = interest-bearing investments, L5 = FX, L7 = leases. HIMS: L3 = customer financing, L4 = hedging, L5 = pension, L6 = tax interest. §7: L3 = capitalised interest, L4 = pension, L5 = leases, L6 = derivatives, L7 = receivable financing, L8 = cash vehicles. | §7 vs reports | §7 numbering is canonical, with fixed machine keys (Part IV). | Labels only. |
+| Fd10 | **Warner Bros. Discovery** — the NFLX dossier (Feb 2026) has a pending all-cash $27.75/share deal; the NFLX report says Netflix withdrew. | NFLX dossier vs report | Verified: on 26 Feb 2026 WBD declared Paramount Skydance's $31/share cash bid a superior proposal; Netflix declined to match and received the **$2.8B termination fee** (funded by Paramount). It is FY2026 non-operating income: Tier 0 compensation under a permissible contract, excluded from the NPI denominator (D14); the *gharāmah* vs *taʿwīḍ* question is logged as open. | None for FY2025. |
+| Fd11 | **Does Sc A test total-asset ratios?** §2 says 33% "across all denominators"; §4 calls IBD/TA "informational under Sc A" yet applies Cash+IBS/TA at 33% to Sc A; the reports pass Sc A on market cap alone. | §2 vs §4 | **Sc A is market-cap denominated** (DJIM/S&P lineage); total-asset ratios are informational at Sc A (D1). | Confirms HIMS and ABBV Sc A passes. VEEV and RXST fail Sc A on Layer 1 instead (Fd19, Fd20). |
+| Fd12 | **GLP-1 / ED stated three ways** — §2 (obesity 20% / diabetes 35%), F5 table (25–40%), Δ18 ("30%; GLP-1 same"), HIMS (35%), NVO (20% / 35%) — and Strictest is 100% under the lock but capped at the "pre-v4.4 mid-band" (25/35/30%) by §44.5. | §2, §17, Δ18, §44.5 | **The lock governs (U1):** GLP-1 Sc C band 25–40%, ED 20–50%, default 30%; Δ19 evidence may move the point inside the band; Δ8 elevation counts inside the band; **Strictest 100% of the GLP-1/ED product line.** The §44.5 ceiling applies only to categories that are not locked. F5 rows corrected. | NVO Sc C 23.2% → 24.5%; HIMS unchanged. |
+| Fd13 | **HIMS purification** ($1.85–2.30 at Sc C) comes from the revenue formula, although the text attributes it to cumulative net income ($254.4M × 20.7% / 258.2M = $0.20), and Strictest is shown equal to Sc C. | HIMS §10; §29 | Δ6 v5: **Sc A/B $0.09, Sc C $0.17, Strictest $0.33.** | Figures only. |
+| Fd14 | **"Twelve standards" differ in every report** (§30's list; HIMS adds Russell-Jadwa, IdealRatings, Refinitiv; MRNA adds ISRA, Bursa, STOXX, Meezan, ICD-Refinitiv, Dar Al-Istithmar; BRK adds AMF, JASDAQ, Wahed; JNJ lists twelve *ratios*), so tallies cannot be compared (HIMS 2/0/10 vs §30's 2/5/5). §30 itself lists JAKIM (a halal-food certifier, not an equity screen), SAC Bank Negara Malaysia (governs Islamic banking, publishes no equity screen) and "IIFA Resolution 108 tracks AAOIFI" (unverified; IIFA's resolution on company shares is stricter, not a ratio screen). HIMS marks S&P "non-compliant" though S&P's market-cap tests pass. | §30; all reports | **Canonical twelve** (Part XI §60) with thresholds checked against the index rulebooks. **All earlier tallies are void until re-run.** HIMS under S&P passes the ratio tests. | Tallies only. |
+| Fd15 | **HIMS IBD of $1,263.8M includes the operating-lease liability and counts its $143.2M non-current part twice.** The 10-K shows the convertible at $972.6M carried / $1,000M principal, operating-lease liabilities of $148.0M and no finance leases. | HIMS §4 | Borrowings-only IBD **$1,000M → IBD/TA 46.4%**; lease-inclusive 53.3%. Sc B remediation: ~$354M paydown with assets constant, ~$505M if repaid from cash, or total assets ≥ $3.33B. | None (Sc B/C/Strictest still fail; Cash+IBS/TA 43.1% fails on its own). |
+| Fd16 | **Δ37 says the lease-inclusive track is "considered at Sc-C/Strictest" but not what it decides.** AMC used it for Strictest only, and AMC's "borrowings-only" omitted its $52.5M finance leases although §55.4 puts true finance leases in track (a). | §55.4; AMC | **Track (a)** = borrowings + finance-lease liabilities, used at Sc A/B/C; **track (b)** = (a) + operating-lease liabilities, used at Strictest; applied to **every** issuer (D4). | AMC (a) 51.0%. NVO Strictest Gate 2 now fails (25.7%), NFLX (b) 30.5%, JNJ (b) 24.8% still passes. No verdict changes. |
+| Fd17 | **Δ22's scope is undefined** — "within 2pp of its threshold" never says which scenarios accept a sensitivity zone. | §6 | Δ22 applies at **Sc A and Sc B only**; Sc C and Strictest are bright-line (D3). | Roche Sc B MIXED-Watch, Sc C FAIL (as reported). JNJ Strictest passes bright-line. |
+| Fd18 | **Δ38 calls market-cap ratios "undefined" when book equity is negative.** Market cap is never negative, and ABBV's own Sc A was decided on IBD/MCAP. | §55.5 | **Undefined** = any ratio whose denominator is book equity or is ≤ 0 (for example MCAP − goodwill − intangibles at AMC, where goodwill exceeds MCAP). Market-cap ratios are computed and tested. Negative equity stays an independent flag. | None. |
+| Fd19 | **RXST** — TL;DR "SPLIT, compliant under 24m/36m windows" and §30's "4/4/4", but the audited Layer 1 ($9.332M / $134.5M = **6.94%**) breaks the 5% cap at every scenario and window. | RXST TL;DR; §30 | **FAIL all four.** Window sensitivity applies to the cash ratio only. | Verdict corrected (from split to FAIL). |
+| Fd20 | **VEEV** — Sc A shown "MIXED → hold with purification" although Layer 1 is 8.36%. The Layer-1 cap binds at every scenario. | VEEV §9 | **FAIL all four.** | Sc A corrected (MIXED → FAIL). |
+| Fd21 | **MLNK** — ~85% of revenue comes from lenders; Δ14 (v4.3) says ≥80% facilitation is a Gate-1 fail, but the record never applied it; the report's Sc A also used a total-asset test. | §27 Δ14; MLNK report | **Gate 1 FAIL all four (Δ14).** | Basis corrected; verdict unchanged. |
+| Fd22 | **MELI** — §1 says it "failed G1 under wasīṭ-equivalence"; §27 says Δ14 is not triggered at ~30%; the MELI report passes Gate 1 and fails Gate 4. | §1 vs §27 vs report | MELI lends on its own balance sheet through a regulated subsidiary (credits revenue $5,395M = 18.7%). That is **direct conduct of an enumerated-prohibited activity above 5% → Gate-1 categorical fail under the multi-segment rule (U2)**, not Δ14. | Basis corrected; verdict unchanged. |
+| Fd23 | **EXLS** is called "100% BFSI" (§1, §11) and "~37% insurance" (§25); its report has insurance at 34.0% and total financial-industry client exposure at ~59%. | §1, §11, §25 | Record uses the report: Δ16 "recommended" band (50–80%); Δ14 not triggered. | None. |
+| Fd24 | **ABBV:** IBD/TA 51.6% in the report vs **50.4%** from the 10-K ($2,499M short-term borrowings + $64,997M debt and finance leases = $67,496M / $133,960M). Creon (porcine pancrelipase, $1,512M) is treated as Δ23 in the report but is a canonical Δ25 case in §38. | ABBV §6, §14 | 50.4%. Creon at **Δ25 (0 / 0 / 2.5 / 5%)** unless a life-saving (cystic-fibrosis) share is disclosed. | None. |
+| Fd25 | **Sizing moved with the lens.** DIS: alcohol 0.70/0.90/1.10/1.48, gambling 0.40/0.40/0.50/0.60, pork 0.00/0.20/0.30/0.40. AMC: alcohol 1.72/2.59/3.45/3.45, pork 0.00/0.52/0.69/1.03. A sub-line's size is a fact; sizing a present Tier-1 impurity to zero at Sc A is exactly the leniency hole §51.4 forbids. | DIS §52.4; AMC §56.3 | **Sc A and Sc B use the point estimate; Sc C and Strictest use the conservative edge of the band; a present Tier-1 sub-line is never zero** (D9). DIS restated to 7.06 / 9.18 / 11.70 / 14.68%; AMC to 8.31 / 9.86 / 14.19 / 17.14% (both including Layer 1). | None (all fail). |
+| Fd26 | **Pork and non-zabīḥah meat share one line**, and pork gets 0% at Sc A. | DIS; AMC | **Pork is Tier 1 at every scenario.** Meat of halal species not slaughtered Islamically is attributed at Sc C and Strictest only (D13). | None. |
+| Fd27 | **HIMS Strictest attributes 100% of alcohol-denat skincare** (5.25% of group) although F6 calls non-consumption alcohol Tier 0 at Sc A/B/C and only a "minor flag" at Strictest. | HIMS §6 | **"Minor flag" = 5% of the affected line** (the Δ24 Strictest rate) (D8) → 0.26%. HIMS Strictest **65.0% → 60.0%**. | None. |
+| Fd28 | **Gate-1 logic is scattered** across §1 (primary business), Δ14 (≥80% facilitation), Δ5/Δ13, the BRK lock (>5% prohibited segment) and F12 Reading (c), with no decision order. | §1, §25, §27, §45 | **One Gate-1 decision table** (§5). | None. |
+| Fd29 | The **AMC report numbers the exhibitor rule "Δ35"** and calls itself v4.4.3; v4.4.4 numbers it Δ36 (Δ35 is viewing-weighted flags). | AMC report | v4.4.4 numbering governs. | Labels only. |
+| Fd30 | **PEP and WMT run on "Master Methodology v3.0"**: total assets as the AAOIFI base, WMT's Sc A excludes tobacco, Sc B adds non-halal poultry. Incompatible with the four v4.x/v5.0 scenarios. | PEP, WMT reports | **Legacy.** Not part of the eighteen-issuer record; re-screen required (preliminary flags in §XIII.4). | Not in record. |
+| Fd31 | **Cash+IBS/MCAP at Sc B** is 33% in the §4 table but AAOIFI's literal test is 30% (§30). | §4 vs §30 | **Sc B 30%** (D12). | None. |
+| Fd32 | **§1's "eight-issuer precedent" lines are stale** — e.g. "EXLS, MLNK, EVER, RXST, HIMS all failed Gate 2"; EVER passes Gate 2 by wide margins and RXST fails only its 12-month cash ratio. | §1 | Precedents restated from the corrected record. | Text only. |
+| Fd33 | **Khums approximated** as revenue × operating margin × (1 − ETR), which ignores non-operating items; reports use three per-share bases (company-level, 20% × EPS × (1 − payout) in MELI, one-off 20% × retained earnings per share in VEEV). | §31; reports | 20% × **reported** net income attributable (company level); per share 20% × diluted EPS, marked informational. | Display only. |
+| Fd34 | **NFLX's Δ35 rates are presented as "measured"**, but the dossier says the viewing-weighted maturity split is a reconstruction (Netflix discloses only kids & family = 15% of viewing). | §53.4, §54.4 | Every Δ35 output labels each component **measured or estimated**. NFLX = estimated; sourcing pass recommended (tag the top ~200 titles). | None. |
+| Fd35 | **LLY has no four-scenario Gate-4 computation** ("did not reach Gate 4"), contrary to the S8 rule. | LLY record | Flagged for re-screen; the Gate-2 fail at Sc B/C/Strictest stands. | Sc A provisional. |
+| Fd36 | **Governance flags filed under the wrong deltas**: dual-class control under "Δ11" (fee structure, HIMS) and "Δ4" (litigation interest, §5). | §5; HIMS | Governance items go on a **Gate-5 non-attributing register** (G-flags, §2). Δ4 keeps litigation contingencies (interest → Layer 7; JNJ talc Options A/B/C). | None. |
+| Fd37 | **JNJ describes Sc A Gate 4 as "no formal limit; 5% guidance".** | JNJ §8.2 | The 5% cap binds at Sc A. | None. |
+| Fd38 | **Ratio 19 duplicates ratio 7** (both IBD / (MCAP − GW − intangibles)). | §4 | Ratio 19 becomes the Δ37 lease-inclusive IBD / TA (track b). | None. |
+| Fd39 | **"Layers 2–8 combined 5% of revenue"** mixes expense layers (interest expense, capitalised interest, pension and lease interest) with income layers. | §1 G3 | Only **income-type** layers (L1, L7 and speculative L6) count toward the 5% Layer-1 cap and the Gate-4 numerator; expense layers are informational / Δ20 cross-reference. | None. |
+| Fd40 | **Ja'fari mapped two ways**: Sc B + khums (§31, HIMS, NVO, RHHBY) vs Sc C + khums (MELI). | MELI §10 | **Sc B + khums.** | None (MELI categorical). |
+| Fd41 | **Which market-cap window decides each scenario was never stated**, so window-sensitive issuers (RXST, MLNK) were reported as "split". | §5 | **Primary windows** (D16): Sc A 24-month average; Sc B 12-month; Sc C the worst of 12/24/36; Strictest the worst of 12/24/36 and spot. A window disagreement adds a Watch flag. | None. |
+| Fd42 | **The Hanbali-strict ratio was not applied in two Gate-2 verdicts.** Ratio 7 (IBD ÷ (MCAP − goodwill − intangibles)) has been a Sc C (30%) and Strictest (25%) test since v4.3, but the SNY and DIS screens show Gate 2 clean at every lens. Sanofi: IBD €18.7B, goodwill + intangibles €67.6B → passes 30% only above ~€130B of MCAP; its market cap ran ~€104–139B through 2025. Disney: $42.2B ÷ (~$179B − $82.6B) = 43.8%. | §43; §52.2 | Apply R7 / R12 at Sc C and Strictest for every issuer (§3, §7). | **SNY Sc C PASS → FAIL.** DIS Sc C / Strictest Gate 2 now fail (Gate 4 already did). ABBV R7 ≈ 31% (already failing). |
 
 ## §0.3 Decisions register (the Council can flip any of these)
 
@@ -122,7 +137,7 @@ Each conflict was settled by the first rule that decides it:
 | D13 | Pork Tier 1 at every scenario; non-zabīḥah halal-species meat at Sc C/Strictest only. | One merged line. | Pork is enumerated; meat of the People of the Book is permitted by the majority with conditions. | — |
 | D14 | One-off non-operating items (termination fees, litigation receipts, disposal gains) are excluded from the NPI denominator; the termination fee itself is Tier 0. | Count them in total income. | Keeps NPI% about the operating business; avoids a one-off gain diluting impurity. | — |
 | D15 | Gate-1 decision table order (§5). | — | One reproducible order. | — |
-| D16 | Primary MCAP windows per scenario (F41). | All windows equal. | Decides the "split" cases reproducibly. | RXST/MLNK reported as split again. |
+| D16 | Primary MCAP windows per scenario (Fd41). | All windows equal. | Decides the "split" cases reproducibly. | RXST/MLNK reported as split again. |
 | D17 | Intoxicants include recreational cannabis (with alcohol); medical cannabinoids stay in F5. | Silent. | *kullu muskirin khamr*; REIT and retail screens meet dispensaries. | — |
 | D18 | REIT tenant rule (§51) mirrors Δ31: Sc A attributes rent only from premises used to sell or conduct the prohibited activity itself; Sc B+ attributes rent from every enumerated-prohibited tenant. Pending the first REIT screen. | No rule. | Same *ijārah* logic the media framework already uses. | — |
 
@@ -155,7 +170,9 @@ Labelled **U** so they cannot be confused with the Gate-3 layers L1–L8.
 7. **Termination fees at Strictest** — compensation (*taʿwīḍ*) or penalty (*gharāmah*)?
 8. **Loot boxes without cash-out** (gaming) — open election (§52).
 9. **Δ27 graduated temporal scale** (≤6m / 6–24m / >24m).
-10. **Re-screens owed:** LLY (Gate-4 S8), SNY (exact R7 windows), RHHBY (R7 never computed), NFLX (Δ35 sourcing pass), PEP and WMT (legacy v3.0), DIS (FY2026 after the disclosure sunset and the Fubo carve-out).
+10. **Re-screens owed:** LLY (Gate-4 S8), SNY (exact R7 windows), RHHBY (R7 never computed), NFLX (Δ35 sourcing pass), PEP and WMT (legacy v3.0), DIS (FY2026 after the disclosure sunset and the Fubo carve-out); every cloud, data-centre and telecom issuer under Δ56; AMZN after its Q3 2026 results and Anthropic's IPO. **Hidden-interest suspects from the 18 October 2026 sweep, unscreened:** Paylocity (~6.8% of revenue), Paycom (~5.5%), Paychex (~4.2%), Coinbase (stablecoin reserve income ~18.8%), the GM, Ford, Caterpillar and Harley-Davidson finance arms (U2), PayPal.
+11. **Measured media rates (programme, owner decision 31 Oct 2026).** The §37 archetype rates (streaming 30/35/40/50%, studio 18/22/28/38%, music 20/25/30/40%) are the largest subjective input for every media-heavy issuer (DIS, NFLX, AAPL, AMZN). They are to be replaced by viewing-weighted Δ35 rates per service: catalogue ratings and advisories from public rating sources, weighted by published viewing data (hours per title). Each rate must be labelled measured or estimated (Fd34). Until a service has a measured rate, its line names the archetype as a placeholder.
+12. **§54 Position 3 outcome.** When float yield is structurally inseparable from the model (above 5% of revenue) at Sc C / Strictest, Gate 1 is "reconsidered" — but to what? Options: (a) CATEGORICAL FAIL, the business being in substance a float business; (b) FAIL on Gates 2–4 only. ADP (6.2%) is the first trigger; it stays FAIL meanwhile.
 
 ---
 
@@ -190,7 +207,7 @@ Labelled **U** so they cannot be confused with the Gate-3 layers L1–L8.
 | Scenario | Doctrinal anchor | Used by |
 |---|---|---|
 | **Sc A — Hanafi / Liberal** | Hanafi readings on *istihlāk*, indirect derivation and contested drug categories; DJIM/S&P market-cap lineage. | Hanafi-aligned retail investors; DJIM-style mandates. |
-| **Sc B — AAOIFI Mainstream** | AAOIFI SS 21 with *maṣlaḥah* deference; the asset-denominator alternative as a second test. Maliki and Shafi'i investors map here. | AAOIFI mandates; GCC institutions; sukuk underwriters. |
+| **Sc B — AAOIFI-based** (preferred; renamed from "AAOIFI Mainstream" on 31 Oct 2026, because it runs tests and attribution rules AAOIFI SS 21 does not — the literal SS 21 result is reported as its own index row) | AAOIFI SS 21 with *maṣlaḥah* deference; the asset-denominator alternative as a second test. Maliki and Shafi'i investors map here. | AAOIFI mandates; GCC institutions; sukuk underwriters. |
 | **Sc C — Hanbali-Strict** | Hanbali *sadd al-dharāʾiʿ*; elevated *iʿānah* scrutiny; the F5 Tier-2 table; deep customer-mix attribution. | Strict-leaning retail; Hanbali-aligned boards. |
 | **Strictest Supervisor** | Most conservative reading: categorical exclusions, strictest *sadd al-dharāʾiʿ*, certification demands where animal derivatives may be involved. | Maximum-caution boards ("Wahed-strict"). |
 
@@ -315,7 +332,7 @@ The thresholds for every ratio are in §3. The keys are the machine names the pl
 | R16 | `ar_ta` | AR / total assets | Test at Sc C / Strictest; info at Sc A/B |
 | R17 | `l1_revenue` | Layer-1 interest-type income / revenue | **Gate-3 cap, 5% at every scenario** |
 | R18 | `l2_revenue` | Interest expense / revenue | Info; Δ20 trigger |
-| R19 | `ibd_b_ta` | IBD (track b) / total assets | **Strictest test** (replaces the duplicate Hanbali ratio, F38) |
+| R19 | `ibd_b_ta` | IBD (track b) / total assets | **Strictest test** (replaces the duplicate Hanbali ratio, Fd38) |
 | R20 | `net_debt_mcap_12m` | (IBD − cash) / 12m MCAP | Info |
 | R21 | `tl_ta` | Total liabilities / total assets | Info (strictest boards watch 70%) |
 | R22 | `net_interest_revenue` | (Interest expense − interest income) / revenue | Info; Δ20 |
@@ -341,7 +358,7 @@ A ratio passes at a scenario when it passes on that scenario's primary window (�
 
 Where book equity is negative:
 1. Ratios whose denominator is book equity, and any ratio whose denominator is ≤ 0 (the Hanbali denominator when goodwill + intangibles exceed MCAP), are **undefined and disqualifying** at every scenario that tests them.
-2. **MCAP- and total-asset-denominated ratios are computed and tested normally** (F18). An IBD/MCAP of 444% (AMC) is a real, failing value, not an artefact.
+2. **MCAP- and total-asset-denominated ratios are computed and tested normally** (Fd18). An IBD/MCAP of 444% (AMC) is a real, failing value, not an artefact.
 3. Negative equity is logged as an independent disqualifying flag at Sc C and Strictest, and as a G-flag at Sc A/B.
 4. The TL;DR says so in plain words.
 
@@ -351,9 +368,9 @@ Precedents: ABBV (−$3,270M; screened on MCAP and assets); AMC (−$1,894.8M; g
 
 # PART IV — GATE 3: THE EIGHT-LAYER HIDDEN-INTEREST FRAMEWORK
 
-## §12 — Canonical layers (F9)
+## §12 — Canonical layers (Fd9)
 
-Only **income-type** layers (L1, L7 and speculative L6) count toward the 5% cap and enter the Gate-4 numerator (F39). Expense-type layers are informational and feed the Δ20 cross-reference.
+Only **income-type** layers (L1, L7 and speculative L6) count toward the 5% cap and enter the Gate-4 numerator (Fd39). Expense-type layers are informational and feed the Δ20 cross-reference.
 
 | Layer | Key | Definition | Type | Rule |
 |---|---|---|---|---|
@@ -711,9 +728,9 @@ Never cross-apply this hierarchy to media issuers (Part VII has its own).
 | Layer-1 interest | 330 | Tier 1 | 100% |
 | **NPI** | | | **0.76% / 0.76% / 2.61% / 6.25%** |
 
-Gate 4: PASS / PASS / PASS / **FAIL (6.25% > 3%)**. Gate 2 (20-F XBRL): IBD €18,702M / TA €126,805M = 14.7% (track b 16.1%) — but goodwill €41,300M + intangibles €26,261M leave a Hanbali denominator of only ~€37–71B across 2025's market-cap range, so **R7 exceeds 30% at Sc C** below ~€130B of MCAP (F42). **Verdict v5.0: PASS / PASS / FAIL (Gate 2, R7) / FAIL (Gate 2 + Gate 4).** Trajectory of Sc C: 12.6% (v4.3) → 5.79% (v4.4) → 2.61% (v4.4.1) — a correction of over-strictness, not a relaxation. Purification: Part XIII.
+Gate 4: PASS / PASS / PASS / **FAIL (6.25% > 3%)**. Gate 2 (20-F XBRL): IBD €18,702M / TA €126,805M = 14.7% (track b 16.1%) — but goodwill €41,300M + intangibles €26,261M leave a Hanbali denominator of only ~€37–71B across 2025's market-cap range, so **R7 exceeds 30% at Sc C** below ~€130B of MCAP (Fd42). **Verdict v5.0: PASS / PASS / FAIL (Gate 2, R7) / FAIL (Gate 2 + Gate 4).** Trajectory of Sc C: 12.6% (v4.3) → 5.79% (v4.4) → 2.61% (v4.4.1) — a correction of over-strictness, not a relaxation. Purification: Part XIII.
 
-**§35.2 AbbVie (ABBV) FY2025 under Δ27 — restated (F3, F24).** Revenue $61,160M.
+**§35.2 AbbVie (ABBV) FY2025 under Δ27 — restated (Fd3, Fd24).** Revenue $61,160M.
 
 | Aesthetics line | $M | Sc C | Strictest |
 |---|---|---|---|
@@ -767,7 +784,7 @@ The **archetype card** is the first-pass anchor, the fallback where measurement 
 | Pure sports content | 0% | 0% | 0% | 3% | Live sport is Tier 0; gambling (Δ32) and advertising (Δ31) are separate lines |
 | News / documentary / factual | 0% | 0% | 2% | 5% | Strictest residual for ideological content |
 
-**Measured NFLX-calibrated anchors:** streaming TV-MA-weighted 35 / 40 / 60 / 78% (estimated components — F34); theatrical R-rated base 35 / 45 / 65 / 85%.
+**Measured NFLX-calibrated anchors:** streaming TV-MA-weighted 35 / 40 / 60 / 78% (estimated components — Fd34); theatrical R-rated base 35 / 45 / 65 / 85%.
 
 **Decomposition order:** (1) per-service subscription revenue, disclosed or back-solved (Δ29); (2) per-segment or per-label revenue; (3) Reading (b) blended fallback. Always separate **subscription / content-access** revenue (content rate), **advertising** (Δ31), **gambling integration** (Δ32), **hospitality / F&B** (Δ33) and **financial income** (Gate 3), so nothing is counted twice.
 
@@ -783,7 +800,7 @@ The **archetype card** is the first-pass anchor, the fallback where measurement 
 8. **Financial lines.** Gross L1 into Gate 3 and the Gate-4 numerator (D5); equity-method look-through only if material (U4); IBD on the Δ37 tracks; Δ38 for negative equity.
 9. **Aggregate** NPI per scenario against 5 / 5 / 5 / 3% and report the full four-scenario table (S8).
 
-Common failure modes: defaulting to a categorical *lahw* fail; giving a mature SVOD a 0% Sc A rate (the Δ28 hole); counting advertising twice (once in ARPU-based content, once in Δ31); flagging a whole resort or F&B line because it has a bar; leaving Layer-1 interest out of the total (F8); letting the lens move a sub-line's size (F25); cross-applying the pharma hierarchy.
+Common failure modes: defaulting to a categorical *lahw* fail; giving a mature SVOD a 0% Sc A rate (the Δ28 hole); counting advertising twice (once in ARPU-based content, once in Δ31); flagging a whole resort or F&B line because it has a bar; leaving Layer-1 interest out of the total (Fd8); letting the lens move a sub-line's size (Fd25); cross-applying the pharma hierarchy.
 
 ## §39 — Media data disciplines (cross-cutting)
 
@@ -793,7 +810,7 @@ Common failure modes: defaulting to a categorical *lahw* fail; giving a mature S
 4. **Competitor figures:** reconcile or footnote as an unreconciled artefact; never adopt, average or "split the difference" (Musaffa's NFLX "interest and other income 18% of revenue" is impossible as an income item — gross interest is 0.65% of revenue). When the verdict agrees but the attribution differs (DIS: platform Sc B 8.3% vs Musaffa 77.9%), document the reconciliation.
 5. **Clean-tier ceiling registry:** streaming / episodic — TV-PG and below (NFLX); theatrical — PG-13 and below (AMC). A per-issuer deviation needs a logged analyst election.
 6. **Music-as-product register (open):** the Δ35 music exclusion covers music incidental to video only. A music label or music-streaming issuer needs a fresh election among (a) categorical *lahw* at strict lenses, (b) the archetype rate, or (c) a split by music type (instrumental / nasheed / recitation vs mainstream vocal vs explicit). Podcasts and audiobooks are a second open election.
-7. **Measured vs estimated (F34):** every Δ35 component (maturity split, flag prevalences, overlap adjustment) is labelled measured or estimated, with its source. A rate built on a reconstruction is "estimated" whatever its precision.
+7. **Measured vs estimated (Fd34):** every Δ35 component (maturity split, flag prevalences, overlap adjustment) is labelled measured or estimated, with its source. A rate built on a reconstruction is "estimated" whatever its precision.
 
 ## §40 — Δ28: universal content-impurity attribution
 
@@ -840,7 +857,7 @@ Sportsbook licensing and branding fees, gambling-operator integration economics,
 | (c) Meaningfully immodest imagery | Sc C | Revealing or sexualised dress, dance, intimate non-explicit scenes — NOT "any uncovered person" (that collapses Sc C toward 100% and is rejected) |
 | (d) Graphic violence; ideological / blasphemous content | Strictest | Gratuitous violence; content gravely contrary to creed |
 
-Music incidental to video is excluded at every lens (U9). Protocol: base after Δ34 and Δ29 → viewing-weighted maturity split with bands → per-flag prevalence (rating studies, parental-guide aggregations, academic literature) → overlap-adjusted union per lens → attribution = base × flagged share → report the band and confirm robustness → where measurement is impossible, use the archetype card, label it a fallback, and log a sourcing pass. NFLX: non-kids viewing ~45–55% TV-MA / R, ~35–45% TV-14 / PG-13, ~10–15% TV-PG → 35 / 40 / 60 / 78% (bands 30–45 / 35–48 / 52–68 / 70–85), **estimated** (F34).
+Music incidental to video is excluded at every lens (U9). Protocol: base after Δ34 and Δ29 → viewing-weighted maturity split with bands → per-flag prevalence (rating studies, parental-guide aggregations, academic literature) → overlap-adjusted union per lens → attribution = base × flagged share → report the band and confirm robustness → where measurement is impossible, use the archetype card, label it a fallback, and log a sourcing pass. NFLX: non-kids viewing ~45–55% TV-MA / R, ~35–45% TV-14 / PG-13, ~10–15% TV-PG → 35 / 40 / 60 / 78% (bands 30–45 / 35–48 / 52–68 / 70–85), **estimated** (Fd34).
 
 **Δ36 — exhibitor sub-rule (pass-through content).** An exhibitor authors no content but earns admissions from it, so the content base is the **box-office-by-rating mix it exhibits, revenue-weighted** (R tickets price above children's PG tickets; record both the revenue and admissions bases where they differ). Apply the theatrical clean-tier ceiling (G + PG + PG-13 → 0%); score the residual R / NC-17 / adult-NR share at the theatrical per-flag rates (35 / 45 / 65 / 85%, violence-heavy). Expect an exhibitor's main impurity to sit in concessions (Δ33) and its decisive test to be financial. Extends to other exhibitors (Cinemark, Marcus, Cineworld / Cineplex) and live-event venues.
 
@@ -848,7 +865,7 @@ Music incidental to video is excluded at every lens (U9). Protocol: base after �
 
 ## §47 — Media worked examples (restated under v5.0)
 
-**§47.1 Disney (DIS) FY2025** — revenue $94,425M; IBD $42,026M + finance leases $162M = 21.4% of TA $197,514M (track b with ~$3,235M operating leases: 23.0%); MCAP ~$179B → IBD/MCAP 23.5%. Gate 2 passes at Sc A and Sc B; at Sc C and Strictest the Hanbali ratio fails (goodwill $73.3B + intangibles $9.3B → R7 = 43.8%; F42). Layer 1: gross interest and investment income $507M (0.54%; the footnote splits ~$246M investment income — confirm the interest-only part at re-screen).
+**§47.1 Disney (DIS) FY2025** — revenue $94,425M; IBD $42,026M + finance leases $162M = 21.4% of TA $197,514M (track b with ~$3,235M operating leases: 23.0%); MCAP ~$179B → IBD/MCAP 23.5%. Gate 2 passes at Sc A and Sc B; at Sc C and Strictest the Hanbali ratio fails (goodwill $73.3B + intangibles $9.3B → R7 = 43.8%; Fd42). Layer 1: gross interest and investment income $507M (0.54%; the footnote splits ~$246M investment income — confirm the interest-only part at re-screen).
 
 | Line (% of group) | Sc A | Sc B | Sc C | Strictest | Basis |
 |---|---|---|---|---|---|
@@ -877,7 +894,7 @@ Music incidental to video is excluded at every lens (U9). Protocol: base after �
 | Layer-1 interest | — | 0.65% | 0.65% | 0.65% | 0.65% |
 | **NPI (v5.0)** | | **29.61%** | **34.18%** | **50.79%** | **65.75%** |
 
-**Verdict: FAIL all four.** Superseded figures: the archetype version (24.85 / 29.43 / 33.70 / 42.09%) and the v4.4.4 restatement without Layer 1 (28.96 / 33.53 / 50.14 / 65.10%). The report's §11 arithmetic error is corrected (F8). WBD: terminated; $2.8B fee in Q1 2026 (F10, D14). Δ35 components are estimated (F34).
+**Verdict: FAIL all four.** Superseded figures: the archetype version (24.85 / 29.43 / 33.70 / 42.09%) and the v4.4.4 restatement without Layer 1 (28.96 / 33.53 / 50.14 / 65.10%). The report's §11 arithmetic error is corrected (Fd8). WBD: terminated; $2.8B fee in Q1 2026 (Fd10, D14). Δ35 components are estimated (Fd34).
 
 **§47.3 AMC Entertainment (AMC) FY2025** — revenue $4,848.9M (admissions 54.71%, F&B 34.47%, screen advertising 3.14%, other 7.69%). Track (a) IBD $4,038.5M + finance leases $52.5M = $4,091.0M / TA $8,017.8M = **51.0%**; track (b) $8,136.0M = **101.5%**; book equity −$1,894.8M (accumulated deficit −$8,979.2M); goodwill $2,416M exceeds MCAP ~$0.9B, so the Hanbali ratios are undefined (Δ38); IBD/MCAP ~444% (a real, failing value). Interest expense $530.2M (10.9% of revenue). Going-concern-type language in the 10-K (G-flag).
 
@@ -957,9 +974,9 @@ Distributing P1 goods is a P1 activity. A reported segment distributing P1 goods
 |---|---|---|
 | 1 — AAOIFI plain reading | Float yield is *ribā*; 100% into L1 | Sc B (default) |
 | 2 — Agency carve-out | Where the issuer is a documented agent (*wakīl*) and the yield is contractually the client's or passed through, it is not the issuer's income | Sc A |
-| 3 — Structural (Usmani-strict) | Where interest-bearing custody is structurally inseparable from the business model (float yield above 5% of revenue, or the model depends on it), Gate 1 is reconsidered | Sc C / Strictest |
+| 3 — Structural (Usmani-strict) | Where interest-bearing custody is structurally inseparable from the business model (float yield above 5% of revenue, or the model depends on it), Gate 1 is reconsidered. **What reconsideration concludes — CATEGORICAL FAIL, or FAIL on Gates 2–4 — is the Council's decision (§0.5 item 12); until it rules, the issuer keeps its gate-by-gate verdict.** First trigger: ADP, client-fund interest 6.2% of revenue (2026-10-18) | Sc C / Strictest |
 
-BNPL and instalment economics → L7 (and L2 categorical if a lending segment exceeds 5%). Stablecoins → Δ7. Insurance-adjacent → §31. Precedents: MELI (float yield ~$3.5B; Positions 1/2/3 applied, before the v5.0 categorical finding on its loan book); ADP-type payroll float (sector maps).
+BNPL and instalment economics → L7 (and L2 categorical if a lending segment exceeds 5%). Stablecoins → Δ7. Insurance-adjacent → §31. Precedents: ADP (client-fund interest $1,354.8m booked as revenue, 6.2% of revenue; Δ41, Δ43, Δ44), Airbnb (interest on guests' funds held between booking and check-in; total interest 5.17% of revenue), Deere (captive lender, U2) — `HIDDEN_INTEREST_Shariah_Screening_v5_0.md`; MELI (float yield ~$3.5B; Positions 1/2/3 applied, before the v5.0 categorical finding on its loan book); ADP-type payroll float (sector maps).
 
 ## §55 — Conglomerates, holding companies and the rest
 
@@ -1001,7 +1018,7 @@ BNPL and instalment economics → L7 (and L2 categorical if a lending segment ex
    | Pharmacy | Part VI, U1 |
    | Insurance | §31, Δ54 |
    | Lender and card shares | Δ46, Δ55 |
-   | Infrastructure | Δ56 (proposed) |
+   | Infrastructure | Δ56 |
    | Private stakes | U4, Δ57 |
 3. **Separate the streams, so nothing is counted twice** (§37's rule, extended). On one bottle of wine, the product sale, the seller fee, the ad fee and the payment fee are four lines, each at its own rule.
 4. **Size once, banded, from a stated anchor** (§16), in this order:
@@ -1022,7 +1039,7 @@ BNPL and instalment economics → L7 (and L2 categorical if a lending segment ex
 
 ---
 
-# PART IX — THE DELTA REGISTER (Δ1–Δ60)
+# PART IX — THE DELTA REGISTER (Δ1–Δ63)
 
 ## §56.1 — Every delta
 
@@ -1031,41 +1048,41 @@ Format: **trigger → rule (v5.0)** · scenarios · precedent · status. "Amende
 - **Δ1 Bifurcated verdicts.** Scenarios disagree → report all four with the rationale for each; never collapse to one verdict. · all · EXLS (2.49 / 16.37 / 37.24 / 57.33%). · Active.
 - **Δ2 Marginal yield over fee.** Interest credit netted against bank fees under one contract → count the net credit only. · all · none yet. · Active.
 - **Δ3 Operating-only-asset carve-out.** Strategic equity stakes and equity-method investments are not Cash + IBS; restricted operating deposits are not Cash + IBS. · all · RHHBY, NVO. · Active.
-- **Δ4 Litigation / regulatory contingency.** Principal is not IBD; interest accruing on it is L7; harm-attribution options A / B / C shown as sensitivities. · all · JNJ talc (Option A locked, L6); HIMS Sookdeo class action (flag). · Amended: governance items without interest go to G-flags (F36).
+- **Δ4 Litigation / regulatory contingency.** Principal is not IBD; interest accruing on it is L7; harm-attribution options A / B / C shown as sensitivities. · all · JNJ talc (Option A locked, L6); HIMS Sookdeo class action (flag). · Amended: governance items without interest go to G-flags (Fd36).
 - **Δ5 Sub-industry reconsideration.** GICS masks a doctrinal difference → re-route. Healthcare is split ten ways: pharma, biotech, devices, diagnostics, hospitals, services, distributors, healthcare REITs, DTC telehealth, health-tech / SaaS. · all · HIMS. · Active.
-- **Δ6 Per-share purification.** Two-component formula (Part X §57); Δ6-RE for all profitable issuers, Δ6-D split for dividend payers; loss years purify interest only. · all · every issuer. · **Amended (F7).**
+- **Δ6 Per-share purification.** Two-component formula (Part X §57); Δ6-RE for all profitable issuers, Δ6-D split for dividend payers; loss years purify interest only. · all · every issuer. · **Amended (Fd7).**
 - **Δ7 Stablecoins.** Algorithmic stablecoins are categorically excluded; fiat-backed coins are cash equivalents carrying the underlying's interest character (an issuer's reserve yield is L1). · all · MELI (Meli Dólar flagged). · Active.
 - **Δ8 Wakālah-AI elevation.** Weak prescriber or decision gate → +5pp; medium +0 to +3pp; strong +0pp; absent → Tier 1; always inside the applicable band. · Sc C / Strictest · HIMS, EVER, MLNK. · Amended (band cap, U1).
 - **Δ9 Actuarial services.** Primary business → P1-INS. · all · none. · Active.
 - **Δ10 Health payers.** Sc A/B Tier 0 if positioned as health-service delivery; Sc C / Strictest P1-INS. · per scenario · none (pre-codified for UnitedHealth, Cigna, Humana, Elevance). · Active.
-- **Δ11 Fee-structure sensitivity.** Fees are Tier 0 unless the facilitated transaction is P1 (loan origination fees → Tier 2); volume-linked pricing adds +5 to +10pp to Tier 2. · Sc B+ · MLNK (+7.5pp), EVER. · Active (not a governance delta — F36).
+- **Δ11 Fee-structure sensitivity.** Fees are Tier 0 unless the facilitated transaction is P1 (loan origination fees → Tier 2); volume-linked pricing adds +5 to +10pp to Tier 2. · Sc B+ · MLNK (+7.5pp), EVER. · Active (not a governance delta — Fd36).
 - **Δ12 Takaful.** Tier 0; segment-report and apply only to the takaful part of a mixed insurer. · all · none. · Active.
 - **Δ13 Fine-grained bifurcation.** Disaggregate below GICS (pharma → F5; diagnostics → F9). · all · VEEV, RHHBY. · Active.
-- **Δ14 Wasīṭ-equivalence.** Facilitation of P1 transactions ≥ 80% of revenue → CATEGORICAL FAIL; 50–80% → Δ16 mandatory. · all · EVER (100%), **MLNK (~85%, applied in v5.0 — F21)**. · Active.
+- **Δ14 Wasīṭ-equivalence.** Facilitation of P1 transactions ≥ 80% of revenue → CATEGORICAL FAIL; 50–80% → Δ16 mandatory. · all · EVER (100%), **MLNK (~85%, applied in v5.0 — Fd21)**. · Active.
 - **Δ15 Foreign-private-issuer protocol.** 20-F replaces 10-K; home annual report (IFRS-EU etc.) replaces Item 1; 6-K replaces 10-Q; Rule 12g3-2(b) unlisted ADRs acceptable with audited statements; confirm audit, cadence and standard. · Gate 5 · RHHBY (unlisted ADR, OTCQX), NVO (20-F), SNY (20-F). · Active.
 - **Δ16 Deep customer-mix.** §17. · Sc B+ in practice · VEEV, EXLS. · Amended (mandatory band for P1 verticals).
 - **Δ17 ADR ratio.** Per-ADR purification = per-ordinary-share figure × ordinary shares per ADR; confirm the ratio with the depositary bank. · all · RHHBY (8 ADRs = 1 ROP), NVO (1:1), SNY (2 ADS = 1 share). · Active.
-- **Δ18 Drug-category table.** §23. · per scenario · HIMS, NVO, LLY, SNY. · Amended (U1 rows, F12).
+- **Δ18 Drug-category table.** §23. · per scenario · HIMS, NVO, LLY, SNY. · Amended (U1 rows, Fd12).
 - **Δ19 Triangulation.** §19; ≥ 3 independent sources for any contested Tier-2 rate. · Sc C / Strictest · HIMS, NVO. · Active (cannot be overridden).
 - **Δ20 Layer-2 cross-reference.** §10. · Gate 3 · RHHBY, NVO, LLY, JNJ (reversal). · Active (substance over form cannot be overridden).
 - **Δ21 Recombinant platforms.** Tier 0 universally; HEK293 per U8. · all · NVO (yeast), RHHBY (CHO), MRNA (cell-free IVT). · Active.
-- **Δ22 Sensitivity zone.** ±2pp around Gate-2 thresholds → MIXED-Watch, **Sc A and Sc B only**. · Sc A/B · RHHBY. · **Amended (F17).**
+- **Δ22 Sensitivity zone.** ±2pp around Gate-2 thresholds → MIXED-Watch, **Sc A and Sc B only**. · Sc A/B · RHHBY. · **Amended (Fd17).**
 - **Δ23 Necessity override.** §32. · all → 0% · SNY vaccines, insulin. · Active.
 - **Δ24 Trace de minimis.** §32; 1 / 1 / 2.5 / 5%. · per scenario · SNY (pattern), HIMS (minor-flag rate, D8). · Active.
-- **Δ25 No alternative.** §32; 0 / 0 / 2.5 / 5%. · per scenario · SNY Lovenox; **ABBV Creon (F24)**. · Active.
+- **Δ25 No alternative.** §32; 0 / 0 / 2.5 / 5%. · per scenario · SNY Lovenox; **ABBV Creon (Fd24)**. · Active.
 - **Δ26 Communal benefit.** §32; temporal scope U7. · all → 0% · MRNA FY2020–22. · Active.
 - **Δ27 On-label cosmetic.** §33. · per scenario · ABBV. · Active.
-- **Δ28 Universal content attribution.** §40. · all · DIS, NFLX. · Active (number reserved — F1).
+- **Δ28 Universal content attribution.** §40. · all · DIS, NFLX. · Active (number reserved — Fd1).
 - **Δ29 Per-service back-solve and disclosure sunset.** §41. · Gate 4 · DIS. · Active.
 - **Δ30 vMVPD distribution rate and merged-entity carve-out.** §42. · Gate 4 · DIS (Hulu + Live TV / Fubo). · Active.
 - **Δ31 Advertising pass-through.** §43. · per scenario · DIS, NFLX, AMC. · Active.
 - **Δ32 Media-gambling integration.** §44. · all at 100% · DIS (ESPN). · Active.
 - **Δ33 Granular sub-line attribution.** §16. · per scenario · DIS, AMC. · **Amended (D9 sizing).**
 - **Δ34 Intra-service clean tier.** §45. · all → 0% · NFLX (15%). · Active.
-- **Δ35 Viewing-weighted content flags.** §46; music excluded (U9); measured / estimated labels. · per scenario · NFLX, AMC. · Amended (F34 labelling).
-- **Δ36 Exhibitor sub-rule.** §46. · per scenario · AMC. · Active (the AMC report's "Δ35" label is superseded — F29).
-- **Δ37 Dual-track lease leverage.** §6: track (a) at Sc A/B/C, track (b) at Strictest, every issuer. · Gate 2 · AMC; applied record-wide in v5.0. · **Amended (F16).**
-- **Δ38 Negative equity.** §11: equity and non-positive denominators undefined; MCAP and TA ratios tested. · Gate 2 · ABBV, AMC. · **Amended (F18).**
+- **Δ35 Viewing-weighted content flags.** §46; music excluded (U9); measured / estimated labels. · per scenario · NFLX, AMC. · Amended (Fd34 labelling).
+- **Δ36 Exhibitor sub-rule.** §46. · per scenario · AMC. · Active (the AMC report's "Δ35" label is superseded — Fd29).
+- **Δ37 Dual-track lease leverage.** §6: track (a) at Sc A/B/C, track (b) at Strictest, every issuer. · Gate 2 · AMC; applied record-wide in v5.0. · **Amended (Fd16).**
+- **Δ38 Negative equity.** §11: equity and non-positive denominators undefined; MCAP and TA ratios tested. · Gate 2 · ABBV, AMC. · **Amended (Fd18).**
 - **Δ39 Post-windfall treasury mitigation — PROPOSED, NOT RATIFIED, DOES NOT APPLY.** Draft (MRNA report): where Layer 1 breaks the cap *solely* because cash was accumulated in a Δ23 / Δ26 emergency window and no new debt-investment policy was adopted, re-anchor the Layer-1 numerator to a three-year operating-cycle benchmark, subject to a 36-month cash-deployment plan and short-duration Treasuries only. **Council analysis:** (1) no external standard re-anchors the numerator to a past year; (2) *ribā* income is *ribā* whatever produced the cash pile; (3) it would not change MRNA, which also fails Gate 2 liquidity (Cash + IBS 41.7% of MCAP, 65.9% of assets). **Recommendation:** do not ratify as drafted. If the Council wants a remedy, consider a *remediation Watch* instead: the issuer stays FAIL, is monitored quarterly, and re-enters only after two consecutive quarters with Layer 1 < 5% and Cash + IBS inside the caps. · none · MRNA. · Open (§0.5).
 - **Δ40 Cash on the 12-month average market cap.** §3, §7: R8 decides at every scenario, each at its own limit; R9–R12 are information only. · Gate 2, all · AAPL. · **Interim (18 Oct 2026).**
 - **Δ41 Interest booked inside revenue.** Trigger: a revenue line earned as interest or yield — "interest on funds held for clients", stablecoin reserve revenue (Δ7), "finance and interest income", interest on customer balances inside a services line. Rule: it is Layer 1 (Layer 7 where it is lending), counted gross wherever it is reported; the revenue lines and the revenue-disaggregation note are searched as well as the investments and other-income notes. · all · ADP ($1,354.8m on client funds), Deere ($5,526m), Coinbase (sweep). · **Interim (18 Oct 2026).**
@@ -1076,13 +1093,13 @@ Format: **trigger → rule (v5.0)** · scenarios · precedent · status. "Amende
 - **Δ46 A share of a partner's lending income.** Trigger: credit-card profit sharing, co-brand card or savings revenue shares, loan or deposit referral shares tied to a bank's interest income. Rule: Layer 7 at 100% at Sc B, Sc C and Strictest; at Sc A, payment for promotional capacity under the Δ31 carve-out (0%). · per scenario · Target ($522m, 0.5%), Apple Card (est. $0.3–1.0b). · **Interim (18 Oct 2026).** The app sizes it at Gate 4; adding it to the Gate-3 cap by scenario is not yet implemented (Apple: +0.1–0.2pp, no verdict change).
 - **Δ47 Zero-margin pass-throughs.** Trigger: costs re-billed at no margin and reported gross in revenue (PEO benefits, premiums collected for insurers). Rule: the denominator is as reported (Δ42); Gate 4 counts the issuer's margin on a P1 pass-through, not the gross amount, and the gross reading is shown as a sensitivity. · Gate 4, all · ADP ($4,607.3m; +21pp if counted gross). · **Interim (18 Oct 2026).**
 - **Δ48 Insurance inside a service fee.** Trigger: an issuer that underwrites or retains insurance risk for customers without a separately billed premium. Rule: where the cover is priced inside fees and can be estimated, size it at 100% under §31 (Tier 1), banded; where no charge exists (a free guarantee with risk retained), G-flag only. · Gate 4, all · ADP Indemnity (est. $330–900m), Airbnb Host Damage Protection (G-flag). · **Interim (18 Oct 2026).**
-- **Δ49 Interest-free loans that convert at a fixed price — PROPOSED, NOT RATIFIED, SENSITIVITY ONLY.**
+- **Δ49 Interest-free loans that convert at a fixed price.**
   - Trigger: a non-interest-bearing note or loan, held by the issuer, that converts into the borrower's equity at a price fixed at or before signing — or at the lower of a fixed price and a later one (IPO, next round).
-  - Rule (proposed): not Cash + IBS, because it bears no interest (§6). Sc A reads it as a deferred subscription for shares (*waʿd*), so its gains are equity return under U3. Sc B, Sc C and Strictest read it as *qarḍ* carrying a stipulated benefit to the lender (AAOIFI SS 19; the maxim "every loan that draws a benefit is *ribā*"). Under that reading the conversion gain recognised in income (fair value at conversion less principal) is Layer 1 at 100%, and gains still unrealised in OCI are documented.
+  - Rule: not Cash + IBS, because it bears no interest (§6). Sc A reads it as a deferred subscription for shares (*waʿd*), so its gains are equity return under U3. Sc B, Sc C and Strictest read it as *qarḍ* carrying a stipulated benefit to the lender (AAOIFI SS 19; the maxim "every loan that draws a benefit is *ribā*"). So the conversion gain recognised in income (fair value at conversion less principal) is Layer 1 at 100% at Sc B+ — in the Gate-3 test, in Gate 4 and in purification — and gains still unrealised in OCI are documented.
   - Outside the delta: a note that converts at the market price on the day, which carries no stipulated benefit, and a SAFE, which has no repayment claim.
   - Scenarios: Sc B+.
   - Precedent: Amazon/Anthropic — $6.2b of principal in "non-interest-bearing rollover notes" (Anthropic S-1), $97.9b at fair value, $6.8b of conversion gains in the twelve months to June 2026 → +0.88 points.
-  - Status: **Proposed (28 Oct 2026).**
+  - Status: **Interim — proposed 28 Oct 2026, adopted 30 Oct 2026 (owner decision).** Engine: `RevenueLine.addsToLayer1`.
 - **Δ50 Level-3 mark-ups in the asset denominator.**
   - Trigger: unrealised fair-value gains on Level-3 assets exceed 5% of total assets — private stakes marked on unobservable inputs, or observable-price-change adjustments to non-marketable equity.
   - Rule: Sc A and Sc B use total assets as reported. Sc C and Strictest divide every total-asset ratio (R4, R11, R16, R19) by total assets less those gains: D9's conservative edge, applied to an estimate. The market-cap ratios are untouched.
@@ -1097,10 +1114,16 @@ Format: **trigger → rule (v5.0)** · scenarios · precedent · status. "Amende
   - Status: **Interim (28 Oct 2026).**
 - **Δ52 Bundled memberships.**
   - Trigger: one fee buys content and non-content benefits (shipping, video, music, games, storage).
-  - Rule: allocate the fee by the issuer's ASC 606 standalone-selling-price allocation where disclosed; otherwise by the benefits' relative standalone list prices, banded. Each slice takes its own rule: the content archetype, or Tier 0 for shipping.
+  - Basis: when one contract mixes permissible and impermissible parts, the price is divided by the value of each (*tafrīq al-ṣafqa*, the Shafiʿi and Hanbali position).
+  - Rule: use the issuer's ASC 606 standalone-selling-price allocation where it is disclosed. Otherwise **triangulate the content slice from three independent methods** (Δ19):
+    1. **Value** — the relative standalone price of each benefit. A benefit with no list price is priced from what customers pay without the bundle (shipping: the non-member shipping fee × the orders on which a member would have paid it).
+    2. **Cost** — the issuer's spend on each benefit (content cost against shipping and fulfilment cost, the share serving members).
+    3. **Usage** — survey or usage data on why members join and what they use.
+
+    The point is the **median** of the three; the band runs from the lowest to the highest. A slice resting on one method alone is labelled "single-source" and taken at its band's conservative edge at every scenario. Each slice then takes its own rule: the content archetype, or Tier 0 for shipping.
   - Scenarios: all.
-  - Precedent: Amazon Prime — video 25–45% of fees, point 35%.
-  - Status: **Interim (28 Oct 2026).**
+  - Precedent: Amazon Prime — value 41%, cost 20%, survey 33% → video 33% of fees (band 20–41%), replacing a single-price estimate of 35% (25–45%).
+  - Status: **Interim (28 Oct 2026); triangulation added 31 Oct 2026 (owner decision).**
 - **Δ53 Marketplace take on prohibited goods.**
   - Trigger: commissions, fulfilment and other seller fees on third-party sales.
   - Rule: the take on goods that are themselves prohibited (alcohol, pork, tobacco, gambling products) is Tier 1 at 100% at every scenario, sized as the P1 share of third-party sales × the take. This mirrors §52's platform-take rule. The issuer's own listing policy is the evidence of what is, and is not, sold.
@@ -1119,18 +1142,18 @@ Format: **trigger → rule (v5.0)** · scenarios · precedent · status. "Amende
   - Scenarios: per scenario.
   - Precedent: Amazon/Affirm — warrants over 22m shares that vest on first-time Affirm borrowers; $199.9m expensed by Affirm in its FY2026; strike cut to $63.06 in November 2025.
   - Status: **Interim (28 Oct 2026).**
-- **Δ56 Infrastructure *ijārah* — PROPOSED, NOT RATIFIED, SENSITIVITY ONLY.**
+- **Δ56 Infrastructure *ijārah*.**
   - Trigger: compute, storage, data-centre, colocation or network capacity rented on standard terms.
   - The gap it closes: Δ16 attributes nothing unless one customer vertical reaches 50%, while D18 (REIT tenants) and Δ31 (ad capacity) attribute capacity rented to P1 businesses from Sc B.
-  - Rule (proposed):
+  - Rule:
     - Sc A 0% (Abū Ḥanīfa, as in D18 and Δ31).
     - Capacity rented to businesses whose primary activity is P1 (sportsbooks, casinos, alcohol and tobacco producers, adult) at 100% at every scenario — D18 row 1.
     - Conventional banks, insurers and lenders at 100% from Sc B — D18 row 2.
     - Mixed customers at Sc C and Strictest only, at their own NPI%.
-    - Size from vertical benchmarks and named customers, banded.
+    - **Evidence by lens (narrowed 31 Oct 2026):** at Sc A and Sc B only **identifiable customers** count — named in the issuer's materials (case studies, press releases, filings) or disclosed by the customer. Industry-benchmark sizing of unnamed customers applies at **Sc C and Strictest only**. Sizes are banded estimates either way.
   - Scenarios: per scenario.
-  - Precedent: AWS — $148.4b; FanDuel's strategic cloud; +1.78 points at Sc B, +2.77 at Sc C.
-  - Status: **Proposed (28 Oct 2026)** — it would reprice every cloud, data-centre and telecom issuer.
+  - Precedent: AWS — $148.4b. Named: FanDuel (strategic cloud provider), Capital One and other banks in AWS case studies, est. $1.15b, at Sc A/B (banks from Sc B). Benchmarks: a further $12.65b at Sc C and Strictest. As first adopted, benchmark sizing at Sc B put Amazon at 5.1% and failed it on an estimate no filing supports; narrowed, Sc B is 3.5%.
+  - Status: **Interim — proposed 28 Oct 2026, adopted 30 Oct 2026, narrowed 31 Oct 2026 (owner decisions).** It reprices every cloud, data-centre, colocation and telecom issuer: each is re-screened when next opened, and existing records carry an amendment note where it moves them. Utilities stay Tier 0 (§55): electricity is sold, not leased.
 - **Δ57 Look-through of a private stake that pays no dividend.**
   - Trigger: a U4-material position (above 5% of the investment portfolio) in a company that distributes nothing.
   - Rule: flow up the issuer's economic share (as converted, after ownership caps) × the investee's NPI amount into Gate 4 at every scenario. Where the investee's own screen fails a gate, add a G-flag naming the test. Where the investee files nothing, use a labelled band and log a Gate-5 gap. Capital gains stay under U3.
@@ -1155,6 +1178,24 @@ Format: **trigger → rule (v5.0)** · scenarios · precedent · status. "Amende
   - Scenarios: Sc C / Strictest.
   - Precedent: Amazon — gelatin-containing gummies, marshmallows and capsules, est. $1.2–3.0b.
   - Status: **Interim (28 Oct 2026).**
+- **Δ61 A Gate-4 watch zone when one estimate decides.**
+  - Trigger: at Sc A or Sc B, moving any single estimated line to either edge of its band — size at the low or high edge, with the band's rate — would flip the Gate-4 result.
+  - Rule: the scenario reads **MIXED — Watch (estimate-dependent)** instead of a bright-line PASS or FAIL, and the deciding line is named. It is reviewed quarterly, and the fix is evidence for that line, not a new estimate. Sc C and Strictest stay bright-line: they already take the conservative edge (D9). This is Gate 4's counterpart to Δ22.
+  - Scenarios: Sc A / Sc B.
+  - Precedent: Amazon as first screened under Δ56 — Sc B at 5.14% turned on the AWS finance estimate alone.
+  - Status: **Interim (31 Oct 2026, owner decision).** Engine: `Gate4Total.watch`.
+- **Δ62 Index rows on each family's own scope.**
+  - Trigger: the five index-family rows (AAOIFI, S&P, DJIM, FTSE, MSCI) shown beside the scenarios.
+  - Rule: each row counts only what that family counts — interest and the activities it excludes, at its own thresholds. Rules only this methodology runs stay out of the rows: Δ49, Δ55, Δ56 and Δ57 today, marked on the line itself. A row is the family's verdict on our figures, not on our doctrine.
+  - Scenarios: index rows only.
+  - Precedent: Amazon — with those lines inside, the AAOIFI row read "borderline" partly on Maz Vantage doctrine; on SS 21's own scope it is 2.4%, a pass.
+  - Status: **Interim (31 Oct 2026, owner decision).** Engine: `RevenueLine.ownRule`.
+- **Δ63 The disclosed share of every screen.**
+  - Trigger: every researched screen.
+  - Rule: report, per scenario, the share of the non-permissible-income figure that comes from disclosed lines; the rest is estimated. It is printed beside the figure on the tab and in the report's first table.
+  - Scenarios: all.
+  - Precedent: Amazon — 31% disclosed at Sc A, 42% at Sc B, 19% at Sc C, 18% at Strictest.
+  - Status: **Interim (31 Oct 2026, owner decision).** Engine: `Gate4Total.disclosed`.
 
 ## §56.2 — Trigger matrix (find every delta before Gate 2)
 
@@ -1193,20 +1234,23 @@ Format: **trigger → rule (v5.0)** · scenarios · precedent · status. "Amende
 | Credit-card profit sharing; co-brand card or savings revenue shares | Δ46 |
 | Costs re-billed at zero margin and reported gross (PEO, insurance premiums) | Δ47 |
 | A captive insurer or self-insured guarantee inside a service | Δ48, §31 |
-| A non-interest-bearing note in another company that converts at a fixed or "lower-of" price | Δ49 (proposed), U4, Δ57 |
+| A non-interest-bearing note in another company that converts at a fixed or "lower-of" price | Δ49, U4, Δ57 |
 | Level-3 or observable-price-change gains on private stakes above 5% of total assets | Δ50, Δ57, Δ58 |
 | Advertising sold on the issuer's own store pages | Δ51; video, display and off-platform inventory: Δ31 |
 | A membership or subscription that bundles content with other benefits | Δ52, F12 |
 | Commissions and fulfilment fees on third-party sales | Δ53, §49 |
 | Warranty, accident or device cover sold at checkout; a corporate-agent or broker licence | Δ54, §31, Δ48 |
 | Warrants, shares or credits received from a lender, insurer or gambling operator | Δ55, Δ46 |
-| Cloud, data-centre, colocation or network capacity sold to every industry | Δ56 (proposed), F11, Δ16 |
+| Cloud, data-centre, colocation or network capacity sold to every industry | Δ56, F11, Δ16 |
 | A material private stake that pays no dividend; an investee that files an S-1 | Δ57, U4 |
 | Non-operating gains above 10% of pre-tax income | Δ58 (amends Δ6) |
 | Financing obligations, current debt or credit facilities filed outside the debt captions | Δ59 |
 | A retailer or marketplace selling confectionery, capsules or processed foods | Δ60, §48 |
 | A platform conglomerate (several mixed revenue categories, no prohibited line named) | F13 (§55A), Part XV |
 | An acquisition of a licensed lender, insurer or payments firm (Exhibit 21, 8-K, press) | U2, L7, §54 |
+| A Gate-4 result at Sc A or B within one estimate's band of the cap | Δ61 |
+| Any line counted under a rule only Maz Vantage runs | Δ62 (keep it out of the index rows) |
+| Every researched screen | Δ63 (print the disclosed share) |
 
 ---
 
@@ -1214,7 +1258,7 @@ Format: **trigger → rule (v5.0)** · scenarios · precedent · status. "Amende
 
 ## §57 — Δ6 per-share purification (v5.0 two-component formula)
 
-**Why it changed (F7).** The old Δ6-RE took NPI% × revenue × (1 − ETR) as if every dollar of impure revenue were pure profit. Interest income really does drop to the bottom line; impure *operating* revenue does not — it carries costs like any other sale. The result overstated purification for every issuer with impure operating revenue, and in several cases exceeded earnings per share.
+**Why it changed (Fd7).** The old Δ6-RE took NPI% × revenue × (1 − ETR) as if every dollar of impure revenue were pure profit. Interest income really does drop to the bottom line; impure *operating* revenue does not — it carries costs like any other sale. The result overstated purification for every issuer with impure operating revenue, and in several cases exceeded earnings per share.
 
 **Definitions** (reporting currency; per scenario):
 
@@ -1242,7 +1286,7 @@ Format: **trigger → rule (v5.0)** · scenarios · precedent · status. "Amende
 
 ## §58 — Khums (Jaʿfari overlay)
 
-Company level: **20% × reported net income attributable to shareholders** (F33); none in a loss year. Per share, informational: 20% × diluted EPS. The individual obligation is personal: it falls on the investor's annual surplus and depends on their *marjaʿ al-taqlīd* and holding-period rules. Show it next to the **Sc B** verdict (F40). FY2025 company-level examples: VEEV $181.8M; HIMS $25.7M; RHHBY CHF 2,576M; NVO DKK 20,487M; JNJ $5,361M; NFLX $2,196M.
+Company level: **20% × reported net income attributable to shareholders** (Fd33); none in a loss year. Per share, informational: 20% × diluted EPS. The individual obligation is personal: it falls on the investor's annual surplus and depends on their *marjaʿ al-taqlīd* and holding-period rules. Show it next to the **Sc B** verdict (Fd40). FY2025 company-level examples: VEEV $181.8M; HIMS $25.7M; RHHBY CHF 2,576M; NVO DKK 20,487M; JNJ $5,361M; NFLX $2,196M.
 
 ## §59 — Cross-check: the AAOIFI dividend-ratio method
 
@@ -1252,7 +1296,7 @@ Most retail screeners show purification as **DPS × NPI%**. For dividend payers,
 
 # PART XI — VERDICT STANDARDS AND OUTPUT
 
-## §60 — The canonical twelve standards (F14)
+## §60 — The canonical twelve standards (Fd14)
 
 Every report's twelve-standard matrix uses this list, in this order, with these tests. Earlier tallies are void until re-run.
 
@@ -1496,45 +1540,45 @@ All figures FY2025 unless stated. Balance-sheet and income figures were re-check
 
 | # | Ticker | Issuer / business | FY | Sc A | Sc B | Sc C | Strictest | What decides it | Changed in v5.0 |
 |---|---|---|---|---|---|---|---|---|---|
-| 1 | MELI | MercadoLibre — e-commerce + fintech | 2025 | CAT | CAT | CAT | CAT | G1 step 2: own loan book (credits revenue 18.7%); G4 28.0 / 37.0 / 37.2 / 37.9% | Basis (F22) |
-| 2 | EXLS | ExlService — analytics / BPM to financial industries | 2025 | **PASS** | FAIL | FAIL | FAIL | G4 2.49 / 16.37 / 37.24 / 57.33% (Δ16); G2 clean (IBD/TA 17.7%) | Description (F23) |
-| 3 | MLNK | MeridianLink — lending software (taken private 2025) | 2024 | CAT | CAT | CAT | CAT | G1 Δ14 (~85% from lenders); G2 IBD/TA 48.8%; G4 5.18 / 33.0 / 59.3 / 77.2% | Basis (F21) |
+| 1 | MELI | MercadoLibre — e-commerce + fintech | 2025 | CAT | CAT | CAT | CAT | G1 step 2: own loan book (credits revenue 18.7%); G4 28.0 / 37.0 / 37.2 / 37.9% | Basis (Fd22) |
+| 2 | EXLS | ExlService — analytics / BPM to financial industries | 2025 | **PASS** | FAIL | FAIL | FAIL | G4 2.49 / 16.37 / 37.24 / 57.33% (Δ16); G2 clean (IBD/TA 17.7%) | Description (Fd23) |
+| 3 | MLNK | MeridianLink — lending software (taken private 2025) | 2024 | CAT | CAT | CAT | CAT | G1 Δ14 (~85% from lenders); G2 IBD/TA 48.8%; G4 5.18 / 33.0 / 59.3 / 77.2% | Basis (Fd21) |
 | 4 | EVER | EverQuote — insurance lead generation | 2025 | CAT | CAT | CAT | CAT | G1 Δ14 (100% insurance) | — |
-| 5 | RXST | RxSight — ophthalmic devices | 2025 | FAIL | FAIL | FAIL | FAIL | G3 Layer 1 6.94% (all windows); G2 Cash + IBS 36.8% of 12m MCAP (Sc B/C/Strictest), 73.2% of TA | **Yes — was "split" (F19)** |
-| 6 | VEEV | Veeva — life-sciences SaaS | Jan 2026 | FAIL | FAIL | FAIL | FAIL | G3 Layer 1 8.36%; G2 Cash + IBS 73.1% of TA (Sc B+) | **Yes — Sc A was "mixed" (F20)** |
-| 7 | HIMS | Hims & Hers — DTC telehealth | 2025 | **PASS** | FAIL | FAIL | FAIL | G2 IBD/TA 46.4% (track a) / 53.3% (b); Cash + IBS/TA 43.1%; G4 Sc C 20.8%, Strictest 60.0% | Sc B label MIXED → FAIL; figures (F15, F27) |
+| 5 | RXST | RxSight — ophthalmic devices | 2025 | FAIL | FAIL | FAIL | FAIL | G3 Layer 1 6.94% (all windows); G2 Cash + IBS 36.8% of 12m MCAP (Sc B/C/Strictest), 73.2% of TA | **Yes — was "split" (Fd19)** |
+| 6 | VEEV | Veeva — life-sciences SaaS | Jan 2026 | FAIL | FAIL | FAIL | FAIL | G3 Layer 1 8.36%; G2 Cash + IBS 73.1% of TA (Sc B+) | **Yes — Sc A was "mixed" (Fd20)** |
+| 7 | HIMS | Hims & Hers — DTC telehealth | 2025 | **PASS** | FAIL | FAIL | FAIL | G2 IBD/TA 46.4% (track a) / 53.3% (b); Cash + IBS/TA 43.1%; G4 Sc C 20.8%, Strictest 60.0% | Sc B label MIXED → FAIL; figures (Fd15, Fd27) |
 | 8 | RHHBY | Roche — pharma + diagnostics | 2025 | **PASS** | MIXED-Watch | FAIL | FAIL | G2 IBD/TA 32.2% (Δ22 at Sc B; bright-line at Sc C / Strictest); G4 0.41 / 0.41 / 0.46 / 0.69% | — |
-| 9 | NVO | Novo Nordisk — GLP-1 + insulin | 2025 | **PASS** | **PASS** | FAIL | FAIL | G4 Sc C 24.5%, Strictest 76.3% (U1 lock); G2 Strictest track (b) 25.7% | Sc C figure (F5); Strictest G2 (F16) |
-| 10 | LLY | Eli Lilly — GLP-1, diabetes, ED | 2025 | PASS (provisional) | FAIL | FAIL | FAIL | G2 IBD/TA 37.8% (a) / 39.0% (b); G4 never computed (F35) | Flagged |
-| 11 | SNY | Sanofi — pharma + vaccines | 2025 | **PASS** | **PASS** | FAIL | FAIL | **G2 Hanbali ratio R7: IBD €18.7B ÷ (MCAP − €67.6B goodwill + intangibles) > 30% at any MCAP below ~€130B (F42)**; G4 0.76 / 0.76 / 2.61 / 6.25% | **Yes — Sc C was PASS (F42)** |
+| 9 | NVO | Novo Nordisk — GLP-1 + insulin | 2025 | **PASS** | **PASS** | FAIL | FAIL | G4 Sc C 24.5%, Strictest 76.3% (U1 lock); G2 Strictest track (b) 25.7% | Sc C figure (Fd5); Strictest G2 (Fd16) |
+| 10 | LLY | Eli Lilly — GLP-1, diabetes, ED | 2025 | PASS (provisional) | FAIL | FAIL | FAIL | G2 IBD/TA 37.8% (a) / 39.0% (b); G4 never computed (Fd35) | Flagged |
+| 11 | SNY | Sanofi — pharma + vaccines | 2025 | **PASS** | **PASS** | FAIL | FAIL | **G2 Hanbali ratio R7: IBD €18.7B ÷ (MCAP − €67.6B goodwill + intangibles) > 30% at any MCAP below ~€130B (Fd42)**; G4 0.76 / 0.76 / 2.61 / 6.25% | **Yes — Sc C was PASS (Fd42)** |
 | 12 | JNJ | Johnson & Johnson — pharma + MedTech | 2025 | **PASS** | **PASS** | **PASS** | **PASS** | G2 IBD/TA 24.1% (a) / 24.8% (b); R7 ~15%; G4 1.12 / 1.12 / 1.33 / 1.33% | — |
-| 13 | ABBV | AbbVie — immunology, oncology, aesthetics | 2025 | **PASS** | FAIL | FAIL | FAIL | G2 IBD/TA 50.4%; G4 0.43 / 0.43 / 4.93 / 8.23% | Figures (F3, F24) |
-| 14 | MRNA | Moderna — mRNA vaccines | 2025 | FAIL | FAIL | FAIL | FAIL | G3 Layer 1 16.15%; **G2 Cash + IBS 41.7% of MCAP, 65.9% of TA** | Basis (F6): two gates |
+| 13 | ABBV | AbbVie — immunology, oncology, aesthetics | 2025 | **PASS** | FAIL | FAIL | FAIL | G2 IBD/TA 50.4%; G4 0.43 / 0.43 / 4.93 / 8.23% | Figures (Fd3, Fd24) |
+| 14 | MRNA | Moderna — mRNA vaccines | 2025 | FAIL | FAIL | FAIL | FAIL | G3 Layer 1 16.15%; **G2 Cash + IBS 41.7% of MCAP, 65.9% of TA** | Basis (Fd6): two gates |
 | 15 | BRK | Berkshire Hathaway — conglomerate | 2025 | CAT | CAT | CAT | CAT | G1 U2: insurance premiums 23.9% of revenue; look-through (~38% of the 13F book in non-compliant financials); T-bill interest | — |
-| 16 | DIS | Walt Disney — media, parks | Sep 2025 | FAIL | FAIL | FAIL | FAIL | G4 7.06 / 9.18 / 11.70 / 14.68%; G2 R7 43.8% fails Sc C / Strictest | Figures (F8, F25, F42) |
-| 17 | NFLX | Netflix — SVOD | 2025 | FAIL | FAIL | FAIL | FAIL | G4 29.61 / 34.18 / 50.79 / 65.75%; G2 Strictest 26.0% (a) / 30.5% (b) | Figures (F8) |
-| 18 | AMC | AMC Entertainment — exhibitor | 2025 | FAIL | FAIL | FAIL | FAIL | G2 51.0% (a) / 101.5% (b); negative equity; G4 8.31 / 9.86 / 14.19 / 17.14% | Figures (F16, F25) |
+| 16 | DIS | Walt Disney — media, parks | Sep 2025 | FAIL | FAIL | FAIL | FAIL | G4 7.06 / 9.18 / 11.70 / 14.68%; G2 R7 43.8% fails Sc C / Strictest | Figures (Fd8, Fd25, Fd42) |
+| 17 | NFLX | Netflix — SVOD | 2025 | FAIL | FAIL | FAIL | FAIL | G4 29.61 / 34.18 / 50.79 / 65.75%; G2 Strictest 26.0% (a) / 30.5% (b) | Figures (Fd8) |
+| 18 | AMC | AMC Entertainment — exhibitor | 2025 | FAIL | FAIL | FAIL | FAIL | G2 51.0% (a) / 101.5% (b); negative equity; G4 8.31 / 9.86 / 14.19 / 17.14% | Figures (Fd16, Fd25) |
 
 **Passes by scenario:** Sc A — 8 (EXLS, HIMS, RHHBY, NVO, LLY provisional, SNY, JNJ, ABBV); Sc B — 3 (NVO, SNY, JNJ) plus Roche MIXED; Sc C — 1 (JNJ); Strictest — 1 (JNJ). **JNJ is the only issuer that passes all four.**
 
 ## §XIII.2 — Issuer notes (what changed and why)
 
-- **MELI** (10-K 0001099590-26-000006). Revenue $28,893M; credits revenue ~$5,395M (18.7%) from a regulated lending subsidiary — direct conduct of P1-FIN above 5% → Gate 1 categorical (U2). Float yield ~$3.5B and AUM pass-through analysed under §54. Report NPI kept (28.0 / 37.0 / 37.2 / 37.9%; the report's §8 variant 37.4 / 38.1% is a rounding of the same model). Ja'fari mapping corrected to Sc B + khums (F40).
+- **MELI** (10-K 0001099590-26-000006). Revenue $28,893M; credits revenue ~$5,395M (18.7%) from a regulated lending subsidiary — direct conduct of P1-FIN above 5% → Gate 1 categorical (U2). Float yield ~$3.5B and AUM pass-through analysed under §54. Report NPI kept (28.0 / 37.0 / 37.2 / 37.9%; the report's §8 variant 37.4 / 38.1% is a rounding of the same model). Ja'fari mapping corrected to Sc B + khums (Fd40).
 - **EXLS** (0001297989-26-000008). Revenue $2,087.7M; net income $251.0M; EPS $1.54; IBD $298.6M + finance leases $2.2M = 17.7% of TA $1,702.2M; interest income $9.6M (0.46%). Insurance IMU 34.0%; financial-industry clients ~59% → Δ16. Report NPI kept.
 - **MLNK** (FY2024 10-K 0001834494-25-000018). Net loss $29.77M; Layer 1 $4.924M (1.56%); ~85% of revenue from banks, credit unions and mortgage lenders → Δ14 categorical. Taken private in 2025: record closed.
-- **EVER** (0001193125-26-066957). Revenue $692.5M; 100% insurance lead generation → Δ14 categorical. Gate 2 passes by wide margins (the old §1 precedent line was wrong — F32).
+- **EVER** (0001193125-26-066957). Revenue $692.5M; 100% insurance lead generation → Δ14 categorical. Gate 2 passes by wide margins (the old §1 precedent line was wrong — Fd32).
 - **RXST** (0001193125-26-071775). Revenue $134.5M; `InterestAndOtherIncome` $9.332M → **Layer 1 6.94%: FAIL at every scenario and window**; Cash + IBS $228.1M = 73.2% of TA $311.8M; 36.8% of 12m MCAP (fails Sc B / C / Strictest), 19.0% of 24m (passes the Sc A cash test). Net loss $38.9M.
 - **VEEV** (0001393052-26-000014). Revenue $3,195.3M; interest income (net, debt-free) $267.2M = **8.36%**; Cash + IBS $6,560.8M = 73.1% of TA; no borrowings (operating leases $95.9M). Δ16 customer mix 0.04 / 0.55 / 2.0 / 3.2%. NPI 8.40 / 8.91 / 10.36 / 11.56%.
-- **HIMS** (0001773751-26-000022). Revenue $2,347.6M; net income $128.4M; EPS $0.51; TA $2,154.7M. **IBD: convertible $1,000M principal ($972.6M carried); operating leases $148.0M; no finance leases** (F15). IBD/MCAP 9.5% / 13.9% / 19.6% (12 / 24 / 36m) — passes Sc A. Other non-operating income $23.1M ≈ 0.98% (Layer 1). Sc C NPI: ED 6.0% + GLP-1 13.5% + hair 0.24% + skincare 0.04% + L1 0.98% = **20.8%**. Strictest: ED 20% + GLP-1 38.5% + hair 0.2% + skincare 0.26% (D8) + L1 0.98% = **60.0%**. S&P Shariah: market-cap tests pass (F14). Class V supervoting → G-flag (F36).
+- **HIMS** (0001773751-26-000022). Revenue $2,347.6M; net income $128.4M; EPS $0.51; TA $2,154.7M. **IBD: convertible $1,000M principal ($972.6M carried); operating leases $148.0M; no finance leases** (Fd15). IBD/MCAP 9.5% / 13.9% / 19.6% (12 / 24 / 36m) — passes Sc A. Other non-operating income $23.1M ≈ 0.98% (Layer 1). Sc C NPI: ED 6.0% + GLP-1 13.5% + hair 0.24% + skincare 0.04% + L1 0.98% = **20.8%**. Strictest: ED 20% + GLP-1 38.5% + hair 0.2% + skincare 0.26% (D8) + L1 0.98% = **60.0%**. S&P Shariah: market-cap tests pass (Fd14). Class V supervoting → G-flag (Fd36).
 - **RHHBY** (no SEC filing; Annual Report 2025, IFRS). IBD CHF 32.4B / TA CHF 100.7B = 32.2%. The R7 Hanbali ratio was not computed in the report — compute it at re-screen. Purification uses an estimated tax rate of ~18%.
 - **NVO** (20-F 0000353278-26-000012). Revenue DKK 309,064M; net income DKK 102,434M; EPS DKK 23.03; ETR 21.5%. Borrowings DKK 130,958M / TA DKK 542,902M = 24.1% (track a); + lease liabilities DKK 8,572M = **25.7% (track b) → Strictest Gate-2 FAIL**. Interest income DKK 1,269M (the IFRS finance-income line of DKK 9,660M includes FX). Sc C: Wegovy + Saxenda DKK 82,347M × 25% + Ozempic / Rybelsus / Victoza DKK 152,202M × 35% + L1 + other flags = **24.5%**.
-- **LLY** (0000059478-26-000013). Revenue $65,179M; net income $20,640M; EPS $22.95; DPS $6.23; debt $42,503M / TA $112,476M = 37.8%. Gate-4 NPI never computed (F35): under U1 the GLP-1 and ED lines take 30% (Sc C default) and 100% (Strictest), so both scenarios fail Gate 4 as well; Sc A is provisional on Layer 1.
-- **SNY** (20-F 0001628280-26-008403). Net income €7,813M; EPS €6.37; borrowings €18,702M / TA €126,805M = 14.7%; **goodwill €41,300M + intangibles €26,261M = €67.6B**. R7 needs MCAP ≥ €67.6B + €18.7B / 0.30 ≈ **€130B** to pass at 30%; Sanofi's market cap was ~€104–139B through 2025 (≈ €138.5B in March, ≈ $121.6B in December), so the Sc C worst-of-window test fails (F42). Recompute the exact 12/24/36-month averages at re-screen; Sc C stays FAIL unless every window average is above ~€130B.
-- **JNJ** (0000200406-26-000016). Revenue $94,193M; interest income $1,056M (1.12%); interest expense $971M; net income $26,804M (lifted by ~$7B talc-reserve reversals); EPS $11.03; dividends paid $5.14; debt $47,938M / TA $199,210M = 24.1%; + operating leases $1,400M = 24.8%; capitalised interest $114M (L3 0.12%). Talc Option A (U6). The report's §16 cross-issuer table is void (F4).
+- **LLY** (0000059478-26-000013). Revenue $65,179M; net income $20,640M; EPS $22.95; DPS $6.23; debt $42,503M / TA $112,476M = 37.8%. Gate-4 NPI never computed (Fd35): under U1 the GLP-1 and ED lines take 30% (Sc C default) and 100% (Strictest), so both scenarios fail Gate 4 as well; Sc A is provisional on Layer 1.
+- **SNY** (20-F 0001628280-26-008403). Net income €7,813M; EPS €6.37; borrowings €18,702M / TA €126,805M = 14.7%; **goodwill €41,300M + intangibles €26,261M = €67.6B**. R7 needs MCAP ≥ €67.6B + €18.7B / 0.30 ≈ **€130B** to pass at 30%; Sanofi's market cap was ~€104–139B through 2025 (≈ €138.5B in March, ≈ $121.6B in December), so the Sc C worst-of-window test fails (Fd42). Recompute the exact 12/24/36-month averages at re-screen; Sc C stays FAIL unless every window average is above ~€130B.
+- **JNJ** (0000200406-26-000016). Revenue $94,193M; interest income $1,056M (1.12%); interest expense $971M; net income $26,804M (lifted by ~$7B talc-reserve reversals); EPS $11.03; dividends paid $5.14; debt $47,938M / TA $199,210M = 24.1%; + operating leases $1,400M = 24.8%; capitalised interest $114M (L3 0.12%). Talc Option A (U6). The report's §16 cross-issuer table is void (Fd4).
 - **ABBV** (0001551152-26-000008; the report cites a different accession number). Revenue $61,160M; interest income $266M; EPS $2.36; DPS declared $6.65 (payout > 100%); debt and finance leases $67,496M / TA $133,960M = **50.4%**; equity −$3,270M. R7 ≈ $67.5B / (~$305B − $88.3B) ≈ 31% also fails Sc C.
 - **MRNA** (0001682852-26-000033). Revenue $1,944M; interest income $314M = **16.15%**; net loss $2,822M; Cash $2,595M + current investments $3,204M + non-current investments $2,336M = **$8,135M → 41.7% of MCAP (~$19.5B), 65.9% of TA $12,338M**; term loan $590M carried + finance leases $45M. Δ26 (U7) and HEK293 reading (ii) (U8) keep Gate 4 at 0%. The proposed treasury rule is Δ39 (not ratified).
 - **BRK** (0001193125-26-083899). Revenue $371,444M; premiums earned ~$88.9B (23.9%) → U2 categorical. Purification is not a remedy: divest.
-- **DIS** (0001744489-25-000155). See §47.1. Goodwill $73,294M + intangibles $9,272M; R7 at ~$179B MCAP = 43.8% → Sc C / Strictest Gate 2 fail (F42). Per-service disclosure ended after FY2025 Q4 (Δ29 sunset).
+- **DIS** (0001744489-25-000155). See §47.1. Goodwill $73,294M + intangibles $9,272M; R7 at ~$179B MCAP = 43.8% → Sc C / Strictest Gate 2 fail (Fd42). Per-service disclosure ended after FY2025 Q4 (Δ29 sunset).
 - **NFLX** (0001065280-26-000034). See §47.2. Content assets ($32.8B) are productive assets, not intangibles, for R7.
 - **AMC** (0001411579-26-000016). See §47.3.
 
@@ -1558,7 +1602,7 @@ All figures FY2025 unless stated. Balance-sheet and income figures were re-check
 | MELI (categorical — exit only) | $12.23 | $15.60 | $15.68 | $15.94 | $159.28 / 210.66 / 212.24 / 216.19 | $39.39 | — |
 | MLNK (categorical, FY2024) | $0.06 | $0.06 | $0.06 | $0.06 | $0.057 | loss | — |
 | EVER, BRK (categorical) | divest — not computed | | | | | | |
-| LLY | re-screen (F35) | | | | | | |
+| LLY | re-screen (Fd35) | | | | | | |
 
 AAOIFI dividend-ratio cross-check (§59), DPS × NPI%: JNJ $0.058 / 0.058 / 0.068 / 0.068; ABBV $0.029 / 0.029 / 0.33 / 0.55; DIS $0.106 / 0.138 / 0.176 / 0.220; NVO DKK 0.05 / 0.05 / 2.87 / 8.93.
 
@@ -1571,7 +1615,7 @@ Both need a full v5.0 re-screen before they enter the record.
 
 ## §XIII.5 — Twelve-standard tallies
 
-Every tally in the earlier reports and in v4.4.4 §30 used a different list of standards (F14) and is void. Re-run each issuer against the §60 list at its next re-screen. Until then, quote only the four-scenario verdicts above.
+Every tally in the earlier reports and in v4.4.4 §30 used a different list of standards (Fd14) and is void. Re-run each issuer against the §60 list at its next re-screen. Until then, quote only the four-scenario verdicts above.
 
 ---
 
@@ -1587,6 +1631,32 @@ What the free data in Part XII could add, in order of value per unit of work:
 4. **Gate 1 steps 2–3** from segment facts plus Exhibit 21 and EDGAR full-text search.
 
 Gate 4 product attribution, Δ16 customer mix and Δ35 content measurement stay per-issuer research; the app should show them only where a report exists, labelled with its date and version. Machine keys for every ratio and layer are in §7 and §12.
+
+### §XIV.1 Three screening tiers (owner decision, 31 October 2026)
+
+Full researched screens do not scale beyond a handful of issuers, so the app works in three tiers. Each is labelled with what it is.
+
+| Tier | What it runs | Who gets it | Label |
+|---|---|---|---|
+| **Mechanical** | The quick screen: the five index families' ratios and the reported interest line, from the data feed | Every ticker | "Quick screen" |
+| **Researched-lite** | The mechanical screen, plus Gates 2–3 from the filings (no feed figures), plus the **five largest Gate-4 lines** found with the Part XV lexicon, each banded and sourced | Widely held names a reader asks about, before a full screen exists | "Researched-lite, [date]"; the verdict states that the remaining lines are unscreened |
+| **Full** | Every gate and scenario, all lines, sensitivities, report and pinned tests | Issuers with a record (AAPL, ADP, ABNB, DE, AMZN) | "Researched, v5.0, [date]" |
+
+**Rules for researched-lite.**
+- A lite PASS reads "passes on its five largest lines", never plainly "halal".
+- A lite FAIL is a full FAIL on what was found.
+- Lite screens print the Δ63 disclosed share.
+- A lite screen is upgraded to full when its verdict sits within one point of a cap, or when a reader-facing claim depends on it.
+
+### §XIV.2 Calibration against index constituents (owner decision, 31 October 2026)
+
+Each quarter, take 50–100 large issuers and compare the platform's verdicts with the published constituent lists of the S&P, FTSE and DJIM Shariah indices. Use the mechanical tier for every issuer and the researched tier where a record exists.
+
+- **Tabulate** agreement and disagreement by family and by direction (we pass, they exclude; we fail, they include).
+- **Classify** each disagreement by cause: thresholds or windows, business screen, our own rules (Δ62's scope), data errors, or unexplained.
+- **Investigate** any unexplained disagreement on a widely held name. Both funds' exclusion of Amazon (SPUS held it in May 2025) is the type case.
+- **Feed back:** a systematic gap with a doctrinal cause goes to the Council; a data cause goes to §XII.10.
+- **Calibration measures divergence only.** It never moves a verdict, because the index lists are the authority for their own indices only.
 
 ---
 
@@ -1758,7 +1828,7 @@ An entry is a place to look, not a verdict. Most hits are permissible on reading
 | 112 | Gambling advertising | Ad policies, press | Ads for betting | Δ31 at Sc A (Twitch from February 2026) |
 | 113 | "Casino" inside a hotel segment | Segment | Gambling | U2 if > 5% |
 | 114 | "Raffles" / "Mystery boxes" | E-commerce | Gharar, maysir | §52 election |
-| 115 | A sportsbook among cloud or data customers ("strategic cloud provider") | Customer press releases | Hosting the activity itself | Δ56 (proposed) (FanDuel on AWS) |
+| 115 | A sportsbook among cloud or data customers ("strategic cloud provider") | Customer press releases | Hosting the activity itself | Δ56 (FanDuel on AWS) |
 
 ### §XV.8 Media, adult and content (F12)
 

@@ -8,7 +8,7 @@
 
    Two sources, in order:
    1. **A researched v5.0 screen** (`shariah-issuers.ts`), where one exists.
-      Its preferred scenario (B, AAOIFI) is the label, with the methodology
+      Its preferred scenario (B, AAOIFI-based) is the label, with the methodology
       version and the screening date beside it.
    2. **The quick screen** (`shariah.ts`) on everything else: the five
       published index methodologies on the latest balance sheet. Its headline
@@ -92,9 +92,9 @@ export function labelFromQuick(rows: QuickResult[], name = 'The company'): Halal
 }
 
 const V5_WORD: Record<Verdict, { tone: HalalTone; word: string; headline: string; phrase: string }> = {
-  PASS: { tone: 'good', word: 'Halal · AAOIFI', headline: 'Compliant under AAOIFI', phrase: 'is Shariah-compliant under AAOIFI' },
-  'MIXED — Watch': { tone: 'warn', word: 'On watch · AAOIFI', headline: 'On watch under AAOIFI', phrase: 'is on watch under AAOIFI: compliant, but close to a limit' },
-  FAIL: { tone: 'bad', word: 'Not halal · AAOIFI', headline: 'Not compliant under AAOIFI', phrase: 'is not Shariah-compliant under AAOIFI' },
+  PASS: { tone: 'good', word: 'Halal · AAOIFI-based', headline: 'Compliant, AAOIFI-based', phrase: 'is Shariah-compliant under its AAOIFI-based scenario' },
+  'MIXED — Watch': { tone: 'warn', word: 'On watch · AAOIFI-based', headline: 'On watch, AAOIFI-based', phrase: 'is on watch under its AAOIFI-based scenario: compliant, but close to a limit or resting on one estimate' },
+  FAIL: { tone: 'bad', word: 'Not halal · AAOIFI-based', headline: 'Not compliant, AAOIFI-based', phrase: 'is not Shariah-compliant under its AAOIFI-based scenario' },
   'CATEGORICAL FAIL': { tone: 'bad', word: 'Not halal · activity', headline: 'Excluded on activity', phrase: 'is not Shariah-compliant: its business activity is excluded' },
   'NOT SCREENABLE': { tone: 'muted', word: 'Not screened', headline: 'Not screenable', phrase: 'cannot be screened from what it discloses' },
 };

@@ -1,6 +1,22 @@
 # Hidden interest — Shariah screening reports: ADP, Airbnb, Deere
 
-**Methodology:** v5.0 (with interim deltas Δ40–Δ48, 18 October 2026; Δ41–Δ48 came out of these three screens). **Screened:** 18 October 2026.
+**Methodology:** v5.0 (with interim deltas Δ40–Δ48, 18 October 2026; Δ41–Δ48 came out of these three screens). **Screened:** 18 October 2026. **Reconciled with the master** (now Δ1–Δ63): 31 October 2026 — see the note below.
+
+> **Reconciliation with the master methodology, 31 October 2026.** No verdict changes: all three fail at every scenario, as screened.
+> - **Later deltas.**
+>   - Δ54 (insurance distribution in a non-financial issuer, 100% at every scenario) is the rule ADP's agency-commission line already followed.
+>   - Δ53 (marketplace take on prohibited goods) is the rule for Airbnb's alcohol-centred experiences, at the same 100%.
+>   - Δ59 (debt under other names) adds nothing: ADP's commercial paper and repos are already in (Δ44), and Deere's securitisation borrowings are already in.
+>   - Δ61 (Gate-4 watch zone) cannot trigger, because Gate 3 (ADP, Airbnb) and Gate 1 (Deere) already decide.
+>   - Δ62: none of the three has a line under a rule only Maz Vantage runs.
+> - **Disclosed share (Δ63).** Of each Gate-4 figure:
+>   - ADP: 71% disclosed at Sc A/B, 61% at Sc C/Strictest.
+>   - Airbnb: 98% / 94%.
+>   - Deere: 0% — its interest is the interest part of one finance-income line, estimated under Δ45.
+> - **A failing ratio the tables below left out.** ADP's cash, securities and receivables are **53.2%** of market value at Sc B, C and Strictest, over the 50% limit (R13). It fails Gate 2 there twice.
+> - **§54 Position 3 is triggered, not merely open.** ADP's client-fund interest is $1,354.8m, **6.2%** of revenue. That is above the master's 5% threshold, so at Sc C and Strictest the master requires Gate 1 to be reconsidered. The master did not say what reconsideration concludes; it now states that the Council decides (§54, §0.5 item 12). Until it does, ADP stays FAIL rather than CATEGORICAL FAIL at those scenarios.
+> - **Deere's operating leases.** Strictest's debt test should include them (Δ37 track b). They are left out here, which only understates a ratio that already fails at 59.6% of total assets.
+> - **Names.** Scenario B is now called "AAOIFI-based", and the master's findings are numbered Fd1–Fd42.
 **Records in the app:** `web/src/lib/shariah-issuers-hidden-interest.ts` (the Shariah tab of each company reads them; `tests/shariah-hidden-interest.test.ts` pins them).
 
 ## Why these three
@@ -22,7 +38,7 @@ A feed-level sweep on 18 October 2026 looked for interest that does not appear i
 | Gate | Finding | Result |
 |---|---|---|
 | 1 Business | Payroll, HR and benefits services (Employer Services $14,831.4m; PEO $7,128.1m). ADP Indemnity, its own insurer, covers PEO workers' compensation, inside the PEO segment and estimated at 1.5–4% of revenue. | Pass, G-flag |
-| 2 Balance sheet | Cash + IBS $48,187.9m — $4,230.1m own cash + **$43,957.8m funds held for clients** — **49.6%** of the 12-month average market cap ($97.1b) at Sc B to Strictest. Δ43 leaves the matched client funds out at Sc A: 4.4%. Debt on Δ44 average balances (notes $4,964.1m + commercial paper $4.2b + reverse repos $3.6b) $12,764.1m: 13.1%. | **Fail** at Sc B, C, Strictest; pass at Sc A |
+| 2 Balance sheet | Cash + IBS $48,187.9m — $4,230.1m own cash + **$43,957.8m funds held for clients** — **49.6%** of the 12-month average market cap ($97.1b) at Sc B to Strictest. Δ43 leaves the matched client funds out at Sc A: 4.4%. Debt on Δ44 average balances (notes $4,964.1m + commercial paper $4.2b + reverse repos $3.6b) $12,764.1m: 13.1%. | **Fail** at Sc B, C, Strictest (also cash + securities + receivables 53.2% > 50%, R13); pass at Sc A |
 | 3 Hidden interest | **Layer 1 = $1,725.8m = 7.86% of revenue**: $1,354.8m interest on client funds (a revenue line; average $40,410.7m at 3.4%) + $371.0m on corporate funds. | **Fail** (every scenario) |
 | 4 Revenue purity | Interest + workers' compensation underwriting (est. $330–900m) + insurance agency commissions (est. $50–200m): 11.1% (Sc A/B), 12.9% (Sc C/Strictest). | **Fail** |
 | 5 Disclosure | Screenable; the insurance lines are estimates. | — |
@@ -30,7 +46,7 @@ A feed-level sweep on 18 October 2026 looked for interest that does not appear i
 **Open questions.**
 - **Client funds as Cash + IBS** — settled by Δ43: counted at Sc B to Strictest, left out at Sc A. Gate 3 fails either way.
 - **$4,607.3m of zero-margin pass-throughs** — settled by Δ47: Gate 4 counts the margin (nil); the gross reading stays a sensitivity.
-- **§54 Position 3 at Scenario C and Strictest.** Should a float yield above 5% of revenue send ADP back to Gate 1? Not applied.
+- **§54 Position 3 at Scenario C and Strictest — triggered.** ADP's float yield is 6.2% of revenue, above the master's 5% threshold, so Gate 1 is reconsidered there. The outcome (categorical, or FAIL as now) is the Council's to set (master §54, §0.5 item 12); ADP stays FAIL meanwhile.
 
 **What would change it.**
 - Layer 1 would have to fall below $1,097m, 36% under the fiscal 2026 figure.

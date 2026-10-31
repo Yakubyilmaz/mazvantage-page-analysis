@@ -32,12 +32,14 @@ export const SCENARIOS: Scenario[] = ['A', 'B', 'C', 'S'];
 /**
  * Readers see scenarios, not schools of law: the methodology maps each one to
  * a school (§61), but the label a reader acts on is the scenario. Scenario B is
- * the AAOIFI one and Maz Vantage's preferred reading.
+ * AAOIFI-based — AAOIFI Standard 21 plus the total-asset test and the record's attribution rules,
+ * which AAOIFI's own standard does not run (the literal Standard 21 result is its own index row) —
+ * and Maz Vantage's preferred reading.
  */
 export const SCENARIO_NAME: Record<Scenario, string> = {
-  A: 'Scenario A', B: 'Scenario B · AAOIFI', C: 'Scenario C', S: 'Strictest',
+  A: 'Scenario A', B: 'Scenario B · AAOIFI-based', C: 'Scenario C', S: 'Strictest',
 };
-export const SCENARIO_SHORT: Record<Scenario, string> = { A: 'Sc A', B: 'Sc B · AAOIFI', C: 'Sc C', S: 'Strictest' };
+export const SCENARIO_SHORT: Record<Scenario, string> = { A: 'Sc A', B: 'Sc B · AAOIFI-based', C: 'Sc C', S: 'Strictest' };
 export const PREFERRED: Scenario = 'B';
 
 /** A figure the issuer does not disclose: the point used and the band around it. */
@@ -219,6 +221,17 @@ export interface RevenueLine {
   rate: Record<Scenario, Rate>;
   /** Layer-1 interest — counted at Gate 3 and inside the Gate-4 total (D5). */
   interest?: boolean;
+  /**
+   * Δ49: Layer-1 income that is not in the record's `l1` because it applies only at some scenarios
+   * (a conversion gain read as a lender's benefit). Its amount at each scenario joins Gate 3 and
+   * purification there. Mark it `interest` too, so Gate 4 does not count it again as impure revenue.
+   */
+  addsToLayer1?: boolean;
+  /**
+   * A Maz Vantage rule the index families do not run (Δ49, Δ55, Δ56, Δ57): counted in the scenarios,
+   * left out of the index rows, which apply each family's own scope.
+   */
+  ownRule?: boolean;
   /** An activity index families exclude whole (music, film, insurance broking, conventional finance, gambling). */
   wholeLine?: boolean;
   /** An open election (§52 loot boxes): reported under readings, kept out of the total. */
@@ -249,6 +262,13 @@ export interface Gate4Total {
   /** The same lines sized at the other edge: does the verdict survive the band (§16.5)? */
   otherEdge: number;
   robust: boolean;
+  /**
+   * Δ61, Sc A and Sc B only: moving any one estimated line to either edge of its band flips the
+   * result, so the verdict is MIXED — Watch (estimate-dependent) rather than bright-line.
+   */
+  watch: boolean;
+  /** Δ63: the share of the attributed amount that comes from disclosed lines. */
+  disclosed: number;
 }
 
 export function gate4(lines: RevenueLine[], revenue: number, s: Scenario): Gate4Total {
@@ -264,11 +284,25 @@ export function gate4(lines: RevenueLine[], revenue: number, s: Scenario): Gate4
   const npi = amount / revenue;
   const otherEdge = sumAt(true) / revenue;
   const cap = NPI_CAP[s];
+  const passes = npi <= cap;
+  // Δ61: at the point-estimate lenses, does one estimated line alone, at either edge, cross the cap?
+  const watch = !edge(s) && counted.some((l) => {
+    if (l.status === 'disclosed') return false;
+    const now = lineAt(l, s, revenue).amount;
+    const r = l.rate[s];
+    const at = (size: number, high: boolean) => size * (typeof r === 'number' ? r : high ? r.high : r.point);
+    return [at(l.base.low, false), at(l.base.high, true)].some((x) => (amount - now + x) / revenue <= cap !== passes);
+  });
+  const disclosed = amount > 0
+    ? counted.filter((l) => l.status === 'disclosed').reduce((t, l) => t + lineAt(l, s, revenue).amount, 0) / amount
+    : 1;
   return {
     npi, interest, impure: amount - interest, cap,
-    state: npi <= cap ? 'pass' : 'fail',
+    state: passes ? 'pass' : 'fail',
     otherEdge,
-    robust: (npi <= cap) === (otherEdge <= cap),
+    robust: passes === (otherEdge <= cap),
+    watch,
+    disclosed,
   };
 }
 
@@ -289,7 +323,7 @@ export interface Purification {
  * IE = I × (1 − t) + R_imp × m, with t floored at 0 and m the after-tax margin
  * excluding interest — and, under Δ58, excluding non-operating valuation gains,
  * which no revenue line earned. A loss year purifies the interest alone.
- * Purification can therefore never exceed earnings unless interest alone does (F7).
+ * Purification can therefore never exceed earnings unless interest alone does (finding Fd7).
  */
 export function purify(inc: Income, interest: number, impure: number, npi: number): Purification {
   const t = Math.max(0, inc.tax / inc.pretax);
@@ -314,11 +348,11 @@ export const khums = (inc: Income) => ({ company: 0.2 * Math.max(0, inc.netIncom
 export type Verdict = 'PASS' | 'MIXED — Watch' | 'FAIL' | 'CATEGORICAL FAIL' | 'NOT SCREENABLE';
 
 /** The worst gate wins: categorical > fail > watch > pass. Gate 5 is not a compliance finding. */
-export function aggregate(gates: { g1: 'pass' | 'categorical'; g2: 'pass' | 'watch' | 'fail'; g3: 'pass' | 'fail'; g4: 'pass' | 'fail'; screenable: boolean }): Verdict {
+export function aggregate(gates: { g1: 'pass' | 'categorical'; g2: 'pass' | 'watch' | 'fail'; g3: 'pass' | 'fail'; g4: 'pass' | 'watch' | 'fail'; screenable: boolean }): Verdict {
   if (!gates.screenable) return 'NOT SCREENABLE';
   if (gates.g1 === 'categorical') return 'CATEGORICAL FAIL';
   if (gates.g2 === 'fail' || gates.g3 === 'fail' || gates.g4 === 'fail') return 'FAIL';
-  return gates.g2 === 'watch' ? 'MIXED — Watch' : 'PASS';
+  return gates.g2 === 'watch' || gates.g4 === 'watch' ? 'MIXED — Watch' : 'PASS';
 }
 
 /* ---------- the index families, on their own rules (§60, corrected) ----------- */
@@ -382,7 +416,7 @@ export function indexScreen(rule: IndexRule, bs: BalanceSheet, w: McapWindows, l
   let incomeBand: [number, number] | null = null;
   if (rule.income !== 'sector') {
     const whole = rule.income === 'whole-line';
-    const inScope = (l: RevenueLine) => !l.election
+    const inScope = (l: RevenueLine) => !l.election && !l.ownRule
       && (whole ? Boolean(l.interest || l.wholeLine) : !(rule.income === 'npi-ex-interest' && l.interest));
     const rateOf = (l: RevenueLine) => (whole ? 1 : rateAt(l.rate.B, 'B'));
     const total = (pick: (b: Band) => number) =>

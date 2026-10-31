@@ -16,6 +16,46 @@
 
 ---
 
+> **Amendment, 31 October 2026 (supersedes the 30 October note below).** The owner adopted the post-Amazon review:
+> - **Δ56 narrowed.** Only identifiable AWS customers count at Scenarios A and B: FanDuel (est. $150m, every scenario) and banks and insurers named in AWS case studies, such as Capital One (est. $1.0b, from Scenario B). Industry-benchmark sizing of the rest ($12.65b) counts at Scenario C and Strictest only.
+> - **Δ52 triangulated.** Prime Video's slice of Prime is the median of three methods — value 41%, cost 20% (video $18.9b against shipping $102.7b), survey 33% — so the line is $9.0b (band $5.0–12.7b) rather than $9.5b.
+> - **Δ61, Δ62 and Δ63 added.** Δ61 is a Gate-4 watch zone when one estimate decides (it does not trigger here). Δ62 keeps rules only Maz Vantage runs out of the index rows. Δ63 prints the disclosed share of each figure.
+> - Scenario B is renamed **AAOIFI-based**.
+>
+> | Scenario | Verdict | Deciding | Gate 4 NPI | Disclosed | Purification / share |
+> |---|---|---|---|---|---|
+> | Scenario A | **PASS** | All five gates pass | 1.96% | 31% | $0.42 |
+> | **Scenario B · AAOIFI-based** (preferred) | **PASS** | All five gates pass (Gate 3: 1.49%) | 3.49% | 42% | $0.95 |
+> | Scenario C | **FAIL** | Gate 4: 7.92% > 5% | 7.92% | 19% | $1.23 |
+> | Strictest | **FAIL** | Gate 2, R19: 27.25% > 25%; Gate 4: 8.41% > 3% | 8.41% | 18% | $1.26 |
+>
+> Scenario B passes clearly: no single estimated line at either edge of its band carries it over 5% (Δ61). Counting AWS customers on benchmarks at Scenario B, as Δ56 first did, would put it at 5.1%.
+>
+> On each family's own scope (Δ62), the AAOIFI row reads 2.41% (pass), S&P 1.80% (pass), MSCI 2.41% (pass) and FTSE 4.35% (borderline, 2.9–6.2%). The tab answers "Yes" on Standard 21's row.
+>
+> Scenario B's purification includes the Δ49 conversion gains purified in full.
+
+> **Amendment, 30 October 2026: Δ49 and Δ56 adopted (owner decision).** The two rules this report priced as sensitivities are now part of the methodology, and the base screen counts them:
+> - **Δ49:** the $6.8b of Anthropic note-conversion gains are Layer 1 from Scenario B. They enter Gate 3, Gate 4 and purification.
+> - **Δ56:** AWS capacity rented to sportsbooks, casinos and alcohol, tobacco and adult producers counts at every scenario ($0.8b, band $0.45–1.5b). Capacity rented to conventional banks, insurers and lenders counts from Scenario B ($13.0b, band $9–20b).
+>
+> The verdicts become:
+>
+> | Scenario | Verdict | Deciding | Gate 4 NPI | Purification / share |
+> |---|---|---|---|---|
+> | Scenario A | **PASS** | All five gates pass | 2.06% | $0.43 |
+> | **Scenario B · AAOIFI** (preferred) | **FAIL** | Gate 4: 5.14% > 5% (Gate 3: 1.49%, pass) | 5.14% | $1.05 |
+> | Scenario C | **FAIL** | Gate 4: 7.93% > 5% | 7.93% | $1.23 |
+> | Strictest | **FAIL** | Gate 2, R19: 27.25% > 25%; Gate 4: 8.43% > 3% | 8.43% | $1.26 |
+>
+> **Scenario B fails by 0.14 points, and the deciding line is an estimate.** AWS does not report revenue by industry. Below ~$11.9b of AWS revenue from banks, insurers and lenders, Scenario B passes; at the low edge of the band ($9.0b) it is 4.63%.
+>
+> **The index families now straddle their 5% income lines.** AAOIFI, S&P, FTSE and MSCI are all borderline; DJIM, a sector screen, passes. The tab's answer box reads "It is on the line".
+>
+> **Purification rises** because the conversion gains are purified in full, after tax, as interest. The engine takes them out of the Δ58 non-operating figure, so they are not deducted twice.
+>
+> The sections below are the report as screened on 28 October 2026. Where they call Δ49 or Δ56 "proposed", or give Scenarios B and C as passing, read them as superseded by this note. The app (`web/src/lib/shariah-issuers-amazon.ts`) and its tests carry the amended figures.
+
 ## 1. Why Amazon
 
 The record so far tests the methodology one sector at a time: pharma, media, a payroll float, a captive lender, Apple's platform. Amazon touches every part of it at once, and it was the largest name in US Shariah funds until 2025. It is:
@@ -444,14 +484,14 @@ The ~0.7% figure is the clearest sign of why this screen was worth doing. A scre
 
 | # | Rule | Status | Effect on Amazon |
 |---|---|---|---|
-| Δ49 | Interest-free convertible loans with a fixed conversion price: a stipulated benefit (qarḍ jarra nafʿan) | **Proposed** — sensitivity | +0.88 points from Sc B; carries Sc C over |
+| Δ49 | Interest-free convertible loans with a fixed conversion price: a stipulated benefit (qarḍ jarra nafʿan) | Proposed 28 Oct; **adopted 30 Oct 2026** — applied | +0.88 points from Sc B |
 | Δ50 | Level-3 mark-ups out of total assets at Sc C and Strictest | Interim — applied | Strictest R19 27.25%, fail |
 | Δ51 | Retail media attributed by the store's own catalogue, not TV benchmarks | Interim — applied | Sponsored ads 0.3% impure, not 7–17% |
 | Δ52 | Bundled memberships allocated by relative standalone price | Interim — applied | Prime Video's slice of Prime: 25–45% |
 | Δ53 | Marketplace take on prohibited goods: Tier 1 at every scenario | Interim — applied | Lines 10, 12 |
 | Δ54 | Insurance distribution inside a non-financial issuer: Tier 1 at every scenario (Apple precedent) | Interim — applied | Line 6 |
 | Δ55 | Consideration in kind from P1 counterparties (warrants, credits): the vesting value at Δ46 rates | Interim — applied | Line 4 (Affirm) |
-| Δ56 | Infrastructure ijārah: cloud and data-centre capacity rented to P1 businesses | **Proposed** — sensitivity | +1.78 (B), +2.77 (C, Strictest) |
+| Δ56 | Infrastructure ijārah: cloud and data-centre capacity rented to P1 businesses | Proposed 28 Oct; **adopted 30 Oct 2026** — applied | +0.10 (A), +1.78 (B), +2.77 (C, Strictest) |
 | Δ57 | Look-through of private stakes that pay no dividend: the pro-rata impure income flows up | Interim — applied | Lines 28–29 |
 | Δ58 | Δ6's margin excludes non-operating valuation gains | Interim — applied | Purification $0.46, not $0.56 |
 | Δ59 | Debt under other names: financing obligations, current portions and facilities filed outside "debt" | Interim — applied | Track-(a) debt +10% |
@@ -463,8 +503,8 @@ The ~0.7% figure is the clearest sign of why this screen was worth doing. A scre
 
 ## 19. Open questions for the Council
 
-1. **Δ49** — is a non-interest-bearing note that converts at a fixed price (or the IPO price if lower) qarḍ with a benefit to the lender, or a deferred share subscription? Priced, not applied.
-2. **Δ56** — should cloud capacity carry D18's tenant attribution? It would change every infrastructure issuer. Priced, not applied.
+1. **Δ49 — settled 30 October 2026: adopted.** The question was: is a non-interest-bearing note that converts at a fixed price (or the IPO price if lower) qarḍ with a benefit to the lender, or a deferred share subscription? Priced, not applied.
+2. **Δ56 — settled 30 October 2026: adopted.** The question was: should cloud capacity carry D18's tenant attribution? It would change every infrastructure issuer. Priced, not applied.
 3. **Δ50** — is a Level-3 mark-up an estimate for D9's purposes? Applied as interim; ratification asked.
 4. **Δ57** — Anthropic fails its own Gate 3. Is the pro-rata flow-up enough, or should a material stake in a failing investee be a G-flag, or a Gate-2 item, as well?
 5. **Δ51 and Δ52** — first applications: retail media by catalogue share, and bundle allocation by standalone price.

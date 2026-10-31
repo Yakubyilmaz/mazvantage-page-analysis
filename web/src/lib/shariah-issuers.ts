@@ -13,7 +13,7 @@
    ========================================================================== */
 
 import {
-  INDEX_RULES, SCENARIOS, TEST_INFO, aggregate, gate4, indexScreen, khums, purify, ratioTests, scenarioMcap, sizeAt, worstOf,
+  INDEX_RULES, SCENARIOS, TEST_INFO, aggregate, gate4, indexScreen, khums, lineAt, purify, ratioTests, scenarioMcap, sizeAt, worstOf,
   type Band, type BalanceSheet, type Gate4Total, type Income, type IndexResult, type McapWindows, type Purification,
   type RevenueLine, type Scenario, type TestResult, type Verdict,
 } from './shariah-v5';
@@ -101,7 +101,7 @@ export const AAPL: IssuerRecord = {
   screened: '2026-10-07',
   period: { label: 'Twelve months to 27 June 2026 (Q4 FY2025 – Q3 FY2026)', start: '2025-06-29', end: '2026-06-27' },
   summary: 'The business clears the activity screen, and against its 12-month average market value its debt (2.0%) and '
-    + 'its cash and interest-bearing securities (3.5%) are small, so Scenario B, the AAOIFI reading, passes: the '
+    + 'its cash and interest-bearing securities (3.5%) are small, so Scenario B, the AAOIFI-based reading, passes: the '
     + 'estimated non-permissible income is 3.7% of revenue, under the 5% cap. Scenario C and Strictest take the '
     + 'conservative edge of that estimate — interest, social-casino commissions, insurance distribution, media and '
     + 'finance advertising — and it runs over their caps; Strictest also counts operating leases, which put debt at '
@@ -422,7 +422,15 @@ export function screenIssuer(r: IssuerRecord): Screen {
   const rev = r.income.revenue;
   const out = {} as Record<Scenario, ScenarioResult>;
   for (const s of SCENARIOS) {
-    const l1 = sizeAt(r.l1, s);
+    // Δ49: Layer-1 lines that apply at some scenarios only join the record's Layer 1 where they do.
+    const extraL1 = r.lines.filter((l) => l.addsToLayer1 && !l.election).reduce((t, l) => t + lineAt(l, s, rev).amount, 0);
+    const l1 = sizeAt(r.l1, s) + extraL1;
+    // Those gains are booked in other income, so Δ58 already takes them out of the margin; purified as
+    // interest here, they leave the non-operating figure — out once, not twice.
+    const keep = 1 - Math.max(0, r.income.tax / r.income.pretax);
+    const income = extraL1 && r.income.nonOperatingGains
+      ? { ...r.income, nonOperatingGains: Math.max(0, r.income.nonOperatingGains - extraL1 * keep) }
+      : r.income;
     const tests = ratioTests(r.bs, r.mcap, l1, rev, s);
     const g2 = worstOf(tests.filter((t) => t.key !== 'l1_revenue').map((t) => t.state));
     const g3 = worstOf(tests.filter((t) => t.key === 'l1_revenue').map((t) => t.state)) === 'fail' ? 'fail' : 'pass';
@@ -436,13 +444,14 @@ export function screenIssuer(r: IssuerRecord): Screen {
     const reasons = [
       ...failing.map((t) => `Gate ${TEST_INFO[t.key].gate}: ${testName(t, s)} ${PCT(t.value ?? 0)} > ${PCT(t.limit ?? 0)}`),
       ...(g4.state === 'fail' ? [`Gate 4: income ${PCT(g4.npi)} > ${PCT(g4.cap)}`] : []),
+      ...(g4.watch ? [`Gate 4: income ${PCT(g4.npi)} against ${PCT(g4.cap)} turns on one estimate (Δ61)`] : []),
     ];
     out[s] = {
       s,
-      verdict: aggregate({ g1: r.g1 === 'categorical' ? 'categorical' : 'pass', g2, g3, g4: g4.state, screenable: r.gate5.screenable }),
+      verdict: aggregate({ g1: r.g1 === 'categorical' ? 'categorical' : 'pass', g2, g3, g4: g4.watch ? 'watch' : g4.state, screenable: r.gate5.screenable }),
       mcapWindow: scenarioMcap(r.mcap, s).window,
       tests, g2, g3, g4, election,
-      purification: purify(r.income, sizeAt(r.l1, s), g4.impure, g4.npi),
+      purification: purify(income, l1, g4.impure, g4.npi),
       deciding: reasons.length ? reasons.join('; ') : 'All five gates pass',
     };
   }
